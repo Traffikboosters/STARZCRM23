@@ -8,6 +8,7 @@ import Dashboard from "@/pages/dashboard";
 import AnalyticsPage from "@/pages/analytics";
 import MightyCallPage from "@/pages/mightycall";
 import WorkOrders from "@/pages/work-orders";
+import CareersPage from "@/pages/careers";
 
 function Router() {
   return (
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/analytics" component={AnalyticsPage} />
       <Route path="/mightycall" component={MightyCallPage} />
       <Route path="/work-orders" component={WorkOrders} />
+      <Route path="/careers" component={CareersPage} />
       <Route component={NotFound} />
     </Switch>
   );

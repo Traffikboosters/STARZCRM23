@@ -180,6 +180,134 @@ export const auditLogs = pgTable("audit_logs", {
   timestamp: timestamp("timestamp").defaultNow().notNull(),
 });
 
+export const jobPostings = pgTable("job_postings", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  department: text("department").notNull(), // sales, marketing, development, operations, hr, finance
+  location: text("location").notNull(), // remote, on-site, hybrid
+  employmentType: text("employment_type").notNull(), // full-time, part-time, contract, internship
+  experience: text("experience").notNull(), // entry, mid, senior, executive
+  salary: text("salary"), // salary range
+  description: text("description").notNull(),
+  requirements: text("requirements").array(),
+  responsibilities: text("responsibilities").array(),
+  benefits: text("benefits").array(),
+  skills: text("skills").array(),
+  status: text("status").default("active"), // active, paused, closed, draft
+  publishedAt: timestamp("published_at"),
+  deadline: timestamp("deadline"),
+  hiringManager: integer("hiring_manager").references(() => users.id),
+  createdBy: integer("created_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const jobApplications = pgTable("job_applications", {
+  id: serial("id").primaryKey(),
+  jobId: integer("job_id").references(() => jobPostings.id).notNull(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  resumeUrl: text("resume_url"),
+  coverLetter: text("cover_letter"),
+  linkedinUrl: text("linkedin_url"),
+  portfolioUrl: text("portfolio_url"),
+  expectedSalary: text("expected_salary"),
+  startDate: text("start_date"),
+  status: text("status").default("submitted"), // submitted, screening, interview, offer, hired, rejected
+  stage: text("stage").default("application"), // application, phone_screen, interview_1, interview_2, final, offer
+  notes: text("notes"),
+  rating: integer("rating"), // 1-5 stars
+  interviewDate: timestamp("interview_date"),
+  interviewType: text("interview_type"), // phone, video, in-person
+  interviewFeedback: text("interview_feedback"),
+  rejectionReason: text("rejection_reason"),
+  source: text("source").default("website"), // website, linkedin, referral, job_board
+  assignedTo: integer("assigned_to").references(() => users.id),
+  submittedAt: timestamp("submitted_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const interviews = pgTable("interviews", {
+  id: serial("id").primaryKey(),
+  applicationId: integer("application_id").references(() => jobApplications.id).notNull(),
+  type: text("type").notNull(), // phone, video, in-person, panel
+  scheduledAt: timestamp("scheduled_at").notNull(),
+  duration: integer("duration").default(60), // minutes
+  interviewers: text("interviewers").array(), // user IDs
+  location: text("location"), // for in-person interviews
+  meetingLink: text("meeting_link"), // for video interviews
+  agenda: text("agenda"),
+  feedback: text("feedback"),
+  rating: integer("rating"), // 1-5 stars
+  recommendation: text("recommendation"), // hire, no_hire, maybe
+  status: text("status").default("scheduled"), // scheduled, completed, cancelled, rescheduled
+  notes: text("notes"),
+  createdBy: integer("created_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const employees = pgTable("employees", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  employeeId: text("employee_id").notNull().unique(),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull().unique(),
+  phone: text("phone"),
+  department: text("department").notNull(),
+  position: text("position").notNull(),
+  manager: integer("manager"),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"),
+  employment_type: text("employment_type").notNull(), // full-time, part-time, contract
+  salary: integer("salary"), // annual salary in cents
+  status: text("status").default("active"), // active, inactive, terminated
+  address: text("address"),
+  emergencyContact: text("emergency_contact"),
+  emergencyPhone: text("emergency_phone"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Insert schemas for HR module
+export const insertJobPostingSchema = createInsertSchema(jobPostings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertJobApplicationSchema = createInsertSchema(jobApplications).omit({
+  id: true,
+  submittedAt: true,
+  updatedAt: true,
+});
+
+export const insertInterviewSchema = createInsertSchema(interviews).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertEmployeeSchema = createInsertSchema(employees).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Types for HR module
+export type JobPosting = typeof jobPostings.$inferSelect;
+export type InsertJobPosting = z.infer<typeof insertJobPostingSchema>;
+export type JobApplication = typeof jobApplications.$inferSelect;
+export type InsertJobApplication = z.infer<typeof insertJobApplicationSchema>;
+export type Interview = typeof interviews.$inferSelect;
+export type InsertInterview = z.infer<typeof insertInterviewSchema>;
+export type Employee = typeof employees.$inferSelect;
+export type InsertEmployee = z.infer<typeof insertEmployeeSchema>;
+
 export const callLogs = pgTable("call_logs", {
   id: serial("id").primaryKey(),
   contactId: integer("contact_id").references(() => contacts.id),

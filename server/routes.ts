@@ -1653,5 +1653,218 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // HR Portal Routes
+  
+  // Job Postings
+  app.get("/api/job-postings", async (req, res) => {
+    try {
+      const { status = "active" } = req.query;
+      const jobPostings = [
+        {
+          id: 1,
+          title: "Senior Sales Representative",
+          department: "sales",
+          location: "remote",
+          employmentType: "full-time",
+          experience: "mid",
+          salary: "$60,000 - $80,000",
+          description: "Join our dynamic sales team and help drive revenue growth for Traffik Boosters. You'll be working with cutting-edge digital marketing solutions and building relationships with clients across various industries.",
+          requirements: ["3+ years sales experience", "CRM proficiency", "Strong communication skills", "Goal-oriented mindset"],
+          responsibilities: ["Generate new leads", "Manage client relationships", "Meet monthly sales targets", "Collaborate with marketing team"],
+          benefits: ["Health insurance", "401k matching", "Flexible schedule", "Commission bonuses"],
+          skills: ["Sales", "CRM", "Communication", "Negotiation"],
+          status: "active",
+          publishedAt: new Date(),
+          hiringManager: 1,
+          createdBy: 1,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        },
+        {
+          id: 2,
+          title: "Digital Marketing Specialist",
+          department: "marketing",
+          location: "hybrid",
+          employmentType: "full-time",
+          experience: "entry",
+          salary: "$45,000 - $55,000",
+          description: "Help businesses boost their online presence with innovative traffic generation strategies. Perfect for someone passionate about digital marketing and data-driven results.",
+          requirements: ["Bachelor's degree in Marketing", "Google Ads experience", "Social media expertise", "Analytical mindset"],
+          responsibilities: ["Manage PPC campaigns", "Create content strategies", "Analyze performance metrics", "Support client campaigns"],
+          benefits: ["Health insurance", "Professional development", "Remote work options", "Performance bonuses"],
+          skills: ["Digital Marketing", "Google Ads", "Social Media", "Analytics"],
+          status: "active",
+          publishedAt: new Date(),
+          hiringManager: 1,
+          createdBy: 1,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      ];
+      
+      const filtered = status === "all" ? jobPostings : jobPostings.filter(job => job.status === status);
+      res.json(filtered);
+    } catch (error) {
+      console.error("Error fetching job postings:", error);
+      res.status(500).json({ error: "Failed to fetch job postings" });
+    }
+  });
+
+  app.post("/api/job-postings", async (req, res) => {
+    try {
+      const jobData = req.body;
+      const timestamp = new Date();
+      const jobPosting = {
+        id: Date.now(),
+        ...jobData,
+        status: "active",
+        publishedAt: timestamp,
+        createdBy: 1,
+        createdAt: timestamp,
+        updatedAt: timestamp
+      };
+      
+      logAuditEvent("create", "job_posting", jobPosting.id, 1, null, jobData, `Created job posting: ${jobData.title}`);
+      res.status(201).json(jobPosting);
+    } catch (error) {
+      console.error("Error creating job posting:", error);
+      res.status(500).json({ error: "Failed to create job posting" });
+    }
+  });
+
+  // Job Applications
+  app.get("/api/job-applications", async (req, res) => {
+    try {
+      const { jobId, status } = req.query;
+      let applications = [
+        {
+          id: 1,
+          jobId: 1,
+          firstName: "Sarah",
+          lastName: "Johnson",
+          email: "sarah.johnson@email.com",
+          phone: "+1-555-0123",
+          resumeUrl: "/uploads/resume-sarah-johnson.pdf",
+          coverLetter: "I am excited to apply for the Senior Sales Representative position...",
+          linkedinUrl: "https://linkedin.com/in/sarahjohnson",
+          expectedSalary: "$75,000",
+          startDate: "2 weeks",
+          status: "interview",
+          stage: "interview_1",
+          rating: 4,
+          source: "website",
+          assignedTo: 1,
+          submittedAt: new Date(Date.now() - 86400000 * 3),
+          updatedAt: new Date()
+        },
+        {
+          id: 2,
+          jobId: 2,
+          firstName: "Michael",
+          lastName: "Chen",
+          email: "michael.chen@email.com",
+          phone: "+1-555-0124",
+          resumeUrl: "/uploads/resume-michael-chen.pdf",
+          coverLetter: "As a digital marketing enthusiast with Google Ads certification...",
+          portfolioUrl: "https://michaelchen.portfolio.com",
+          expectedSalary: "$50,000",
+          startDate: "1 month",
+          status: "submitted",
+          stage: "application",
+          source: "linkedin",
+          assignedTo: 1,
+          submittedAt: new Date(Date.now() - 86400000 * 1),
+          updatedAt: new Date()
+        }
+      ];
+
+      if (jobId) applications = applications.filter(app => app.jobId === parseInt(jobId as string));
+      if (status) applications = applications.filter(app => app.status === status);
+      
+      res.json(applications);
+    } catch (error) {
+      console.error("Error fetching job applications:", error);
+      res.status(500).json({ error: "Failed to fetch job applications" });
+    }
+  });
+
+  app.post("/api/job-applications", async (req, res) => {
+    try {
+      const applicationData = req.body;
+      const timestamp = new Date();
+      const application = {
+        id: Date.now(),
+        ...applicationData,
+        status: "submitted",
+        stage: "application",
+        source: "website",
+        submittedAt: timestamp,
+        updatedAt: timestamp
+      };
+      
+      logAuditEvent("create", "job_application", application.id, 1, null, applicationData, `New application from ${applicationData.firstName} ${applicationData.lastName}`);
+      res.status(201).json(application);
+    } catch (error) {
+      console.error("Error creating job application:", error);
+      res.status(500).json({ error: "Failed to create job application" });
+    }
+  });
+
+  app.patch("/api/job-applications/:id", async (req, res) => {
+    try {
+      const applicationId = parseInt(req.params.id);
+      const updates = req.body;
+      const timestamp = new Date();
+      
+      const updatedApplication = {
+        id: applicationId,
+        ...updates,
+        updatedAt: timestamp
+      };
+      
+      logAuditEvent("update", "job_application", applicationId, 1, null, updates, `Updated application status to ${updates.status || 'unknown'}`);
+      res.json(updatedApplication);
+    } catch (error) {
+      console.error("Error updating job application:", error);
+      res.status(500).json({ error: "Failed to update job application" });
+    }
+  });
+
+  // Public careers page endpoint
+  app.get("/api/careers", async (req, res) => {
+    try {
+      const activeJobs = [
+        {
+          id: 1,
+          title: "Senior Sales Representative",
+          department: "Sales",
+          location: "Remote",
+          employmentType: "Full-time",
+          experience: "Mid-level",
+          salary: "$60,000 - $80,000",
+          description: "Join our dynamic sales team and help drive revenue growth for Traffik Boosters. You'll be working with cutting-edge digital marketing solutions and building relationships with clients across various industries.",
+          requirements: ["3+ years sales experience", "CRM proficiency", "Strong communication skills", "Goal-oriented mindset"],
+          benefits: ["Health insurance", "401k matching", "Flexible schedule", "Commission bonuses"]
+        },
+        {
+          id: 2,
+          title: "Digital Marketing Specialist",
+          department: "Marketing",
+          location: "Hybrid",
+          employmentType: "Full-time",
+          experience: "Entry-level",
+          salary: "$45,000 - $55,000",
+          description: "Help businesses boost their online presence with innovative traffic generation strategies. Perfect for someone passionate about digital marketing and data-driven results.",
+          requirements: ["Bachelor's degree in Marketing", "Google Ads experience", "Social media expertise", "Analytical mindset"],
+          benefits: ["Health insurance", "Professional development", "Remote work options", "Performance bonuses"]
+        }
+      ];
+      res.json(activeJobs);
+    } catch (error) {
+      console.error("Error fetching careers:", error);
+      res.status(500).json({ error: "Failed to fetch careers" });
+    }
+  });
+
   return httpServer;
 }
