@@ -4,6 +4,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { insertUserSchema, insertContactSchema, insertEventSchema, insertFileSchema, insertAutomationSchema, insertScrapingJobSchema, insertChatMessageSchema, insertChatConversationSchema } from "@shared/schema";
 import { barkDecoder } from "./bark-decoder";
+import { barkDecoderUS } from "./bark-decoder-us";
 import { testBarkDecoder } from "./bark-test";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -263,14 +264,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Enhanced bark.com scraping with real data decoder
+  // US-focused bark.com scraping with American data extraction
   app.post("/api/scraping-jobs/bark", async (req, res) => {
     try {
       const userId = 1; // TODO: Use actual user ID from session
       
       const barkJob = await storage.createScrapingJob({
-        name: "Bark.com Service Providers - Enhanced Extraction",
-        url: "https://www.bark.com/en/gb/",
+        name: "Bark.com US Service Providers - American Market",
+        url: "https://www.bark.com/en/us/",
         status: "running",
         selectors: {
           provider_cards: ".provider-card, .pro-card, [data-testid='provider-card']",
@@ -1481,21 +1482,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Test Bark.com decoder with real name and phone extraction
-  app.get("/api/test/bark-decoder", async (req, res) => {
+  // Test US-focused Bark.com decoder with American data extraction
+  app.get("/api/test/bark-decoder-us", async (req, res) => {
     try {
-      console.log("[Bark Decoder Test] Starting enhanced data extraction test...");
-      const testResults = await testBarkDecoder();
+      console.log("[Bark Decoder US Test] Starting American data extraction test...");
+      
+      // US-focused test data with proper American phone formats
+      const mockUSBarkHTML = `
+        <div class="provider-card verified">
+          <div class="provider-header">
+            <h3 class="provider-name">Sarah Thompson</h3>
+            <div class="business-name">Thompson Digital Marketing</div>
+            <span class="verification-badge">Verified</span>
+          </div>
+          <div class="contact-info">
+            <a href="tel:+15551234567" class="phone-number">+1 (555) 123-4567</a>
+            <div class="mobile-phone">Mobile: (555) 123-4567</div>
+            <a href="mailto:sarah@thompsondigital.com" class="email-address">sarah@thompsondigital.com</a>
+          </div>
+          <div class="location">Austin, TX</div>
+          <div class="service-category">Digital Marketing</div>
+          <div class="rating-info">
+            <span class="rating-score">4.9</span>
+            <span class="review-count">47 reviews</span>
+          </div>
+          <div class="service-description">Expert digital marketing consultant helping businesses grow their online presence</div>
+          <div class="services-list">
+            <span class="service-tag">SEO</span>
+            <span class="service-tag">PPC Advertising</span>
+            <span class="service-tag">Social Media</span>
+          </div>
+          <div class="response-time">Responds in 2 hours</div>
+        </div>
+        
+        <div class="provider-card">
+          <div class="provider-header">
+            <h3 class="provider-name">James Wilson</h3>
+            <div class="business-name">Wilson Construction LLC</div>
+          </div>
+          <div class="contact-info">
+            <a href="tel:3125551234" class="phone-number">Office: (312) 555-1234</a>
+            <div class="mobile-phone">Mobile: (312) 555-9876</div>
+            <a href="mailto:james@wilsonconstruction.com" class="email-address">james@wilsonconstruction.com</a>
+          </div>
+          <div class="location">Chicago, IL</div>
+          <div class="service-category">Construction & Renovation</div>
+          <div class="rating-info">
+            <span class="rating-score">4.7</span>
+            <span class="review-count">32 reviews</span>
+          </div>
+          <div class="service-description">Professional construction and renovation services for residential and commercial projects</div>
+          <div class="services-list">
+            <span class="service-tag">Home Additions</span>
+            <span class="service-tag">Kitchen Remodeling</span>
+          </div>
+        </div>
+
+        <div class="provider-card verified">
+          <div class="provider-header">
+            <h3 class="provider-name">Dr. Emma Davis</h3>
+            <div class="business-name">Davis Legal Associates</div>
+            <span class="verification-badge">Verified Professional</span>
+          </div>
+          <div class="contact-info">
+            <a href="tel:2125551890" class="phone-number">(212) 555-1890</a>
+            <div class="office-number">Direct: (212) 555-1891</div>
+            <a href="mailto:emma.davis@davislegal.com" class="email-address">emma.davis@davislegal.com</a>
+          </div>
+          <div class="location">New York, NY</div>
+          <div class="service-category">Legal & Professional Services</div>
+          <div class="rating-info">
+            <span class="rating-score">4.8</span>
+            <span class="review-count">28 reviews</span>
+          </div>
+          <div class="service-description">Experienced attorney specializing in business law and contract negotiations</div>
+          <div class="services-list">
+            <span class="service-tag">Business Law</span>
+            <span class="service-tag">Contract Review</span>
+          </div>
+          <div class="response-time">Responds in 1 hour</div>
+        </div>
+      `;
+
+      const rawData = {
+        html: mockUSBarkHTML,
+        url: "https://www.bark.com/en/us/",
+        timestamp: new Date()
+      };
+
+      const testResults = await barkDecoderUS.decodeBarkData(rawData);
       
       res.json({
         success: true,
-        decoderVersion: "Enhanced Bark.com Decoder v2.0",
+        decoderVersion: "US-Focused Bark.com Decoder v3.0",
+        targetMarket: "United States",
         capabilities: [
           "Real name extraction (first & last names)",
-          "Multiple phone number detection (mobile & landline)",
-          "UK phone number formatting",
-          "Enhanced business information parsing",
-          "Lead scoring with verification status"
+          "US phone number detection and formatting",
+          "Multiple contact number identification",
+          "American business information parsing",
+          "Lead scoring with US market values",
+          "State-based location tracking"
         ],
         testResults: {
           leadsExtracted: testResults.length,
@@ -1512,14 +1599,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             services: lead.services,
             leadScore: lead.leadScore,
             estimatedValue: lead.estimatedValue,
-            verified: lead.verificationStatus
+            verified: lead.verificationStatus,
+            responseTime: lead.responseTime
           }))
         },
-        message: `Successfully decoded ${testResults.length} Bark.com leads with verified names and phone numbers`
+        message: `Successfully decoded ${testResults.length} US-based Bark.com leads with verified American phone numbers`
       });
     } catch (error) {
-      console.error("[Bark Decoder Test] Error:", error);
-      res.status(500).json({ error: "Failed to test Bark decoder" });
+      console.error("[Bark Decoder US Test] Error:", error);
+      res.status(500).json({ error: "Failed to test US Bark decoder" });
     }
   });
 

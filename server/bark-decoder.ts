@@ -276,28 +276,35 @@ export class BarkDecoder {
       landline: null as string | null
     };
 
-    // Enhanced phone number patterns for UK numbers
+    // Enhanced phone number patterns for US numbers
     const phonePatterns = [
-      // UK mobile numbers
-      /(?:mobile|cell|mob)[\s:]*(\+44\s*7\d{3}\s*\d{3}\s*\d{3})/i,
-      /(?:mobile|cell|mob)[\s:]*(\b07\d{3}\s*\d{3}\s*\d{3})/i,
+      // US mobile and landline numbers
+      /(?:mobile|cell|phone)[\s:]*(\+1\s*\(\d{3}\)\s*\d{3}-\d{4})/i,
+      /(?:mobile|cell|phone)[\s:]*(\(\d{3}\)\s*\d{3}-\d{4})/i,
+      /(?:mobile|cell|phone)[\s:]*(\d{3}-\d{3}-\d{4})/i,
       
-      // UK landline numbers
-      /(?:landline|office|business)[\s:]*(\+44\s*\d{2,4}\s*\d{3,4}\s*\d{3,4})/i,
-      /(?:landline|office|business)[\s:]*(\b0\d{2,4}\s*\d{3,4}\s*\d{3,4})/i,
+      // Office/business numbers
+      /(?:office|business|work)[\s:]*(\+1\s*\(\d{3}\)\s*\d{3}-\d{4})/i,
+      /(?:office|business|work)[\s:]*(\(\d{3}\)\s*\d{3}-\d{4})/i,
+      /(?:office|business|work)[\s:]*(\d{3}-\d{3}-\d{4})/i,
       
       // General phone patterns
-      /(?:tel|phone)[\s:]*(\+44\s*\d{2,4}\s*\d{3,4}\s*\d{3,4})/i,
-      /href="tel:(\+44[\d\s]+)"/i,
-      /href="tel:(0[\d\s]+)"/i,
+      /(?:tel|phone)[\s:]*(\+1\s*\d{3}\s*\d{3}\s*\d{4})/i,
+      /href="tel:(\+1[\d\s\-\(\)]+)"/i,
+      /href="tel:([\d\s\-\(\)]+)"/i,
       
-      // Formatted UK numbers
-      /(\+44\s*\d{2,4}\s*\d{3,4}\s*\d{3,4})/,
-      /(\b0\d{2,4}\s*\d{3,4}\s*\d{3,4})/,
-      /(\b\d{11})/,
+      // Formatted US numbers
+      /(\+1\s*\(\d{3}\)\s*\d{3}-\d{4})/,
+      /(\(\d{3}\)\s*\d{3}-\d{4})/,
+      /(\d{3}-\d{3}-\d{4})/,
+      /(\d{3}\.\d{3}\.\d{4})/,
+      /(\d{3}\s\d{3}\s\d{4})/,
+      
+      // 10-digit numbers
+      /(\b\d{10}\b)/,
       
       // International format
-      /(\+44\d{10})/
+      /(\+1\d{10})/
     ];
 
     // Extract all phone numbers found
@@ -334,21 +341,20 @@ export class BarkDecoder {
     // Remove HTML entities and tags
     let cleaned = phone.replace(/&[^;]+;/g, '').replace(/<[^>]*>/g, '');
     
-    // Normalize spacing and formatting
-    cleaned = cleaned.replace(/[\s\-\(\)\.]/g, '');
+    // Extract only digits
+    const digitsOnly = cleaned.replace(/[^\d]/g, '');
     
-    // Ensure UK format
-    if (cleaned.startsWith('0')) {
-      cleaned = '+44' + cleaned.substring(1);
-    } else if (!cleaned.startsWith('+44')) {
-      // If it's all digits and looks like a UK number, add +44
-      if (/^\d{10,11}$/.test(cleaned)) {
-        cleaned = '+44' + (cleaned.startsWith('0') ? cleaned.substring(1) : cleaned);
-      }
+    // Handle US phone numbers
+    if (digitsOnly.length === 11 && digitsOnly.startsWith('1')) {
+      // US number with country code
+      return this.formatPhoneNumber('+' + digitsOnly);
+    } else if (digitsOnly.length === 10) {
+      // US number without country code
+      return this.formatPhoneNumber('+1' + digitsOnly);
     }
     
-    // Validate format
-    if (/^\+44\d{10}$/.test(cleaned)) {
+    // Check if already has +1 prefix
+    if (cleaned.startsWith('+1') && digitsOnly.length === 11) {
       return this.formatPhoneNumber(cleaned);
     }
     
@@ -356,23 +362,33 @@ export class BarkDecoder {
   }
 
   private formatPhoneNumber(phone: string): string {
-    // Format +44XXXXXXXXXX to +44 XX XXXX XXXX
-    if (phone.startsWith('+44') && phone.length === 13) {
-      return `+44 ${phone.substring(3, 5)} ${phone.substring(5, 9)} ${phone.substring(9)}`;
+    // Format +1XXXXXXXXXX to +1 (XXX) XXX-XXXX
+    if (phone.startsWith('+1') && phone.replace(/\D/g, '').length === 11) {
+      const digits = phone.replace(/\D/g, '');
+      const areaCode = digits.substring(1, 4);
+      const exchange = digits.substring(4, 7);
+      const number = digits.substring(7, 11);
+      return `+1 (${areaCode}) ${exchange}-${number}`;
     }
     return phone;
   }
 
   private isMobileNumber(phone: string): boolean {
-    // UK mobile numbers start with 07 (or +447)
-    const cleaned = phone.replace(/[\s\-\(\)\.]/g, '');
-    return /^\+447/.test(cleaned) || /^07/.test(cleaned);
+    // In the US, mobile vs landline is harder to distinguish
+    // We'll use common mobile area codes as indicators
+    const mobileAreaCodes = ['201', '202', '203', '212', '213', '214', '215', '216', '217', '218', '219', '224', '225', '228', '229', '231', '234', '239', '240', '248', '251', '252', '253', '254', '256', '260', '262', '267', '269', '270', '272', '276', '281', '283', '301', '302', '303', '304', '305', '307', '308', '309', '310', '312', '313', '314', '315', '316', '317', '318', '319', '320', '321', '323', '325', '330', '331', '334', '336', '337', '339', '347', '351', '352', '360', '361', '385', '386', '401', '402', '404', '405', '406', '407', '408', '409', '410', '412', '413', '414', '415', '417', '419', '423', '424', '425', '430', '432', '434', '435', '440', '443', '458', '463', '464', '469', '470', '475', '478', '479', '480', '484', '501', '502', '503', '504', '505', '507', '508', '509', '510', '512', '513', '515', '516', '517', '518', '520', '530', '540', '541', '551', '559', '561', '562', '563', '564', '567', '570', '571', '573', '574', '575', '580', '585', '586', '601', '602', '603', '605', '606', '607', '608', '609', '610', '612', '614', '615', '616', '617', '618', '619', '620', '623', '626', '630', '631', '636', '641', '646', '650', '651', '660', '661', '662', '667', '678', '682', '701', '702', '703', '704', '706', '707', '708', '712', '713', '714', '715', '716', '717', '718', '719', '720', '724', '727', '731', '732', '734', '737', '740', '747', '754', '757', '760', '763', '765', '770', '772', '773', '774', '775', '781', '786', '801', '802', '803', '804', '805', '806', '808', '810', '812', '813', '814', '815', '816', '817', '818', '828', '830', '831', '832', '843', '845', '847', '848', '850', '856', '857', '858', '859', '860', '862', '863', '864', '865', '870', '872', '878', '901', '903', '904', '906', '907', '908', '909', '910', '912', '913', '914', '915', '916', '917', '918', '919', '920', '925', '928', '929', '931', '936', '937', '940', '941', '947', '949', '951', '952', '954', '956', '959', '970', '971', '972', '973', '978', '979', '980', '984', '985', '989'];
+    
+    const digitsOnly = phone.replace(/\D/g, '');
+    if (digitsOnly.length >= 10) {
+      const areaCode = digitsOnly.substring(digitsOnly.length - 10, digitsOnly.length - 7);
+      return mobileAreaCodes.includes(areaCode);
+    }
+    return false;
   }
 
   private isLandlineNumber(phone: string): boolean {
-    // UK landline numbers don't start with 07
-    const cleaned = phone.replace(/[\s\-\(\)\.]/g, '');
-    return (/^\+44[1-6]/.test(cleaned) || /^0[1-6]/.test(cleaned)) && !this.isMobileNumber(phone);
+    // For US numbers, assume landline if not mobile
+    return !this.isMobileNumber(phone);
   }
 
   private extractText(html: string, patterns: RegExp[]): string | null {
@@ -490,14 +506,21 @@ export class BarkDecoder {
   }
 
   private isValidLead(lead: BarkLead): boolean {
-    return !!(
-      lead.businessName &&
-      lead.businessName !== 'Unknown Business' &&
-      lead.businessName.length > 2 &&
-      (lead.phone || lead.email) &&
-      lead.location &&
-      lead.location !== 'Location not specified'
-    );
+    const hasValidName = lead.firstName && lead.lastName && 
+                        lead.firstName !== 'Unknown' && lead.lastName !== 'Provider';
+    const hasValidBusiness = lead.businessName && 
+                            lead.businessName !== 'Unknown Business' && 
+                            lead.businessName.length > 2;
+    const hasContact = lead.phone || lead.email;
+    const hasLocation = lead.location && lead.location !== 'Location not specified';
+    
+    console.log(`[Bark Decoder] Validation for ${lead.firstName} ${lead.lastName}:`);
+    console.log(`  - Valid name: ${hasValidName}`);
+    console.log(`  - Valid business: ${hasValidBusiness}`);
+    console.log(`  - Has contact: ${hasContact} (phone: ${lead.phone}, email: ${lead.email})`);
+    console.log(`  - Has location: ${hasLocation} (${lead.location})`);
+    
+    return !!(hasValidName && hasValidBusiness && hasContact && hasLocation);
   }
 
   async processAndStoreBarkLeads(rawData: BarkRawData, userId: number): Promise<{ leads: BarkLead[], stored: number }> {

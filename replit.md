@@ -130,6 +130,8 @@ The application uses a comprehensive schema including:
 - June 22, 2025. Updated platform name to "Starz" while maintaining Traffik Boosters logo and slogan for complete white-label implementation
 - June 22, 2025. Clarified that Starz is an internal business management system for Traffik Boosters operations, not a commercial product
 - June 22, 2025. Enhanced logo visibility by increasing Traffik Boosters logo size in header (h-24) and sidebar (w-48) for better brand prominence
+- June 22, 2025. Updated Bark.com data decoder to focus exclusively on US market with American phone number formatting (+1 XXX-XXX-XXXX)
+- June 22, 2025. Implemented US-focused lead extraction targeting American businesses with state-based location tracking and US market lead valuations
 
 ## User Preferences
 
