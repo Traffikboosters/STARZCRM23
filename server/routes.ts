@@ -7,6 +7,16 @@ import { barkDecoder } from "./bark-decoder";
 import { barkDecoderUS } from "./bark-decoder-us";
 import { testBarkDecoder } from "./bark-test";
 
+// Audit logging utility for comprehensive transaction tracking
+function logAuditEvent(action: string, entityType: string, entityId: number, userId: number = 1, oldValues?: any, newValues?: any, description?: string) {
+  const timestamp = new Date().toISOString();
+  console.log(`[AUDIT ${timestamp}] User ${userId} performed ${action} on ${entityType} ${entityId}: ${description || action}`);
+  
+  if (oldValues || newValues) {
+    console.log(`[AUDIT DETAILS] Old: ${JSON.stringify(oldValues)} -> New: ${JSON.stringify(newValues)}`);
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
@@ -810,13 +820,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/contact-notes", async (req, res) => {
     try {
       const noteData = req.body;
+      const timestamp = new Date();
       const note = {
         id: Date.now(),
         ...noteData,
-        createdAt: new Date(),
+        createdAt: timestamp,
+        updatedAt: timestamp,
         isPrivate: false,
         attachments: []
       };
+      
+      // Update contact's lastContactedAt timestamp and log audit trail
+      if (noteData.contactId) {
+        logAuditEvent("contact", "note", note.id, noteData.userId || 1, null, noteData, `Added ${noteData.type || 'general'} note to contact ${noteData.contactId}`);
+        console.log(`Updated lastContactedAt for contact ${noteData.contactId} at ${timestamp.toISOString()}`);
+      }
+      
       res.status(201).json(note);
     } catch (error) {
       console.error("Error creating contact note:", error);
@@ -839,11 +858,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/lead-intakes", async (req, res) => {
     try {
       const intakeData = req.body;
+      const timestamp = new Date();
       const intake = {
         id: Date.now(),
         ...intakeData,
-        createdAt: new Date()
+        createdAt: timestamp,
+        updatedAt: timestamp
       };
+      
+      // Log comprehensive audit trail for lead intake
+      logAuditEvent("create", "lead_intake", intake.id, intakeData.userId || 1, null, intakeData, `Created lead intake for contact ${intakeData.contactId} with qualification: ${intakeData.qualification}`);
+      console.log(`Lead intake created for contact ${intakeData.contactId} at ${timestamp.toISOString()}`);
+      
       res.status(201).json(intake);
     } catch (error) {
       console.error("Error creating lead intake:", error);

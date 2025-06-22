@@ -45,7 +45,9 @@ export const contacts = pgTable("contacts", {
   lastContactedAt: timestamp("last_contacted_at"),
   nextFollowUpAt: timestamp("next_follow_up_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
   createdBy: integer("created_by").references(() => users.id),
+  updatedBy: integer("updated_by").references(() => users.id),
 });
 
 export const contactNotes = pgTable("contact_notes", {
@@ -62,6 +64,7 @@ export const contactNotes = pgTable("contact_notes", {
   isPrivate: boolean("is_private").default(false),
   attachments: text("attachments").array(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const leadIntakes = pgTable("lead_intakes", {
@@ -81,6 +84,7 @@ export const leadIntakes = pgTable("lead_intakes", {
   score: integer("score"), // lead score 1-100
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const events = pgTable("events", {
@@ -147,6 +151,7 @@ export const chatMessages = pgTable("chat_messages", {
   attachments: text("attachments").array(),
   readAt: timestamp("read_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const chatConversations = pgTable("chat_conversations", {
@@ -158,6 +163,21 @@ export const chatConversations = pgTable("chat_conversations", {
   lastMessageAt: timestamp("last_message_at"),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  action: text("action").notNull(), // create, update, delete, view, call, email, note
+  entityType: text("entity_type").notNull(), // contact, note, lead_intake, campaign, call_log, etc.
+  entityId: integer("entity_id").notNull(),
+  oldValues: json("old_values"),
+  newValues: json("new_values"),
+  description: text("description"), // human-readable description of the action
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
 });
 
 export const callLogs = pgTable("call_logs", {
