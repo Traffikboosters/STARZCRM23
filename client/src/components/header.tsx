@@ -37,11 +37,11 @@ export default function Header() {
             className="h-32 w-auto object-contain"
             style={{ imageRendering: 'crisp-edges' }}
           />
-          <div>
-            <h1 className="text-2xl font-bold text-black">
+          <div className="min-w-0 flex-shrink-0">
+            <h1 className="text-2xl font-bold text-black whitespace-nowrap">
               Starz
             </h1>
-            <p className="text-lg font-bold text-black">
+            <p className="text-lg font-bold text-black whitespace-nowrap">
               More Traffik! More Sales!
             </p>
           </div>
