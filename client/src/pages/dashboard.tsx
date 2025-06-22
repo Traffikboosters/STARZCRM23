@@ -13,6 +13,7 @@ import PaymentIntegration from "@/components/payment-integration";
 import LegalDocumentsView from "@/components/legal-documents-view";
 import MightyCallIntegration from "@/components/mightycall-integration";
 import WorkOrders from "@/pages/work-orders";
+import SecureFileManager from "@/components/secure-file-manager";
 import RightSidebar from "@/components/right-sidebar";
 import VideoCallModal from "@/components/video-call-modal";
 import EventModal from "@/components/event-modal";
@@ -53,7 +54,7 @@ export default function Dashboard() {
       case "phone":
         return <MightyCallIntegration />;
       case "files":
-        return <FilesView />;
+        return <SecureFileManager />;
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
     }
