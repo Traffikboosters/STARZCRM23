@@ -37,9 +37,50 @@ export const contacts = pgTable("contacts", {
   tags: text("tags").array(),
   notes: text("notes"),
   leadStatus: text("lead_status").default("new"), // new, contacted, qualified, proposal, closed_won, closed_lost
+  leadSource: text("lead_source"), // website, referral, cold_call, social_media, email, event
+  disposition: text("disposition"), // interested, not_interested, callback, do_not_call, wrong_number, busy
+  priority: text("priority").default("medium"), // low, medium, high, urgent
+  budget: integer("budget"), // in cents
+  timeline: text("timeline"), // immediate, 1_month, 3_months, 6_months, 1_year, unknown
   lastContactedAt: timestamp("last_contacted_at"),
+  nextFollowUpAt: timestamp("next_follow_up_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   createdBy: integer("created_by").references(() => users.id),
+});
+
+export const contactNotes = pgTable("contact_notes", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  type: text("type").notNull(), // call, meeting, email, text, other
+  subject: text("subject"),
+  content: text("content").notNull(),
+  disposition: text("disposition"), // outcome of this interaction
+  nextAction: text("next_action"), // what to do next
+  followUpDate: timestamp("follow_up_date"),
+  duration: integer("duration"), // in minutes for calls/meetings
+  isPrivate: boolean("is_private").default(false),
+  attachments: text("attachments").array(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const leadIntakes = pgTable("lead_intakes", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  qualification: text("qualification").notNull(), // qualified, unqualified, needs_nurturing
+  budget: integer("budget"), // in cents
+  authority: text("authority"), // decision_maker, influencer, end_user, unknown
+  need: text("need").notNull(), // urgency and specific needs
+  timeline: text("timeline"), // when they need solution
+  currentSolution: text("current_solution"),
+  competitors: text("competitors").array(),
+  objections: text("objections").array(),
+  interests: text("interests").array(),
+  painPoints: text("pain_points").array(),
+  score: integer("score"), // lead score 1-100
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const events = pgTable("events", {
@@ -172,6 +213,61 @@ export const leadAllocations = pgTable("lead_allocations", {
   completedAt: timestamp("completed_at"),
 });
 
+export const invoices = pgTable("invoices", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  amount: integer("amount").notNull(), // in cents
+  currency: text("currency").default("usd"),
+  status: text("status").default("pending"), // pending, paid, overdue, cancelled
+  description: text("description").notNull(),
+  dueDate: timestamp("due_date").notNull(),
+  paidAt: timestamp("paid_at"),
+  stripeInvoiceId: text("stripe_invoice_id"),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const subscriptions = pgTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  stripeSubscriptionId: text("stripe_subscription_id").unique(),
+  stripeCustomerId: text("stripe_customer_id"),
+  planName: text("plan_name").notNull(),
+  amount: integer("amount").notNull(), // in cents
+  currency: text("currency").default("usd"),
+  interval: text("interval").notNull(), // monthly, quarterly, yearly
+  status: text("status").default("active"), // active, cancelled, past_due, incomplete
+  currentPeriodStart: timestamp("current_period_start"),
+  currentPeriodEnd: timestamp("current_period_end"),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").default(false),
+  trialEnd: timestamp("trial_end"),
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const paymentMethods = pgTable("payment_methods", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  stripePaymentMethodId: text("stripe_payment_method_id").unique(),
+  type: text("type").notNull(), // card, bank_account, etc
+  brand: text("brand"), // visa, mastercard, etc
+  last4: text("last4"),
+  expMonth: integer("exp_month"),
+  expYear: integer("exp_year"),
+  isDefault: boolean("is_default").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertContactNoteSchema = createInsertSchema(contactNotes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertLeadIntakeSchema = createInsertSchema(leadIntakes).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertCallLogSchema = createInsertSchema(callLogs).omit({
   id: true,
   createdAt: true,
@@ -192,6 +288,28 @@ export const insertLeadAllocationSchema = createInsertSchema(leadAllocations).om
   id: true,
   assignedAt: true,
   completedAt: true,
+});
+
+export const insertInvoiceSchema = createInsertSchema(invoices).omit({
+  id: true,
+  createdAt: true,
+  paidAt: true,
+  stripeInvoiceId: true,
+});
+
+export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
+  id: true,
+  createdAt: true,
+  stripeSubscriptionId: true,
+  stripeCustomerId: true,
+  currentPeriodStart: true,
+  currentPeriodEnd: true,
+});
+
+export const insertPaymentMethodSchema = createInsertSchema(paymentMethods).omit({
+  id: true,
+  createdAt: true,
+  stripePaymentMethodId: true,
 });
 
 // Insert schemas
@@ -257,6 +375,10 @@ export type Company = typeof companies.$inferSelect;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
 export type Contact = typeof contacts.$inferSelect;
 export type InsertContact = z.infer<typeof insertContactSchema>;
+export type ContactNote = typeof contactNotes.$inferSelect;
+export type InsertContactNote = z.infer<typeof insertContactNoteSchema>;
+export type LeadIntake = typeof leadIntakes.$inferSelect;
+export type InsertLeadIntake = z.infer<typeof insertLeadIntakeSchema>;
 export type Event = typeof events.$inferSelect;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type File = typeof files.$inferSelect;
@@ -278,3 +400,10 @@ export type InsertCampaign = z.infer<typeof insertCampaignSchema>;
 
 export type LeadAllocation = typeof leadAllocations.$inferSelect;
 export type InsertLeadAllocation = z.infer<typeof insertLeadAllocationSchema>;
+
+export type Invoice = typeof invoices.$inferSelect;
+export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
+export type PaymentMethod = typeof paymentMethods.$inferSelect;
+export type InsertPaymentMethod = z.infer<typeof insertPaymentMethodSchema>;

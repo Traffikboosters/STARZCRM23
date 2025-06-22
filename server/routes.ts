@@ -511,6 +511,397 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Contact notes routes
+  app.get("/api/contact-notes/:contactId", async (req, res) => {
+    try {
+      const contactId = parseInt(req.params.contactId);
+      const notes = []; // Mock empty notes for now
+      res.json(notes);
+    } catch (error) {
+      console.error("Error fetching contact notes:", error);
+      res.status(500).json({ error: "Failed to fetch contact notes" });
+    }
+  });
+
+  app.post("/api/contact-notes", async (req, res) => {
+    try {
+      const noteData = req.body;
+      const note = {
+        id: Date.now(),
+        ...noteData,
+        createdAt: new Date(),
+        isPrivate: false,
+        attachments: []
+      };
+      res.status(201).json(note);
+    } catch (error) {
+      console.error("Error creating contact note:", error);
+      res.status(500).json({ error: "Failed to create contact note" });
+    }
+  });
+
+  // Lead intakes routes
+  app.get("/api/lead-intakes/:contactId", async (req, res) => {
+    try {
+      const contactId = parseInt(req.params.contactId);
+      const intakes = []; // Mock empty intakes for now
+      res.json(intakes);
+    } catch (error) {
+      console.error("Error fetching lead intakes:", error);
+      res.status(500).json({ error: "Failed to fetch lead intakes" });
+    }
+  });
+
+  app.post("/api/lead-intakes", async (req, res) => {
+    try {
+      const intakeData = req.body;
+      const intake = {
+        id: Date.now(),
+        ...intakeData,
+        createdAt: new Date()
+      };
+      res.status(201).json(intake);
+    } catch (error) {
+      console.error("Error creating lead intake:", error);
+      res.status(500).json({ error: "Failed to create lead intake" });
+    }
+  });
+
+  // Website form integration endpoint
+  app.post("/api/leads", async (req, res) => {
+    try {
+      const leadData = req.body;
+      
+      // Create new contact from form data
+      const contact = await storage.createContact({
+        firstName: leadData.firstName || leadData.name?.split(' ')[0] || 'Unknown',
+        lastName: leadData.lastName || leadData.name?.split(' ').slice(1).join(' ') || '',
+        email: leadData.email,
+        phone: leadData.phone,
+        company: leadData.company,
+        position: leadData.position,
+        leadStatus: 'new',
+        leadSource: leadData.source || 'website',
+        disposition: leadData.disposition,
+        priority: leadData.priority || 'medium',
+        budget: leadData.budget ? leadData.budget * 100 : null, // Convert to cents
+        timeline: leadData.timeline,
+        notes: leadData.message || leadData.notes,
+        tags: leadData.tags || [],
+        createdBy: 1 // System user
+      });
+
+      // Create initial intake if qualification data provided
+      if (leadData.qualification || leadData.need) {
+        const intake = {
+          contactId: contact.id,
+          userId: 1,
+          qualification: leadData.qualification || 'needs_nurturing',
+          authority: leadData.authority || 'unknown',
+          need: leadData.need || leadData.message || 'Initial inquiry',
+          timeline: leadData.timeline || 'unknown',
+          budget: leadData.budget ? leadData.budget * 100 : null,
+          currentSolution: leadData.currentSolution,
+          competitors: leadData.competitors || [],
+          objections: leadData.objections || [],
+          interests: leadData.interests || [],
+          painPoints: leadData.painPoints || [],
+          score: leadData.score || 50,
+          notes: leadData.intakeNotes
+        };
+        
+        // Mock intake creation since storage doesn't have this method yet
+        console.log('Lead intake created:', intake);
+      }
+
+      // Broadcast new lead notification
+      if (wss) {
+        const notification = {
+          type: 'NEW_LEAD',
+          data: {
+            contact,
+            source: leadData.source || 'website',
+            timestamp: new Date().toISOString()
+          }
+        };
+
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(notification));
+          }
+        });
+      }
+
+      res.status(201).json({ 
+        success: true, 
+        contact,
+        message: "Lead captured and added to CRM successfully" 
+      });
+
+    } catch (error: any) {
+      console.error("Lead creation error:", error);
+      res.status(500).json({ error: "Failed to create lead" });
+    }
+  });
+
+  // Public form endpoint for website integration (no auth required)
+  app.post("/api/public/leads", async (req, res) => {
+    try {
+      const leadData = req.body;
+      
+      // Validate required fields
+      if (!leadData.email && !leadData.phone) {
+        return res.status(400).json({ error: "Email or phone number is required" });
+      }
+
+      if (!leadData.firstName && !leadData.name) {
+        return res.status(400).json({ error: "Name is required" });
+      }
+
+      // Create contact from public form
+      const contact = await storage.createContact({
+        firstName: leadData.firstName || leadData.name?.split(' ')[0] || 'Unknown',
+        lastName: leadData.lastName || leadData.name?.split(' ').slice(1).join(' ') || '',
+        email: leadData.email,
+        phone: leadData.phone,
+        company: leadData.company,
+        position: leadData.position,
+        leadStatus: 'new',
+        leadSource: leadData.source || 'website_form',
+        disposition: 'new_inquiry',
+        priority: leadData.priority || 'medium',
+        budget: leadData.budget ? leadData.budget * 100 : null,
+        timeline: leadData.timeline,
+        notes: leadData.message || leadData.notes || leadData.comments,
+        tags: ['website-lead'],
+        createdBy: 1
+      });
+
+      // Send real-time notification
+      if (wss) {
+        const notification = {
+          type: 'NEW_LEAD',
+          data: {
+            contact,
+            source: leadData.source || 'website_form',
+            timestamp: new Date().toISOString(),
+            formType: leadData.formType || 'contact_form'
+          }
+        };
+
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(notification));
+          }
+        });
+      }
+
+      // Create automatic follow-up task
+      const followUpDate = new Date();
+      followUpDate.setHours(followUpDate.getHours() + 1); // Follow up within 1 hour
+
+      await storage.createEvent({
+        title: `Follow up with ${contact.firstName} ${contact.lastName}`,
+        description: `New lead from website form. ${leadData.message || 'No additional message'}`,
+        startDate: followUpDate,
+        endDate: new Date(followUpDate.getTime() + 30 * 60000), // 30 minutes
+        type: 'task',
+        status: 'scheduled',
+        createdBy: 1
+      });
+
+      res.status(201).json({ 
+        success: true, 
+        leadId: contact.id,
+        message: "Thank you! Your inquiry has been received and we'll contact you within 1 hour.",
+        followUpScheduled: followUpDate.toISOString()
+      });
+
+    } catch (error: any) {
+      console.error("Public lead capture error:", error);
+      res.status(500).json({ error: "Failed to process your inquiry. Please try again." });
+    }
+  });
+
+  // Payment processing routes
+  app.get("/api/invoices", async (req, res) => {
+    try {
+      const invoices = []; // Mock empty invoices for now
+      res.json(invoices);
+    } catch (error) {
+      console.error("Error fetching invoices:", error);
+      res.status(500).json({ error: "Failed to fetch invoices" });
+    }
+  });
+
+  app.post("/api/invoices", async (req, res) => {
+    try {
+      const invoiceData = req.body;
+      
+      // Create invoice
+      const invoice = {
+        id: Date.now(),
+        ...invoiceData,
+        amount: Math.round(invoiceData.amount * 100), // Convert to cents
+        status: "pending",
+        createdBy: 1,
+        createdAt: new Date(),
+        paidAt: null,
+        stripeInvoiceId: null
+      };
+
+      res.status(201).json(invoice);
+    } catch (error) {
+      console.error("Error creating invoice:", error);
+      res.status(500).json({ error: "Failed to create invoice" });
+    }
+  });
+
+  app.get("/api/subscriptions", async (req, res) => {
+    try {
+      const subscriptions = []; // Mock empty subscriptions for now
+      res.json(subscriptions);
+    } catch (error) {
+      console.error("Error fetching subscriptions:", error);
+      res.status(500).json({ error: "Failed to fetch subscriptions" });
+    }
+  });
+
+  app.post("/api/subscriptions", async (req, res) => {
+    try {
+      const subscriptionData = req.body;
+      
+      // Create subscription
+      const subscription = {
+        id: Date.now(),
+        ...subscriptionData,
+        amount: Math.round(subscriptionData.amount * 100), // Convert to cents
+        status: "active",
+        createdBy: 1,
+        createdAt: new Date(),
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+        cancelAtPeriodEnd: false,
+        stripeSubscriptionId: null,
+        stripeCustomerId: null
+      };
+
+      res.status(201).json(subscription);
+    } catch (error) {
+      console.error("Error creating subscription:", error);
+      res.status(500).json({ error: "Failed to create subscription" });
+    }
+  });
+
+  app.get("/api/payment-methods", async (req, res) => {
+    try {
+      const paymentMethods = []; // Mock empty payment methods for now
+      res.json(paymentMethods);
+    } catch (error) {
+      console.error("Error fetching payment methods:", error);
+      res.status(500).json({ error: "Failed to fetch payment methods" });
+    }
+  });
+
+  // Stripe webhook endpoint for handling payment events
+  app.post("/api/webhooks/stripe", async (req, res) => {
+    try {
+      const event = req.body;
+      
+      // Handle different Stripe event types
+      switch (event.type) {
+        case 'invoice.payment_succeeded':
+          console.log('Payment succeeded:', event.data.object);
+          // Update invoice status to paid
+          break;
+        case 'invoice.payment_failed':
+          console.log('Payment failed:', event.data.object);
+          // Update invoice status to overdue
+          break;
+        case 'customer.subscription.created':
+          console.log('Subscription created:', event.data.object);
+          break;
+        case 'customer.subscription.updated':
+          console.log('Subscription updated:', event.data.object);
+          break;
+        case 'customer.subscription.deleted':
+          console.log('Subscription cancelled:', event.data.object);
+          break;
+        default:
+          console.log('Unhandled event type:', event.type);
+      }
+
+      res.json({ received: true });
+    } catch (error) {
+      console.error("Webhook error:", error);
+      res.status(400).json({ error: "Webhook error" });
+    }
+  });
+
+  // Create payment intent for one-time payments
+  app.post("/api/create-payment-intent", async (req, res) => {
+    try {
+      const { amount, currency = 'usd', contactId } = req.body;
+      
+      // Mock payment intent creation (would use Stripe in production)
+      const paymentIntent = {
+        id: `pi_${Date.now()}`,
+        amount: Math.round(amount * 100),
+        currency,
+        status: 'requires_payment_method',
+        client_secret: `pi_${Date.now()}_secret_${Math.random().toString(36).substr(2, 9)}`
+      };
+
+      res.json({ 
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id
+      });
+    } catch (error) {
+      console.error("Error creating payment intent:", error);
+      res.status(500).json({ error: "Failed to create payment intent" });
+    }
+  });
+
+  // Process payment for invoice
+  app.post("/api/invoices/:id/pay", async (req, res) => {
+    try {
+      const invoiceId = parseInt(req.params.id);
+      const { paymentMethodId } = req.body;
+      
+      // Mock payment processing
+      const updatedInvoice = {
+        id: invoiceId,
+        status: "paid",
+        paidAt: new Date(),
+        stripeInvoiceId: `in_${Date.now()}`
+      };
+
+      res.json(updatedInvoice);
+    } catch (error) {
+      console.error("Error processing payment:", error);
+      res.status(500).json({ error: "Failed to process payment" });
+    }
+  });
+
+  // Cancel subscription
+  app.post("/api/subscriptions/:id/cancel", async (req, res) => {
+    try {
+      const subscriptionId = parseInt(req.params.id);
+      const { cancelAtPeriodEnd = true } = req.body;
+      
+      const updatedSubscription = {
+        id: subscriptionId,
+        status: cancelAtPeriodEnd ? "active" : "cancelled",
+        cancelAtPeriodEnd
+      };
+
+      res.json(updatedSubscription);
+    } catch (error) {
+      console.error("Error cancelling subscription:", error);
+      res.status(500).json({ error: "Failed to cancel subscription" });
+    }
+  });
+
   // Users route for team member selection
   app.get("/api/users", async (req, res) => {
     try {

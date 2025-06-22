@@ -8,6 +8,7 @@ import AnalyticsView from "@/components/analytics-view";
 import FilesView from "@/components/files-view";
 import DataScrapingView from "@/components/data-scraping-view";
 import AutomationsView from "@/components/automations-view";
+import PaymentIntegration from "@/components/payment-integration";
 import RightSidebar from "@/components/right-sidebar";
 import VideoCallModal from "@/components/video-call-modal";
 import EventModal from "@/components/event-modal";
@@ -41,6 +42,8 @@ export default function Dashboard() {
         return <DataScrapingView />;
       case "automations":
         return <AutomationsView />;
+      case "payments":
+        return <PaymentIntegration />;
       case "files":
         return <FilesView />;
       default:

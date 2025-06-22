@@ -1,12 +1,31 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, Plus, Phone, Mail, MoreHorizontal, Filter, MessageCircle } from "lucide-react";
+import { 
+  Search, 
+  Plus, 
+  Phone, 
+  Mail, 
+  MoreHorizontal, 
+  Filter, 
+  MessageCircle,
+  Eye,
+  Star,
+  AlertCircle,
+  DollarSign,
+  Clock,
+  Globe,
+  FileText,
+  User
+} from "lucide-react";
 import ChatWidget from "./chat-widget";
+import ContactDetailsModal from "./contact-details-modal";
+import WebsiteFormIntegration from "./website-form-integration";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +45,9 @@ export default function CRMView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [selectedContactForDetails, setSelectedContactForDetails] = useState<Contact | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("contacts");
 
   const { data: contacts = [], isLoading } = useQuery<Contact[]>({
     queryKey: ['/api/contacts'],
