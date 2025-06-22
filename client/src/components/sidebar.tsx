@@ -94,16 +94,19 @@ export default function Sidebar({
 
         {/* Collapsed Logo with Slogan */}
         {isCollapsed && (
-          <div className="mb-6 text-center">
+          <div className="mb-4 text-center px-1">
             <img 
               src={traffikBoostersLogo} 
               alt="Traffik Boosters" 
-              className="w-10 h-auto mx-auto object-contain mb-2"
+              className="w-8 h-auto mx-auto object-contain mb-1"
               style={{ imageRendering: 'crisp-edges' }}
             />
-            <p className="text-[10px] font-bold text-black tracking-tight leading-tight px-1">
-              More Traffik!<br />More Sales!
-            </p>
+            <div className="text-[7px] font-bold text-black leading-tight">
+              <div>More</div>
+              <div>Traffik!</div>
+              <div>More</div>
+              <div>Sales!</div>
+            </div>
           </div>
         )}
         
