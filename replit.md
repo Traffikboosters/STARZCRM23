@@ -128,6 +128,7 @@ The application uses a comprehensive schema including:
 - June 22, 2025. Implemented full white-label branding with larger Traffik Boosters logo and "More Traffik! More Sales!" slogan
 - June 22, 2025. Enhanced header and sidebar with prominent Traffik Boosters branding for complete white-label CRM experience
 - June 22, 2025. Updated platform name to "Starz" while maintaining Traffik Boosters logo and slogan for complete white-label implementation
+- June 22, 2025. Clarified that Starz is an internal business management system for Traffik Boosters operations, not a commercial product
 
 ## User Preferences
 
