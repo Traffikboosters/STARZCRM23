@@ -34,7 +34,7 @@ export default function Header() {
           <img 
             src={traffikBoostersLogo} 
             alt="Traffik Boosters" 
-            className="h-16 w-auto"
+            className="h-24 w-auto"
           />
           <div>
             <h1 className="text-2xl font-bold text-brand-primary">
