@@ -37,10 +37,10 @@ export default function Header() {
             className="h-24 w-auto"
           />
           <div>
-            <h1 className="text-2xl font-bold text-brand-primary">
+            <h1 className="text-2xl font-bold text-black">
               Starz
             </h1>
-            <p className="text-lg font-bold text-brand-secondary">
+            <p className="text-lg font-bold text-black">
               More Traffik! More Sales!
             </p>
           </div>
