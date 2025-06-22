@@ -23,6 +23,7 @@ import {
   Users,
   Zap
 } from "lucide-react";
+import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 
 const scrapedLeads = [
   {
@@ -165,11 +166,18 @@ export default function CRMIntegrationDemo() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">CRM Integration Workflow</h2>
-          <p className="text-muted-foreground">
-            Watch how scraped leads automatically flow into your sales pipeline
-          </p>
+        <div className="flex items-center gap-4">
+          <img 
+            src={traffikBoostersLogo} 
+            alt="Traffik Boosters" 
+            className="h-10 w-auto"
+          />
+          <div>
+            <h2 className="text-2xl font-bold">CRM Integration Workflow</h2>
+            <p className="text-muted-foreground">
+              Watch how scraped leads automatically flow into your sales pipeline
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="px-3 py-1">

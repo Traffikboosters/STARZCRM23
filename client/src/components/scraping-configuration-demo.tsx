@@ -27,6 +27,7 @@ import {
   Mail,
   DollarSign
 } from "lucide-react";
+import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 
 const scrapingTemplates = [
   {
@@ -174,11 +175,18 @@ export default function ScrapingConfigurationDemo() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Lead Generation Configuration</h2>
-          <p className="text-muted-foreground">
-            Set up automated data collection and lead processing workflows
-          </p>
+        <div className="flex items-center gap-4">
+          <img 
+            src={traffikBoostersLogo} 
+            alt="Traffik Boosters" 
+            className="h-10 w-auto"
+          />
+          <div>
+            <h2 className="text-2xl font-bold">Lead Generation Configuration</h2>
+            <p className="text-muted-foreground">
+              Set up automated data collection and lead processing workflows
+            </p>
+          </div>
         </div>
         <Button 
           onClick={handleStartScraping} 

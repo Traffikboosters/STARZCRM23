@@ -108,6 +108,7 @@ The application uses a comprehensive schema including:
 
 ## Changelog
 - June 22, 2025. Initial setup
+- June 22, 2025. Added Traffik Boosters company logo to CRM and scraping configuration interfaces for consistent branding
 
 ## User Preferences
 
