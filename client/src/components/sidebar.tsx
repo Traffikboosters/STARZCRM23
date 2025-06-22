@@ -57,9 +57,9 @@ export default function Sidebar({
           <img 
             src={traffikBoostersLogo} 
             alt="Traffik Boosters" 
-            className="w-32 h-auto mx-auto mb-2"
+            className="w-40 h-auto mx-auto mb-3"
           />
-          <p className="text-xs font-semibold text-brand-primary tracking-wide">
+          <p className="text-sm font-bold text-brand-primary tracking-wide">
             More Traffik! More Sales!
           </p>
         </div>

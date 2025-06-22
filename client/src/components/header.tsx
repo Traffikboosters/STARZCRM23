@@ -34,13 +34,13 @@ export default function Header() {
           <img 
             src={traffikBoostersLogo} 
             alt="Traffik Boosters" 
-            className="h-12 w-auto"
+            className="h-16 w-auto"
           />
           <div>
-            <h1 className="text-xl font-semibold text-brand-primary">
+            <h1 className="text-2xl font-bold text-brand-primary">
               Traffik Boosters CRM
             </h1>
-            <p className="text-sm font-medium text-brand-secondary">
+            <p className="text-lg font-bold text-brand-secondary">
               More Traffik! More Sales!
             </p>
           </div>
