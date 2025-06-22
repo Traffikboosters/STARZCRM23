@@ -14,6 +14,7 @@ import LegalDocumentsView from "@/components/legal-documents-view";
 import MightyCallIntegration from "@/components/mightycall-integration";
 import WorkOrders from "@/pages/work-orders";
 import SecureFileManager from "@/components/secure-file-manager";
+import ChatWidget from "@/components/chat-widget";
 import RightSidebar from "@/components/right-sidebar";
 import VideoCallModal from "@/components/video-call-modal";
 import EventModal from "@/components/event-modal";
@@ -55,6 +56,8 @@ export default function Dashboard() {
         return <MightyCallIntegration />;
       case "files":
         return <SecureFileManager />;
+      case "chat":
+        return <ChatWidget />;
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
     }

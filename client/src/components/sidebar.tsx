@@ -12,7 +12,9 @@ import {
   Target,
   CreditCard,
   FileText,
-  Phone
+  Phone,
+  MessageCircle,
+  Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -41,7 +43,8 @@ export default function Sidebar({
     { id: "legal", label: "Work Orders", icon: FileText },
     { id: "scraping", label: "Data Scraping", icon: Worm },
     { id: "automations", label: "Automations", icon: ServerCog },
-    { id: "files", label: "Files", icon: Folder },
+    { id: "files", label: "Secure Files", icon: Shield },
+    { id: "chat", label: "Chat Widget", icon: MessageCircle },
   ];
 
   return (
