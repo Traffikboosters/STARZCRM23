@@ -28,8 +28,8 @@ export default function Header() {
 
   return (
     <header className="bg-white border-b border-neutral-lighter px-6 py-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+      <div className="flex items-center justify-between gap-6">
+        <div className="flex items-center space-x-4 flex-shrink-0">
           {/* Traffik Boosters Logo */}
           <img 
             src={traffikBoostersLogo} 
@@ -37,7 +37,7 @@ export default function Header() {
             className="h-32 w-auto object-contain"
             style={{ imageRendering: 'crisp-edges' }}
           />
-          <div className="min-w-0 flex-shrink-0">
+          <div className="min-w-max">
             <h1 className="text-2xl font-bold text-black whitespace-nowrap">
               Starz
             </h1>
@@ -47,15 +47,15 @@ export default function Header() {
           </div>
         </div>
         
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 flex-shrink min-w-0">
           {/* Search functionality */}
-          <div className="relative">
+          <div className="relative flex-shrink min-w-0">
             <Input
               type="text"
               placeholder="Search contacts, events..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-64 pl-10"
+              className="w-48 pl-10"
             />
             <Search className="absolute left-3 top-3 h-4 w-4 text-neutral-light" />
           </div>
