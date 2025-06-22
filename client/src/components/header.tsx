@@ -38,7 +38,7 @@ export default function Header() {
           />
           <div>
             <h1 className="text-2xl font-bold text-brand-primary">
-              Traffik Boosters CRM
+              Starz
             </h1>
             <p className="text-lg font-bold text-brand-secondary">
               More Traffik! More Sales!
