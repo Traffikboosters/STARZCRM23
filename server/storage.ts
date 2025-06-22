@@ -1,12 +1,13 @@
 import { 
   users, contacts, events, files, automations, scrapingJobs, companies, chatMessages, chatConversations,
-  callLogs, campaigns, leadAllocations,
+  callLogs, campaigns, leadAllocations, documentTemplates, signingRequests,
   type User, type InsertUser, type Contact, type InsertContact,
   type Event, type InsertEvent, type File, type InsertFile,
   type Automation, type InsertAutomation, type ScrapingJob, type InsertScrapingJob,
   type Company, type InsertCompany, type ChatMessage, type InsertChatMessage,
   type ChatConversation, type InsertChatConversation, type CallLog, type InsertCallLog,
-  type Campaign, type InsertCampaign, type LeadAllocation, type InsertLeadAllocation
+  type Campaign, type InsertCampaign, type LeadAllocation, type InsertLeadAllocation,
+  type DocumentTemplate, type InsertDocumentTemplate, type SigningRequest, type InsertSigningRequest
 } from "@shared/schema";
 
 export interface IStorage {
@@ -99,6 +100,21 @@ export interface IStorage {
   createLeadAllocation(allocation: InsertLeadAllocation): Promise<LeadAllocation>;
   updateLeadAllocation(id: number, updates: Partial<InsertLeadAllocation>): Promise<LeadAllocation | undefined>;
   deleteLeadAllocation(id: number): Promise<boolean>;
+  
+  // Document Templates
+  getAllDocumentTemplates(): Promise<DocumentTemplate[]>;
+  getDocumentTemplate(id: number): Promise<DocumentTemplate | undefined>;
+  createDocumentTemplate(template: InsertDocumentTemplate & { createdBy: number }): Promise<DocumentTemplate>;
+  updateDocumentTemplate(id: number, updates: Partial<InsertDocumentTemplate>): Promise<DocumentTemplate | undefined>;
+  deleteDocumentTemplate(id: number): Promise<boolean>;
+  
+  // Signing Requests
+  getAllSigningRequests(): Promise<SigningRequest[]>;
+  getSigningRequest(id: number): Promise<SigningRequest | undefined>;
+  getSigningRequestsByUser(userId: number): Promise<SigningRequest[]>;
+  createSigningRequest(request: InsertSigningRequest & { createdBy: number }): Promise<SigningRequest>;
+  updateSigningRequest(id: number, updates: Partial<InsertSigningRequest>): Promise<SigningRequest | undefined>;
+  deleteSigningRequest(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -114,6 +130,8 @@ export class MemStorage implements IStorage {
   private callLogs: Map<number, CallLog>;
   private campaigns: Map<number, Campaign>;
   private leadAllocations: Map<number, LeadAllocation>;
+  private documentTemplates: Map<number, DocumentTemplate>;
+  private signingRequests: Map<number, SigningRequest>;
   private currentUserId: number;
   private currentCompanyId: number;
   private currentContactId: number;
@@ -126,6 +144,8 @@ export class MemStorage implements IStorage {
   private currentCallLogId: number;
   private currentCampaignId: number;
   private currentLeadAllocationId: number;
+  private currentDocumentTemplateId: number;
+  private currentSigningRequestId: number;
 
   constructor() {
     this.users = new Map();
@@ -140,6 +160,8 @@ export class MemStorage implements IStorage {
     this.callLogs = new Map();
     this.campaigns = new Map();
     this.leadAllocations = new Map();
+    this.documentTemplates = new Map();
+    this.signingRequests = new Map();
     this.currentUserId = 1;
     this.currentCompanyId = 1;
     this.currentContactId = 1;
@@ -152,6 +174,8 @@ export class MemStorage implements IStorage {
     this.currentCallLogId = 1;
     this.currentCampaignId = 1;
     this.currentLeadAllocationId = 1;
+    this.currentDocumentTemplateId = 1;
+    this.currentSigningRequestId = 1;
 
     // Initialize with default admin user and company
     this.initializeDefaults();
@@ -185,6 +209,9 @@ export class MemStorage implements IStorage {
 
     // Initialize sample contacts with diverse lead sources
     this.initializeSampleContacts();
+    
+    // Initialize default document templates
+    this.initializeDocumentTemplates();
   }
 
   private initializeSampleContacts() {
@@ -405,6 +432,159 @@ export class MemStorage implements IStorage {
         nextFollowUpAt: Math.random() > 0.3 ? new Date(Date.now() + Math.random() * 14 * 24 * 60 * 60 * 1000) : null,
       };
       this.contacts.set(contact.id, contact);
+    });
+  }
+
+  private initializeDocumentTemplates() {
+    const defaultTemplates = [
+      {
+        name: "Service Agreement",
+        content: `SERVICE AGREEMENT
+
+This Service Agreement ("Agreement") is entered into on {{date}} between {{company_name}} ("Company") and {{client_name}} ("Client").
+
+SERVICES:
+Company agrees to provide the following services:
+{{service_description}}
+
+TERMS:
+- Service Period: {{service_period}}
+- Total Investment: {{amount}}
+- Payment Terms: {{payment_terms}}
+
+DELIVERABLES:
+{{deliverables}}
+
+By signing below, both parties agree to the terms outlined in this agreement.
+
+Company Representative: ___________________ Date: ___________
+{{company_name}}
+
+Client Signature: ________________________ Date: ___________
+{{client_name}}`,
+        variables: ["date", "company_name", "client_name", "service_description", "service_period", "amount", "payment_terms", "deliverables"],
+        category: "service_agreement",
+        createdBy: 1,
+        isPublic: true,
+        companyId: 1
+      },
+      {
+        name: "Development Contract",
+        content: `WEBSITE DEVELOPMENT CONTRACT
+
+This Development Contract is between {{company_name}} and {{client_name}} for website development services.
+
+PROJECT SCOPE:
+{{project_scope}}
+
+TIMELINE:
+- Project Start: {{start_date}}
+- Estimated Completion: {{completion_date}}
+- Total Investment: {{amount}}
+
+DELIVERABLES:
+- Custom website design
+- Responsive development
+- Content management system
+- {{additional_features}}
+
+PAYMENT SCHEDULE:
+{{payment_schedule}}
+
+TERMS & CONDITIONS:
+{{terms_conditions}}
+
+Signatures:
+Company: ___________________ Date: ___________
+Client: ____________________ Date: ___________`,
+        variables: ["company_name", "client_name", "project_scope", "start_date", "completion_date", "amount", "additional_features", "payment_schedule", "terms_conditions"],
+        category: "development",
+        createdBy: 1,
+        isPublic: true,
+        companyId: 1
+      },
+      {
+        name: "Non-Disclosure Agreement",
+        content: `NON-DISCLOSURE AGREEMENT
+
+This Non-Disclosure Agreement ("NDA") is entered into by {{company_name}} and {{client_name}}.
+
+CONFIDENTIAL INFORMATION:
+Both parties agree to protect confidential information including but not limited to:
+- Business strategies and plans
+- Technical specifications
+- Client lists and data
+- {{additional_confidential_items}}
+
+TERM:
+This agreement shall remain in effect for {{term_duration}}.
+
+OBLIGATIONS:
+- Information shall not be disclosed to third parties
+- Information shall only be used for the intended business purpose
+- Upon termination, all materials shall be returned
+
+Signatures:
+{{company_name}}: ___________________ Date: ___________
+{{client_name}}: ____________________ Date: ___________`,
+        variables: ["company_name", "client_name", "additional_confidential_items", "term_duration"],
+        category: "nda",
+        createdBy: 1,
+        isPublic: true,
+        companyId: 1
+      },
+      {
+        name: "Proposal Template",
+        content: `PROJECT PROPOSAL
+
+Prepared for: {{client_name}}
+Prepared by: {{company_name}}
+Date: {{date}}
+
+PROJECT OVERVIEW:
+{{project_overview}}
+
+OBJECTIVES:
+{{objectives}}
+
+STRATEGY:
+{{strategy}}
+
+DELIVERABLES:
+{{deliverables}}
+
+TIMELINE:
+{{timeline}}
+
+INVESTMENT:
+Total Project Investment: {{amount}}
+Payment Terms: {{payment_terms}}
+
+NEXT STEPS:
+{{next_steps}}
+
+We look forward to working with you on this exciting project.
+
+Authorized by:
+{{company_name}} Representative: ___________________ Date: ___________
+
+Client Approval:
+{{client_name}} Representative: ____________________ Date: ___________`,
+        variables: ["client_name", "company_name", "date", "project_overview", "objectives", "strategy", "deliverables", "timeline", "amount", "payment_terms", "next_steps"],
+        category: "proposal",
+        createdBy: 1,
+        isPublic: true,
+        companyId: 1
+      }
+    ];
+
+    defaultTemplates.forEach(templateData => {
+      const template: DocumentTemplate = {
+        ...templateData,
+        id: this.currentDocumentTemplateId++,
+        createdAt: new Date()
+      };
+      this.documentTemplates.set(template.id, template);
     });
   }
 
@@ -876,6 +1056,94 @@ export class MemStorage implements IStorage {
 
   async deleteLeadAllocation(id: number): Promise<boolean> {
     return this.leadAllocations.delete(id);
+  }
+
+  // Document Templates
+  async getAllDocumentTemplates(): Promise<DocumentTemplate[]> {
+    return Array.from(this.documentTemplates.values())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getDocumentTemplate(id: number): Promise<DocumentTemplate | undefined> {
+    return this.documentTemplates.get(id);
+  }
+
+  async createDocumentTemplate(insertTemplate: InsertDocumentTemplate & { createdBy: number }): Promise<DocumentTemplate> {
+    const template: DocumentTemplate = {
+      ...insertTemplate,
+      id: this.currentDocumentTemplateId++,
+      createdAt: new Date(),
+      isPublic: insertTemplate.isPublic ?? false,
+      companyId: insertTemplate.companyId ?? null,
+      variables: insertTemplate.variables ?? [],
+    };
+    this.documentTemplates.set(template.id, template);
+    return template;
+  }
+
+  async updateDocumentTemplate(id: number, updates: Partial<InsertDocumentTemplate>): Promise<DocumentTemplate | undefined> {
+    const template = this.documentTemplates.get(id);
+    if (!template) return undefined;
+    
+    const updatedTemplate: DocumentTemplate = { ...template, ...updates };
+    this.documentTemplates.set(id, updatedTemplate);
+    return updatedTemplate;
+  }
+
+  async deleteDocumentTemplate(id: number): Promise<boolean> {
+    return this.documentTemplates.delete(id);
+  }
+
+  // Signing Requests
+  async getAllSigningRequests(): Promise<SigningRequest[]> {
+    return Array.from(this.signingRequests.values())
+      .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+  }
+
+  async getSigningRequest(id: number): Promise<SigningRequest | undefined> {
+    return this.signingRequests.get(id);
+  }
+
+  async getSigningRequestsByUser(userId: number): Promise<SigningRequest[]> {
+    return Array.from(this.signingRequests.values())
+      .filter(request => request.createdBy === userId)
+      .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+  }
+
+  async createSigningRequest(insertRequest: InsertSigningRequest & { createdBy: number }): Promise<SigningRequest> {
+    const request: SigningRequest = {
+      ...insertRequest,
+      id: this.currentSigningRequestId++,
+      createdAt: new Date(),
+      status: insertRequest.status ?? "draft",
+      priority: insertRequest.priority ?? "medium",
+      customMessage: insertRequest.customMessage ?? null,
+      approveOmeId: insertRequest.approveOmeId ?? null,
+      signingUrl: insertRequest.signingUrl ?? null,
+      documentUrl: insertRequest.documentUrl ?? null,
+      sentAt: insertRequest.sentAt ?? null,
+      viewedAt: insertRequest.viewedAt ?? null,
+      signedAt: insertRequest.signedAt ?? null,
+      completedAt: insertRequest.completedAt ?? null,
+      expiresAt: insertRequest.expiresAt ?? null,
+      contactId: insertRequest.contactId ?? null,
+      templateId: insertRequest.templateId ?? null,
+    };
+    this.signingRequests.set(request.id, request);
+    return request;
+  }
+
+  async updateSigningRequest(id: number, updates: Partial<InsertSigningRequest>): Promise<SigningRequest | undefined> {
+    const request = this.signingRequests.get(id);
+    if (!request) return undefined;
+    
+    const updatedRequest: SigningRequest = { ...request, ...updates };
+    this.signingRequests.set(id, updatedRequest);
+    return updatedRequest;
+  }
+
+  async deleteSigningRequest(id: number): Promise<boolean> {
+    return this.signingRequests.delete(id);
   }
 }
 

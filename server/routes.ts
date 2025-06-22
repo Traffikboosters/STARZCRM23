@@ -1288,78 +1288,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Document Templates API routes
   app.get("/api/document-templates", async (req, res) => {
     try {
-      const templates = [
-        {
-          id: 1,
-          name: "Standard Work Order",
-          content: `
-**WORK ORDER AGREEMENT**
-
-**Service Provider:** {{companyName}}
-**Client:** {{customerName}}
-**Date:** {{currentDate}}
-
-**Project Description:**
-{{projectDescription}}
-
-**Scope of Work:**
-{{scopeOfWork}}
-
-**Total Amount:** ${{amount}}
-**Payment Terms:** {{paymentTerms}}
-**Due Date:** {{dueDate}}
-
-**Terms and Conditions:**
-{{termsAndConditions}}
-
-By signing below, both parties agree to the terms outlined in this work order.
-
-**Client Signature:** _________________ Date: _________
-**Service Provider:** _________________ Date: _________
-          `,
-          variables: ["companyName", "customerName", "currentDate", "projectDescription", "scopeOfWork", "amount", "paymentTerms", "dueDate", "termsAndConditions"],
-          category: "work_order",
-          createdAt: new Date(),
-          createdBy: 1,
-          isPublic: true,
-          companyId: 1
-        },
-        {
-          id: 2,
-          name: "Digital Marketing Contract",
-          content: `
-**DIGITAL MARKETING SERVICES AGREEMENT**
-
-**Company:** {{companyName}}
-**Client:** {{customerName}}
-**Project:** {{projectName}}
-
-**Services Included:**
-- Social Media Management
-- Content Creation
-- Ad Campaign Management
-- Monthly Analytics Reports
-
-**Duration:** {{duration}}
-**Monthly Fee:** ${{monthlyAmount}}
-**Setup Fee:** ${{setupFee}}
-
-**Payment Schedule:** {{paymentSchedule}}
-
-This agreement is effective from {{startDate}} to {{endDate}}.
-
-**Authorization:**
-Client Signature: _________________ Date: _________
-          `,
-          variables: ["companyName", "customerName", "projectName", "duration", "monthlyAmount", "setupFee", "paymentSchedule", "startDate", "endDate"],
-          category: "contract",
-          createdAt: new Date(),
-          createdBy: 1,
-          isPublic: false,
-          companyId: 1
-        }
-      ];
-      
+      const templates = await storage.getAllDocumentTemplates();
       res.json(templates);
     } catch (error) {
       console.error("Error fetching templates:", error);
@@ -1370,19 +1299,57 @@ Client Signature: _________________ Date: _________
   app.post("/api/document-templates", async (req, res) => {
     try {
       const templateData = req.body;
-      
-      const template = {
-        id: Date.now(),
+      const template = await storage.createDocumentTemplate({
         ...templateData,
-        createdAt: new Date(),
-        createdBy: 1, // Current user ID
-        companyId: 1 // Current company ID
-      };
-
+        createdBy: 1 // TODO: Use actual user ID from session
+      });
       res.status(201).json(template);
     } catch (error) {
       console.error("Error creating template:", error);
       res.status(500).json({ error: "Failed to create template" });
+    }
+  });
+
+  app.get("/api/document-templates/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const template = await storage.getDocumentTemplate(id);
+      if (!template) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      res.json(template);
+    } catch (error) {
+      console.error("Error fetching document template:", error);
+      res.status(500).json({ message: "Failed to retrieve template" });
+    }
+  });
+
+  app.put("/api/document-templates/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const template = await storage.updateDocumentTemplate(id, updates);
+      if (!template) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      res.json(template);
+    } catch (error) {
+      console.error("Error updating document template:", error);
+      res.status(500).json({ message: "Failed to update template" });
+    }
+  });
+
+  app.delete("/api/document-templates/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteDocumentTemplate(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Template not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting document template:", error);
+      res.status(500).json({ message: "Failed to delete template" });
     }
   });
 
