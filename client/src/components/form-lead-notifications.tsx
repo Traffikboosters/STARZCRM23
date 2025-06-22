@@ -200,11 +200,11 @@ export default function FormLeadNotifications() {
 
       {/* Live Status */}
       {isLiveMode && (
-        <Card className="border-green-200 bg-green-50">
+        <Card className="border-brand-accent bg-brand-lighter">
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <p className="text-sm text-green-800">
+              <div className="w-2 h-2 bg-brand-primary rounded-full animate-pulse" />
+              <p className="text-sm text-brand-secondary">
                 Live form monitoring active - New submissions will trigger audio notifications
               </p>
             </div>

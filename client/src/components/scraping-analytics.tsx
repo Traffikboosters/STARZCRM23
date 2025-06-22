@@ -86,7 +86,7 @@ export default function ScrapingAnalytics() {
   return (
     <div className="space-y-6">
       {/* Lead Notification Control */}
-      <Card className="border-blue-200 bg-blue-50">
+      <Card className="border-brand-primary bg-brand-lighter">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

@@ -109,6 +109,8 @@ The application uses a comprehensive schema including:
 ## Changelog
 - June 22, 2025. Initial setup
 - June 22, 2025. Added Traffik Boosters company logo to CRM and scraping configuration interfaces for consistent branding
+- June 22, 2025. Implemented comprehensive lead notification system with audio alerts and popup notifications for both scraping and form submissions
+- June 22, 2025. Applied Traffik Boosters color scheme throughout platform with orange/red brand colors (hsl(14, 88%, 55%) primary, hsl(29, 85%, 58%) accent)
 
 ## User Preferences
 
