@@ -1,6 +1,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AnalyticsView from "@/components/analytics-view";
 import ScrapingAnalytics from "@/components/scraping-analytics";
+import FormLeadNotifications from "@/components/form-lead-notifications";
+import LeadNotificationSettings from "@/components/lead-notification-settings";
 
 export default function AnalyticsPage() {
   return (
@@ -12,11 +14,23 @@ export default function AnalyticsPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="scraping" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="scraping">Lead Generation & Campaigns</TabsTrigger>
+      <Tabs defaultValue="notifications" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="notifications">Lead Notifications</TabsTrigger>
+          <TabsTrigger value="forms">Online Forms</TabsTrigger>
+          <TabsTrigger value="scraping">Lead Generation</TabsTrigger>
           <TabsTrigger value="business">Business Analytics</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="notifications">
+          <div className="space-y-6">
+            <LeadNotificationSettings />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="forms">
+          <FormLeadNotifications />
+        </TabsContent>
 
         <TabsContent value="scraping">
           <ScrapingAnalytics />

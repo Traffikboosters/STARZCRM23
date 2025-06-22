@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { Calendar, Target, TrendingUp, Users, Database, Mail, Phone, CheckCircle } from "lucide-react";
+import { Calendar, Target, TrendingUp, Users, Database, Mail, Phone, CheckCircle, Volume2, Bell } from "lucide-react";
 import WorkflowDemo from "./workflow-demo";
+import { useLeadNotifications } from "@/hooks/use-lead-notifications";
+import { useEffect, useState } from "react";
 
 const scrapingPerformanceData = [
   { name: 'Inc 5000', leads: 45, quality: 92, converted: 8 },
@@ -36,8 +38,102 @@ const leadSourceData = [
 ];
 
 export default function ScrapingAnalytics() {
+  const [isScrapingActive, setIsScrapingActive] = useState(false);
+  const [recentLeads, setRecentLeads] = useState<any[]>([]);
+
+  const {
+    handleIncomingLead,
+    simulateIncomingLead
+  } = useLeadNotifications({
+    enableSound: true,
+    soundVolume: 0.8,
+    notificationTypes: {
+      newLead: true,
+      highValueLead: true,
+      qualifiedLead: true,
+    }
+  });
+
+  // Simulate scraping leads
+  useEffect(() => {
+    if (!isScrapingActive) return;
+
+    const interval = setInterval(() => {
+      const businesses = [
+        "Oceanfront Bistro", "TechCorp Solutions", "Metro Fitness Center", 
+        "Downtown Legal Group", "Sunrise Dental Care", "Elite Auto Repair"
+      ];
+      const sources = ["Yelp", "Inc 5000", "LinkedIn", "Google Business"];
+      const priorities = ["Medium", "High", "Critical"] as const;
+
+      const newLead = {
+        id: Date.now(),
+        businessName: businesses[Math.floor(Math.random() * businesses.length)],
+        contactName: "Auto-Generated Contact",
+        source: sources[Math.floor(Math.random() * sources.length)],
+        priority: priorities[Math.floor(Math.random() * priorities.length)],
+        estimatedValue: Math.floor(Math.random() * 15000) + 2000,
+        timestamp: new Date()
+      };
+
+      setRecentLeads(prev => [newLead, ...prev.slice(0, 4)]);
+      handleIncomingLead(newLead);
+    }, 6000); // New lead every 6 seconds
+
+    return () => clearInterval(interval);
+  }, [isScrapingActive, handleIncomingLead]);
+
   return (
     <div className="space-y-6">
+      {/* Lead Notification Control */}
+      <Card className="border-blue-200 bg-blue-50">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`w-3 h-3 rounded-full ${isScrapingActive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+              <div>
+                <p className="font-medium">Lead Generation with Audio Notifications</p>
+                <p className="text-sm text-muted-foreground">
+                  {isScrapingActive ? 'Active scraping with popup notifications and sounds' : 'Start live demo to see notifications in action'}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={simulateIncomingLead}
+              >
+                <Bell className="w-3 h-3 mr-1" />
+                Test Notification
+              </Button>
+              <Button
+                variant={isScrapingActive ? "default" : "outline"}
+                size="sm"
+                onClick={() => setIsScrapingActive(!isScrapingActive)}
+              >
+                <Volume2 className="w-3 h-3 mr-1" />
+                {isScrapingActive ? 'Stop Demo' : 'Start Live Demo'}
+              </Button>
+            </div>
+          </div>
+          {recentLeads.length > 0 && (
+            <div className="mt-4 space-y-2">
+              <p className="text-sm font-medium">Recent Notifications:</p>
+              {recentLeads.map((lead, index) => (
+                <div key={lead.id} className="flex items-center justify-between text-xs p-2 bg-white rounded border">
+                  <span>{lead.businessName} ({lead.source})</span>
+                  <Badge className={`${lead.priority === 'Critical' ? 'bg-red-100 text-red-800' : 
+                    lead.priority === 'High' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'}`}>
+                    {lead.priority} - ${lead.estimatedValue.toLocaleString()}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Workflow Demo Section */}
       <div className="mb-8">
         <WorkflowDemo />
