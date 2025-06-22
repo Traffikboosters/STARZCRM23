@@ -98,14 +98,12 @@ export default function Sidebar({
             <img 
               src={traffikBoostersLogo} 
               alt="Traffik Boosters" 
-              className="w-8 h-auto mx-auto object-contain mb-1"
+              className="w-10 h-auto mx-auto object-contain mb-2"
               style={{ imageRendering: 'crisp-edges' }}
             />
-            <div className="text-[7px] font-bold text-black leading-tight">
-              <div>More</div>
-              <div>Traffik!</div>
-              <div>More</div>
-              <div>Sales!</div>
+            <div className="text-[9px] font-bold text-black leading-tight">
+              <div>More Traffik!</div>
+              <div>More Sales!</div>
             </div>
           </div>
         )}
