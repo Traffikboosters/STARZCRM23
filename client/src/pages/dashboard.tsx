@@ -6,7 +6,8 @@ import CRMView from "@/components/crm-view";
 import CampaignManagementView from "@/components/campaign-management-view";
 import ScrapingAnalytics from "@/components/scraping-analytics";
 import FilesView from "@/components/files-view";
-import DataScrapingView from "@/components/data-scraping-view";
+import ScrapingConfigurationDemo from "@/components/scraping-configuration-demo";
+import CRMIntegrationDemo from "@/components/crm-integration-demo";
 import AutomationsView from "@/components/automations-view";
 import PaymentIntegration from "@/components/payment-integration";
 import LegalDocumentsView from "@/components/legal-documents-view";
@@ -17,7 +18,7 @@ import LeadNotification from "@/components/lead-notification";
 import type { Contact } from "@shared/schema";
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState("analytics");
+  const [activeTab, setActiveTab] = useState("scraping");
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
@@ -32,7 +33,7 @@ export default function Dashboard() {
       case "calendar":
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
       case "crm":
-        return <CRMView />;
+        return <CRMIntegrationDemo />;
       case "campaigns":
         return <CampaignManagementView />;
       case "video":
@@ -40,7 +41,7 @@ export default function Dashboard() {
       case "analytics":
         return <ScrapingAnalytics />;
       case "scraping":
-        return <DataScrapingView />;
+        return <ScrapingConfigurationDemo />;
       case "automations":
         return <AutomationsView />;
       case "payments":
