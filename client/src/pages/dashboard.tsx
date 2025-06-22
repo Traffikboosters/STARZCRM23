@@ -12,6 +12,7 @@ import AutomationsView from "@/components/automations-view";
 import PaymentIntegration from "@/components/payment-integration";
 import LegalDocumentsView from "@/components/legal-documents-view";
 import MightyCallIntegration from "@/components/mightycall-integration";
+import WorkOrders from "@/pages/work-orders";
 import RightSidebar from "@/components/right-sidebar";
 import VideoCallModal from "@/components/video-call-modal";
 import EventModal from "@/components/event-modal";
@@ -48,7 +49,7 @@ export default function Dashboard() {
       case "payments":
         return <PaymentIntegration />;
       case "legal":
-        return <LegalDocumentsView />;
+        return <WorkOrders />;
       case "phone":
         return <MightyCallIntegration />;
       case "files":
