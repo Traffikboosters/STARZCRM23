@@ -11,7 +11,8 @@ import {
   VideoIcon,
   Target,
   CreditCard,
-  FileText
+  FileText,
+  Phone
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -36,6 +37,7 @@ export default function Sidebar({
     { id: "video", label: "Video Calls", icon: Video },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
     { id: "payments", label: "Payments", icon: CreditCard },
+    { id: "phone", label: "Phone System", icon: Phone },
     { id: "legal", label: "Work Orders", icon: FileText },
     { id: "scraping", label: "Data Scraping", icon: Worm },
     { id: "automations", label: "Automations", icon: ServerCog },

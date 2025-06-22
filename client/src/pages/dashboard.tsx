@@ -11,6 +11,7 @@ import CRMIntegrationDemo from "@/components/crm-integration-demo";
 import AutomationsView from "@/components/automations-view";
 import PaymentIntegration from "@/components/payment-integration";
 import LegalDocumentsView from "@/components/legal-documents-view";
+import MightyCallIntegration from "@/components/mightycall-integration";
 import RightSidebar from "@/components/right-sidebar";
 import VideoCallModal from "@/components/video-call-modal";
 import EventModal from "@/components/event-modal";
@@ -48,6 +49,8 @@ export default function Dashboard() {
         return <PaymentIntegration />;
       case "legal":
         return <LegalDocumentsView />;
+      case "phone":
+        return <MightyCallIntegration />;
       case "files":
         return <FilesView />;
       default:

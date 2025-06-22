@@ -353,6 +353,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // MightyCall integration routes
+  app.post("/api/mightycall/initiate-call", async (req, res) => {
+    try {
+      const { phoneNumber, contactName, apiKey, accountId } = req.body;
+      
+      if (!phoneNumber || !apiKey || !accountId) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // In production, this would make actual API call to MightyCall
+      // For now, simulate successful call initiation
+      const callLog = await storage.createCallLog({
+        contactId: null,
+        userId: 1, // Default user ID for demo
+        phoneNumber,
+        direction: "outbound",
+        status: "in_progress",
+        startTime: new Date(),
+        duration: null,
+        notes: `Call initiated via MightyCall to ${contactName || phoneNumber}`,
+        recording: null
+      });
+
+      res.json({ 
+        success: true, 
+        callId: callLog.id,
+        message: "Call initiated successfully" 
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error initiating call: " + error.message });
+    }
+  });
+
+  app.post("/api/mightycall/end-call", async (req, res) => {
+    try {
+      const { callId, duration } = req.body;
+      
+      if (!callId) {
+        return res.status(400).json({ message: "Call ID is required" });
+      }
+
+      const updatedCall = await storage.updateCallLog(callId, {
+        status: "completed",
+        duration: duration || 0,
+        endTime: new Date()
+      });
+
+      if (!updatedCall) {
+        return res.status(404).json({ message: "Call not found" });
+      }
+
+      res.json({ success: true, call: updatedCall });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error ending call: " + error.message });
+    }
+  });
+
+  app.get("/api/mightycall/call-history", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.sendStatus(401);
+      }
+
+      const userId = req.user.id;
+      const callLogs = await storage.getCallLogsByUser(userId);
+      res.json(callLogs);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error fetching call history: " + error.message });
+    }
+  });
+
   app.patch("/api/chat/conversations/:id", requireAuth, async (req, res) => {
     try {
       const id = parseInt(req.params.id);

@@ -503,6 +503,156 @@ export class MemStorage implements IStorage {
     this.chatConversations.set(id, updatedConversation);
     return updatedConversation;
   }
+
+  // Call Log methods
+  async getAllCallLogs(): Promise<CallLog[]> {
+    return Array.from(this.callLogs.values())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getCallLog(id: number): Promise<CallLog | undefined> {
+    return this.callLogs.get(id);
+  }
+
+  async getCallLogsByContact(contactId: number): Promise<CallLog[]> {
+    return Array.from(this.callLogs.values())
+      .filter(log => log.contactId === contactId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getCallLogsByUser(userId: number): Promise<CallLog[]> {
+    return Array.from(this.callLogs.values())
+      .filter(log => log.userId === userId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async createCallLog(insertCallLog: InsertCallLog): Promise<CallLog> {
+    const callLog: CallLog = {
+      ...insertCallLog,
+      id: this.currentCallLogId++,
+      createdAt: new Date(),
+      endedAt: insertCallLog.endedAt || null,
+      recordingUrl: insertCallLog.recordingUrl || null,
+    };
+    this.callLogs.set(callLog.id, callLog);
+    return callLog;
+  }
+
+  async updateCallLog(id: number, updates: Partial<InsertCallLog>): Promise<CallLog | undefined> {
+    const callLog = this.callLogs.get(id);
+    if (!callLog) return undefined;
+    
+    const updatedCallLog: CallLog = { ...callLog, ...updates };
+    this.callLogs.set(id, updatedCallLog);
+    return updatedCallLog;
+  }
+
+  async deleteCallLog(id: number): Promise<boolean> {
+    return this.callLogs.delete(id);
+  }
+
+  // Campaign methods
+  async getAllCampaigns(): Promise<Campaign[]> {
+    return Array.from(this.campaigns.values())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getCampaign(id: number): Promise<Campaign | undefined> {
+    return this.campaigns.get(id);
+  }
+
+  async getCampaignsByCreator(createdBy: number): Promise<Campaign[]> {
+    return Array.from(this.campaigns.values())
+      .filter(campaign => campaign.createdBy === createdBy)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getCampaignsByAssignee(assignedTo: number): Promise<Campaign[]> {
+    return Array.from(this.campaigns.values())
+      .filter(campaign => campaign.assignedTo === assignedTo)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async createCampaign(insertCampaign: InsertCampaign & { createdBy: number }): Promise<Campaign> {
+    const campaign: Campaign = {
+      ...insertCampaign,
+      id: this.currentCampaignId++,
+      createdAt: new Date(),
+      assignedTo: insertCampaign.assignedTo || null,
+      budget: insertCampaign.budget || null,
+      actualSpend: insertCampaign.actualSpend || null,
+      targetAudience: insertCampaign.targetAudience || null,
+      channels: insertCampaign.channels || null,
+      metrics: insertCampaign.metrics || null,
+    };
+    this.campaigns.set(campaign.id, campaign);
+    return campaign;
+  }
+
+  async updateCampaign(id: number, updates: Partial<InsertCampaign>): Promise<Campaign | undefined> {
+    const campaign = this.campaigns.get(id);
+    if (!campaign) return undefined;
+    
+    const updatedCampaign: Campaign = { ...campaign, ...updates };
+    this.campaigns.set(id, updatedCampaign);
+    return updatedCampaign;
+  }
+
+  async deleteCampaign(id: number): Promise<boolean> {
+    return this.campaigns.delete(id);
+  }
+
+  // Lead Allocation methods
+  async getAllLeadAllocations(): Promise<LeadAllocation[]> {
+    return Array.from(this.leadAllocations.values())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getLeadAllocation(id: number): Promise<LeadAllocation | undefined> {
+    return this.leadAllocations.get(id);
+  }
+
+  async getLeadAllocationsByContact(contactId: number): Promise<LeadAllocation[]> {
+    return Array.from(this.leadAllocations.values())
+      .filter(allocation => allocation.contactId === contactId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getLeadAllocationsByAssignee(assignedTo: number): Promise<LeadAllocation[]> {
+    return Array.from(this.leadAllocations.values())
+      .filter(allocation => allocation.assignedTo === assignedTo)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getLeadAllocationsByCampaign(campaignId: number): Promise<LeadAllocation[]> {
+    return Array.from(this.leadAllocations.values())
+      .filter(allocation => allocation.campaignId === campaignId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async createLeadAllocation(insertAllocation: InsertLeadAllocation): Promise<LeadAllocation> {
+    const allocation: LeadAllocation = {
+      ...insertAllocation,
+      id: this.currentLeadAllocationId++,
+      createdAt: new Date(),
+      notes: insertAllocation.notes || null,
+    };
+    this.leadAllocations.set(allocation.id, allocation);
+    return allocation;
+  }
+
+  async updateLeadAllocation(id: number, updates: Partial<InsertLeadAllocation>): Promise<LeadAllocation | undefined> {
+    const allocation = this.leadAllocations.get(id);
+    if (!allocation) return undefined;
+    
+    const updatedAllocation: LeadAllocation = { ...allocation, ...updates };
+    this.leadAllocations.set(id, updatedAllocation);
+    return updatedAllocation;
+  }
+
+  async deleteLeadAllocation(id: number): Promise<boolean> {
+    return this.leadAllocations.delete(id);
+  }
 }
 
 export const storage = new MemStorage();
