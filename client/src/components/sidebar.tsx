@@ -51,6 +51,18 @@ export default function Sidebar({
   return (
     <nav className="w-64 bg-white border-r border-neutral-lighter flex-shrink-0">
       <div className="p-4">
+        {/* Traffik Boosters Branding */}
+        <div className="mb-6 text-center">
+          <img 
+            src="/attached_assets/newTRAFIC BOOSTERS3 copy_1750608395971.png" 
+            alt="Traffik Boosters" 
+            className="w-32 h-auto mx-auto mb-2"
+          />
+          <p className="text-xs font-semibold text-brand-primary tracking-wide">
+            More Traffik! More Sales!
+          </p>
+        </div>
+        
         <div className="space-y-2">
           {navigationItems.map((item) => {
             const Icon = item.icon;

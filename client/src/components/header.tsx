@@ -29,25 +29,18 @@ export default function Header() {
     <header className="bg-white border-b border-neutral-lighter px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          {/* Company logo */}
-          <div 
-            className="w-10 h-10 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: company?.primaryColor || '#0078D4' }}
-          >
-            {company?.logo ? (
-              <img src={company.logo} alt={company.name} className="w-6 h-6" />
-            ) : (
-              <Calendar className="text-white text-lg" />
-            )}
-          </div>
+          {/* Traffik Boosters Logo */}
+          <img 
+            src="/attached_assets/newTRAFIC BOOSTERS3 copy_1750608395971.png" 
+            alt="Traffik Boosters" 
+            className="h-12 w-auto"
+          />
           <div>
-            <h1 className="text-xl font-semibold text-neutral-dark">
-              {company?.name || "Enterprise Scheduler Pro"}
+            <h1 className="text-xl font-semibold text-brand-primary">
+              Traffik Boosters CRM
             </h1>
-            <p className="text-xs text-neutral-medium">
-              {user?.role === "admin" ? "Administrator Dashboard" : 
-               user?.role === "manager" ? "Manager Dashboard" :
-               user?.role === "sales_rep" ? "Sales Dashboard" : "User Dashboard"}
+            <p className="text-sm font-medium text-brand-secondary">
+              More Traffik! More Sales!
             </p>
           </div>
         </div>
