@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search, Bell, ChevronDown, Calendar } from "lucide-react";
+import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -31,7 +32,7 @@ export default function Header() {
         <div className="flex items-center space-x-4">
           {/* Traffik Boosters Logo */}
           <img 
-            src="/attached_assets/newTRAFIC BOOSTERS3 copy_1750608395971.png" 
+            src={traffikBoostersLogo} 
             alt="Traffik Boosters" 
             className="h-12 w-auto"
           />

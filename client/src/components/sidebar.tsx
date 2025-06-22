@@ -16,6 +16,7 @@ import {
   MessageCircle,
   Shield
 } from "lucide-react";
+import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -54,7 +55,7 @@ export default function Sidebar({
         {/* Traffik Boosters Branding */}
         <div className="mb-6 text-center">
           <img 
-            src="/attached_assets/newTRAFIC BOOSTERS3 copy_1750608395971.png" 
+            src={traffikBoostersLogo} 
             alt="Traffik Boosters" 
             className="w-32 h-auto mx-auto mb-2"
           />
