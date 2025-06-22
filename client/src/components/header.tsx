@@ -34,7 +34,8 @@ export default function Header() {
           <img 
             src={traffikBoostersLogo} 
             alt="Traffik Boosters" 
-            className="h-24 w-auto"
+            className="h-32 w-auto object-contain"
+            style={{ imageRendering: 'crisp-edges' }}
           />
           <div>
             <h1 className="text-2xl font-bold text-black">

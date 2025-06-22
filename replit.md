@@ -132,6 +132,8 @@ The application uses a comprehensive schema including:
 - June 22, 2025. Enhanced logo visibility by increasing Traffik Boosters logo size in header (h-24) and sidebar (w-48) for better brand prominence
 - June 22, 2025. Updated Bark.com data decoder to focus exclusively on US market with American phone number formatting (+1 XXX-XXX-XXXX)
 - June 22, 2025. Implemented US-focused lead extraction targeting American businesses with state-based location tracking and US market lead valuations
+- June 22, 2025. Enhanced Traffik Boosters logo sizing and sharpness across header and sidebar with crisp-edges rendering for improved visual clarity
+- June 22, 2025. Updated CRM branding text colors to black for "Starz" title and "More Traffik! More Sales!" slogan for better readability
 
 ## User Preferences
 
