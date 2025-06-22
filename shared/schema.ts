@@ -37,7 +37,7 @@ export const contacts = pgTable("contacts", {
   tags: text("tags").array(),
   notes: text("notes"),
   leadStatus: text("lead_status").default("new"), // new, contacted, qualified, proposal, closed_won, closed_lost
-  leadSource: text("lead_source"), // website, referral, cold_call, social_media, email, event
+  leadSource: text("lead_source"), // yelp, google_maps, google_ads, facebook, instagram, tiktok, linkedin, youtube, twitter, website, referral, cold_call, email, event, chat_widget
   disposition: text("disposition"), // interested, not_interested, callback, do_not_call, wrong_number, busy
   priority: text("priority").default("medium"), // low, medium, high, urgent
   budget: integer("budget"), // in cents

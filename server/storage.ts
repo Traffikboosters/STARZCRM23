@@ -182,6 +182,230 @@ export class MemStorage implements IStorage {
       createdAt: new Date(),
     };
     this.users.set(adminUser.id, adminUser);
+
+    // Initialize sample contacts with diverse lead sources
+    this.initializeSampleContacts();
+  }
+
+  private initializeSampleContacts() {
+    const sampleContacts = [
+      {
+        firstName: "Maria",
+        lastName: "Rodriguez",
+        email: "maria@bellacuisine.com",
+        phone: "+1-555-0101",
+        company: "Bella Cuisine Restaurant",
+        position: "Owner",
+        leadStatus: "qualified",
+        leadSource: "yelp",
+        disposition: "interested",
+        priority: "high",
+        budget: 500000, // $5,000
+        timeline: "1_month",
+        notes: "Found us through Yelp review. Needs help with digital marketing for new restaurant location.",
+        tags: ["restaurant", "high-value", "local-business"],
+        createdBy: 1
+      },
+      {
+        firstName: "David",
+        lastName: "Chen",
+        email: "david.chen@techstart.io",
+        phone: "+1-555-0102",
+        company: "TechStart Solutions",
+        position: "CEO",
+        leadStatus: "contacted",
+        leadSource: "google_maps",
+        disposition: "callback",
+        priority: "urgent",
+        budget: 1500000, // $15,000
+        timeline: "immediate",
+        notes: "Found our office on Google Maps. Looking for comprehensive digital marketing strategy.",
+        tags: ["tech-startup", "enterprise", "b2b"],
+        createdBy: 1
+      },
+      {
+        firstName: "Sarah",
+        lastName: "Johnson",
+        email: "sarah@boutiquestyle.com",
+        phone: "+1-555-0103",
+        company: "Boutique Style",
+        position: "Marketing Manager",
+        leadStatus: "new",
+        leadSource: "instagram",
+        disposition: "interested",
+        priority: "medium",
+        budget: 250000, // $2,500
+        timeline: "3_months",
+        notes: "Discovered us through Instagram ads. Fashion boutique looking to increase online presence.",
+        tags: ["fashion", "e-commerce", "social-media"],
+        createdBy: 1
+      },
+      {
+        firstName: "Michael",
+        lastName: "Thompson",
+        email: "mike@fitnessplus.com",
+        phone: "+1-555-0104",
+        company: "Fitness Plus Gym",
+        position: "General Manager",
+        leadStatus: "proposal",
+        leadSource: "tiktok",
+        disposition: "interested",
+        priority: "high",
+        budget: 800000, // $8,000
+        timeline: "1_month",
+        notes: "Saw our TikTok content about gym marketing. Wants to attract younger demographic.",
+        tags: ["fitness", "local-business", "gen-z-targeting"],
+        createdBy: 1
+      },
+      {
+        firstName: "Amanda",
+        lastName: "Davis",
+        email: "amanda@luxuryrealty.com",
+        phone: "+1-555-0105",
+        company: "Luxury Realty Group",
+        position: "Lead Agent",
+        leadStatus: "qualified",
+        leadSource: "facebook",
+        disposition: "interested",
+        priority: "high",
+        budget: 1200000, // $12,000
+        timeline: "immediate",
+        notes: "Connected through Facebook business network. High-end real estate agent needing lead generation.",
+        tags: ["real-estate", "luxury", "lead-generation"],
+        createdBy: 1
+      },
+      {
+        firstName: "Robert",
+        lastName: "Wilson",
+        email: "robert@wilsonlaw.com",
+        phone: "+1-555-0106",
+        company: "Wilson Law Firm",
+        position: "Partner",
+        leadStatus: "contacted",
+        leadSource: "linkedin",
+        disposition: "callback",
+        priority: "medium",
+        budget: 600000, // $6,000
+        timeline: "6_months",
+        notes: "LinkedIn connection. Law firm looking to expand digital presence and attract corporate clients.",
+        tags: ["legal", "professional-services", "b2b"],
+        createdBy: 1
+      },
+      {
+        firstName: "Jennifer",
+        lastName: "Martinez",
+        email: "jen@creativestudio.com",
+        phone: "+1-555-0107",
+        company: "Creative Studio",
+        position: "Creative Director",
+        leadStatus: "new",
+        leadSource: "youtube",
+        disposition: "interested",
+        priority: "medium",
+        budget: 350000, // $3,500
+        timeline: "3_months",
+        notes: "Found us through YouTube video about creative agency marketing. Design studio needing client acquisition.",
+        tags: ["creative-agency", "design", "b2b"],
+        createdBy: 1
+      },
+      {
+        firstName: "Alex",
+        lastName: "Brown",
+        email: "alex@moderndental.com",
+        phone: "+1-555-0108",
+        company: "Modern Dental Practice",
+        position: "Practice Manager",
+        leadStatus: "qualified",
+        leadSource: "google_ads",
+        disposition: "interested",
+        priority: "high",
+        budget: 450000, // $4,500
+        timeline: "1_month",
+        notes: "Clicked on Google Ads campaign. Dental practice wanting to increase patient bookings.",
+        tags: ["healthcare", "dental", "local-business"],
+        createdBy: 1
+      },
+      {
+        firstName: "Lisa",
+        lastName: "Garcia",
+        email: "lisa@homeservices.com",
+        phone: "+1-555-0109",
+        company: "Premium Home Services",
+        position: "Owner",
+        leadStatus: "contacted",
+        leadSource: "referral",
+        disposition: "interested",
+        priority: "medium",
+        budget: 300000, // $3,000
+        timeline: "3_months",
+        notes: "Referred by existing client. Home services company needing online visibility.",
+        tags: ["home-services", "referral", "local-business"],
+        createdBy: 1
+      },
+      {
+        firstName: "Carlos",
+        lastName: "Mendez",
+        email: "carlos@autorepair.com",
+        phone: "+1-555-0110",
+        company: "Mendez Auto Repair",
+        position: "Owner",
+        leadStatus: "new",
+        leadSource: "chat_widget",
+        disposition: "interested",
+        priority: "medium",
+        budget: 200000, // $2,000
+        timeline: "6_months",
+        notes: "Contacted through website chat widget. Auto repair shop looking to compete with larger chains.",
+        tags: ["automotive", "local-business", "small-business"],
+        createdBy: 1
+      },
+      {
+        firstName: "Nicole",
+        lastName: "Taylor",
+        email: "nicole@eventplanning.com",
+        phone: "+1-555-0111",
+        company: "Elegant Events",
+        position: "Event Coordinator",
+        leadStatus: "proposal",
+        leadSource: "twitter",
+        disposition: "interested",
+        priority: "medium",
+        budget: 400000, // $4,000
+        timeline: "1_month",
+        notes: "Engaged with our Twitter content about event marketing. Wedding and corporate event planning.",
+        tags: ["events", "weddings", "b2b-b2c"],
+        createdBy: 1
+      },
+      {
+        firstName: "James",
+        lastName: "Anderson",
+        email: "james@constructioncorp.com",
+        phone: "+1-555-0112",
+        company: "Anderson Construction",
+        position: "Project Manager",
+        leadStatus: "qualified",
+        leadSource: "website",
+        disposition: "callback",
+        priority: "high",
+        budget: 1000000, // $10,000
+        timeline: "immediate",
+        notes: "Direct website inquiry. Large construction company needing B2B lead generation.",
+        tags: ["construction", "b2b", "enterprise"],
+        createdBy: 1
+      }
+    ];
+
+    sampleContacts.forEach(contactData => {
+      const contact: Contact = {
+        ...contactData,
+        id: this.currentContactId++,
+        createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000), // Random date within last 30 days
+        avatar: null,
+        lastContactedAt: Math.random() > 0.5 ? new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000) : null,
+        nextFollowUpAt: Math.random() > 0.3 ? new Date(Date.now() + Math.random() * 14 * 24 * 60 * 60 * 1000) : null,
+      };
+      this.contacts.set(contact.id, contact);
+    });
   }
 
   // Users

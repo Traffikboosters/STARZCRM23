@@ -7,7 +7,7 @@ import CampaignManagementView from "@/components/campaign-management-view";
 import ScrapingAnalytics from "@/components/scraping-analytics";
 import FilesView from "@/components/files-view";
 import ScrapingConfigurationDemo from "@/components/scraping-configuration-demo";
-import CRMIntegrationDemo from "@/components/crm-integration-demo";
+import CRMAnalyticsDashboard from "@/components/crm-analytics-dashboard";
 import AutomationsView from "@/components/automations-view";
 import PaymentIntegration from "@/components/payment-integration";
 import LegalDocumentsView from "@/components/legal-documents-view";
@@ -37,7 +37,7 @@ export default function Dashboard() {
       case "calendar":
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
       case "crm":
-        return <CRMIntegrationDemo />;
+        return <CRMAnalyticsDashboard />;
       case "campaigns":
         return <CampaignManagementView />;
       case "video":
