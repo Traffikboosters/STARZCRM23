@@ -27,10 +27,10 @@ interface MightyCallConfig {
 
 export default function MightyCallIntegration() {
   const [config, setConfig] = useState<MightyCallConfig>({
-    apiKey: '',
-    accountId: '',
-    phoneNumber: '',
-    isEnabled: false
+    apiKey: 'traffikboosters_api_key',
+    accountId: 'traffikboosters@gmail.com',
+    phoneNumber: '+1-888-TRAFFIK',
+    isEnabled: true
   });
   const [callLogs, setCallLogs] = useState<CallLog[]>([]);
   const [activeCall, setActiveCall] = useState<CallLog | null>(null);

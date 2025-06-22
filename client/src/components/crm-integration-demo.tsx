@@ -21,8 +21,10 @@ import {
   Target,
   TrendingUp,
   Users,
-  Zap
+  Zap,
+  PhoneCall
 } from "lucide-react";
+import ClickToCallButton from "@/components/click-to-call-button";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 
 const scrapedLeads = [
@@ -385,6 +387,12 @@ export default function CRMIntegrationDemo() {
                       <div className="flex items-center gap-2">
                         <Phone className="w-4 h-4 text-muted-foreground" />
                         <span className="text-sm">{selectedLead.phone}</span>
+                        <ClickToCallButton 
+                          phoneNumber={selectedLead.phone} 
+                          contactName={selectedLead.contactName}
+                          variant="outline"
+                          size="sm"
+                        />
                       </div>
                       <div className="flex items-center gap-2">
                         <Mail className="w-4 h-4 text-muted-foreground" />
