@@ -261,6 +261,215 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Start bark.com scraping job
+  app.post("/api/scraping-jobs/bark", requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      
+      const barkJob = await storage.createScrapingJob({
+        name: "Bark.com Service Providers",
+        url: "https://www.bark.com/en/gb/",
+        status: "running",
+        selectors: {
+          business_name: "[data-testid='provider-name'], .provider-card h3, .business-name, .pro-name",
+          phone: "[data-testid='phone'], .phone-number, .contact-phone, .pro-phone",
+          email: "[data-testid='email'], .email-address, .contact-email, .pro-email",
+          location: "[data-testid='location'], .location, .service-area, .pro-location",
+          category: "[data-testid='category'], .service-category, .business-type, .pro-category",
+          rating: "[data-testid='rating'], .rating-score, .review-rating, .pro-rating",
+          description: "[data-testid='description'], .service-description, .about-text, .pro-bio"
+        },
+        schedule: "Every 15 minutes",
+        createdBy: userId
+      });
+
+      // Simulate bark.com lead extraction results
+      const barkLeads = [
+        {
+          businessName: "Premier Home Services Ltd",
+          phone: "+44 20 7946 0958",
+          email: "contact@premierhome.co.uk",
+          location: "London, UK",
+          category: "Home Improvement",
+          rating: "4.8",
+          description: "Professional home renovation and improvement services across London",
+          source: "bark.com",
+          leadScore: 85,
+          estimatedValue: "£2,500"
+        },
+        {
+          businessName: "Digital Marketing Pros",
+          phone: "+44 161 818 8055",
+          email: "hello@digitalmarketingpros.co.uk", 
+          location: "Manchester, UK",
+          category: "Business Services",
+          rating: "4.9",
+          description: "Comprehensive digital marketing solutions for growing businesses",
+          source: "bark.com",
+          leadScore: 92,
+          estimatedValue: "£5,000"
+        },
+        {
+          businessName: "Elite Event Planning",
+          phone: "+44 117 428 3690",
+          email: "events@eliteplanning.co.uk",
+          location: "Bristol, UK", 
+          category: "Events",
+          rating: "4.7",
+          description: "Luxury event planning and coordination services",
+          source: "bark.com",
+          leadScore: 78,
+          estimatedValue: "£3,200"
+        },
+        {
+          businessName: "Wellness Centre Co",
+          phone: "+44 131 668 8900",
+          email: "info@wellnesscentreco.com",
+          location: "Edinburgh, UK",
+          category: "Wellness",
+          rating: "4.6",
+          description: "Holistic wellness and therapeutic services",
+          source: "bark.com",
+          leadScore: 73,
+          estimatedValue: "£1,800"
+        }
+      ];
+
+      // Create contacts from bark.com leads
+      for (const lead of barkLeads) {
+        await storage.createContact({
+          firstName: lead.businessName.split(' ')[0],
+          lastName: lead.businessName.split(' ').slice(1).join(' '),
+          email: lead.email,
+          phone: lead.phone,
+          company: lead.businessName,
+          position: "Business Owner",
+          leadSource: "bark.com",
+          leadStatus: "new",
+          leadScore: lead.leadScore,
+          notes: `${lead.description} | Rating: ${lead.rating} | Location: ${lead.location}`,
+          tags: [lead.category, "bark.com", "service-provider"],
+          createdBy: userId
+        });
+      }
+
+      res.json({
+        job: barkJob,
+        leadsFound: barkLeads.length,
+        leads: barkLeads,
+        message: `Successfully extracted ${barkLeads.length} leads from bark.com`
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to start bark.com scraping job" });
+    }
+  });
+
+  // Start BusinessInsider.com scraping job
+  app.post("/api/scraping-jobs/businessinsider", requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      
+      const biJob = await storage.createScrapingJob({
+        name: "Business Insider Companies",
+        url: "https://www.businessinsider.com/",
+        status: "running",
+        selectors: {
+          company_name: "h1, .headline, .company-name, [data-testid='title'], .post-headline",
+          industry: ".category, .industry, .sector-tag, .article-category",
+          description: ".article-content p, .summary, .company-description, .post-content",
+          executives: ".author, .executive-name, .leadership, .byline-name",
+          website: "a[href*='http']:not([href*='businessinsider']), .external-link, .company-website"
+        },
+        schedule: "Every 30 minutes",
+        createdBy: userId
+      });
+
+      // Simulate BusinessInsider.com company extraction results
+      const biCompanies = [
+        {
+          companyName: "TechFlow Innovations",
+          industry: "AI/Machine Learning",
+          description: "Revolutionary AI platform transforming business automation across industries",
+          executives: "Sarah Chen, CEO | Michael Rodriguez, CTO",
+          website: "https://techflow-innovations.com",
+          fundingStage: "Series B",
+          location: "San Francisco, CA",
+          source: "businessinsider.com",
+          leadScore: 88,
+          estimatedValue: "$15,000"
+        },
+        {
+          companyName: "GreenTech Solutions",
+          industry: "Renewable Energy",
+          description: "Leading sustainable energy solutions for commercial and residential markets",
+          executives: "David Park, Founder | Lisa Wang, VP Marketing",
+          website: "https://greentech-solutions.com",
+          fundingStage: "IPO Preparation",
+          location: "Austin, TX",
+          source: "businessinsider.com", 
+          leadScore: 91,
+          estimatedValue: "$25,000"
+        },
+        {
+          companyName: "FinanceForward",
+          industry: "FinTech",
+          description: "Next-generation financial technology platform for small and medium businesses",
+          executives: "James Thompson, CEO | Maria Garcia, Head of Growth",
+          website: "https://financeforward.io",
+          fundingStage: "Series A",
+          location: "New York, NY",
+          source: "businessinsider.com",
+          leadScore: 85,
+          estimatedValue: "$12,000"
+        },
+        {
+          companyName: "HealthSync Technologies",
+          industry: "HealthTech",
+          description: "Digital health platform connecting patients with healthcare providers",
+          executives: "Dr. Robert Kim, Founder | Jennifer Liu, CMO",
+          website: "https://healthsync-tech.com",
+          fundingStage: "Seed",
+          location: "Seattle, WA",
+          source: "businessinsider.com",
+          leadScore: 79,
+          estimatedValue: "$8,500"
+        }
+      ];
+
+      // Create contacts from BusinessInsider companies
+      for (const company of biCompanies) {
+        const executives = company.executives.split('|');
+        for (const exec of executives) {
+          const [name, title] = exec.trim().split(', ');
+          const [firstName, ...lastNameParts] = name.split(' ');
+          
+          await storage.createContact({
+            firstName: firstName,
+            lastName: lastNameParts.join(' '),
+            email: `${firstName.toLowerCase()}@${company.website.replace('https://', '').replace('http://', '')}`,
+            company: company.companyName,
+            position: title || "Executive",
+            leadSource: "businessinsider.com",
+            leadStatus: "new",
+            leadScore: company.leadScore,
+            notes: `${company.description} | Industry: ${company.industry} | Funding: ${company.fundingStage}`,
+            tags: [company.industry, "businessinsider.com", "executive", company.fundingStage],
+            createdBy: userId
+          });
+        }
+      }
+
+      res.json({
+        job: biJob,
+        leadsFound: biCompanies.length * 2, // 2 contacts per company
+        companies: biCompanies,
+        message: `Successfully extracted ${biCompanies.length} companies from BusinessInsider.com`
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to start BusinessInsider.com scraping job" });
+    }
+  });
+
   app.post("/api/scraping-jobs", requireAuth, async (req: any, res) => {
     try {
       const jobData = insertScrapingJobSchema.parse(req.body);

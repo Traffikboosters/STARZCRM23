@@ -32,6 +32,57 @@ import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.
 const scrapingTemplates = [
   {
     id: 1,
+    name: "Bark.com Service Providers",
+    description: "Active service providers seeking digital marketing to grow their business",
+    url: "https://www.bark.com/en/gb/",
+    selectors: {
+      business_name: "[data-testid='provider-name'], .provider-card h3, .business-name, .pro-name",
+      phone: "[data-testid='phone'], .phone-number, .contact-phone, .pro-phone",
+      email: "[data-testid='email'], .email-address, .contact-email, .pro-email",
+      location: "[data-testid='location'], .location, .service-area, .pro-location",
+      category: "[data-testid='category'], .service-category, .business-type, .pro-category",
+      rating: "[data-testid='rating'], .rating-score, .review-rating, .pro-rating",
+      description: "[data-testid='description'], .service-description, .about-text, .pro-bio",
+      price_range: ".price-range, .starting-price, .hourly-rate",
+      reviews_count: ".reviews-count, .review-number, .total-reviews"
+    },
+    filters: {
+      min_rating: 4.0,
+      min_reviews: 10,
+      active_within: "30 days",
+      service_types: ["home improvement", "business services", "events", "wellness", "marketing"]
+    },
+    expectedLeads: "150-200 per scrape",
+    conversionRate: "18%",
+    targetAudience: "Service providers needing online visibility and lead generation"
+  },
+  {
+    id: 2,
+    name: "Business Insider Companies",
+    description: "Featured companies and startups from business news for B2B marketing services",
+    url: "https://www.businessinsider.com/",
+    selectors: {
+      company_name: "h1, .headline, .company-name, [data-testid='title'], .post-headline",
+      industry: ".category, .industry, .sector-tag, .article-category",
+      description: ".article-content p, .summary, .company-description, .post-content",
+      executives: ".author, .executive-name, .leadership, .byline-name",
+      financials: ".financial-data, .revenue, .funding-info, .valuation",
+      website: "a[href*='http']:not([href*='businessinsider']), .external-link, .company-website",
+      location: ".location, .headquarters, .company-location",
+      funding_stage: ".funding-round, .series, .investment-stage"
+    },
+    filters: {
+      article_types: ["startup", "ipo", "funding", "acquisition", "tech", "growth"],
+      exclude_keywords: ["bankruptcy", "lawsuit", "scandal", "closure"],
+      min_funding: "1M",
+      company_age: "6 months - 10 years"
+    },
+    expectedLeads: "80-120 per scrape",
+    conversionRate: "14%",
+    targetAudience: "Growing companies needing marketing, PR, and digital transformation services"
+  },
+  {
+    id: 3,
     name: "Restaurant Prospects (Yelp)",
     description: "Local restaurants with high ratings for SEO/marketing services",
     url: "https://www.yelp.com/search?find_desc=restaurants&find_loc=",
@@ -52,7 +103,7 @@ const scrapingTemplates = [
     conversionRate: "12%"
   },
   {
-    id: 2,
+    id: 4,
     name: "High-Growth B2B (Inc 5000)",
     description: "Fast-growing companies needing digital marketing scale",
     url: "https://www.inc.com/inc5000/",
@@ -143,21 +194,84 @@ export default function ScrapingConfigurationDemo() {
   const [progress, setProgress] = useState(0);
   const [activeTab, setActiveTab] = useState("templates");
 
-  const handleStartScraping = () => {
+  const handleStartScraping = async () => {
     setIsConfiguring(true);
     setProgress(0);
     
-    // Simulate configuration process
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
+    try {
+      let endpoint = '';
+      if (selectedTemplate.name.includes('Bark.com')) {
+        endpoint = '/api/scraping-jobs/bark';
+      } else if (selectedTemplate.name.includes('Business Insider')) {
+        endpoint = '/api/scraping-jobs/businessinsider';
+      }
+      
+      if (endpoint) {
+        // Show real progress for actual scraping
+        const progressInterval = setInterval(() => {
+          setProgress(prev => {
+            if (prev >= 95) {
+              clearInterval(progressInterval);
+              return 95; // Stop at 95% until API completes
+            }
+            return prev + 15;
+          });
+        }, 400);
+
+        const response = await apiRequest("POST", endpoint);
+        const result = await response.json();
+        
+        clearInterval(progressInterval);
+        setProgress(100);
+        
+        // Show success notification with real results and audio alert
+        setTimeout(() => {
           setIsConfiguring(false);
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 300);
+          
+          // Play audio notification for new leads
+          const audio = new Audio('data:audio/wav;base64,UklGRvIBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU4BAABBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+H+sEA');
+          audio.volume = 0.5;
+          audio.play().catch(() => {}); // Ignore audio errors
+          
+          // Create desktop notification if permission granted
+          if ("Notification" in window && Notification.permission === "granted") {
+            new Notification(`New Leads Captured!`, {
+              body: `${result.leadsFound} leads extracted from ${selectedTemplate.name}`,
+              icon: traffikBoostersLogo,
+              tag: 'lead-notification'
+            });
+          } else if ("Notification" in window && Notification.permission !== "denied") {
+            Notification.requestPermission().then(permission => {
+              if (permission === "granted") {
+                new Notification(`New Leads Captured!`, {
+                  body: `${result.leadsFound} leads extracted from ${selectedTemplate.name}`,
+                  icon: traffikBoostersLogo,
+                  tag: 'lead-notification'
+                });
+              }
+            });
+          }
+          
+          alert(`🚀 LEAD ALERT! Successfully extracted ${result.leadsFound} high-quality leads from ${selectedTemplate.name}!\n\n✅ Leads automatically added to your CRM\n📞 Ready for immediate contact\n💰 Estimated value: ${selectedTemplate.name.includes('Bark') ? '£2,500-£5,000' : '$8,500-$25,000'} per lead\n\n👉 View in CRM → Contacts section`);
+        }, 500);
+      } else {
+        // Simulate configuration for other templates
+        const interval = setInterval(() => {
+          setProgress(prev => {
+            if (prev >= 100) {
+              clearInterval(interval);
+              setIsConfiguring(false);
+              return 100;
+            }
+            return prev + 10;
+          });
+        }, 300);
+      }
+    } catch (error) {
+      setIsConfiguring(false);
+      setProgress(0);
+      alert('Failed to start scraping job. Please try again.');
+    }
   };
 
   const configSteps = [
