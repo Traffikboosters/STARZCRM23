@@ -96,6 +96,104 @@ export const scrapingJobs = pgTable("scraping_jobs", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const chatMessages = pgTable("chat_messages", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id),
+  senderId: integer("sender_id").references(() => users.id),
+  message: text("message").notNull(),
+  type: text("type").default("text"), // text, image, file, system
+  isFromContact: boolean("is_from_contact").default(false),
+  attachments: text("attachments").array(),
+  readAt: timestamp("read_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const chatConversations = pgTable("chat_conversations", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  assignedTo: integer("assigned_to").references(() => users.id),
+  status: text("status").default("active"), // active, closed, pending
+  priority: text("priority").default("normal"), // low, normal, high, urgent
+  lastMessageAt: timestamp("last_message_at"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const callLogs = pgTable("call_logs", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  direction: text("direction").notNull(), // inbound, outbound
+  status: text("status").notNull(), // ringing, answered, missed, voicemail, busy, failed
+  phoneNumber: text("phone_number").notNull(),
+  startTime: timestamp("start_time").notNull(),
+  endTime: timestamp("end_time"),
+  duration: integer("duration"), // in seconds
+  talkTime: integer("talk_time"), // actual talk time in seconds
+  recording: text("recording"), // URL to call recording
+  notes: text("notes"),
+  outcome: text("outcome"), // connected, no_answer, busy, voicemail, sale, follow_up
+  followUpDate: timestamp("follow_up_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const campaigns = pgTable("campaigns", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  type: text("type").notNull(), // email, sms, social, direct_mail, phone
+  status: text("status").default("draft"), // draft, active, paused, completed, cancelled
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  targetAudience: text("target_audience"),
+  budget: integer("budget"), // in cents
+  spent: integer("spent").default(0), // in cents
+  impressions: integer("impressions").default(0),
+  clicks: integer("clicks").default(0),
+  conversions: integer("conversions").default(0),
+  leads: integer("leads").default(0),
+  tags: text("tags").array(),
+  createdBy: integer("created_by").references(() => users.id),
+  assignedTo: integer("assigned_to").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const leadAllocations = pgTable("lead_allocations", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  assignedTo: integer("assigned_to").references(() => users.id).notNull(),
+  assignedBy: integer("assigned_by").references(() => users.id).notNull(),
+  campaignId: integer("campaign_id").references(() => campaigns.id),
+  priority: text("priority").default("medium"), // low, medium, high, urgent
+  status: text("status").default("assigned"), // assigned, contacted, qualified, converted, rejected
+  notes: text("notes"),
+  assignedAt: timestamp("assigned_at").defaultNow().notNull(),
+  dueDate: timestamp("due_date"),
+  completedAt: timestamp("completed_at"),
+});
+
+export const insertCallLogSchema = createInsertSchema(callLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCampaignSchema = createInsertSchema(campaigns).omit({
+  id: true,
+  createdAt: true,
+  createdBy: true,
+  spent: true,
+  impressions: true,
+  clicks: true,
+  conversions: true,
+  leads: true,
+});
+
+export const insertLeadAllocationSchema = createInsertSchema(leadAllocations).omit({
+  id: true,
+  assignedAt: true,
+  completedAt: true,
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -140,6 +238,18 @@ export const insertScrapingJobSchema = createInsertSchema(scrapingJobs).omit({
   results: true,
 });
 
+export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
+  id: true,
+  createdAt: true,
+  readAt: true,
+});
+
+export const insertChatConversationSchema = createInsertSchema(chatConversations).omit({
+  id: true,
+  createdAt: true,
+  lastMessageAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -155,3 +265,16 @@ export type Automation = typeof automations.$inferSelect;
 export type InsertAutomation = z.infer<typeof insertAutomationSchema>;
 export type ScrapingJob = typeof scrapingJobs.$inferSelect;
 export type InsertScrapingJob = z.infer<typeof insertScrapingJobSchema>;
+export type ChatMessage = typeof chatMessages.$inferSelect;
+export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+export type ChatConversation = typeof chatConversations.$inferSelect;
+export type InsertChatConversation = z.infer<typeof insertChatConversationSchema>;
+
+export type CallLog = typeof callLogs.$inferSelect;
+export type InsertCallLog = z.infer<typeof insertCallLogSchema>;
+
+export type Campaign = typeof campaigns.$inferSelect;
+export type InsertCampaign = z.infer<typeof insertCampaignSchema>;
+
+export type LeadAllocation = typeof leadAllocations.$inferSelect;
+export type InsertLeadAllocation = z.infer<typeof insertLeadAllocationSchema>;

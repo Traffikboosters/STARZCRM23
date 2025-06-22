@@ -8,7 +8,8 @@ import {
   Folder,
   Plus,
   UserPlus,
-  VideoIcon
+  VideoIcon,
+  Target
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ export default function Sidebar({
   const navigationItems = [
     { id: "calendar", label: "Calendar", icon: Calendar },
     { id: "crm", label: "CRM", icon: Users },
+    { id: "campaigns", label: "Campaigns", icon: Target },
     { id: "video", label: "Video Calls", icon: Video },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
     { id: "scraping", label: "Data Scraping", icon: Worm },

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, Plus, Phone, Mail, MoreHorizontal, Filter } from "lucide-react";
+import { Search, Plus, Phone, Mail, MoreHorizontal, Filter, MessageCircle } from "lucide-react";
+import ChatWidget from "./chat-widget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +25,7 @@ import type { Contact } from "@shared/schema";
 export default function CRMView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
 
   const { data: contacts = [], isLoading } = useQuery<Contact[]>({
     queryKey: ['/api/contacts'],
@@ -219,6 +221,12 @@ export default function CRMView() {
           </div>
         )}
       </div>
+      
+      {/* Chat Widget Integration */}
+      <ChatWidget 
+        selectedContact={selectedContact}
+        onContactSelect={setSelectedContact}
+      />
     </div>
   );
 }

@@ -1,9 +1,12 @@
 import { 
-  users, contacts, events, files, automations, scrapingJobs, companies,
+  users, contacts, events, files, automations, scrapingJobs, companies, chatMessages, chatConversations,
+  callLogs, campaigns, leadAllocations,
   type User, type InsertUser, type Contact, type InsertContact,
   type Event, type InsertEvent, type File, type InsertFile,
   type Automation, type InsertAutomation, type ScrapingJob, type InsertScrapingJob,
-  type Company, type InsertCompany
+  type Company, type InsertCompany, type ChatMessage, type InsertChatMessage,
+  type ChatConversation, type InsertChatConversation, type CallLog, type InsertCallLog,
+  type Campaign, type InsertCampaign, type LeadAllocation, type InsertLeadAllocation
 } from "@shared/schema";
 
 export interface IStorage {
@@ -57,6 +60,45 @@ export interface IStorage {
   createScrapingJob(job: InsertScrapingJob & { createdBy: number }): Promise<ScrapingJob>;
   updateScrapingJob(id: number, updates: Partial<InsertScrapingJob>): Promise<ScrapingJob | undefined>;
   deleteScrapingJob(id: number): Promise<boolean>;
+  
+  // Chat Messages
+  getChatMessages(contactId: number): Promise<ChatMessage[]>;
+  createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
+  markMessageAsRead(messageId: number): Promise<ChatMessage | undefined>;
+  
+  // Chat Conversations
+  getAllConversations(): Promise<ChatConversation[]>;
+  getConversation(contactId: number): Promise<ChatConversation | undefined>;
+  createConversation(conversation: InsertChatConversation): Promise<ChatConversation>;
+  updateConversation(id: number, updates: Partial<InsertChatConversation>): Promise<ChatConversation | undefined>;
+  
+  // Call Logs
+  getAllCallLogs(): Promise<CallLog[]>;
+  getCallLog(id: number): Promise<CallLog | undefined>;
+  getCallLogsByContact(contactId: number): Promise<CallLog[]>;
+  getCallLogsByUser(userId: number): Promise<CallLog[]>;
+  createCallLog(callLog: InsertCallLog): Promise<CallLog>;
+  updateCallLog(id: number, updates: Partial<InsertCallLog>): Promise<CallLog | undefined>;
+  deleteCallLog(id: number): Promise<boolean>;
+  
+  // Campaigns
+  getAllCampaigns(): Promise<Campaign[]>;
+  getCampaign(id: number): Promise<Campaign | undefined>;
+  getCampaignsByCreator(createdBy: number): Promise<Campaign[]>;
+  getCampaignsByAssignee(assignedTo: number): Promise<Campaign[]>;
+  createCampaign(campaign: InsertCampaign & { createdBy: number }): Promise<Campaign>;
+  updateCampaign(id: number, updates: Partial<InsertCampaign>): Promise<Campaign | undefined>;
+  deleteCampaign(id: number): Promise<boolean>;
+  
+  // Lead Allocations
+  getAllLeadAllocations(): Promise<LeadAllocation[]>;
+  getLeadAllocation(id: number): Promise<LeadAllocation | undefined>;
+  getLeadAllocationsByContact(contactId: number): Promise<LeadAllocation[]>;
+  getLeadAllocationsByAssignee(assignedTo: number): Promise<LeadAllocation[]>;
+  getLeadAllocationsByCampaign(campaignId: number): Promise<LeadAllocation[]>;
+  createLeadAllocation(allocation: InsertLeadAllocation): Promise<LeadAllocation>;
+  updateLeadAllocation(id: number, updates: Partial<InsertLeadAllocation>): Promise<LeadAllocation | undefined>;
+  deleteLeadAllocation(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -67,6 +109,11 @@ export class MemStorage implements IStorage {
   private files: Map<number, File>;
   private automations: Map<number, Automation>;
   private scrapingJobs: Map<number, ScrapingJob>;
+  private chatMessages: Map<number, ChatMessage>;
+  private chatConversations: Map<number, ChatConversation>;
+  private callLogs: Map<number, CallLog>;
+  private campaigns: Map<number, Campaign>;
+  private leadAllocations: Map<number, LeadAllocation>;
   private currentUserId: number;
   private currentCompanyId: number;
   private currentContactId: number;
@@ -74,6 +121,11 @@ export class MemStorage implements IStorage {
   private currentFileId: number;
   private currentAutomationId: number;
   private currentScrapingJobId: number;
+  private currentChatMessageId: number;
+  private currentConversationId: number;
+  private currentCallLogId: number;
+  private currentCampaignId: number;
+  private currentLeadAllocationId: number;
 
   constructor() {
     this.users = new Map();
@@ -83,6 +135,11 @@ export class MemStorage implements IStorage {
     this.files = new Map();
     this.automations = new Map();
     this.scrapingJobs = new Map();
+    this.chatMessages = new Map();
+    this.chatConversations = new Map();
+    this.callLogs = new Map();
+    this.campaigns = new Map();
+    this.leadAllocations = new Map();
     this.currentUserId = 1;
     this.currentCompanyId = 1;
     this.currentContactId = 1;
@@ -90,6 +147,11 @@ export class MemStorage implements IStorage {
     this.currentFileId = 1;
     this.currentAutomationId = 1;
     this.currentScrapingJobId = 1;
+    this.currentChatMessageId = 1;
+    this.currentConversationId = 1;
+    this.currentCallLogId = 1;
+    this.currentCampaignId = 1;
+    this.currentLeadAllocationId = 1;
 
     // Initialize with default admin user and company
     this.initializeDefaults();
@@ -366,6 +428,80 @@ export class MemStorage implements IStorage {
 
   async deleteScrapingJob(id: number): Promise<boolean> {
     return this.scrapingJobs.delete(id);
+  }
+
+  // Chat Messages
+  async getChatMessages(contactId: number): Promise<ChatMessage[]> {
+    const messages = Array.from(this.chatMessages.values());
+    return messages.filter(message => message.contactId === contactId)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  }
+
+  async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
+    const message: ChatMessage = {
+      ...insertMessage,
+      id: this.currentChatMessageId++,
+      createdAt: new Date(),
+      readAt: null,
+      attachments: insertMessage.attachments || null,
+      contactId: insertMessage.contactId || null,
+      senderId: insertMessage.senderId || null,
+    };
+    this.chatMessages.set(message.id, message);
+    
+    // Update conversation's last message time
+    const conversation = await this.getConversation(message.contactId!);
+    if (conversation) {
+      await this.updateConversation(conversation.id, { lastMessageAt: message.createdAt });
+    }
+    
+    return message;
+  }
+
+  async markMessageAsRead(messageId: number): Promise<ChatMessage | undefined> {
+    const message = this.chatMessages.get(messageId);
+    if (!message) return undefined;
+    
+    const updatedMessage: ChatMessage = { ...message, readAt: new Date() };
+    this.chatMessages.set(messageId, updatedMessage);
+    return updatedMessage;
+  }
+
+  // Chat Conversations
+  async getAllConversations(): Promise<ChatConversation[]> {
+    return Array.from(this.chatConversations.values())
+      .sort((a, b) => {
+        const aTime = a.lastMessageAt || a.createdAt;
+        const bTime = b.lastMessageAt || b.createdAt;
+        return new Date(bTime).getTime() - new Date(aTime).getTime();
+      });
+  }
+
+  async getConversation(contactId: number): Promise<ChatConversation | undefined> {
+    return Array.from(this.chatConversations.values())
+      .find(conv => conv.contactId === contactId);
+  }
+
+  async createConversation(insertConversation: InsertChatConversation): Promise<ChatConversation> {
+    const conversation: ChatConversation = {
+      ...insertConversation,
+      id: this.currentConversationId++,
+      createdAt: new Date(),
+      lastMessageAt: null,
+      assignedTo: insertConversation.assignedTo || null,
+      notes: insertConversation.notes || null,
+    };
+    this.chatConversations.set(conversation.id, conversation);
+    return conversation;
+  }
+
+  async updateConversation(id: number, updates: Partial<InsertChatConversation>): Promise<ChatConversation | undefined> {
+    const conversation = this.chatConversations.get(id);
+    if (!conversation) return undefined;
+    
+    const updatedConversation: ChatConversation = { ...conversation, ...updates };
+    this.chatConversations.set(id, updatedConversation);
+    return updatedConversation;
   }
 }
 
