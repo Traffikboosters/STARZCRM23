@@ -4,7 +4,7 @@ import Sidebar from "@/components/sidebar";
 import CalendarView from "@/components/calendar-view";
 import CRMView from "@/components/crm-view";
 import CampaignManagementView from "@/components/campaign-management-view";
-import AnalyticsView from "@/components/analytics-view";
+import ScrapingAnalytics from "@/components/scraping-analytics";
 import FilesView from "@/components/files-view";
 import DataScrapingView from "@/components/data-scraping-view";
 import AutomationsView from "@/components/automations-view";
@@ -17,7 +17,7 @@ import LeadNotification from "@/components/lead-notification";
 import type { Contact } from "@shared/schema";
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState("calendar");
+  const [activeTab, setActiveTab] = useState("analytics");
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
@@ -38,7 +38,7 @@ export default function Dashboard() {
       case "video":
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
       case "analytics":
-        return <AnalyticsView />;
+        return <ScrapingAnalytics />;
       case "scraping":
         return <DataScrapingView />;
       case "automations":
