@@ -258,6 +258,37 @@ export const paymentMethods = pgTable("payment_methods", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const workOrders = pgTable("work_orders", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  contactId: integer("contact_id").references(() => contacts.id),
+  contactName: text("contact_name").notNull(),
+  status: text("status").notNull().default("draft"), // draft, sent, signed, completed, cancelled
+  amount: integer("amount").notNull(),
+  terms: text("terms"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdBy: integer("created_by").references(() => users.id),
+  sentAt: timestamp("sent_at"),
+  signedAt: timestamp("signed_at"),
+  signatureUrl: text("signature_url"),
+  documentUrl: text("document_url"),
+  dueDate: timestamp("due_date"),
+  approveRequestId: text("approve_request_id"),
+});
+
+export const documentTemplates = pgTable("document_templates", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  content: text("content").notNull(),
+  variables: text("variables").array(),
+  category: text("category").notNull().default("work_order"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdBy: integer("created_by").references(() => users.id),
+  isPublic: boolean("is_public").default(false),
+  companyId: integer("company_id").references(() => companies.id),
+});
+
 export const insertContactNoteSchema = createInsertSchema(contactNotes).omit({
   id: true,
   createdAt: true,
@@ -310,6 +341,21 @@ export const insertPaymentMethodSchema = createInsertSchema(paymentMethods).omit
   id: true,
   createdAt: true,
   stripePaymentMethodId: true,
+});
+
+export const insertWorkOrderSchema = createInsertSchema(workOrders).omit({
+  id: true,
+  createdAt: true,
+  sentAt: true,
+  signedAt: true,
+  signatureUrl: true,
+  documentUrl: true,
+  approveRequestId: true,
+});
+
+export const insertDocumentTemplateSchema = createInsertSchema(documentTemplates).omit({
+  id: true,
+  createdAt: true,
 });
 
 // Insert schemas
@@ -407,3 +453,8 @@ export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
 export type PaymentMethod = typeof paymentMethods.$inferSelect;
 export type InsertPaymentMethod = z.infer<typeof insertPaymentMethodSchema>;
+
+export type WorkOrder = typeof workOrders.$inferSelect;
+export type InsertWorkOrder = z.infer<typeof insertWorkOrderSchema>;
+export type DocumentTemplate = typeof documentTemplates.$inferSelect;
+export type InsertDocumentTemplate = z.infer<typeof insertDocumentTemplateSchema>;

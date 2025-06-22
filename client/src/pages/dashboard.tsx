@@ -9,6 +9,7 @@ import FilesView from "@/components/files-view";
 import DataScrapingView from "@/components/data-scraping-view";
 import AutomationsView from "@/components/automations-view";
 import PaymentIntegration from "@/components/payment-integration";
+import LegalDocumentsView from "@/components/legal-documents-view";
 import RightSidebar from "@/components/right-sidebar";
 import VideoCallModal from "@/components/video-call-modal";
 import EventModal from "@/components/event-modal";
@@ -44,6 +45,8 @@ export default function Dashboard() {
         return <AutomationsView />;
       case "payments":
         return <PaymentIntegration />;
+      case "legal":
+        return <LegalDocumentsView />;
       case "files":
         return <FilesView />;
       default:

@@ -902,6 +902,231 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Work Orders API routes
+  app.get("/api/work-orders", async (req, res) => {
+    try {
+      // Mock work orders with sample data
+      const workOrders = [
+        {
+          id: 1,
+          title: "Website Development Project",
+          description: "Complete website redesign and development for client's business",
+          contactId: 1,
+          contactName: "John Smith",
+          status: "draft",
+          amount: 5000,
+          terms: "50% due upfront, remaining 50% on completion",
+          createdAt: new Date(),
+          createdBy: 1,
+          dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          approveRequestId: null
+        },
+        {
+          id: 2,
+          title: "Social Media Marketing Campaign",
+          description: "3-month social media marketing campaign including content creation and ad management",
+          contactId: 2,
+          contactName: "Sarah Johnson",
+          status: "sent",
+          amount: 3000,
+          terms: "Monthly payments of $1000",
+          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+          createdBy: 1,
+          sentAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          approveRequestId: "req_12345"
+        }
+      ];
+      
+      res.json(workOrders);
+    } catch (error) {
+      console.error("Error fetching work orders:", error);
+      res.status(500).json({ error: "Failed to fetch work orders" });
+    }
+  });
+
+  app.post("/api/work-orders", async (req, res) => {
+    try {
+      const workOrderData = req.body;
+      
+      // Create work order with company branding
+      const workOrder = {
+        id: Date.now(),
+        ...workOrderData,
+        status: "draft",
+        createdAt: new Date(),
+        createdBy: 1, // Current user ID
+        approveRequestId: null
+      };
+
+      res.status(201).json(workOrder);
+    } catch (error) {
+      console.error("Error creating work order:", error);
+      res.status(500).json({ error: "Failed to create work order" });
+    }
+  });
+
+  app.post("/api/work-orders/:id/send", async (req, res) => {
+    try {
+      const workOrderId = parseInt(req.params.id);
+      
+      // Generate ApproveMe signature request
+      const approveRequestId = `req_${Date.now()}`;
+      
+      // Generate email content for your existing email system
+      const { generateWorkOrderEmailContent } = await import("./email-service");
+      
+      const workOrderData = {
+        workOrderId,
+        clientName: "John Smith", // This would come from your database
+        clientEmail: "john@example.com",
+        workOrderTitle: "Website Development Project",
+        amount: 5000,
+        companyName: "Traffik Boosters",
+        companyLogo: "https://traffikboosters.com/logo.png",
+        signatureUrl: `https://app.approveme.co/sign/${approveRequestId}`,
+        terms: "50% due upfront, remaining 50% on completion"
+      };
+      
+      const emailContent = await generateWorkOrderEmailContent(workOrderId, approveRequestId, workOrderData);
+      
+      const updatedWorkOrder = {
+        id: workOrderId,
+        status: "ready_to_send",
+        sentAt: new Date(),
+        approveRequestId,
+        emailContent
+      };
+      
+      res.json(updatedWorkOrder);
+    } catch (error) {
+      console.error("Error sending work order:", error);
+      res.status(500).json({ error: "Failed to send work order" });
+    }
+  });
+
+  // Document Templates API routes
+  app.get("/api/document-templates", async (req, res) => {
+    try {
+      const templates = [
+        {
+          id: 1,
+          name: "Standard Work Order",
+          content: `
+**WORK ORDER AGREEMENT**
+
+**Service Provider:** {{companyName}}
+**Client:** {{customerName}}
+**Date:** {{currentDate}}
+
+**Project Description:**
+{{projectDescription}}
+
+**Scope of Work:**
+{{scopeOfWork}}
+
+**Total Amount:** ${{amount}}
+**Payment Terms:** {{paymentTerms}}
+**Due Date:** {{dueDate}}
+
+**Terms and Conditions:**
+{{termsAndConditions}}
+
+By signing below, both parties agree to the terms outlined in this work order.
+
+**Client Signature:** _________________ Date: _________
+**Service Provider:** _________________ Date: _________
+          `,
+          variables: ["companyName", "customerName", "currentDate", "projectDescription", "scopeOfWork", "amount", "paymentTerms", "dueDate", "termsAndConditions"],
+          category: "work_order",
+          createdAt: new Date(),
+          createdBy: 1,
+          isPublic: true,
+          companyId: 1
+        },
+        {
+          id: 2,
+          name: "Digital Marketing Contract",
+          content: `
+**DIGITAL MARKETING SERVICES AGREEMENT**
+
+**Company:** {{companyName}}
+**Client:** {{customerName}}
+**Project:** {{projectName}}
+
+**Services Included:**
+- Social Media Management
+- Content Creation
+- Ad Campaign Management
+- Monthly Analytics Reports
+
+**Duration:** {{duration}}
+**Monthly Fee:** ${{monthlyAmount}}
+**Setup Fee:** ${{setupFee}}
+
+**Payment Schedule:** {{paymentSchedule}}
+
+This agreement is effective from {{startDate}} to {{endDate}}.
+
+**Authorization:**
+Client Signature: _________________ Date: _________
+          `,
+          variables: ["companyName", "customerName", "projectName", "duration", "monthlyAmount", "setupFee", "paymentSchedule", "startDate", "endDate"],
+          category: "contract",
+          createdAt: new Date(),
+          createdBy: 1,
+          isPublic: false,
+          companyId: 1
+        }
+      ];
+      
+      res.json(templates);
+    } catch (error) {
+      console.error("Error fetching templates:", error);
+      res.status(500).json({ error: "Failed to fetch templates" });
+    }
+  });
+
+  app.post("/api/document-templates", async (req, res) => {
+    try {
+      const templateData = req.body;
+      
+      const template = {
+        id: Date.now(),
+        ...templateData,
+        createdAt: new Date(),
+        createdBy: 1, // Current user ID
+        companyId: 1 // Current company ID
+      };
+
+      res.status(201).json(template);
+    } catch (error) {
+      console.error("Error creating template:", error);
+      res.status(500).json({ error: "Failed to create template" });
+    }
+  });
+
+  // ApproveMe webhook for signature status updates
+  app.post("/api/webhooks/approve-me", async (req, res) => {
+    try {
+      const { event_type, request_id, status, signed_document_url } = req.body;
+      
+      if (event_type === 'document_signed') {
+        // Update work order status to signed
+        console.log(`Work order signed: ${request_id}`);
+        console.log(`Document URL: ${signed_document_url}`);
+        
+        // Here you would update the work order in your database
+        // const workOrder = await updateWorkOrderStatus(request_id, 'signed', signed_document_url);
+      }
+      
+      res.json({ received: true });
+    } catch (error) {
+      console.error("ApproveMe webhook error:", error);
+      res.status(400).json({ error: "Webhook error" });
+    }
+  });
+
   // Users route for team member selection
   app.get("/api/users", async (req, res) => {
     try {
