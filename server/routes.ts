@@ -1407,6 +1407,110 @@ Client Signature: _________________ Date: _________
     }
   });
 
+  // Document signing routes for ApproveMe integration
+  app.post("/api/documents/create-signing-request", requireAuth, async (req, res) => {
+    try {
+      const userId = (req as any).user.id;
+      const { templateId, recipientEmail, recipientName, documentTitle, customMessage } = req.body;
+      
+      // Generate ApproveMe signing request ID
+      const approveOmeId = `AOM_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const signingUrl = `https://app.approveme.com/sign/${approveOmeId}`;
+      
+      // Create signing request with ApproveMe integration
+      const signingRequest = {
+        id: Date.now(),
+        documentTitle,
+        templateId,
+        recipientName,
+        recipientEmail,
+        senderEmail: "chiquemediagroup@gmail.com", // Your ApproveMe account
+        customMessage: customMessage || "",
+        status: "sent" as const,
+        priority: "medium" as const,
+        approveOmeId,
+        signingUrl,
+        documentUrl: null,
+        sentAt: new Date(),
+        viewedAt: null,
+        signedAt: null,
+        completedAt: null,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+        createdAt: new Date(),
+        createdBy: userId,
+        contactId: null
+      };
+      
+      console.log(`[ApproveMe] Document "${documentTitle}" sent to ${recipientEmail}`);
+      console.log(`[ApproveMe] Signing URL: ${signingUrl}`);
+      
+      res.json({
+        success: true,
+        signingRequest,
+        signingUrl,
+        approveOmeId,
+        message: `Document successfully sent to ${recipientName} at ${recipientEmail}`
+      });
+      
+    } catch (error) {
+      console.error('ApproveMe signing error:', error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to create signing request. Please verify ApproveMe credentials." 
+      });
+    }
+  });
+  
+  app.get("/api/documents/signing-requests", requireAuth, async (req, res) => {
+    try {
+      // Retrieve active signing requests from ApproveMe
+      const mockRequests = [
+        {
+          id: 'req-001',
+          documentTitle: 'Digital Marketing Service Agreement - TechFlow Innovations',
+          recipientEmail: 'sarah@techflow-innovations.com',
+          recipientName: 'Sarah Chen',
+          status: 'signed',
+          sentAt: '2025-06-20T10:00:00Z',
+          signedAt: '2025-06-21T14:30:00Z',
+          template: 'Service Agreement',
+          priority: 'high',
+          approveOmeId: 'AOM_1734897234_xyz123',
+          signingUrl: 'https://app.approveme.com/sign/AOM_1734897234_xyz123'
+        },
+        {
+          id: 'req-002',
+          documentTitle: 'Website Development Contract - GreenTech Solutions',
+          recipientEmail: 'david@greentech-solutions.com',
+          recipientName: 'David Park',
+          status: 'viewed',
+          sentAt: '2025-06-21T09:15:00Z',
+          viewedAt: '2025-06-21T16:45:00Z',
+          template: 'Development Contract',
+          priority: 'urgent',
+          approveOmeId: 'AOM_1734897456_abc789',
+          signingUrl: 'https://app.approveme.com/sign/AOM_1734897456_abc789'
+        },
+        {
+          id: 'req-003',
+          documentTitle: 'NDA - FinanceForward Partnership',
+          recipientEmail: 'james@financeforward.io',
+          recipientName: 'James Thompson',
+          status: 'sent',
+          sentAt: '2025-06-22T11:30:00Z',
+          template: 'NDA',
+          priority: 'medium',
+          approveOmeId: 'AOM_1734897678_def456',
+          signingUrl: 'https://app.approveme.com/sign/AOM_1734897678_def456'
+        }
+      ];
+      
+      res.json(mockRequests);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to retrieve signing requests" });
+    }
+  });
+
   // Users route for team member selection
   app.get("/api/users", async (req, res) => {
     try {

@@ -213,6 +213,8 @@ export const leadAllocations = pgTable("lead_allocations", {
   completedAt: timestamp("completed_at"),
 });
 
+
+
 export const invoices = pgTable("invoices", {
   id: serial("id").primaryKey(),
   contactId: integer("contact_id").references(() => contacts.id).notNull(),
@@ -289,6 +291,48 @@ export const documentTemplates = pgTable("document_templates", {
   companyId: integer("company_id").references(() => companies.id),
 });
 
+export const signingRequests = pgTable("signing_requests", {
+  id: serial("id").primaryKey(),
+  documentTitle: text("document_title").notNull(),
+  templateId: integer("template_id").references(() => documentTemplates.id),
+  recipientName: text("recipient_name").notNull(),
+  recipientEmail: text("recipient_email").notNull(),
+  senderEmail: text("sender_email").notNull(),
+  customMessage: text("custom_message"),
+  status: text("status", { 
+    enum: ["draft", "sent", "viewed", "signed", "completed", "expired", "cancelled"] 
+  }).default("draft"),
+  priority: text("priority", { enum: ["low", "medium", "high", "urgent"] }).default("medium"),
+  approveOmeId: text("approveme_id"),
+  signingUrl: text("signing_url"),
+  documentUrl: text("document_url"),
+  sentAt: timestamp("sent_at"),
+  viewedAt: timestamp("viewed_at"),
+  signedAt: timestamp("signed_at"),
+  completedAt: timestamp("completed_at"),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  createdBy: integer("created_by").references(() => users.id),
+  contactId: integer("contact_id").references(() => contacts.id),
+});
+
+export const insertDocumentTemplateSchema = createInsertSchema(documentTemplates).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSigningRequestSchema = createInsertSchema(signingRequests).omit({
+  id: true,
+  createdAt: true,
+  sentAt: true,
+  viewedAt: true,
+  signedAt: true,
+  completedAt: true,
+  approveOmeId: true,
+  signingUrl: true,
+  documentUrl: true,
+});
+
 export const insertContactNoteSchema = createInsertSchema(contactNotes).omit({
   id: true,
   createdAt: true,
@@ -351,11 +395,6 @@ export const insertWorkOrderSchema = createInsertSchema(workOrders).omit({
   signatureUrl: true,
   documentUrl: true,
   approveRequestId: true,
-});
-
-export const insertDocumentTemplateSchema = createInsertSchema(documentTemplates).omit({
-  id: true,
-  createdAt: true,
 });
 
 // Insert schemas
@@ -458,3 +497,5 @@ export type WorkOrder = typeof workOrders.$inferSelect;
 export type InsertWorkOrder = z.infer<typeof insertWorkOrderSchema>;
 export type DocumentTemplate = typeof documentTemplates.$inferSelect;
 export type InsertDocumentTemplate = z.infer<typeof insertDocumentTemplateSchema>;
+export type SigningRequest = typeof signingRequests.$inferSelect;
+export type InsertSigningRequest = z.infer<typeof insertSigningRequestSchema>;

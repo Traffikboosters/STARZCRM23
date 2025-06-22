@@ -45,6 +45,7 @@ export default function Sidebar({
     { id: "automations", label: "Automations", icon: ServerCog },
     { id: "files", label: "Secure Files", icon: Shield },
     { id: "chat", label: "Chat Widget", icon: MessageCircle },
+    { id: "documents", label: "Document Signing", icon: FileText },
   ];
 
   return (
