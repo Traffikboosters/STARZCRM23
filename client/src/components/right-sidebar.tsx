@@ -9,9 +9,10 @@ import type { Event, Contact } from "@shared/schema";
 interface RightSidebarProps {
   onJoinCall: () => void;
   onCreateEvent: () => void;
+  onContactClick?: (contact: Contact) => void;
 }
 
-export default function RightSidebar({ onJoinCall, onCreateEvent }: RightSidebarProps) {
+export default function RightSidebar({ onJoinCall, onCreateEvent, onContactClick }: RightSidebarProps) {
   const { data: events = [] } = useQuery<Event[]>({
     queryKey: ['/api/events'],
   });
@@ -115,7 +116,11 @@ export default function RightSidebar({ onJoinCall, onCreateEvent }: RightSidebar
               </div>
             ) : (
               recentContacts.map((contact) => (
-                <Card key={contact.id} className="p-3 border border-neutral-lighter hover:bg-neutral-lightest cursor-pointer">
+                <Card 
+                  key={contact.id} 
+                  className="p-3 border border-neutral-lighter hover:bg-neutral-lightest cursor-pointer"
+                  onClick={() => onContactClick?.(contact)}
+                >
                   <div className="flex items-center space-x-3">
                     <Avatar className="w-10 h-10">
                       <AvatarImage src={contact.avatar || ""} />

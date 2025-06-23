@@ -20,6 +20,7 @@ import HRPortal from "./hr-portal";
 import RightSidebar from "@/components/right-sidebar";
 import VideoCallModal from "@/components/video-call-modal";
 import EventModal from "@/components/event-modal";
+import ContactDetailsModal from "@/components/contact-details-modal";
 import LeadNotification from "@/components/lead-notification";
 import type { Contact } from "@shared/schema";
 
@@ -90,6 +91,7 @@ export default function Dashboard() {
         <RightSidebar 
           onJoinCall={() => setIsVideoCallOpen(true)}
           onCreateEvent={() => setIsEventModalOpen(true)}
+          onContactClick={(contact) => setSelectedContact(contact)}
         />
       </div>
 
@@ -101,6 +103,12 @@ export default function Dashboard() {
       <EventModal 
         isOpen={isEventModalOpen}
         onClose={() => setIsEventModalOpen(false)}
+      />
+      
+      <ContactDetailsModal
+        contact={selectedContact}
+        isOpen={!!selectedContact}
+        onClose={() => setSelectedContact(null)}
       />
     </div>
   );

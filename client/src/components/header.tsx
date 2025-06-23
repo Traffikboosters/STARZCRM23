@@ -141,15 +141,55 @@ export default function Header() {
           </div>
           
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5 text-neutral-medium" />
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-            >
-              3
-            </Badge>
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="h-5 w-5 text-neutral-medium" />
+                <Badge 
+                  variant="destructive" 
+                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                >
+                  3
+                </Badge>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+              <div className="px-4 py-2 border-b">
+                <h4 className="font-semibold">Notifications</h4>
+              </div>
+              <div className="max-h-96 overflow-y-auto">
+                <DropdownMenuItem className="flex items-start space-x-3 p-4">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <div>
+                    <p className="font-medium">New Contact Added</p>
+                    <p className="text-sm text-muted-foreground">Maria Rodriguez from Auto Repair Plus</p>
+                    <p className="text-xs text-muted-foreground">2 hours ago</p>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-start space-x-3 p-4">
+                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <div>
+                    <p className="font-medium">Call Completed</p>
+                    <p className="text-sm text-muted-foreground">Successfully connected with Nicole Taylor</p>
+                    <p className="text-xs text-muted-foreground">4 hours ago</p>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-start space-x-3 p-4">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <div>
+                    <p className="font-medium">Follow-up Reminder</p>
+                    <p className="text-sm text-muted-foreground">James Anderson requires follow-up call</p>
+                    <p className="text-xs text-muted-foreground">6 hours ago</p>
+                  </div>
+                </DropdownMenuItem>
+              </div>
+              <div className="px-4 py-2 border-t">
+                <Button variant="ghost" size="sm" className="w-full justify-start">
+                  View All Notifications
+                </Button>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
           
           {/* User profile */}
           <DropdownMenu>
