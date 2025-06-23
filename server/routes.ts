@@ -59,6 +59,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/users/me", requireAuth, async (req: any, res) => {
+    try {
+      const { firstName, lastName, email, phone } = req.body;
+      const updatedUser = await storage.updateUser(req.user.id, {
+        firstName,
+        lastName,
+        email,
+        phone,
+      });
+      if (!updatedUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(updatedUser);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
   // Companies API
   app.get("/api/companies", async (req, res) => {
     try {

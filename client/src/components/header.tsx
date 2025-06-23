@@ -50,12 +50,44 @@ export default function Header() {
     window.location.reload();
   };
 
-  const handleProfileUpdate = () => {
-    toast({
-      title: "Profile Updated",
-      description: "Your profile settings have been saved.",
-    });
-    setIsProfileOpen(false);
+  const handleProfileUpdate = async () => {
+    try {
+      const firstName = (document.getElementById('firstName') as HTMLInputElement)?.value;
+      const lastName = (document.getElementById('lastName') as HTMLInputElement)?.value;
+      const email = (document.getElementById('email') as HTMLInputElement)?.value;
+      const phone = (document.getElementById('phone') as HTMLInputElement)?.value;
+
+      const response = await fetch('/api/users/me', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          phone,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Profile Updated",
+          description: "Your profile settings have been saved successfully.",
+        });
+        setIsProfileOpen(false);
+        // Refresh user data
+        window.location.reload();
+      } else {
+        throw new Error('Failed to update profile');
+      }
+    } catch (error) {
+      toast({
+        title: "Update Failed",
+        description: "There was an error updating your profile. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleCompanyUpdate = () => {
@@ -173,19 +205,35 @@ export default function Header() {
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="firstName" className="text-right">First Name</label>
-              <Input id="firstName" defaultValue="John" className="col-span-3" />
+              <Input 
+                id="firstName" 
+                defaultValue={(user as any)?.firstName || "Michael"} 
+                className="col-span-3" 
+              />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="lastName" className="text-right">Last Name</label>
-              <Input id="lastName" defaultValue="Doe" className="col-span-3" />
+              <Input 
+                id="lastName" 
+                defaultValue={(user as any)?.lastName || "Thompson"} 
+                className="col-span-3" 
+              />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="email" className="text-right">Email</label>
-              <Input id="email" defaultValue="traffikboosters@gmail.com" className="col-span-3" />
+              <Input 
+                id="email" 
+                defaultValue={(user as any)?.email || "traffikboosters@gmail.com"} 
+                className="col-span-3" 
+              />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="phone" className="text-right">Phone</label>
-              <Input id="phone" defaultValue="+1-555-0200" className="col-span-3" />
+              <Input 
+                id="phone" 
+                defaultValue={(user as any)?.phone || "+1-954-793-9065"} 
+                className="col-span-3" 
+              />
             </div>
           </div>
           <div className="flex justify-end space-x-2">
