@@ -558,16 +558,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { leadId, assignedTo, notes } = req.body;
       
-      const updatedLead = await storage.assignLead(leadId, assignedTo, req.user.id, notes);
+      // Check if user has permission to assign leads
+      if (req.user.role !== 'admin' && req.user.role !== 'manager') {
+        return res.status(403).json({ error: "Insufficient permissions to assign leads" });
+      }
+      
+      let updatedLead;
+      if (assignedTo) {
+        updatedLead = await storage.assignLead(leadId, assignedTo, req.user.id, notes);
+      } else {
+        // Unassign the lead
+        updatedLead = await storage.updateContact(leadId, {
+          assignedTo: null,
+          assignedBy: null,
+          assignedAt: null,
+          updatedBy: req.user.id
+        });
+      }
       
       if (!updatedLead) {
         return res.status(404).json({ error: "Lead not found" });
       }
 
+      const actionMessage = assignedTo ? "Lead assigned successfully" : "Lead unassigned successfully";
       res.json({
         success: true,
         lead: updatedLead,
-        message: "Lead assigned successfully"
+        message: actionMessage
       });
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });

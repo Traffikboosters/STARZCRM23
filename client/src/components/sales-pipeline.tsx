@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { User, DollarSign, Calendar, Phone, Mail, MoreHorizontal, UserPlus, Filter } from "lucide-react";
@@ -46,8 +46,17 @@ function LeadAssignmentModal({ isOpen, onClose, lead, salesReps }: LeadAssignmen
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Set the selected rep when modal opens and lead changes
+  useEffect(() => {
+    if (lead?.assignedTo) {
+      setSelectedRep(lead.assignedTo.toString());
+    } else {
+      setSelectedRep("");
+    }
+  }, [lead]);
+
   const assignLeadMutation = useMutation({
-    mutationFn: async (data: { leadId: number; assignedTo: number; notes?: string }) => {
+    mutationFn: async (data: { leadId: number; assignedTo: number | null; notes?: string }) => {
       const response = await apiRequest("POST", "/api/leads/assign", data);
       return response.json();
     },
@@ -71,11 +80,13 @@ function LeadAssignmentModal({ isOpen, onClose, lead, salesReps }: LeadAssignmen
   });
 
   const handleAssign = () => {
-    if (!lead || !selectedRep) return;
+    if (!lead) return;
+    
+    const assignedTo = selectedRep ? parseInt(selectedRep) : null;
     
     assignLeadMutation.mutate({
       leadId: lead.id,
-      assignedTo: parseInt(selectedRep),
+      assignedTo,
       notes
     });
   };
@@ -84,7 +95,7 @@ function LeadAssignmentModal({ isOpen, onClose, lead, salesReps }: LeadAssignmen
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Assign Lead</DialogTitle>
+          <DialogTitle>{lead?.assignedTo ? 'Reassign Lead' : 'Assign Lead'}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           {lead && (
@@ -92,6 +103,11 @@ function LeadAssignmentModal({ isOpen, onClose, lead, salesReps }: LeadAssignmen
               <h3 className="font-semibold">{lead.firstName} {lead.lastName}</h3>
               <p className="text-sm text-gray-600">{lead.company}</p>
               <p className="text-sm text-gray-600">{lead.email}</p>
+              {lead.assignedTo && (
+                <p className="text-sm text-blue-600 mt-2">
+                  Currently assigned to: {salesReps.find(r => r.id === lead.assignedTo)?.firstName} {salesReps.find(r => r.id === lead.assignedTo)?.lastName}
+                </p>
+              )}
             </div>
           )}
           
@@ -102,9 +118,10 @@ function LeadAssignmentModal({ isOpen, onClose, lead, salesReps }: LeadAssignmen
                 <SelectValue placeholder="Select sales representative" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="">Unassigned</SelectItem>
                 {salesReps.map((rep) => (
                   <SelectItem key={rep.id} value={rep.id.toString()}>
-                    {rep.username} ({rep.email})
+                    {rep.firstName} {rep.lastName} ({rep.email})
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -128,9 +145,9 @@ function LeadAssignmentModal({ isOpen, onClose, lead, salesReps }: LeadAssignmen
             </Button>
             <Button 
               onClick={handleAssign}
-              disabled={!selectedRep || assignLeadMutation.isPending}
+              disabled={assignLeadMutation.isPending}
             >
-              {assignLeadMutation.isPending ? "Assigning..." : "Assign Lead"}
+              {assignLeadMutation.isPending ? "Processing..." : (selectedRep ? "Assign Lead" : "Unassign Lead")}
             </Button>
           </div>
         </div>
@@ -167,13 +184,18 @@ export default function SalesPipeline() {
       return contact.assignedTo === currentUser.id;
     }
     
-    // If filtering by specific rep
-    if (filterByRep !== "all") {
+    // Admin/Manager view - filter by selection
+    if (filterByRep === "unassigned") {
+      return !contact.assignedTo;
+    } else if (filterByRep !== "all") {
       return contact.assignedTo === parseInt(filterByRep);
     }
     
     return true;
   });
+
+  // Check if current user can assign leads (admin or manager)
+  const canAssignLeads = currentUser?.role === 'admin' || currentUser?.role === 'manager';
 
   // Group contacts by pipeline stage
   const stagesWithLeads: PipelineStage[] = pipelineStages.map(stage => ({
@@ -250,22 +272,28 @@ export default function SalesPipeline() {
         </div>
         
         <div className="flex items-center gap-3">
-          {currentUser?.role !== 'sales_rep' && (
+          {canAssignLeads && (
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-gray-600" />
               <Select value={filterByRep} onValueChange={setFilterByRep}>
                 <SelectTrigger className="w-48">
-                  <SelectValue />
+                  <SelectValue placeholder="Filter by Sales Rep" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Sales Reps</SelectItem>
+                  <SelectItem value="unassigned">Unassigned Leads</SelectItem>
                   {salesReps.map((rep) => (
                     <SelectItem key={rep.id} value={rep.id.toString()}>
-                      {rep.username}
+                      {rep.firstName} {rep.lastName}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          )}
+          {!canAssignLeads && (
+            <div className="text-sm text-gray-600">
+              Your assigned leads: {filteredContacts.length}
             </div>
           )}
         </div>
@@ -372,7 +400,7 @@ export default function SalesPipeline() {
                                     <p className="text-xs text-gray-600">{lead.company}</p>
                                   </div>
                                   
-                                  {currentUser?.role !== 'sales_rep' && (
+                                  {canAssignLeads && (
                                     <DropdownMenu>
                                       <DropdownMenuTrigger asChild>
                                         <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
@@ -387,7 +415,7 @@ export default function SalesPipeline() {
                                           }}
                                         >
                                           <UserPlus className="h-3 w-3 mr-2" />
-                                          Assign Rep
+                                          {lead.assignedTo ? 'Reassign Lead' : 'Assign Lead'}
                                         </DropdownMenuItem>
                                       </DropdownMenuContent>
                                     </DropdownMenu>
@@ -405,8 +433,18 @@ export default function SalesPipeline() {
                                   )}
                                 </div>
                                 
-                                <div className="flex items-center gap-2 text-xs text-gray-600">
-                                  <span>{getAssignedRepName(lead.assignedTo)}</span>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-1">
+                                    <User className="h-3 w-3" />
+                                    <span className={`text-xs ${lead.assignedTo ? 'text-blue-600 font-medium' : 'text-red-500'}`}>
+                                      {getAssignedRepName(lead.assignedTo)}
+                                    </span>
+                                  </div>
+                                  {!lead.assignedTo && canAssignLeads && (
+                                    <Badge variant="outline" className="text-xs text-red-600 border-red-200">
+                                      Unassigned
+                                    </Badge>
+                                  )}
                                 </div>
                                 
                                 <div className="flex justify-between items-center">
