@@ -21,6 +21,7 @@ import SalesPipeline from "@/components/sales-pipeline";
 import HRPortal from "./hr-portal";
 import RightSidebar from "@/components/right-sidebar";
 import { UserManagement } from "@/components/user-management";
+import { SalesRepAnalytics } from "@/components/sales-rep-analytics";
 import VideoCallModal from "@/components/video-call-modal";
 import EventModal from "@/components/event-modal";
 import ContactDetailsModal from "@/components/contact-details-modal";
@@ -56,6 +57,8 @@ export default function Dashboard() {
       case "pipeline":
         return <SalesPipeline />;
       case "analytics":
+        return <SalesRepAnalytics />;
+      case "scraping-analytics":
         return <ScrapingAnalytics />;
       case "scraping":
         return <ScrapingConfigurationDemo />;

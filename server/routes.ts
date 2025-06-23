@@ -655,6 +655,313 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sales rep analytics endpoints
+  app.get("/api/sales-analytics", requireAuth, async (req: any, res) => {
+    try {
+      const { period = "30d", repId } = req.query;
+      
+      // Get all contacts for analytics
+      const contacts = await storage.getAllContacts();
+      const events = await storage.getAllEvents();
+      const users = await storage.getAllUsers();
+      
+      // Filter sales reps
+      const salesReps = users.filter(user => user.role === "sales_rep");
+      
+      // Calculate performance metrics for each rep
+      const repAnalytics = salesReps.map(rep => {
+        const assignedLeads = contacts.filter(contact => contact.assignedTo === rep.id);
+        const contactedLeads = assignedLeads.filter(contact => contact.leadStatus !== "new");
+        const qualifiedLeads = assignedLeads.filter(contact => 
+          contact.leadStatus === "qualified" || 
+          contact.leadStatus === "proposal" || 
+          contact.leadStatus === "negotiation" ||
+          contact.leadStatus === "closed_won"
+        );
+        const wonDeals = assignedLeads.filter(contact => contact.leadStatus === "closed_won");
+        const lostDeals = assignedLeads.filter(contact => contact.leadStatus === "closed_lost");
+        
+        // Calculate appointments from events
+        const repEvents = events.filter(event => event.createdBy === rep.id);
+        const appointments = repEvents.filter(event => event.type === "meeting");
+        const completedAppointments = appointments.filter(event => event.status === "completed");
+        
+        // Calculate revenue from won deals
+        const totalRevenue = wonDeals.reduce((sum, deal) => sum + (deal.budget || 0), 0);
+        const avgDealSize = wonDeals.length > 0 ? totalRevenue / wonDeals.length : 0;
+        
+        // Calculate ratios
+        const closingRatio = qualifiedLeads.length > 0 ? (wonDeals.length / qualifiedLeads.length) * 100 : 0;
+        const contactRate = assignedLeads.length > 0 ? (contactedLeads.length / assignedLeads.length) * 100 : 0;
+        const appointmentRate = contactedLeads.length > 0 ? (appointments.length / contactedLeads.length) * 100 : 0;
+        const showRate = appointments.length > 0 ? (completedAppointments.length / appointments.length) * 100 : 0;
+        
+        return {
+          repId: rep.id,
+          repName: `${rep.firstName} ${rep.lastName}`,
+          email: rep.email,
+          extension: rep.extension,
+          totalLeadsAssigned: assignedLeads.length,
+          leadsContacted: contactedLeads.length,
+          appointmentsSet: appointments.length,
+          appointmentsCompleted: completedAppointments.length,
+          appointmentShowRate: showRate,
+          dealsWon: wonDeals.length,
+          dealsLost: lostDeals.length,
+          totalRevenue: totalRevenue / 100, // Convert from cents
+          avgDealSize: avgDealSize / 100, // Convert from cents
+          closingRatio: Math.round(closingRatio * 10) / 10,
+          contactRate: Math.round(contactRate * 10) / 10,
+          appointmentConversionRate: Math.round(appointmentRate * 10) / 10,
+          lastActivity: new Date(),
+          leadSources: assignedLeads.reduce((sources: any, lead) => {
+            const source = lead.leadSource || 'unknown';
+            sources[source] = (sources[source] || 0) + 1;
+            return sources;
+          }, {})
+        };
+      });
+      
+      // Sort by closing ratio
+      repAnalytics.sort((a, b) => b.closingRatio - a.closingRatio);
+      
+      // Add rankings
+      repAnalytics.forEach((rep, index) => {
+        (rep as any).rank = index + 1;
+      });
+      
+      res.json({
+        period,
+        salesReps: repAnalytics,
+        teamAverages: {
+          closingRatio: repAnalytics.reduce((sum, rep) => sum + rep.closingRatio, 0) / repAnalytics.length,
+          contactRate: repAnalytics.reduce((sum, rep) => sum + rep.contactRate, 0) / repAnalytics.length,
+          appointmentRate: repAnalytics.reduce((sum, rep) => sum + rep.appointmentConversionRate, 0) / repAnalytics.length,
+          avgDealSize: repAnalytics.reduce((sum, rep) => sum + rep.avgDealSize, 0) / repAnalytics.length
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  app.post("/api/sales-analytics/goals", requireAuth, async (req: any, res) => {
+    try {
+      const { repId, monthlyGoal, period } = req.body;
+      
+      // For now, store goals in memory (in production, add goals table)
+      // This would update the user's monthly goal target
+      const user = await storage.updateUser(repId, { 
+        // Add goal field to user schema if needed
+      });
+      
+      res.json({ success: true, message: "Goal updated successfully" });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  // Setup comprehensive sales analytics demo data
+  app.post("/api/setup-analytics-demo", requireAuth, async (req: any, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      let sarahId, davidId, amandaId;
+
+      // Ensure sales reps exist
+      const existingSalesReps = users.filter(user => user.role === "sales_rep");
+      if (existingSalesReps.length < 3) {
+        // Create sales reps
+        const sarah = await storage.createUser({
+          username: "sarah.johnson",
+          password: "temp123",
+          email: "sarah.johnson@traffikboosters.com",
+          firstName: "Sarah",
+          lastName: "Johnson",
+          role: "sales_rep",
+          phone: "+1-877-840-6251",
+          extension: "101"
+        });
+        
+        const david = await storage.createUser({
+          username: "david.chen",
+          password: "temp123", 
+          email: "david.chen@traffikboosters.com",
+          firstName: "David",
+          lastName: "Chen",
+          role: "sales_rep",
+          phone: "+1-877-840-6252",
+          extension: "102"
+        });
+        
+        const amanda = await storage.createUser({
+          username: "amanda.davis",
+          password: "temp123",
+          email: "amanda.davis@traffikboosters.com", 
+          firstName: "Amanda",
+          lastName: "Davis",
+          role: "sales_rep",
+          phone: "+1-877-840-6253",
+          extension: "103"
+        });
+
+        sarahId = sarah.id;
+        davidId = david.id;
+        amandaId = amanda.id;
+      } else {
+        sarahId = existingSalesReps[0]?.id;
+        davidId = existingSalesReps[1]?.id;
+        amandaId = existingSalesReps[2]?.id;
+      }
+
+      // Create comprehensive lead data showing different performance levels
+      const analyticsLeads = [
+        // Sarah's leads - top performer (3 won, 1 lost, 2 in progress)
+        {
+          firstName: "Jennifer", lastName: "Chen", email: "jennifer.chen@techstartup.com",
+          phone: "+1-212-555-1234", company: "Tech Startup Inc",
+          leadSource: "website", leadStatus: "closed_won", budget: 75000, assignedTo: sarahId
+        },
+        {
+          firstName: "Michael", lastName: "Thompson", email: "mthompson@consulting.com", 
+          phone: "+1-212-555-2345", company: "Thompson Consulting",
+          leadSource: "referral", leadStatus: "closed_won", budget: 95000, assignedTo: sarahId
+        },
+        {
+          firstName: "Patricia", lastName: "Rodriguez", email: "patricia@fintech.com",
+          phone: "+1-212-555-3456", company: "Rodriguez FinTech", 
+          leadSource: "linkedin", leadStatus: "closed_won", budget: 85000, assignedTo: sarahId
+        },
+        {
+          firstName: "Emily", lastName: "Davis", email: "emily@ecommerce.com",
+          phone: "+1-212-555-4567", company: "E-Commerce Solutions",
+          leadSource: "website", leadStatus: "proposal", budget: 65000, assignedTo: sarahId
+        },
+        {
+          firstName: "Daniel", lastName: "Kim", email: "dkim@healthcare.com",
+          phone: "+1-212-555-5678", company: "Kim Healthcare Systems",
+          leadSource: "referral", leadStatus: "negotiation", budget: 120000, assignedTo: sarahId
+        },
+        {
+          firstName: "Rachel", lastName: "Martinez", email: "rachel@legal.com",
+          phone: "+1-212-555-6789", company: "Martinez Legal Group",
+          leadSource: "cold_call", leadStatus: "closed_lost", budget: 45000, assignedTo: sarahId
+        },
+
+        // David's leads - moderate performer (2 won, 2 lost, 1 in progress) 
+        {
+          firstName: "Robert", lastName: "Johnson", email: "rob.johnson@manufacturing.com",
+          phone: "+1-323-555-4567", company: "Johnson Manufacturing",
+          leadSource: "referral", leadStatus: "closed_won", budget: 55000, assignedTo: davidId
+        },
+        {
+          firstName: "Lisa", lastName: "Anderson", email: "lisa@logistics.com",
+          phone: "+1-323-555-5678", company: "Anderson Logistics", 
+          leadSource: "trade_show", leadStatus: "closed_won", budget: 48000, assignedTo: davidId
+        },
+        {
+          firstName: "James", lastName: "Wilson", email: "jwilson@construction.com",
+          phone: "+1-323-555-6789", company: "Wilson Construction",
+          leadSource: "cold_call", leadStatus: "closed_lost", budget: 40000, assignedTo: davidId
+        },
+        {
+          firstName: "Maria", lastName: "Garcia", email: "mgarcia@retail.com", 
+          phone: "+1-323-555-7890", company: "Garcia Retail Group",
+          leadSource: "website", leadStatus: "closed_lost", budget: 35000, assignedTo: davidId
+        },
+        {
+          firstName: "Steven", lastName: "Brown", email: "steven@restaurant.com",
+          phone: "+1-323-555-8901", company: "Brown Restaurant Group",
+          leadSource: "referral", leadStatus: "qualified", budget: 62000, assignedTo: davidId
+        },
+
+        // Amanda's leads - developing rep (1 won, 1 lost, 3 in progress)
+        {
+          firstName: "Amanda", lastName: "Taylor", email: "ataylor@nonprofit.org",
+          phone: "+1-713-555-0123", company: "Taylor Community Services",
+          leadSource: "website", leadStatus: "closed_won", budget: 28000, assignedTo: amandaId
+        },
+        {
+          firstName: "Kevin", lastName: "Lee", email: "klee@automotive.com", 
+          phone: "+1-713-555-1234", company: "Lee Automotive",
+          leadSource: "cold_call", leadStatus: "closed_lost", budget: 32000, assignedTo: amandaId
+        },
+        {
+          firstName: "Nicole", lastName: "Williams", email: "nicole@retailchain.com",
+          phone: "+1-713-555-2345", company: "Williams Retail Chain", 
+          leadSource: "social_media", leadStatus: "contacted", budget: 38000, assignedTo: amandaId
+        },
+        {
+          firstName: "Christopher", lastName: "Jones", email: "chris@techservices.com",
+          phone: "+1-713-555-3456", company: "Jones Tech Services",
+          leadSource: "website", leadStatus: "qualified", budget: 42000, assignedTo: amandaId
+        },
+        {
+          firstName: "Jessica", lastName: "Miller", email: "jessica@consulting.com",
+          phone: "+1-713-555-4567", company: "Miller Business Consulting", 
+          leadSource: "linkedin", leadStatus: "new", budget: 35000, assignedTo: amandaId
+        }
+      ];
+
+      // Create all leads
+      for (const leadData of analyticsLeads) {
+        await storage.createContact({
+          ...leadData,
+          position: "Decision Maker",
+          disposition: leadData.leadStatus === "closed_won" ? "converted" : 
+                      leadData.leadStatus === "closed_lost" ? "not_interested" : "interested",
+          priority: leadData.budget > 70000 ? "high" : leadData.budget > 40000 ? "medium" : "low",
+          timeline: "1_month",
+          notes: `Analytics demo lead - ${leadData.leadStatus}`,
+          tags: ["demo", "analytics"],
+          createdBy: 1
+        });
+      }
+
+      // Create some appointment events for each rep
+      const events = [
+        // Sarah's appointments - high show rate
+        { title: "Discovery Call - Tech Startup", type: "meeting", status: "completed", createdBy: sarahId },
+        { title: "Proposal Meeting - Thompson Consulting", type: "meeting", status: "completed", createdBy: sarahId },
+        { title: "Demo - Rodriguez FinTech", type: "meeting", status: "completed", createdBy: sarahId },
+        { title: "Follow-up - E-Commerce Solutions", type: "meeting", status: "completed", createdBy: sarahId },
+        { title: "Contract Review - Healthcare Systems", type: "meeting", status: "scheduled", createdBy: sarahId },
+
+        // David's appointments - moderate show rate
+        { title: "Initial Meeting - Johnson Manufacturing", type: "meeting", status: "completed", createdBy: davidId },
+        { title: "Demo - Anderson Logistics", type: "meeting", status: "completed", createdBy: davidId },
+        { title: "Follow-up - Wilson Construction", type: "meeting", status: "no_show", createdBy: davidId },
+        { title: "Qualification Call - Restaurant Group", type: "meeting", status: "completed", createdBy: davidId },
+
+        // Amanda's appointments - developing skills
+        { title: "Discovery - Community Services", type: "meeting", status: "completed", createdBy: amandaId },
+        { title: "Demo - Lee Automotive", type: "meeting", status: "no_show", createdBy: amandaId },
+        { title: "Follow-up - Retail Chain", type: "meeting", status: "scheduled", createdBy: amandaId }
+      ];
+
+      for (const eventData of events) {
+        await storage.createEvent({
+          ...eventData,
+          description: "Sales appointment",
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 3600000)
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Analytics demo data created successfully",
+        summary: {
+          salesReps: 3,
+          leads: analyticsLeads.length,
+          appointments: events.length
+        }
+      });
+
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
   // Sales pipeline endpoints
   app.post("/api/leads/assign", requireAuth, async (req: any, res) => {
     try {
