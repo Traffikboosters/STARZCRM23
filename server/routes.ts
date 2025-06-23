@@ -1218,6 +1218,255 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }).filter(data => data.totalDials > 0);
   }
 
+  // Calendar booking endpoints for website integration
+  app.post("/api/calendar/book-appointment", async (req, res) => {
+    try {
+      const {
+        name,
+        email,
+        phone,
+        company,
+        website,
+        serviceType,
+        message,
+        preferredDate,
+        preferredTime,
+        source,
+        timezone
+      } = req.body;
+
+      // Validate required fields
+      if (!name || !email || !phone || !preferredDate || !preferredTime || !serviceType) {
+        return res.status(400).json({ 
+          error: "Missing required fields: name, email, phone, preferredDate, preferredTime, serviceType" 
+        });
+      }
+
+      // Create the event in the calendar
+      const startDateTime = new Date(`${preferredDate}T${preferredTime}:00`);
+      const endDateTime = new Date(startDateTime.getTime() + (60 * 60 * 1000)); // 1 hour default
+
+      const event = await storage.createEvent({
+        title: `${serviceType} - ${name}`,
+        description: `
+Appointment Details:
+- Service: ${serviceType}
+- Client: ${name}
+- Company: ${company || 'Not provided'}
+- Phone: ${phone}
+- Email: ${email}
+- Website: ${website || 'Not provided'}
+- Message: ${message || 'No additional message'}
+- Source: ${source || 'Direct booking'}
+- Timezone: ${timezone || 'UTC'}
+- Location: Video Call
+        `.trim(),
+        startDate: startDateTime,
+        endDate: endDateTime,
+        type: "consultation",
+        attendees: [email],
+        createdBy: 1
+      });
+
+      // Create a contact record
+      const contact = await storage.createContact({
+        firstName: name.split(' ')[0],
+        lastName: name.split(' ').slice(1).join(' ') || '',
+        email,
+        phone,
+        company: company || '',
+        status: 'new',
+        tags: [serviceType, 'website-booking'],
+        notes: `${message || ''}\nWebsite: ${website || 'Not provided'}\nSource: ${source || 'Website Calendar'}`,
+        leadScore: 85, // High score for direct bookings
+        lastContactDate: new Date()
+      });
+
+      // Log the appointment booking
+      logAuditEvent(
+        'appointment_booked',
+        'event',
+        event.id,
+        1,
+        null,
+        { name, email, phone, serviceType, preferredDate, preferredTime },
+        `Website appointment booking: ${serviceType} for ${name}`
+      );
+
+      res.json({
+        success: true,
+        appointmentId: event.id,
+        contactId: contact.id,
+        message: "Appointment booked successfully",
+        details: {
+          date: preferredDate,
+          time: preferredTime,
+          service: serviceType,
+          confirmationEmail: email
+        }
+      });
+
+    } catch (error) {
+      console.error('Calendar booking error:', error);
+      res.status(500).json({ 
+        error: "Failed to book appointment", 
+        details: (error as Error).message 
+      });
+    }
+  });
+
+  app.get("/api/calendar/available-slots", async (req, res) => {
+    try {
+      const { date, service, timezone = 'America/New_York' } = req.query;
+      
+      if (!date) {
+        return res.status(400).json({ error: "Date parameter is required" });
+      }
+
+      // Get existing events for the date
+      const events = await storage.getAllEvents();
+      const requestedDate = new Date(date as string);
+      
+      const dayEvents = events.filter(event => {
+        const eventDate = new Date(event.startDate);
+        return eventDate.toDateString() === requestedDate.toDateString();
+      });
+
+      // Generate available slots (9 AM - 6 PM EST, 30-min intervals)
+      const businessHours = {
+        start: 9,
+        end: 18,
+        days: [1, 2, 3, 4, 5] // Monday-Friday
+      };
+
+      const dayOfWeek = requestedDate.getDay();
+      if (!businessHours.days.includes(dayOfWeek)) {
+        return res.json({ availableSlots: [] });
+      }
+
+      const slots: string[] = [];
+      for (let hour = businessHours.start; hour < businessHours.end; hour++) {
+        slots.push(`${hour.toString().padStart(2, '0')}:00`);
+        slots.push(`${hour.toString().padStart(2, '0')}:30`);
+      }
+
+      // Filter out booked slots
+      const bookedSlots = dayEvents.map(event => {
+        const eventStart = new Date(event.startDate);
+        return `${eventStart.getHours().toString().padStart(2, '0')}:${eventStart.getMinutes().toString().padStart(2, '0')}`;
+      });
+
+      const availableSlots = slots.filter(slot => !bookedSlots.includes(slot));
+
+      // Filter past slots for today
+      const now = new Date();
+      if (requestedDate.toDateString() === now.toDateString()) {
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        
+        const futureSlots = availableSlots.filter(slot => {
+          const [hour, minute] = slot.split(':').map(Number);
+          return hour > currentHour || (hour === currentHour && minute > currentMinute + 30);
+        });
+        
+        return res.json({ availableSlots: futureSlots });
+      }
+
+      res.json({ availableSlots });
+
+    } catch (error) {
+      console.error('Available slots error:', error);
+      res.status(500).json({ 
+        error: "Failed to get available slots", 
+        details: (error as Error).message 
+      });
+    }
+  });
+
+  app.get("/api/calendar/services", async (req, res) => {
+    try {
+      const services = [
+        {
+          id: "consultation",
+          name: "Free Growth Consultation",
+          duration: 30,
+          description: "Discover opportunities to boost your website traffic",
+          price: "Free"
+        },
+        {
+          id: "demo",
+          name: "Strategy Demo",
+          duration: 60,
+          description: "See our proven traffic generation strategies in action",
+          price: "Free"
+        },
+        {
+          id: "audit",
+          name: "Website Audit Review",
+          duration: 45,
+          description: "Get a comprehensive analysis of your current traffic",
+          price: "Free"
+        },
+        {
+          id: "strategy",
+          name: "Custom Strategy Session",
+          duration: 90,
+          description: "Develop a personalized traffic growth plan",
+          price: "Free"
+        }
+      ];
+
+      res.json({ services });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get services" });
+    }
+  });
+
+  // Calendar widget embedding endpoint
+  app.get("/api/calendar/embed-code", requireAuth, async (req: any, res) => {
+    try {
+      const { domain = "traffikboosters.com" } = req.query;
+      const baseUrl = req.protocol + '://' + req.get('host');
+      
+      const embedCode = `
+<!-- Traffik Boosters Calendar Widget -->
+<div id="traffik-boosters-calendar"></div>
+<script>
+(function() {
+  var script = document.createElement('script');
+  script.src = '${baseUrl}/embed/calendar-widget.js';
+  script.async = true;
+  script.onload = function() {
+    TraffikBoostersCalendar.init({
+      container: '#traffik-boosters-calendar',
+      apiBaseUrl: '${baseUrl}',
+      primaryColor: '#e45c2b',
+      companyName: 'Traffik Boosters',
+      timezone: 'America/New_York'
+    });
+  };
+  document.head.appendChild(script);
+})();
+</script>
+<!-- End Traffik Boosters Calendar Widget -->
+      `.trim();
+
+      res.json({
+        embedCode,
+        instructions: [
+          "Copy the embed code above",
+          "Paste it into your website where you want the calendar to appear",
+          "The calendar will automatically load and be ready for bookings",
+          "Appointments will sync directly to your Starz dashboard"
+        ],
+        testUrl: `${baseUrl}/calendar-widget-demo`
+      });
+
+    } catch (error) {
+      res.status(500).json({ error: "Failed to generate embed code" });
+    }
+  });
+
   // Sales pipeline endpoints
   app.post("/api/leads/assign", requireAuth, async (req: any, res) => {
     try {
