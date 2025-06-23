@@ -50,17 +50,35 @@ export default function EmbeddedChatWidget({
     message: ""
   });
   const [chatPhase, setChatPhase] = useState<"greeting" | "form" | "chat">("greeting");
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+
+  // Initialize messages with business hours awareness
+  useEffect(() => {
+    const initialMessage = isBusinessHours() 
+      ? welcomeMessage
+      : "Hi! Thanks for your interest in Traffik Boosters. We're currently outside business hours (Monday-Friday, 9 AM - 6 PM EST), but a growth expert will call you within 24 business hours. How can we help boost your traffic?";
+    
+    setMessages([{
       id: "welcome",
-      message: welcomeMessage,
+      message: initialMessage,
       isFromUser: false,
       timestamp: new Date(),
       type: "system"
-    }
-  ]);
+    }]);
+  }, [welcomeMessage]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Business hours check (9 AM - 6 PM EST, Monday-Friday)
+  const isBusinessHours = () => {
+    const now = new Date();
+    const estTime = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+    const day = estTime.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const hour = estTime.getHours();
+    
+    // Monday (1) to Friday (5), 9 AM to 6 PM
+    return day >= 1 && day <= 5 && hour >= 9 && hour < 18;
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -111,10 +129,17 @@ export default function EmbeddedChatWidget({
       });
 
       if (response.ok) {
-        addMessage(`Thanks ${leadForm.name}! I've received your information. Our team will reach out within 24 hours to discuss how we can boost your traffic.`, false, "system");
-        setTimeout(() => {
-          addMessage("In the meantime, feel free to ask any questions about our services!", false, "system");
-        }, 2000);
+        if (isBusinessHours()) {
+          addMessage(`Thanks ${leadForm.name}! I've received your information. Our team will reach out within 24 hours to discuss how we can boost your traffic.`, false, "system");
+          setTimeout(() => {
+            addMessage("In the meantime, feel free to ask any questions about our services!", false, "system");
+          }, 2000);
+        } else {
+          addMessage(`Thanks ${leadForm.name}! I've received your information. Since you're contacting us after business hours, one of our growth experts will call you within 24 business hours (Monday-Friday, 9 AM - 6 PM EST) to discuss how we can boost your traffic.`, false, "system");
+          setTimeout(() => {
+            addMessage("We appreciate your interest and look forward to speaking with you soon about growing your business!", false, "system");
+          }, 2000);
+        }
         setChatPhase("chat");
       } else {
         addMessage("There was an issue submitting your information. Please try again or contact us directly.", false, "system");
@@ -192,7 +217,10 @@ export default function EmbeddedChatWidget({
             </div>
             <div>
               <div className="font-semibold text-sm">{companyName}</div>
-              <div className="text-xs opacity-90">Traffic Boosting Experts</div>
+              <div className="text-xs opacity-90 flex items-center gap-1">
+                <span className={`inline-block w-2 h-2 rounded-full ${isBusinessHours() ? 'bg-green-400' : 'bg-yellow-400'}`}></span>
+                {isBusinessHours() ? 'Online Now' : 'Will Call Within 24hrs'}
+              </div>
             </div>
           </div>
           <div className="flex items-center gap-1">

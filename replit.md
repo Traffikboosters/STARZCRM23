@@ -144,6 +144,9 @@ The application uses a comprehensive schema including:
 - June 23, 2025. Updated default admin user from "John Doe" to "Michael Thompson" with authentic business email, phone number, and company branding throughout the platform
 - June 23, 2025. Replaced all generic 555 test phone numbers with realistic US area codes from major metropolitan areas for authentic test data presentation
 - June 23, 2025. Enhanced phone number formatting across CRM with formatPhoneNumber utility displaying consistent (XXX) XXX-XXXX format for improved readability
+- June 23, 2025. Added after-hours messaging functionality to website chat widget with business hours detection (Monday-Friday, 9 AM - 6 PM EST)
+- June 23, 2025. Implemented smart messaging that notifies customers when contacting outside business hours that a growth expert will call within 24 business hours
+- June 23, 2025. Added visual business hours status indicator in chat widget header showing "Online Now" or "Will Call Within 24hrs" with color-coded status dots
 
 ## User Preferences
 
