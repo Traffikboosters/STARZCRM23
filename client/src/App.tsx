@@ -9,6 +9,7 @@ import AnalyticsPage from "@/pages/analytics";
 import MightyCallPage from "@/pages/mightycall";
 import WorkOrders from "@/pages/work-orders";
 import CareersPage from "@/pages/careers";
+import DialTrackingPage from "@/pages/dial-tracking";
 
 function Router() {
   return (
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/mightycall" component={MightyCallPage} />
       <Route path="/work-orders" component={WorkOrders} />
       <Route path="/careers" component={CareersPage} />
+      <Route path="/dial-tracking" component={DialTrackingPage} />
       <Route component={NotFound} />
     </Switch>
   );

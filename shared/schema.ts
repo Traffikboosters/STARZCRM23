@@ -331,7 +331,29 @@ export const callLogs = pgTable("call_logs", {
   notes: text("notes"),
   outcome: text("outcome"), // connected, no_answer, busy, voicemail, sale, follow_up
   followUpDate: timestamp("follow_up_date"),
+  dialTimestamp: timestamp("dial_timestamp").notNull(), // Exact moment dial was initiated
+  callHour: integer("call_hour").notNull(), // Hour of day (0-23)
+  callDate: text("call_date").notNull(), // Date of call for daily tracking (YYYY-MM-DD)
+  dialResult: text("dial_result").notNull(), // connected, no_answer, busy, voicemail, failed
   createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Daily dial tracking for KPI metrics
+export const dailyDialStats = pgTable("daily_dial_stats", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  dialDate: text("dial_date").notNull(),
+  hour: integer("hour").notNull(), // Hour of day (0-23)
+  totalDials: integer("total_dials").default(0).notNull(),
+  connectedCalls: integer("connected_calls").default(0).notNull(),
+  voicemails: integer("voicemails").default(0).notNull(),
+  noAnswers: integer("no_answers").default(0).notNull(),
+  busySignals: integer("busy_signals").default(0).notNull(),
+  failedDials: integer("failed_dials").default(0).notNull(),
+  totalTalkTime: integer("total_talk_time").default(0).notNull(), // in seconds
+  connectRate: integer("connect_rate").default(0).notNull(), // percentage (0-100)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const campaigns = pgTable("campaigns", {
@@ -504,6 +526,12 @@ export const insertCallLogSchema = createInsertSchema(callLogs).omit({
   createdAt: true,
 });
 
+export const insertDailyDialStatsSchema = createInsertSchema(dailyDialStats).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertCampaignSchema = createInsertSchema(campaigns).omit({
   id: true,
   createdAt: true,
@@ -635,6 +663,8 @@ export type InsertChatConversation = z.infer<typeof insertChatConversationSchema
 
 export type CallLog = typeof callLogs.$inferSelect;
 export type InsertCallLog = z.infer<typeof insertCallLogSchema>;
+export type DailyDialStats = typeof dailyDialStats.$inferSelect;
+export type InsertDailyDialStats = z.infer<typeof insertDailyDialStatsSchema>;
 
 export type Campaign = typeof campaigns.$inferSelect;
 export type InsertCampaign = z.infer<typeof insertCampaignSchema>;

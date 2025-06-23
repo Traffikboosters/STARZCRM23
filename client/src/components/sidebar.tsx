@@ -17,7 +17,8 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
-  TrendingUp
+  TrendingUp,
+  Timer
 } from "lucide-react";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,7 @@ export default function Sidebar({
     { id: "campaigns", label: "Campaigns", icon: Target },
     { id: "video", label: "Video Calls", icon: Video },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
+    { id: "dial-tracking", label: "Dial Tracking", icon: Timer },
     { id: "payments", label: "Payments", icon: CreditCard },
     { id: "phone", label: "Phone System", icon: Phone },
     { id: "users", label: "User Management", icon: UserPlus },
