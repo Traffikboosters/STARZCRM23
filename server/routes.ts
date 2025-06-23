@@ -89,7 +89,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/companies", async (req, res) => {
     try {
-      const validation = insertCompanySchema.omit({ id: true }).safeParse(req.body);
+      const validation = insertCompanySchema.safeParse(req.body);
       if (!validation.success) {
         return res.status(400).json({ error: validation.error.errors });
       }
@@ -132,11 +132,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/contacts", async (req, res) => {
     try {
-      const validation = insertContactSchema.omit({ id: true }).safeParse(req.body);
+      const validation = insertContactSchema.safeParse(req.body);
       if (!validation.success) {
         return res.status(400).json({ error: validation.error.errors });
       }
-      const contact = await storage.createContact(validation.data);
+      const contact = await storage.createContact({ ...validation.data, createdBy: 1 });
       
       logAuditEvent("CREATE", "contact", contact.id, 1, null, contact, "Contact created");
       
@@ -201,11 +201,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/events", async (req, res) => {
     try {
-      const validation = insertEventSchema.omit({ id: true }).safeParse(req.body);
+      const validation = insertEventSchema.safeParse(req.body);
       if (!validation.success) {
         return res.status(400).json({ error: validation.error.errors });
       }
-      const event = await storage.createEvent(validation.data);
+      const event = await storage.createEvent({ ...validation.data, createdBy: 1 });
       
       logAuditEvent("CREATE", "event", event.id, 1, null, event, "Event created");
       
@@ -260,11 +260,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/files", async (req, res) => {
     try {
-      const validation = insertFileSchema.omit({ id: true }).safeParse(req.body);
+      const validation = insertFileSchema.safeParse(req.body);
       if (!validation.success) {
         return res.status(400).json({ error: validation.error.errors });
       }
-      const file = await storage.createFile(validation.data);
+      const file = await storage.createFile({ ...validation.data, uploadedBy: 1 });
       
       logAuditEvent("CREATE", "file", file.id, 1, null, file, "File uploaded");
       
@@ -286,11 +286,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/automations", async (req, res) => {
     try {
-      const validation = insertAutomationSchema.omit({ id: true }).safeParse(req.body);
+      const validation = insertAutomationSchema.safeParse(req.body);
       if (!validation.success) {
         return res.status(400).json({ error: validation.error.errors });
       }
-      const automation = await storage.createAutomation(validation.data);
+      const automation = await storage.createAutomation({ ...validation.data, createdBy: 1 });
       
       logAuditEvent("CREATE", "automation", automation.id, 1, null, automation, "Automation created");
       
@@ -312,11 +312,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/scraping-jobs", async (req, res) => {
     try {
-      const validation = insertScrapingJobSchema.omit({ id: true }).safeParse(req.body);
+      const validation = insertScrapingJobSchema.safeParse(req.body);
       if (!validation.success) {
         return res.status(400).json({ error: validation.error.errors });
       }
-      const job = await storage.createScrapingJob(validation.data);
+      const job = await storage.createScrapingJob({ ...validation.data, createdBy: 1 });
       
       logAuditEvent("CREATE", "scraping_job", job.id, 1, null, job, "Scraping job created");
       
@@ -354,10 +354,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/call-logs", async (req, res) => {
     try {
-      const validation = insertCallLogSchema.omit({ id: true }).safeParse(req.body);
+      const validation = insertCallLogSchema.safeParse(req.body);
       if (!validation.success) {
         return res.status(400).json({ error: validation.error.errors });
       }
+      
       const callLog = await storage.createCallLog(validation.data);
       
       logAuditEvent("CREATE", "call_log", callLog.id, 1, null, callLog, "Call logged");

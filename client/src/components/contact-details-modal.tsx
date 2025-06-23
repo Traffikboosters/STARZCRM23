@@ -144,15 +144,12 @@ export default function ContactDetailsModal({
   });
 
   const createNoteMutation = useMutation({
-    mutationFn: (data: NoteFormData) => apiRequest("/api/contact-notes", {
-      method: "POST",
-      body: JSON.stringify({
-        ...data,
-        contactId: contact?.id,
-        userId: 1,
-        duration: data.duration || null,
-        followUpDate: data.followUpDate ? new Date(data.followUpDate) : null,
-      }),
+    mutationFn: (data: NoteFormData) => apiRequest("POST", "/api/contact-notes", {
+      ...data,
+      contactId: contact?.id,
+      userId: 1,
+      duration: data.duration || null,
+      followUpDate: data.followUpDate ? new Date(data.followUpDate) : null,
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/contact-notes"] });
@@ -161,13 +158,10 @@ export default function ContactDetailsModal({
   });
 
   const createIntakeMutation = useMutation({
-    mutationFn: (data: IntakeFormData) => apiRequest("/api/lead-intakes", {
-      method: "POST",
-      body: JSON.stringify({
-        ...data,
-        contactId: contact?.id,
-        userId: 1,
-      }),
+    mutationFn: (data: IntakeFormData) => apiRequest("POST", "/api/lead-intakes", {
+      ...data,
+      contactId: contact?.id,
+      userId: 1,
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/lead-intakes"] });
@@ -176,12 +170,9 @@ export default function ContactDetailsModal({
   });
 
   const updateContactMutation = useMutation({
-    mutationFn: (data: ContactUpdateData) => apiRequest(`/api/contacts/${contact?.id}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        ...data,
-        nextFollowUpAt: data.nextFollowUpAt ? new Date(data.nextFollowUpAt) : null,
-      }),
+    mutationFn: (data: ContactUpdateData) => apiRequest("PATCH", `/api/contacts/${contact?.id}`, {
+      ...data,
+      nextFollowUpAt: data.nextFollowUpAt ? new Date(data.nextFollowUpAt) : null,
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });

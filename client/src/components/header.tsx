@@ -38,7 +38,7 @@ export default function Header() {
     queryKey: ['/api/companies'],
   });
 
-  const company = companies?.[0];
+  const company = Array.isArray(companies) && companies.length > 0 ? companies[0] : null;
 
   const handleSignOut = () => {
     // In a real app, this would clear session/tokens

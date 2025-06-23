@@ -435,6 +435,8 @@ export class MemStorage implements IStorage {
         avatar: null,
         lastContactedAt: Math.random() > 0.5 ? new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000) : null,
         nextFollowUpAt: Math.random() > 0.3 ? new Date(Date.now() + Math.random() * 14 * 24 * 60 * 60 * 1000) : null,
+        updatedAt: new Date(),
+        updatedBy: null,
       };
       this.contacts.set(contact.id, contact);
     });
@@ -608,9 +610,19 @@ Client Approval:
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const user: User = {
-      ...insertUser,
       id: this.currentUserId++,
       createdAt: new Date(),
+      username: insertUser.username,
+      password: insertUser.password,
+      email: insertUser.email,
+      firstName: insertUser.firstName,
+      lastName: insertUser.lastName,
+      role: insertUser.role ?? "viewer",
+      phone: insertUser.phone ?? null,
+      mobilePhone: insertUser.mobilePhone ?? null,
+      extension: insertUser.extension ?? null,
+      avatar: insertUser.avatar ?? null,
+      isActive: insertUser.isActive ?? true,
     };
     this.users.set(user.id, user);
     return user;
@@ -654,8 +666,12 @@ Client Approval:
 
   async createCompany(insertCompany: InsertCompany): Promise<Company> {
     const company: Company = {
-      ...insertCompany,
       id: this.currentCompanyId++,
+      name: insertCompany.name,
+      logo: insertCompany.logo ?? null,
+      primaryColor: insertCompany.primaryColor ?? null,
+      secondaryColor: insertCompany.secondaryColor ?? null,
+      domain: insertCompany.domain ?? null,
       createdAt: new Date(),
     };
     this.companies.set(company.id, company);
@@ -682,9 +698,28 @@ Client Approval:
 
   async createContact(insertContact: InsertContact & { createdBy: number }): Promise<Contact> {
     const contact: Contact = {
-      ...insertContact,
       id: this.currentContactId++,
       createdAt: new Date(),
+      updatedAt: new Date(),
+      firstName: insertContact.firstName,
+      lastName: insertContact.lastName,
+      email: insertContact.email ?? null,
+      phone: insertContact.phone ?? null,
+      avatar: insertContact.avatar ?? null,
+      company: insertContact.company ?? null,
+      position: insertContact.position ?? null,
+      leadSource: insertContact.leadSource ?? null,
+      leadStatus: insertContact.leadStatus ?? null,
+      disposition: insertContact.disposition ?? null,
+      priority: insertContact.priority ?? "medium",
+      budget: insertContact.budget ?? null,
+      timeline: insertContact.timeline ?? null,
+      notes: insertContact.notes ?? null,
+      tags: insertContact.tags ?? null,
+      lastContactedAt: insertContact.lastContactedAt ?? null,
+      nextFollowUpAt: insertContact.nextFollowUpAt ?? null,
+      createdBy: insertContact.createdBy,
+      updatedBy: null,
     };
     this.contacts.set(contact.id, contact);
     return contact;
@@ -732,9 +767,19 @@ Client Approval:
 
   async createEvent(insertEvent: InsertEvent & { createdBy: number }): Promise<Event> {
     const event: Event = {
-      ...insertEvent,
       id: this.currentEventId++,
       createdAt: new Date(),
+      type: insertEvent.type ?? "meeting",
+      status: insertEvent.status ?? "scheduled",
+      createdBy: insertEvent.createdBy,
+      title: insertEvent.title,
+      description: insertEvent.description ?? null,
+      startDate: insertEvent.startDate,
+      endDate: insertEvent.endDate,
+      isVideoCall: insertEvent.isVideoCall ?? null,
+      videoCallLink: insertEvent.videoCallLink ?? null,
+      attendees: insertEvent.attendees ?? null,
+      attachments: insertEvent.attachments ?? null,
     };
     this.events.set(event.id, event);
     return event;
@@ -769,9 +814,16 @@ Client Approval:
 
   async createFile(insertFile: InsertFile & { uploadedBy: number }): Promise<File> {
     const file: File = {
-      ...insertFile,
       id: this.currentFileId++,
+      name: insertFile.name,
       createdAt: new Date(),
+      path: insertFile.path,
+      type: insertFile.type,
+      tags: insertFile.tags ?? null,
+      size: insertFile.size,
+      originalName: insertFile.originalName,
+      folder: insertFile.folder ?? null,
+      uploadedBy: insertFile.uploadedBy,
     };
     this.files.set(file.id, file);
     return file;
@@ -801,9 +853,14 @@ Client Approval:
 
   async createAutomation(insertAutomation: InsertAutomation & { createdBy: number }): Promise<Automation> {
     const automation: Automation = {
-      ...insertAutomation,
       id: this.currentAutomationId++,
+      name: insertAutomation.name,
+      isActive: insertAutomation.isActive ?? null,
       createdAt: new Date(),
+      createdBy: insertAutomation.createdBy,
+      description: insertAutomation.description ?? null,
+      trigger: insertAutomation.trigger,
+      actions: insertAutomation.actions,
       lastRun: null,
     };
     this.automations.set(automation.id, automation);
@@ -834,10 +891,15 @@ Client Approval:
 
   async createScrapingJob(insertJob: InsertScrapingJob & { createdBy: number }): Promise<ScrapingJob> {
     const job: ScrapingJob = {
-      ...insertJob,
       id: this.currentScrapingJobId++,
+      name: insertJob.name,
       createdAt: new Date(),
+      status: insertJob.status ?? "pending",
+      createdBy: insertJob.createdBy,
       lastRun: null,
+      url: insertJob.url,
+      selectors: insertJob.selectors,
+      schedule: insertJob.schedule ?? null,
       results: null,
     };
     this.scrapingJobs.set(job.id, job);
@@ -866,20 +928,23 @@ Client Approval:
 
   async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
     const message: ChatMessage = {
-      ...insertMessage,
       id: this.currentChatMessageId++,
       createdAt: new Date(),
+      message: insertMessage.message,
+      type: insertMessage.type ?? null,
+      updatedAt: new Date(),
+      attachments: insertMessage.attachments ?? null,
+      contactId: insertMessage.contactId ?? null,
+      senderId: insertMessage.senderId ?? null,
+      isFromContact: insertMessage.isFromContact ?? null,
       readAt: null,
-      attachments: insertMessage.attachments || null,
-      contactId: insertMessage.contactId || null,
-      senderId: insertMessage.senderId || null,
     };
     this.chatMessages.set(message.id, message);
     
     // Update conversation's last message time
     const conversation = await this.getConversation(message.contactId!);
     if (conversation) {
-      await this.updateConversation(conversation.id, { lastMessageAt: message.createdAt });
+      await this.updateConversation(conversation.id, { updatedAt: message.createdAt });
     }
     
     return message;
@@ -911,12 +976,15 @@ Client Approval:
 
   async createConversation(insertConversation: InsertChatConversation): Promise<ChatConversation> {
     const conversation: ChatConversation = {
-      ...insertConversation,
       id: this.currentConversationId++,
       createdAt: new Date(),
+      status: insertConversation.status ?? null,
+      notes: insertConversation.notes ?? null,
+      priority: insertConversation.priority ?? null,
+      updatedAt: new Date(),
+      contactId: insertConversation.contactId,
+      assignedTo: insertConversation.assignedTo ?? null,
       lastMessageAt: null,
-      assignedTo: insertConversation.assignedTo || null,
-      notes: insertConversation.notes || null,
     };
     this.chatConversations.set(conversation.id, conversation);
     return conversation;
@@ -955,11 +1023,21 @@ Client Approval:
 
   async createCallLog(insertCallLog: InsertCallLog): Promise<CallLog> {
     const callLog: CallLog = {
-      ...insertCallLog,
       id: this.currentCallLogId++,
       createdAt: new Date(),
-      endedAt: insertCallLog.endedAt || null,
-      recordingUrl: insertCallLog.recordingUrl || null,
+      status: insertCallLog.status,
+      notes: insertCallLog.notes ?? null,
+      contactId: insertCallLog.contactId ?? null,
+      userId: insertCallLog.userId,
+      direction: insertCallLog.direction,
+      phoneNumber: insertCallLog.phoneNumber,
+      startTime: insertCallLog.startTime,
+      endTime: insertCallLog.endTime ?? null,
+      duration: insertCallLog.duration ?? null,
+      recording: insertCallLog.recording ?? null,
+      talkTime: insertCallLog.talkTime ?? null,
+      outcome: insertCallLog.outcome ?? null,
+      followUpDate: insertCallLog.followUpDate ?? null,
     };
     this.callLogs.set(callLog.id, callLog);
     return callLog;
@@ -1002,15 +1080,24 @@ Client Approval:
 
   async createCampaign(insertCampaign: InsertCampaign & { createdBy: number }): Promise<Campaign> {
     const campaign: Campaign = {
-      ...insertCampaign,
       id: this.currentCampaignId++,
+      name: insertCampaign.name,
       createdAt: new Date(),
-      assignedTo: insertCampaign.assignedTo || null,
-      budget: insertCampaign.budget || null,
-      actualSpend: insertCampaign.actualSpend || null,
-      targetAudience: insertCampaign.targetAudience || null,
-      channels: insertCampaign.channels || null,
-      metrics: insertCampaign.metrics || null,
+      type: insertCampaign.type,
+      status: insertCampaign.status ?? null,
+      tags: insertCampaign.tags ?? null,
+      budget: insertCampaign.budget ?? null,
+      createdBy: insertCampaign.createdBy,
+      description: insertCampaign.description ?? null,
+      startDate: insertCampaign.startDate ?? null,
+      endDate: insertCampaign.endDate ?? null,
+      assignedTo: insertCampaign.assignedTo ?? null,
+      targetAudience: insertCampaign.targetAudience ?? null,
+      spent: null,
+      impressions: null,
+      clicks: null,
+      conversions: null,
+      leads: null,
     };
     this.campaigns.set(campaign.id, campaign);
     return campaign;
@@ -1032,7 +1119,7 @@ Client Approval:
   // Lead Allocation methods
   async getAllLeadAllocations(): Promise<LeadAllocation[]> {
     return Array.from(this.leadAllocations.values())
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      .sort((a, b) => new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime());
   }
 
   async getLeadAllocation(id: number): Promise<LeadAllocation | undefined> {
@@ -1042,27 +1129,34 @@ Client Approval:
   async getLeadAllocationsByContact(contactId: number): Promise<LeadAllocation[]> {
     return Array.from(this.leadAllocations.values())
       .filter(allocation => allocation.contactId === contactId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      .sort((a, b) => new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime());
   }
 
   async getLeadAllocationsByAssignee(assignedTo: number): Promise<LeadAllocation[]> {
     return Array.from(this.leadAllocations.values())
       .filter(allocation => allocation.assignedTo === assignedTo)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      .sort((a, b) => new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime());
   }
 
   async getLeadAllocationsByCampaign(campaignId: number): Promise<LeadAllocation[]> {
     return Array.from(this.leadAllocations.values())
       .filter(allocation => allocation.campaignId === campaignId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      .sort((a, b) => new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime());
   }
 
   async createLeadAllocation(insertAllocation: InsertLeadAllocation): Promise<LeadAllocation> {
     const allocation: LeadAllocation = {
-      ...insertAllocation,
       id: this.currentLeadAllocationId++,
-      createdAt: new Date(),
-      notes: insertAllocation.notes || null,
+      status: insertAllocation.status ?? null,
+      notes: insertAllocation.notes ?? null,
+      priority: insertAllocation.priority ?? null,
+      contactId: insertAllocation.contactId,
+      assignedTo: insertAllocation.assignedTo,
+      assignedBy: insertAllocation.assignedBy,
+      campaignId: insertAllocation.campaignId ?? null,
+      assignedAt: new Date(),
+      dueDate: insertAllocation.dueDate ?? null,
+      completedAt: null,
     };
     this.leadAllocations.set(allocation.id, allocation);
     return allocation;
@@ -1093,12 +1187,15 @@ Client Approval:
 
   async createDocumentTemplate(insertTemplate: InsertDocumentTemplate & { createdBy: number }): Promise<DocumentTemplate> {
     const template: DocumentTemplate = {
-      ...insertTemplate,
       id: this.currentDocumentTemplateId++,
+      name: insertTemplate.name,
       createdAt: new Date(),
-      isPublic: insertTemplate.isPublic ?? false,
+      createdBy: insertTemplate.createdBy,
+      content: insertTemplate.content,
+      variables: insertTemplate.variables ?? null,
+      category: insertTemplate.category ?? "general",
+      isPublic: insertTemplate.isPublic ?? null,
       companyId: insertTemplate.companyId ?? null,
-      variables: insertTemplate.variables ?? [],
     };
     this.documentTemplates.set(template.id, template);
     return template;
@@ -1135,22 +1232,26 @@ Client Approval:
 
   async createSigningRequest(insertRequest: InsertSigningRequest & { createdBy: number }): Promise<SigningRequest> {
     const request: SigningRequest = {
-      ...insertRequest,
       id: this.currentSigningRequestId++,
       createdAt: new Date(),
+      documentTitle: insertRequest.documentTitle,
+      recipientName: insertRequest.recipientName,
+      recipientEmail: insertRequest.recipientEmail,
+      senderEmail: insertRequest.senderEmail,
       status: insertRequest.status ?? "draft",
       priority: insertRequest.priority ?? "medium",
       customMessage: insertRequest.customMessage ?? null,
-      approveOmeId: insertRequest.approveOmeId ?? null,
-      signingUrl: insertRequest.signingUrl ?? null,
-      documentUrl: insertRequest.documentUrl ?? null,
-      sentAt: insertRequest.sentAt ?? null,
-      viewedAt: insertRequest.viewedAt ?? null,
-      signedAt: insertRequest.signedAt ?? null,
-      completedAt: insertRequest.completedAt ?? null,
       expiresAt: insertRequest.expiresAt ?? null,
       contactId: insertRequest.contactId ?? null,
       templateId: insertRequest.templateId ?? null,
+      createdBy: insertRequest.createdBy,
+      completedAt: null,
+      approveOmeId: null,
+      signingUrl: null,
+      documentUrl: null,
+      sentAt: null,
+      viewedAt: null,
+      signedAt: null,
     };
     this.signingRequests.set(request.id, request);
     return request;
