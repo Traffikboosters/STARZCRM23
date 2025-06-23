@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Bell, ChevronDown, Calendar } from "lucide-react";
+import { Search, Bell, ChevronDown, Calendar, User, Building, Settings, LogOut } from "lucide-react";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,11 +10,25 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isCompanyOpen, setIsCompanyOpen] = useState(false);
+  const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
+  const { toast } = useToast();
 
   const { data: user } = useQuery({
     queryKey: ['/api/users/me'],
@@ -25,6 +39,40 @@ export default function Header() {
   });
 
   const company = companies?.[0];
+
+  const handleSignOut = () => {
+    // In a real app, this would clear session/tokens
+    toast({
+      title: "Signed Out",
+      description: "You have been successfully signed out of Starz.",
+    });
+    // Redirect to login page or refresh
+    window.location.reload();
+  };
+
+  const handleProfileUpdate = () => {
+    toast({
+      title: "Profile Updated",
+      description: "Your profile settings have been saved.",
+    });
+    setIsProfileOpen(false);
+  };
+
+  const handleCompanyUpdate = () => {
+    toast({
+      title: "Company Settings Updated", 
+      description: "Company settings have been saved successfully.",
+    });
+    setIsCompanyOpen(false);
+  };
+
+  const handlePreferencesUpdate = () => {
+    toast({
+      title: "Preferences Saved",
+      description: "Your preferences have been updated.",
+    });
+    setIsPreferencesOpen(false);
+  };
 
   return (
     <header className="bg-white border-b border-neutral-lighter px-6 py-4">
@@ -90,15 +138,155 @@ export default function Header() {
                 <ChevronDown className="h-4 w-4 text-neutral-light" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Profile Settings</DropdownMenuItem>
-              <DropdownMenuItem>Company Settings</DropdownMenuItem>
-              <DropdownMenuItem>Preferences</DropdownMenuItem>
-              <DropdownMenuItem>Sign Out</DropdownMenuItem>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem onClick={() => setIsProfileOpen(true)} className="cursor-pointer">
+                <User className="mr-2 h-4 w-4" />
+                Profile Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsCompanyOpen(true)} className="cursor-pointer">
+                <Building className="mr-2 h-4 w-4" />
+                Company Settings
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsPreferencesOpen(true)} className="cursor-pointer">
+                <Settings className="mr-2 h-4 w-4" />
+                Preferences
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
+
+      {/* Profile Settings Dialog */}
+      <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Profile Settings</DialogTitle>
+            <DialogDescription>
+              Update your personal information and account details.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="firstName" className="text-right">First Name</label>
+              <Input id="firstName" defaultValue="John" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="lastName" className="text-right">Last Name</label>
+              <Input id="lastName" defaultValue="Doe" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="email" className="text-right">Email</label>
+              <Input id="email" defaultValue="traffikboosters@gmail.com" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="phone" className="text-right">Phone</label>
+              <Input id="phone" defaultValue="+1-555-0200" className="col-span-3" />
+            </div>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => setIsProfileOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleProfileUpdate}>
+              Save Changes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Company Settings Dialog */}
+      <Dialog open={isCompanyOpen} onOpenChange={setIsCompanyOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Company Settings</DialogTitle>
+            <DialogDescription>
+              Manage Traffik Boosters company configuration and branding.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="companyName" className="text-right">Company Name</label>
+              <Input id="companyName" defaultValue="Traffik Boosters" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="domain" className="text-right">Domain</label>
+              <Input id="domain" defaultValue="traffikboosters.com" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="primaryColor" className="text-right">Primary Color</label>
+              <Input id="primaryColor" defaultValue="#e45c2b" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="secondaryColor" className="text-right">Secondary Color</label>
+              <Input id="secondaryColor" defaultValue="#f28b56" className="col-span-3" />
+            </div>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => setIsCompanyOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCompanyUpdate}>
+              Save Changes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Preferences Dialog */}
+      <Dialog open={isPreferencesOpen} onOpenChange={setIsPreferencesOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Preferences</DialogTitle>
+            <DialogDescription>
+              Customize your Starz experience and notification settings.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="flex items-center justify-between">
+              <label htmlFor="emailNotifications">Email Notifications</label>
+              <input type="checkbox" id="emailNotifications" defaultChecked className="h-4 w-4" />
+            </div>
+            <div className="flex items-center justify-between">
+              <label htmlFor="leadAlerts">New Lead Alerts</label>
+              <input type="checkbox" id="leadAlerts" defaultChecked className="h-4 w-4" />
+            </div>
+            <div className="flex items-center justify-between">
+              <label htmlFor="callNotifications">Call Notifications</label>
+              <input type="checkbox" id="callNotifications" defaultChecked className="h-4 w-4" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="timezone" className="text-right">Timezone</label>
+              <select id="timezone" className="col-span-3 p-2 border rounded">
+                <option>EST (UTC-5)</option>
+                <option>CST (UTC-6)</option>
+                <option>MST (UTC-7)</option>
+                <option>PST (UTC-8)</option>
+              </select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="language" className="text-right">Language</label>
+              <select id="language" className="col-span-3 p-2 border rounded">
+                <option>English</option>
+                <option>Spanish</option>
+                <option>French</option>
+              </select>
+            </div>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => setIsPreferencesOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handlePreferencesUpdate}>
+              Save Preferences
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }
