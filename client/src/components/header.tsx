@@ -161,11 +161,11 @@ export default function Header() {
                     className="text-white text-sm font-medium"
                     style={{ backgroundColor: (company as any)?.primaryColor || '#e45c2b' }}
                   >
-                    {user ? `${(user as any).firstName?.[0] || 'M'}${(user as any).lastName?.[0] || 'T'}` : 'MT'}
+                    {user ? `${(user as any).firstName?.[0] || ''}${(user as any).lastName?.[0] || ''}` : ''}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-sm font-medium text-neutral-dark hidden md:block">
-                  {user ? `${(user as any).firstName || 'Michael'} ${(user as any).lastName || 'Thompson'}` : 'Michael Thompson'}
+                  {user ? `${(user as any).firstName || ''} ${(user as any).lastName || ''}`.trim() : ''}
                 </span>
                 <ChevronDown className="h-4 w-4 text-neutral-light" />
               </Button>
@@ -207,7 +207,7 @@ export default function Header() {
               <label htmlFor="firstName" className="text-right">First Name</label>
               <Input 
                 id="firstName" 
-                defaultValue={(user as any)?.firstName || "Michael"} 
+                defaultValue={(user as any)?.firstName || ""} 
                 className="col-span-3" 
               />
             </div>
@@ -215,7 +215,7 @@ export default function Header() {
               <label htmlFor="lastName" className="text-right">Last Name</label>
               <Input 
                 id="lastName" 
-                defaultValue={(user as any)?.lastName || "Thompson"} 
+                defaultValue={(user as any)?.lastName || ""} 
                 className="col-span-3" 
               />
             </div>
@@ -223,7 +223,7 @@ export default function Header() {
               <label htmlFor="email" className="text-right">Email</label>
               <Input 
                 id="email" 
-                defaultValue={(user as any)?.email || "traffikboosters@gmail.com"} 
+                defaultValue={(user as any)?.email || ""} 
                 className="col-span-3" 
               />
             </div>
@@ -231,7 +231,7 @@ export default function Header() {
               <label htmlFor="phone" className="text-right">Phone</label>
               <Input 
                 id="phone" 
-                defaultValue={(user as any)?.phone || "+1-954-793-9065"} 
+                defaultValue={(user as any)?.phone || ""} 
                 className="col-span-3" 
               />
             </div>
