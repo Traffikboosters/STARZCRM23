@@ -108,23 +108,27 @@ export default function Header() {
 
   return (
     <header className="bg-white border-b border-neutral-lighter px-6 py-4">
-      <div className="flex items-center justify-between gap-6">
+      <div className="relative flex items-center justify-between gap-6">
         <div className="flex items-center space-x-4 flex-shrink-0">
-          {/* Traffik Boosters Logo */}
-          <img 
-            src={traffikBoostersLogo} 
-            alt="Traffik Boosters" 
-            className="h-32 w-auto object-contain"
-            style={{ imageRendering: 'crisp-edges' }}
-          />
-          <div className="min-w-max">
-            <h1 className="text-2xl font-bold text-black whitespace-nowrap">
-              Starz
-            </h1>
-            <p className="text-lg font-bold text-black whitespace-nowrap">
+          {/* Traffik Boosters Logo with Slogan */}
+          <div className="flex flex-col items-center">
+            <img 
+              src={traffikBoostersLogo} 
+              alt="Traffik Boosters" 
+              className="h-24 w-auto object-contain"
+              style={{ imageRendering: 'crisp-edges' }}
+            />
+            <p className="text-sm font-bold text-black whitespace-nowrap mt-1">
               More Traffik! More Sales!
             </p>
           </div>
+        </div>
+        
+        {/* Centered Starz Title */}
+        <div className="absolute left-1/2 transform -translate-x-1/2">
+          <h1 className="text-3xl font-bold text-black whitespace-nowrap">
+            Starz
+          </h1>
         </div>
         
         <div className="flex items-center space-x-4 flex-shrink min-w-0">
