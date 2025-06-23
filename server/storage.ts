@@ -973,18 +973,18 @@ Client Approval:
     return this.scrapingJobs.get(id);
   }
 
-  async createScrapingJob(insertJob: InsertScrapingJob & { createdBy: number }): Promise<ScrapingJob> {
+  async createScrapingJob(insertJob: InsertScrapingJob & { createdBy: number; lastRun?: Date | null; results?: any }): Promise<ScrapingJob> {
     const job: ScrapingJob = {
       id: this.currentScrapingJobId++,
       name: insertJob.name,
       createdAt: new Date(),
       status: insertJob.status ?? "pending",
       createdBy: insertJob.createdBy,
-      lastRun: null,
+      lastRun: insertJob.lastRun ?? null,
       url: insertJob.url,
       selectors: insertJob.selectors,
       schedule: insertJob.schedule ?? null,
-      results: null,
+      results: insertJob.results ?? null,
     };
     this.scrapingJobs.set(job.id, job);
     return job;
