@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import ContactDetailsModal from "./contact-details-modal";
 import { 
   Search, 
   Plus, 
@@ -156,7 +157,14 @@ export default function CRMView() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredContacts.map((contact) => (
-              <Card key={contact.id} className="hover:shadow-md transition-shadow">
+              <Card 
+                key={contact.id} 
+                className="hover:shadow-md transition-shadow cursor-pointer"
+                onClick={() => {
+                  setSelectedContactForDetails(contact);
+                  setIsDetailsModalOpen(true);
+                }}
+              >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center space-x-3">
@@ -244,6 +252,18 @@ export default function CRMView() {
         )}
       </div>
       
+      {/* Contact Details Modal */}
+      {selectedContactForDetails && (
+        <ContactDetailsModal
+          contact={selectedContactForDetails}
+          isOpen={isDetailsModalOpen}
+          onClose={() => {
+            setIsDetailsModalOpen(false);
+            setSelectedContactForDetails(null);
+          }}
+        />
+      )}
+
       {/* Chat Widget Integration */}
       <ChatWidget 
         selectedContact={selectedContact}
