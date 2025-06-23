@@ -10,6 +10,9 @@ export const users = pgTable("users", {
   role: text("role").notNull().default("viewer"), // admin, manager, sales_rep, viewer
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
+  phone: text("phone"), // employee's direct phone number for click-to-call
+  mobilePhone: text("mobile_phone"), // employee's mobile number
+  extension: text("extension"), // office extension if applicable
   avatar: text("avatar"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),

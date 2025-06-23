@@ -98,6 +98,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/users", requireAuth, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      const sanitizedUsers = users.map(user => ({ ...user, password: undefined }));
+      res.json(sanitizedUsers);
+    } catch (error: any) {
+      res.status(500).json({ message: "Error retrieving users: " + error.message });
+    }
+  });
+
+  app.put("/api/users/:id/phone", requireAuth, async (req: any, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { phone, mobilePhone, extension } = req.body;
+      
+      if (!phone) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+
+      const updatedUser = await storage.updateUserPhone(userId, phone, mobilePhone, extension);
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      logAuditEvent("update", "user_phone", userId, req.userId, {}, { phone, mobilePhone, extension }, "Updated employee phone numbers");
+      res.json({ ...updatedUser, password: undefined });
+    } catch (error: any) {
+      res.status(500).json({ message: "Error updating user phone: " + error.message });
+    }
+  });
+
   // Companies routes
   app.get("/api/companies", async (req, res) => {
     try {

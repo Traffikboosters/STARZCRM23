@@ -15,8 +15,10 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getAllUsers(): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined>;
+  updateUserPhone(id: number, phone: string, mobilePhone?: string, extension?: string): Promise<User | undefined>;
   
   // Companies
   getCompany(id: number): Promise<Company | undefined>;
@@ -201,6 +203,9 @@ export class MemStorage implements IStorage {
       role: "admin",
       firstName: "John",
       lastName: "Doe",
+      phone: "+1-555-0200",
+      mobilePhone: "+1-555-0201",
+      extension: "200",
       avatar: null,
       isActive: true,
       createdAt: new Date(),
@@ -611,11 +616,29 @@ Client Approval:
     return user;
   }
 
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
   async updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined> {
     const user = this.users.get(id);
     if (!user) return undefined;
     
     const updatedUser: User = { ...user, ...updates };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async updateUserPhone(id: number, phone: string, mobilePhone?: string, extension?: string): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser: User = { 
+      ...user, 
+      phone, 
+      mobilePhone: mobilePhone || user.mobilePhone,
+      extension: extension || user.extension
+    };
     this.users.set(id, updatedUser);
     return updatedUser;
   }

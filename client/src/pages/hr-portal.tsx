@@ -54,6 +54,7 @@ import {
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import EmployeeManagement from "@/components/employee-management";
 
 const jobPostingSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -382,7 +383,7 @@ export default function HRPortal() {
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="jobs">Job Postings ({jobPostings.length})</TabsTrigger>
-          <TabsTrigger value="applications">Applications ({applications.length})</TabsTrigger>
+          <TabsTrigger value="employees">Employee Management</TabsTrigger>
           <TabsTrigger value="careers">Careers Page</TabsTrigger>
         </TabsList>
 
@@ -601,6 +602,10 @@ export default function HRPortal() {
               </Card>
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="employees" className="space-y-6">
+          <EmployeeManagement />
         </TabsContent>
 
         <TabsContent value="careers" className="space-y-6">
