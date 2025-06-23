@@ -19,7 +19,6 @@ import {
   User
 } from "lucide-react";
 import ChatWidget from "./chat-widget";
-import ContactDetailsModal from "./contact-details-modal";
 import WebsiteFormIntegration from "./website-form-integration";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -266,10 +265,7 @@ export default function CRMView() {
       )}
 
       {/* Chat Widget Integration */}
-      <ChatWidget 
-        selectedContact={selectedContact}
-        onContactSelect={setSelectedContact}
-      />
+      <ChatWidget />
     </div>
   );
 }
