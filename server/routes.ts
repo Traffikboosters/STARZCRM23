@@ -35,6 +35,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   };
 
   // Basic user endpoints
+  app.get("/api/users/me", requireAuth, async (req: any, res) => {
+    try {
+      const user = await storage.getUser(req.user.id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
   app.get("/api/user", requireAuth, async (req: any, res) => {
     try {
       const user = await storage.getUser(req.user.id);

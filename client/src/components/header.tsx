@@ -124,16 +124,16 @@ export default function Header() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center space-x-2 hover:bg-neutral-lightest">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.avatar || ""} />
+                  <AvatarImage src={(user as any)?.avatar || ""} />
                   <AvatarFallback 
                     className="text-white text-sm font-medium"
-                    style={{ backgroundColor: company?.primaryColor || '#0078D4' }}
+                    style={{ backgroundColor: (company as any)?.primaryColor || '#e45c2b' }}
                   >
-                    {user ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}` : 'JD'}
+                    {user ? `${(user as any).firstName?.[0] || 'A'}${(user as any).lastName?.[0] || 'D'}` : 'AD'}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-sm font-medium text-neutral-dark hidden md:block">
-                  {user ? `${user.firstName} ${user.lastName}` : 'John Doe'}
+                  {user ? `${(user as any).firstName || 'Admin'} ${(user as any).lastName || 'User'}` : 'Admin User'}
                 </span>
                 <ChevronDown className="h-4 w-4 text-neutral-light" />
               </Button>

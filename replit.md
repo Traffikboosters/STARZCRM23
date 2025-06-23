@@ -141,6 +141,7 @@ The application uses a comprehensive schema including:
 - June 23, 2025. Enhanced MightyCall integration page with clear Core plan limitations explanation and improved user experience for manual dialing workflow
 - June 23, 2025. Fixed scrolling issues on laptop devices by removing overflow-hidden constraints and adding proper vertical scroll behavior to main content areas
 - June 23, 2025. Added functional profile settings, company settings, preferences, and sign out capabilities to header dropdown with proper dialog modals and form handling
+- June 23, 2025. Updated default admin user from "John Doe" to "Traffik Boosters" with authentic business email, phone number, and company branding throughout the platform
 
 ## User Preferences
 

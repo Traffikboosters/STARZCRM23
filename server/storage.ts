@@ -186,11 +186,11 @@ export class MemStorage implements IStorage {
   private initializeDefaults() {
     const defaultCompany: Company = {
       id: this.currentCompanyId++,
-      name: "Enterprise Scheduler Pro",
+      name: "Traffik Boosters",
       logo: null,
-      primaryColor: "#0078D4",
-      secondaryColor: "#106EBE",
-      domain: "example.com",
+      primaryColor: "#e45c2b",
+      secondaryColor: "#f28b56",
+      domain: "traffikboosters.com",
       createdAt: new Date(),
     };
     this.companies.set(defaultCompany.id, defaultCompany);
@@ -199,13 +199,13 @@ export class MemStorage implements IStorage {
       id: this.currentUserId++,
       username: "admin",
       password: "admin123", // In production, this would be hashed
-      email: "admin@example.com",
+      email: "traffikboosters@gmail.com",
       role: "admin",
-      firstName: "John",
-      lastName: "Doe",
-      phone: "+1-555-0200",
-      mobilePhone: "+1-555-0201",
-      extension: "200",
+      firstName: "Traffik",
+      lastName: "Boosters",
+      phone: "+1-954-793-9065",
+      mobilePhone: "+1-954-793-9065",
+      extension: "100",
       avatar: null,
       isActive: true,
       createdAt: new Date(),
