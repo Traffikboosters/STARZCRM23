@@ -129,7 +129,7 @@ export default function Header() {
                     className="text-white text-sm font-medium"
                     style={{ backgroundColor: (company as any)?.primaryColor || '#e45c2b' }}
                   >
-                    {user ? `${(user as any).firstName?.[0] || 'A'}${(user as any).lastName?.[0] || 'D'}` : 'AD'}
+                    {user ? `${(user as any).firstName?.[0] || 'A'}${(user as any).lastName?.[0] || 'U'}` : 'AU'}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-sm font-medium text-neutral-dark hidden md:block">
