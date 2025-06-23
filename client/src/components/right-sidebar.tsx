@@ -4,6 +4,7 @@ import { Video, User, FileText, Phone, Mail, Play, ChevronRight, Upload } from "
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { formatPhoneNumber } from "@/lib/utils";
 import type { Event, Contact } from "@shared/schema";
 
 interface RightSidebarProps {
@@ -133,6 +134,9 @@ export default function RightSidebar({ onJoinCall, onCreateEvent, onContactClick
                         {contact.firstName} {contact.lastName}
                       </h4>
                       <p className="text-sm text-neutral-medium">{contact.company}</p>
+                      {contact.phone && (
+                        <p className="text-xs text-neutral-medium">{formatPhoneNumber(contact.phone)}</p>
+                      )}
                     </div>
                     <div className="flex space-x-2">
                       {contact.phone && (

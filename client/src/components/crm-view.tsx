@@ -40,6 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { formatPhoneNumber } from "@/lib/utils";
 import type { Contact } from "@shared/schema";
 
 export default function CRMView() {
@@ -221,7 +222,7 @@ export default function CRMView() {
                       <p className="text-sm text-neutral-medium">{contact.email}</p>
                     )}
                     {contact.phone && (
-                      <p className="text-sm text-neutral-medium">{contact.phone}</p>
+                      <p className="text-sm text-neutral-medium">{formatPhoneNumber(contact.phone)}</p>
                     )}
                     
                     {contact.tags && contact.tags.length > 0 && (

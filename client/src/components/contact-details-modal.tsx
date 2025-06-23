@@ -51,6 +51,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { formatPhoneNumber } from "@/lib/utils";
 import { Contact, ContactNote, LeadIntake } from "@shared/schema";
 
 interface ContactDetailsModalProps {
@@ -261,7 +262,7 @@ export default function ContactDetailsModal({
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span>{contact.phone || "No phone"}</span>
+                    <span>{contact.phone ? formatPhoneNumber(contact.phone) : "No phone"}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Building className="h-4 w-4 text-muted-foreground" />
