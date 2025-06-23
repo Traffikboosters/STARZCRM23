@@ -85,6 +85,46 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
     font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  html {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Fix scrolling issues on laptops */
+  .container {
+    max-width: 100%;
+    padding-bottom: 2rem;
+  }
+
+  /* Ensure all content is scrollable */
+  .main-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 3rem;
+  }
+
+  /* Fix sidebar scrolling */
+  .sidebar {
+    overflow-y: auto;
+    max-height: 100vh;
+  }
+
+  /* Fix modal and dialog scrolling */
+  .dialog-content {
+    max-height: 90vh;
+    overflow-y: auto;
   }
 
   .brand-primary {

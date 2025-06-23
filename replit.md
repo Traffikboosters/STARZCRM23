@@ -139,6 +139,7 @@ The application uses a comprehensive schema including:
 - June 23, 2025. Verified MightyCall API connectivity with authentic Traffik Boosters credentials (account ID: 4f917f13-aae1-401d-8241-010db91da5b2)
 - June 23, 2025. Confirmed click-to-call functionality working with proper call logging and dial string generation for business operations
 - June 23, 2025. Enhanced MightyCall integration page with clear Core plan limitations explanation and improved user experience for manual dialing workflow
+- June 23, 2025. Fixed scrolling issues on laptop devices by removing overflow-hidden constraints and adding proper vertical scroll behavior to main content areas
 
 ## User Preferences
 

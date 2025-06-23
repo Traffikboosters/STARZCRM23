@@ -73,7 +73,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-neutral-lightest">
       <Header />
       
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex min-h-screen">
         <Sidebar 
           activeTab={activeTab} 
           onTabChange={setActiveTab}
@@ -81,8 +81,10 @@ export default function Dashboard() {
           onStartVideoCall={() => setIsVideoCallOpen(true)}
         />
         
-        <main className="flex-1 overflow-hidden">
-          {renderMainContent()}
+        <main className="flex-1 overflow-y-auto main-content">
+          <div className="container mx-auto py-6 px-4">
+            {renderMainContent()}
+          </div>
         </main>
         
         <RightSidebar 
