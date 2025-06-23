@@ -29,7 +29,7 @@ import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState("scraping");
+  const [activeTab, setActiveTab] = useState("crm");
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
@@ -68,7 +68,7 @@ export default function Dashboard() {
       case "phone":
         return <MightyCallIntegration />;
       case "users":
-        return currentUser ? <UserManagement currentUser={currentUser} /> : <div>Loading...</div>;
+        return currentUser ? <UserManagement currentUser={currentUser as any} /> : <div>Loading...</div>;
       case "files":
         return <SecureFileManager />;
       case "chat":

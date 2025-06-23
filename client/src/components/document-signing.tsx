@@ -366,7 +366,7 @@ export default function DocumentSigning() {
                   <div className="p-3 bg-muted rounded-md">
                     <div className="flex flex-wrap gap-2">
                       {selectedTemplate.fields.map((field, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
+                        <Badge key={`field-${field}-${index}`} variant="secondary" className="text-xs">
                           {field}
                         </Badge>
                       ))}

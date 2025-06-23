@@ -344,7 +344,7 @@ export default function CRMAnalyticsDashboard() {
             {sortedPlatforms.map((platform, index) => {
               const IconComponent = platform.icon;
               return (
-                <div key={platform.platform} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
+                <div key={`${platform.platform}-${index}`} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-4">
                       <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gray-100">
@@ -435,13 +435,13 @@ export default function CRMAnalyticsDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {(contacts as any[]).slice(0, 8).map((contact: any) => {
+            {(contacts as any[]).slice(0, 8).map((contact: any, index: number) => {
               const sourceInfo = leadSourceAnalytics.find(p => p.platform === contact.leadSource) || 
                 { name: contact.leadSource, icon: Globe, color: "#6b7280" };
               const IconComponent = sourceInfo.icon;
               
               return (
-                <div key={contact.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                <div key={`contact-${contact.id}-${index}`} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100">
                       <IconComponent className="h-5 w-5" style={{ color: sourceInfo.color }} />
