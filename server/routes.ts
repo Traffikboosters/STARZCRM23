@@ -695,6 +695,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const contactRate = assignedLeads.length > 0 ? (contactedLeads.length / assignedLeads.length) * 100 : 0;
         const appointmentRate = contactedLeads.length > 0 ? (appointments.length / contactedLeads.length) * 100 : 0;
         const showRate = appointments.length > 0 ? (completedAppointments.length / appointments.length) * 100 : 0;
+        const appointmentToClosingRatio = completedAppointments.length > 0 ? (wonDeals.length / completedAppointments.length) * 100 : 0;
+        
+        // Calculate earnings - assume 10% commission on deals + 5% residual for ongoing services
+        const commission = totalRevenue * 0.10; // 10% commission
+        const residualEarnings = wonDeals.length * 500; // $500 residual per deal monthly
+        const totalEarnings = commission + residualEarnings;
+        const avgEarningsPerSale = wonDeals.length > 0 ? totalEarnings / wonDeals.length : 0;
         
         return {
           repId: rep.id,
@@ -705,7 +712,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           leadsContacted: contactedLeads.length,
           appointmentsSet: appointments.length,
           appointmentsCompleted: completedAppointments.length,
-          appointmentShowRate: showRate,
+          appointmentShowRate: Math.round(showRate * 10) / 10,
+          appointmentToClosingRatio: Math.round(appointmentToClosingRatio * 10) / 10,
           dealsWon: wonDeals.length,
           dealsLost: lostDeals.length,
           totalRevenue: totalRevenue / 100, // Convert from cents
@@ -713,6 +721,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           closingRatio: Math.round(closingRatio * 10) / 10,
           contactRate: Math.round(contactRate * 10) / 10,
           appointmentConversionRate: Math.round(appointmentRate * 10) / 10,
+          commission: commission / 100, // Convert from cents
+          residualEarnings: residualEarnings,
+          totalEarnings: totalEarnings / 100, // Convert from cents
+          avgEarningsPerSale: avgEarningsPerSale / 100, // Convert from cents
           lastActivity: new Date(),
           leadSources: assignedLeads.reduce((sources: any, lead) => {
             const source = lead.leadSource || 'unknown';

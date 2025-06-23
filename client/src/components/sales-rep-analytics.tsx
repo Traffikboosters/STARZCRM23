@@ -39,6 +39,7 @@ interface SalesRepPerformance {
   appointmentsSet: number;
   appointmentsCompleted: number;
   appointmentShowRate: number;
+  appointmentToClosingRatio: number;
   dealsWon: number;
   dealsLost: number;
   totalRevenue: number;
@@ -46,6 +47,10 @@ interface SalesRepPerformance {
   closingRatio: number;
   contactRate: number;
   appointmentConversionRate: number;
+  commission: number;
+  residualEarnings: number;
+  totalEarnings: number;
+  avgEarningsPerSale: number;
   callsToClosedWon: number;
   avgSalesCycleLength: number;
   monthlyGoal: number;
@@ -197,6 +202,7 @@ export function SalesRepAnalytics() {
     appointmentsSet: rep.appointmentsSet,
     appointmentsCompleted: rep.appointmentsCompleted,
     appointmentShowRate: rep.appointmentShowRate,
+    appointmentToClosingRatio: rep.appointmentToClosingRatio,
     dealsWon: rep.dealsWon,
     dealsLost: rep.dealsLost,
     totalRevenue: rep.totalRevenue,
@@ -204,6 +210,10 @@ export function SalesRepAnalytics() {
     closingRatio: rep.closingRatio,
     contactRate: rep.contactRate,
     appointmentConversionRate: rep.appointmentConversionRate,
+    commission: rep.commission,
+    residualEarnings: rep.residualEarnings,
+    totalEarnings: rep.totalEarnings,
+    avgEarningsPerSale: rep.avgEarningsPerSale,
     rank: rep.rank,
     improvement: Math.random() * 20 - 10,
     topLeadSources: Object.keys(rep.leadSources || {}).slice(0, 3),
@@ -297,47 +307,81 @@ export function SalesRepAnalytics() {
       </div>
 
       {/* Team Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center">
-              <Target className="h-8 w-8 text-blue-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Team Closing Ratio</p>
-                <p className="text-2xl font-bold text-gray-900">{apiTeamAverages.closingRatio.toFixed(1)}%</p>
+              <Target className="h-6 w-6 text-blue-600" />
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Closing Ratio</p>
+                <p className="text-xl font-bold text-gray-900">{apiTeamAverages.closingRatio.toFixed(1)}%</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center">
-              <Phone className="h-8 w-8 text-green-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Avg Contact Rate</p>
-                <p className="text-2xl font-bold text-gray-900">{apiTeamAverages.contactRate.toFixed(1)}%</p>
+              <Calendar className="h-6 w-6 text-green-600" />
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Appt→Close</p>
+                <p className="text-xl font-bold text-gray-900">
+                  {processedRepsData.length > 0 
+                    ? (processedRepsData.reduce((sum: number, rep: any) => sum + rep.appointmentToClosingRatio, 0) / processedRepsData.length).toFixed(1)
+                    : 0}%
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center">
-              <Calendar className="h-8 w-8 text-orange-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Appointment Rate</p>
-                <p className="text-2xl font-bold text-gray-900">{apiTeamAverages.appointmentRate.toFixed(1)}%</p>
+              <Phone className="h-6 w-6 text-orange-600" />
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Contact Rate</p>
+                <p className="text-xl font-bold text-gray-900">{apiTeamAverages.contactRate.toFixed(1)}%</p>
               </div>
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="p-4">
             <div className="flex items-center">
-              <DollarSign className="h-8 w-8 text-purple-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Avg Deal Size</p>
-                <p className="text-2xl font-bold text-gray-900">{formatCurrency(apiTeamAverages.avgDealSize)}</p>
+              <DollarSign className="h-6 w-6 text-purple-600" />
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Avg Deal Size</p>
+                <p className="text-xl font-bold text-gray-900">{formatCurrency(apiTeamAverages.avgDealSize)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <Award className="h-6 w-6 text-emerald-600" />
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Avg Commission</p>
+                <p className="text-xl font-bold text-gray-900">
+                  {formatCurrency(processedRepsData.length > 0 
+                    ? processedRepsData.reduce((sum: number, rep: any) => sum + rep.commission, 0) / processedRepsData.length
+                    : 0)}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <TrendingUp className="h-6 w-6 text-indigo-600" />
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Residual/Rep</p>
+                <p className="text-xl font-bold text-gray-900">
+                  {formatCurrency(processedRepsData.length > 0 
+                    ? processedRepsData.reduce((sum: number, rep: any) => sum + rep.residualEarnings, 0) / processedRepsData.length
+                    : 0)}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -414,8 +458,31 @@ export function SalesRepAnalytics() {
                         <p className="text-xs text-gray-600">Appointment Rate</p>
                       </div>
                       <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <p className="text-2xl font-bold text-green-600">{formatCurrency(rep.totalRevenue)}</p>
-                        <p className="text-xs text-gray-600">Total Revenue</p>
+                        <p className="text-2xl font-bold text-green-600">{rep.appointmentToClosingRatio.toFixed(1)}%</p>
+                        <p className="text-xs text-gray-600">Appt→Close Ratio</p>
+                      </div>
+                    </div>
+                    
+                    {/* Earnings Section */}
+                    <div className="border-t pt-4">
+                      <h4 className="font-semibold mb-3 text-gray-900">Earnings Breakdown</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="text-center p-4 bg-emerald-50 rounded-lg">
+                          <p className="text-2xl font-bold text-emerald-600">{formatCurrency(rep.commission)}</p>
+                          <p className="text-xs text-gray-600">Commission (10%)</p>
+                        </div>
+                        <div className="text-center p-4 bg-purple-50 rounded-lg">
+                          <p className="text-2xl font-bold text-purple-600">{formatCurrency(rep.residualEarnings)}</p>
+                          <p className="text-xs text-gray-600">Residual Earnings</p>
+                        </div>
+                        <div className="text-center p-4 bg-indigo-50 rounded-lg">
+                          <p className="text-2xl font-bold text-indigo-600">{formatCurrency(rep.totalEarnings)}</p>
+                          <p className="text-xs text-gray-600">Total Earnings</p>
+                        </div>
+                        <div className="text-center p-4 bg-amber-50 rounded-lg">
+                          <p className="text-2xl font-bold text-amber-600">{formatCurrency(rep.avgEarningsPerSale)}</p>
+                          <p className="text-xs text-gray-600">Avg Per Sale</p>
+                        </div>
                       </div>
                     </div>
                   </TabsContent>

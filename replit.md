@@ -153,6 +153,9 @@ The application uses a comprehensive schema including:
 - June 23, 2025. Implemented sales rep assignment functionality where managers can allocate leads to individual sales representatives with proper tracking and notifications
 - June 23, 2025. Created dedicated Sales Pipeline navigation tab with Kanban-style board showing prospects, qualified leads, demos, proposals, negotiations, and closed deals
 - June 23, 2025. Added sample sales representatives (Sarah Johnson, David Chen, Amanda Davis) with individual extensions and role-based lead access control
+- June 23, 2025. Enhanced sales rep analytics with appointment-to-closing ratio KPI measuring percentage of completed appointments that convert to closed deals
+- June 23, 2025. Implemented comprehensive earnings tracking with 10% commission calculation, $500 residual earnings per deal, and average earnings per sale metrics
+- June 23, 2025. Added 6-panel team overview dashboard displaying closing ratio, appointment-to-closing ratio, contact rate, deal size, commission averages, and residual earnings
 
 ## User Preferences
 
