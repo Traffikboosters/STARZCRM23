@@ -160,7 +160,7 @@ export default function CalendarView({ onCreateEvent }: CalendarViewProps) {
             
             return (
               <div
-                key={index}
+                key={`${format(day, 'yyyy-MM-dd')}-${index}`}
                 className={cn(
                   "calendar-day",
                   !isCurrentMonth && "opacity-50"

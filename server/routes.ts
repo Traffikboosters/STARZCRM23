@@ -485,6 +485,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Document signing endpoints
+  app.post("/api/documents/create-signing-request", requireAuth, async (req: any, res) => {
+    try {
+      const { templateId, recipientEmail, recipientName, documentTitle, customMessage, template } = req.body;
+      
+      const signingRequest = await storage.createSigningRequest({
+        recipientEmail,
+        recipientName,
+        documentTitle: documentTitle || `${template} - ${recipientName}`,
+        senderEmail: req.user.email || 'traffikboosters@gmail.com',
+        templateId,
+        status: 'sent',
+        priority: 'medium',
+        customMessage,
+        createdBy: req.user.id
+      });
+
+      res.json({
+        success: true,
+        signingRequest,
+        message: `Document sent to ${recipientName} at ${recipientEmail}`
+      });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  app.get("/api/documents/signing-requests", requireAuth, async (req: any, res) => {
+    try {
+      const requests = await storage.getAllSigningRequests();
+      res.json(requests);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  // Scraping endpoints
+  app.post("/api/scraping/submit", requireAuth, async (req: any, res) => {
+    try {
+      const { url, config } = req.body;
+      
+      const scrapingJob = await storage.createScrapingJob({
+        name: `Scraping job for ${url}`,
+        url,
+        selectors: config,
+        status: 'pending',
+        createdBy: req.user.id
+      });
+
+      res.json({
+        success: true,
+        jobId: scrapingJob.id,
+        message: `Scraping job created for ${url}`
+      });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  app.get("/api/scraping-jobs", requireAuth, async (req: any, res) => {
+    try {
+      const jobs = await storage.getAllScrapingJobs();
+      res.json(jobs);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
   // Routes for marketing analytics
   app.get("/api/analytics/campaigns", (req, res) => {
     try {

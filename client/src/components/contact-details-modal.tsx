@@ -230,11 +230,11 @@ export default function ContactDetailsModal({
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="notes">Notes ({notes.length})</TabsTrigger>
-            <TabsTrigger value="intake">Lead Intake</TabsTrigger>
-            <TabsTrigger value="disposition">Disposition</TabsTrigger>
-            <TabsTrigger value="timeline">Timeline</TabsTrigger>
+            <TabsTrigger key="overview-tab" value="overview">Overview</TabsTrigger>
+            <TabsTrigger key="notes-tab" value="notes">Notes ({notes.length})</TabsTrigger>
+            <TabsTrigger key="intake-tab" value="intake">Lead Intake</TabsTrigger>
+            <TabsTrigger key="disposition-tab" value="disposition">Disposition</TabsTrigger>
+            <TabsTrigger key="timeline-tab" value="timeline">Timeline</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
