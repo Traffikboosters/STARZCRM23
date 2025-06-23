@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { Phone, AlertCircle, CheckCircle, ExternalLink, Info } from "lucide-react";
+import { Phone, AlertCircle, CheckCircle, ExternalLink, Info, Zap } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import MightyCallPlansComparison from "@/components/mightycall-plans-comparison";
 
 interface MightyCallStatus {
   connected: boolean;
@@ -58,7 +60,19 @@ export default function MightyCallPage() {
         </p>
       </div>
 
-      {/* Connection Status */}
+      <Tabs defaultValue="status" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="status">Current Status</TabsTrigger>
+          <TabsTrigger value="plans">
+            <Zap className="h-4 w-4 mr-2" />
+            Plan Comparison
+          </TabsTrigger>
+          <TabsTrigger value="instructions">How It Works</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="status" className="space-y-6">
+
+          {/* Connection Status */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -181,6 +195,66 @@ export default function MightyCallPage() {
           </p>
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="plans">
+          <MightyCallPlansComparison />
+        </TabsContent>
+
+        <TabsContent value="instructions" className="space-y-6">
+          {/* How Click-to-Call Works */}
+          <Card>
+            <CardHeader>
+              <CardTitle>How Click-to-Call Works</CardTitle>
+              <CardDescription>
+                Understanding your current phone system capabilities
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                  <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">1</div>
+                  <div>
+                    <p className="font-medium">Click Call Button</p>
+                    <p className="text-sm text-muted-foreground">Click any phone number in contacts or leads</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                  <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">2</div>
+                  <div>
+                    <p className="font-medium">Call Preparation</p>
+                    <p className="text-sm text-muted-foreground">System logs the call attempt and prepares dial string</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                  <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">3</div>
+                  <div>
+                    <p className="font-medium">Phone Dialer Opens</p>
+                    <p className="text-sm text-muted-foreground">Your device's phone app opens with the number ready to dial</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+                  <div className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">4</div>
+                  <div>
+                    <p className="font-medium">Manual Dial</p>
+                    <p className="text-sm text-muted-foreground">Press call in your phone app or use MightyCall softphone</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t">
+                <Button onClick={testCall} className="w-full sm:w-auto">
+                  <Phone className="h-4 w-4 mr-2" />
+                  Test Call System
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
