@@ -104,8 +104,8 @@ export class MightyCallCorePlanTester {
               method: endpoint.method,
               headers: auth.headers,
               body: JSON.stringify({
-                to: '+19547939065',
-                from: '+19547939065',
+                to: '+18778406250',
+                from: '+18778406250',
                 account_id: this.accountId
               })
             });

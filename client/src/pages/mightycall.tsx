@@ -25,7 +25,7 @@ export default function MightyCallPage() {
   const testCall = async () => {
     try {
       const response = await apiRequest("POST", "/api/mightycall/call", {
-        phoneNumber: "9547939065",
+        phoneNumber: "8778406250",
         contactName: "Test Call"
       });
       const result = await response.json();

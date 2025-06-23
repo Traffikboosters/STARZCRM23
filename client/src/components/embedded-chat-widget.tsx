@@ -145,7 +145,7 @@ export default function EmbeddedChatWidget({
         addMessage("There was an issue submitting your information. Please try again or contact us directly.", false, "system");
       }
     } catch (error) {
-      addMessage("Connection error. Please try again or email us directly at hello@traffikboosters.com", false, "system");
+      addMessage("Connection error. Please try again or call us at (877) 840-6250", false, "system");
     } finally {
       setIsSubmitting(false);
     }

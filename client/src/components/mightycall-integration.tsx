@@ -29,7 +29,7 @@ export default function MightyCallIntegration() {
   const [config, setConfig] = useState<MightyCallConfig>({
     apiKey: 'Your MightyCall API Key',
     accountId: '4f917f13-aae1-401d-8241-010db91da5b2',
-    phoneNumber: '+1-954-793-9065',
+    phoneNumber: '+1-877-840-6250',
     isEnabled: true
   });
   const [callLogs, setCallLogs] = useState<CallLog[]>([]);
