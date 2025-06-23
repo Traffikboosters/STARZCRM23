@@ -1,0 +1,384 @@
+<!-- TRAFFIK BOOSTERS CALENDAR WIDGET -->
+<!-- Copy this entire code block and paste it where you want the calendar to appear on your website -->
+
+<div id="traffik-boosters-calendar-widget" style="max-width: 800px; margin: 0 auto; padding: 20px;">
+  <div style="text-align: center; margin-bottom: 30px;">
+    <h2 style="color: #e45c2b; font-size: 28px; margin-bottom: 10px;">Schedule Your Free Growth Consultation</h2>
+    <p style="color: #666; font-size: 16px;">Book a call with our traffic experts and discover how to boost your website traffic</p>
+  </div>
+  
+  <!-- Calendar booking form will load here -->
+  <div id="booking-calendar-container">
+    <div style="text-align: center; padding: 40px; border: 2px dashed #ddd; border-radius: 8px;">
+      <p style="color: #888;">Loading calendar widget...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// Traffik Boosters Calendar Widget Script
+(function() {
+  'use strict';
+  
+  var STARZ_API_URL = 'https://your-starz-domain.replit.app'; // Replace with your actual Starz domain
+  var COMPANY_NAME = 'Traffik Boosters';
+  var PRIMARY_COLOR = '#e45c2b';
+  var BUSINESS_HOURS = {
+    start: '09:00',
+    end: '18:00',
+    days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
+  };
+  
+  var services = [
+    { id: 'consultation', name: 'Free Growth Consultation', duration: 30, description: 'Discover opportunities to boost your website traffic' },
+    { id: 'demo', name: 'Strategy Demo', duration: 60, description: 'See our proven traffic generation strategies in action' },
+    { id: 'audit', name: 'Website Audit Review', duration: 45, description: 'Get a comprehensive analysis of your current traffic' },
+    { id: 'strategy', name: 'Custom Strategy Session', duration: 90, description: 'Develop a personalized traffic growth plan' }
+  ];
+  
+  var currentStep = 'services';
+  var selectedService = '';
+  var selectedDate = '';
+  var selectedTime = '';
+  var currentMonth = new Date();
+  
+  function initCalendarWidget() {
+    var container = document.getElementById('booking-calendar-container');
+    if (!container) return;
+    
+    container.innerHTML = generateServicesHTML();
+    attachEventListeners();
+  }
+  
+  function generateServicesHTML() {
+    var html = '<div style="margin-bottom: 30px;">';
+    html += '<h3 style="color: #333; text-align: center; margin-bottom: 20px;">Choose Your Service</h3>';
+    html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">';
+    
+    services.forEach(function(service) {
+      html += '<div onclick="selectService(\'' + service.id + '\')" style="';
+      html += 'border: 2px solid #ddd; border-radius: 8px; padding: 20px; cursor: pointer; transition: all 0.3s;';
+      html += 'background: white;" onmouseover="this.style.borderColor=\'' + PRIMARY_COLOR + '\'" onmouseout="this.style.borderColor=\'#ddd\'">';
+      html += '<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">';
+      html += '<h4 style="margin: 0; color: #333; font-size: 16px;">' + service.name + '</h4>';
+      html += '<span style="background: #f0f0f0; color: #666; padding: 4px 8px; border-radius: 4px; font-size: 12px;">' + service.duration + ' min</span>';
+      html += '</div>';
+      html += '<p style="margin: 0; color: #666; font-size: 14px;">' + service.description + '</p>';
+      html += '</div>';
+    });
+    
+    html += '</div></div>';
+    return html;
+  }
+  
+  function generateCalendarHTML() {
+    var html = '<div>';
+    html += '<button onclick="goBackToServices()" style="background: none; border: 1px solid #ddd; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-bottom: 20px;">← Back to Services</button>';
+    html += '<h3 style="color: #333; text-align: center;">Select Date & Time</h3>';
+    html += '<div style="max-width: 400px; margin: 0 auto;">';
+    
+    // Calendar navigation
+    html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">';
+    html += '<button onclick="prevMonth()" style="background: none; border: 1px solid #ddd; padding: 8px 12px; border-radius: 4px; cursor: pointer;">‹</button>';
+    html += '<h4 style="margin: 0;">' + currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) + '</h4>';
+    html += '<button onclick="nextMonth()" style="background: none; border: 1px solid #ddd; padding: 8px 12px; border-radius: 4px; cursor: pointer;">›</button>';
+    html += '</div>';
+    
+    // Calendar grid
+    html += generateCalendarGrid();
+    html += '</div></div>';
+    
+    return html;
+  }
+  
+  function generateCalendarGrid() {
+    var html = '<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 20px;">';
+    
+    // Days header
+    var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    days.forEach(function(day) {
+      html += '<div style="text-align: center; padding: 8px; font-weight: bold; color: #666; font-size: 12px;">' + day + '</div>';
+    });
+    
+    // Calendar days
+    var firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+    var lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+    var startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+    
+    for (var i = 0; i < 42; i++) {
+      var date = new Date(startDate);
+      date.setDate(startDate.getDate() + i);
+      
+      var isCurrentMonth = date.getMonth() === currentMonth.getMonth();
+      var isToday = date.toDateString() === new Date().toDateString();
+      var isAvailable = isDateAvailable(date);
+      var isSelected = selectedDate === date.toISOString().split('T')[0];
+      
+      var dayStyle = 'text-align: center; padding: 8px; cursor: pointer; border-radius: 4px; font-size: 14px;';
+      
+      if (!isCurrentMonth) {
+        dayStyle += 'color: #ccc;';
+      } else if (!isAvailable) {
+        dayStyle += 'color: #ccc; cursor: not-allowed;';
+      } else if (isSelected) {
+        dayStyle += 'background: ' + PRIMARY_COLOR + '; color: white;';
+      } else if (isToday) {
+        dayStyle += 'background: #f0f0f0; color: ' + PRIMARY_COLOR + ';';
+      } else {
+        dayStyle += 'color: #333; background: white;';
+      }
+      
+      var onclick = isAvailable ? 'selectDate(\'' + date.toISOString().split('T')[0] + '\')' : '';
+      html += '<div onclick="' + onclick + '" style="' + dayStyle + '">' + date.getDate() + '</div>';
+    }
+    
+    html += '</div>';
+    
+    // Time slots
+    if (selectedDate) {
+      html += generateTimeSlotsHTML();
+    }
+    
+    return html;
+  }
+  
+  function generateTimeSlotsHTML() {
+    var html = '<div style="margin-top: 20px;">';
+    html += '<h4 style="color: #333; margin-bottom: 15px;">Available Times - ' + new Date(selectedDate).toLocaleDateString() + '</h4>';
+    html += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px;">';
+    
+    // Generate time slots (9 AM - 6 PM, 30-min intervals)
+    for (var hour = 9; hour < 18; hour++) {
+      ['00', '30'].forEach(function(minute) {
+        var timeSlot = hour.toString().padStart(2, '0') + ':' + minute;
+        var isSelected = selectedTime === timeSlot;
+        
+        var timeStyle = 'text-align: center; padding: 8px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 14px;';
+        if (isSelected) {
+          timeStyle += 'background: ' + PRIMARY_COLOR + '; color: white; border-color: ' + PRIMARY_COLOR + ';';
+        } else {
+          timeStyle += 'background: white; color: #333;';
+        }
+        
+        html += '<div onclick="selectTime(\'' + timeSlot + '\')" style="' + timeStyle + '">' + timeSlot + '</div>';
+      });
+    }
+    
+    html += '</div>';
+    
+    if (selectedTime) {
+      html += '<div style="text-align: center; margin-top: 20px;">';
+      html += '<button onclick="proceedToForm()" style="background: ' + PRIMARY_COLOR + '; color: white; border: none; padding: 12px 24px; border-radius: 4px; cursor: pointer; font-size: 16px;">Continue to Booking Form</button>';
+      html += '</div>';
+    }
+    
+    html += '</div>';
+    return html;
+  }
+  
+  function generateFormHTML() {
+    var service = services.find(function(s) { return s.id === selectedService; });
+    
+    var html = '<div>';
+    html += '<button onclick="goBackToCalendar()" style="background: none; border: 1px solid #ddd; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-bottom: 20px;">← Back to Calendar</button>';
+    html += '<h3 style="color: #333; text-align: center;">Complete Your Booking</h3>';
+    html += '<div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">';
+    html += '<strong>' + service.name + '</strong><br>';
+    html += new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    html += ' at ' + selectedTime;
+    html += '</div>';
+    
+    html += '<form id="booking-form" onsubmit="submitBooking(event)" style="max-width: 400px; margin: 0 auto;">';
+    html += '<div style="margin-bottom: 15px;">';
+    html += '<label style="display: block; margin-bottom: 5px; color: #333; font-weight: bold;">Full Name *</label>';
+    html += '<input type="text" id="name" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">';
+    html += '</div>';
+    
+    html += '<div style="margin-bottom: 15px;">';
+    html += '<label style="display: block; margin-bottom: 5px; color: #333; font-weight: bold;">Email Address *</label>';
+    html += '<input type="email" id="email" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">';
+    html += '</div>';
+    
+    html += '<div style="margin-bottom: 15px;">';
+    html += '<label style="display: block; margin-bottom: 5px; color: #333; font-weight: bold;">Phone Number *</label>';
+    html += '<input type="tel" id="phone" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">';
+    html += '</div>';
+    
+    html += '<div style="margin-bottom: 15px;">';
+    html += '<label style="display: block; margin-bottom: 5px; color: #333; font-weight: bold;">Company Name</label>';
+    html += '<input type="text" id="company" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">';
+    html += '</div>';
+    
+    html += '<div style="margin-bottom: 15px;">';
+    html += '<label style="display: block; margin-bottom: 5px; color: #333; font-weight: bold;">Website URL</label>';
+    html += '<input type="url" id="website" placeholder="https://" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">';
+    html += '</div>';
+    
+    html += '<div style="margin-bottom: 20px;">';
+    html += '<label style="display: block; margin-bottom: 5px; color: #333; font-weight: bold;">What are your main traffic goals?</label>';
+    html += '<textarea id="message" rows="3" placeholder="Tell us about your current traffic challenges and what you\'d like to achieve..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; resize: vertical;"></textarea>';
+    html += '</div>';
+    
+    html += '<button type="submit" id="submit-btn" style="width: 100%; background: ' + PRIMARY_COLOR + '; color: white; border: none; padding: 15px; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold;">Confirm Appointment</button>';
+    html += '</form></div>';
+    
+    return html;
+  }
+  
+  function generateConfirmationHTML() {
+    var service = services.find(function(s) { return s.id === selectedService; });
+    
+    var html = '<div style="text-align: center; max-width: 500px; margin: 0 auto;">';
+    html += '<div style="width: 60px; height: 60px; background: #10b981; border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">';
+    html += '<span style="color: white; font-size: 24px;">✓</span>';
+    html += '</div>';
+    
+    html += '<h3 style="color: #333; margin-bottom: 10px;">Appointment Confirmed!</h3>';
+    html += '<p style="color: #666; margin-bottom: 20px;">Your ' + service.name + ' is scheduled for:</p>';
+    
+    html += '<div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 20px;">';
+    html += '<strong style="color: #333;">';
+    html += new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    html += ' at ' + selectedTime;
+    html += '</strong>';
+    html += '</div>';
+    
+    html += '<div style="color: #666; font-size: 14px; line-height: 1.6;">';
+    html += '<p>📧 A confirmation email has been sent to your inbox</p>';
+    html += '<p>📞 We\'ll call you at the scheduled time</p>';
+    html += '<p>⏰ Please be available 5 minutes early</p>';
+    html += '</div>';
+    
+    html += '<div style="background: #fef3e7; border: 1px solid #f59e0b; padding: 15px; border-radius: 8px; margin-top: 20px;">';
+    html += '<p style="margin: 0; color: #92400e; font-size: 14px;">';
+    html += '<strong>Need to reschedule?</strong> Call us at (877) 840-6250 or reply to your confirmation email.';
+    html += '</p>';
+    html += '</div>';
+    
+    html += '</div>';
+    return html;
+  }
+  
+  // Event handlers
+  window.selectService = function(serviceId) {
+    selectedService = serviceId;
+    currentStep = 'calendar';
+    var container = document.getElementById('booking-calendar-container');
+    container.innerHTML = generateCalendarHTML();
+  };
+  
+  window.selectDate = function(date) {
+    selectedDate = date;
+    selectedTime = '';
+    var container = document.getElementById('booking-calendar-container');
+    container.innerHTML = generateCalendarHTML();
+  };
+  
+  window.selectTime = function(time) {
+    selectedTime = time;
+    var container = document.getElementById('booking-calendar-container');
+    container.innerHTML = generateCalendarHTML();
+  };
+  
+  window.goBackToServices = function() {
+    currentStep = 'services';
+    selectedService = '';
+    selectedDate = '';
+    selectedTime = '';
+    var container = document.getElementById('booking-calendar-container');
+    container.innerHTML = generateServicesHTML();
+  };
+  
+  window.goBackToCalendar = function() {
+    currentStep = 'calendar';
+    var container = document.getElementById('booking-calendar-container');
+    container.innerHTML = generateCalendarHTML();
+  };
+  
+  window.proceedToForm = function() {
+    currentStep = 'form';
+    var container = document.getElementById('booking-calendar-container');
+    container.innerHTML = generateFormHTML();
+  };
+  
+  window.prevMonth = function() {
+    currentMonth.setMonth(currentMonth.getMonth() - 1);
+    var container = document.getElementById('booking-calendar-container');
+    container.innerHTML = generateCalendarHTML();
+  };
+  
+  window.nextMonth = function() {
+    currentMonth.setMonth(currentMonth.getMonth() + 1);
+    var container = document.getElementById('booking-calendar-container');
+    container.innerHTML = generateCalendarHTML();
+  };
+  
+  window.submitBooking = function(event) {
+    event.preventDefault();
+    
+    var submitBtn = document.getElementById('submit-btn');
+    submitBtn.textContent = 'Booking...';
+    submitBtn.disabled = true;
+    
+    var formData = {
+      name: document.getElementById('name').value,
+      email: document.getElementById('email').value,
+      phone: document.getElementById('phone').value,
+      company: document.getElementById('company').value,
+      website: document.getElementById('website').value,
+      serviceType: selectedService,
+      message: document.getElementById('message').value,
+      preferredDate: selectedDate,
+      preferredTime: selectedTime,
+      source: 'traffikboosters.com',
+      timezone: 'America/New_York'
+    };
+    
+    // Submit to Starz API
+    fetch(STARZ_API_URL + '/api/calendar/book-appointment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+      if (data.success) {
+        currentStep = 'confirmation';
+        var container = document.getElementById('booking-calendar-container');
+        container.innerHTML = generateConfirmationHTML();
+      } else {
+        alert('There was an error booking your appointment. Please try again or call us at (877) 840-6250.');
+        submitBtn.textContent = 'Confirm Appointment';
+        submitBtn.disabled = false;
+      }
+    })
+    .catch(function(error) {
+      console.error('Booking error:', error);
+      alert('There was an error booking your appointment. Please try again or call us at (877) 840-6250.');
+      submitBtn.textContent = 'Confirm Appointment';
+      submitBtn.disabled = false;
+    });
+  };
+  
+  function isDateAvailable(date) {
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+    return date >= today && BUSINESS_HOURS.days.includes(dayName);
+  }
+  
+  function attachEventListeners() {
+    // Event listeners are attached via onclick attributes in the HTML
+  }
+  
+  // Initialize the widget when the page loads
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCalendarWidget);
+  } else {
+    initCalendarWidget();
+  }
+})();
+</script>
+
+<!-- END TRAFFIK BOOSTERS CALENDAR WIDGET -->
