@@ -20,17 +20,23 @@ import VideoCallsView from "@/components/video-calls-view";
 import SalesPipeline from "@/components/sales-pipeline";
 import HRPortal from "./hr-portal";
 import RightSidebar from "@/components/right-sidebar";
+import { UserManagement } from "@/components/user-management";
 import VideoCallModal from "@/components/video-call-modal";
 import EventModal from "@/components/event-modal";
 import ContactDetailsModal from "@/components/contact-details-modal";
 import LeadNotification from "@/components/lead-notification";
 import type { Contact } from "@shared/schema";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("scraping");
   const [isVideoCallOpen, setIsVideoCallOpen] = useState(false);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+
+  const { data: currentUser } = useQuery({
+    queryKey: ["/api/users/me"],
+  });
 
   const handleLeadView = (contact: Contact) => {
     setSelectedContact(contact);
@@ -61,6 +67,8 @@ export default function Dashboard() {
         return <WorkOrders />;
       case "phone":
         return <MightyCallIntegration />;
+      case "users":
+        return currentUser ? <UserManagement currentUser={currentUser} /> : <div>Loading...</div>;
       case "files":
         return <SecureFileManager />;
       case "chat":

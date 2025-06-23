@@ -19,6 +19,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined>;
   updateUserPhone(id: number, phone: string, mobilePhone?: string, extension?: string): Promise<User | undefined>;
+  deleteUser(id: number): Promise<boolean>;
   
   // Companies
   getCompany(id: number): Promise<Company | undefined>;
@@ -705,6 +706,10 @@ Client Approval:
     };
     this.users.set(id, updatedUser);
     return updatedUser;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    return this.users.delete(id);
   }
 
   // Companies

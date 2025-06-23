@@ -48,6 +48,7 @@ export default function Sidebar({
     { id: "analytics", label: "Analytics", icon: BarChart3 },
     { id: "payments", label: "Payments", icon: CreditCard },
     { id: "phone", label: "Phone System", icon: Phone },
+    { id: "users", label: "User Management", icon: UserPlus },
     { id: "legal", label: "Work Orders", icon: FileText },
     { id: "scraping", label: "Data Scraping", icon: Worm },
     { id: "automations", label: "Automations", icon: ServerCog },

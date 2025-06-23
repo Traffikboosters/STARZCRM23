@@ -553,6 +553,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User management endpoints
+  app.get("/api/users", requireAuth, async (req: any, res) => {
+    try {
+      // Only admins can view all users
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: "Insufficient permissions to view users" });
+      }
+      
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  app.post("/api/users", requireAuth, async (req: any, res) => {
+    try {
+      // Only admins can create users
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: "Insufficient permissions to create users" });
+      }
+      
+      const userData = req.body;
+      
+      // Check if username or email already exists
+      const existingUsers = await storage.getAllUsers();
+      const usernameExists = existingUsers.some(u => u.username === userData.username);
+      const emailExists = existingUsers.some(u => u.email === userData.email);
+      
+      if (usernameExists) {
+        return res.status(400).json({ error: "Username already exists" });
+      }
+      
+      if (emailExists) {
+        return res.status(400).json({ error: "Email already exists" });
+      }
+      
+      const newUser = await storage.createUser(userData);
+      res.json(newUser);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  app.put("/api/users/:id", requireAuth, async (req: any, res) => {
+    try {
+      // Only admins can update users
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: "Insufficient permissions to update users" });
+      }
+      
+      const userId = parseInt(req.params.id);
+      const updates = req.body;
+      
+      // Check if email already exists (if being updated)
+      if (updates.email) {
+        const existingUsers = await storage.getAllUsers();
+        const emailExists = existingUsers.some(u => u.email === updates.email && u.id !== userId);
+        
+        if (emailExists) {
+          return res.status(400).json({ error: "Email already exists" });
+        }
+      }
+      
+      const updatedUser = await storage.updateUser(userId, updates);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json(updatedUser);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  app.delete("/api/users/:id", requireAuth, async (req: any, res) => {
+    try {
+      // Only admins can delete users
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: "Insufficient permissions to delete users" });
+      }
+      
+      const userId = parseInt(req.params.id);
+      
+      // Prevent self-deletion
+      if (userId === req.user.id) {
+        return res.status(400).json({ error: "Cannot delete your own account" });
+      }
+      
+      const deleted = await storage.deleteUser(userId);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
   // Sales pipeline endpoints
   app.post("/api/leads/assign", requireAuth, async (req: any, res) => {
     try {
