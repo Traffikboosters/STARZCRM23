@@ -58,16 +58,15 @@ export default function ClickToCallButton({
         const telLink = `tel:${phoneNumber.replace(/\D/g, '')}`;
         
         toast({
-          title: "Call Ready",
-          description: `Opening ${contactName || phoneNumber} - Use your MightyCall app to complete`,
-          action: {
-            label: "Open Dialer",
-            onClick: () => window.open(telLink, '_self')
-          }
+          title: "Call Prepared",
+          description: `Ready to call ${contactName || phoneNumber}. Opening phone dialer...`,
+          duration: 4000,
         });
 
-        // Auto-open the phone dialer
-        window.open(telLink, '_self');
+        // Auto-open the phone dialer after a brief delay
+        setTimeout(() => {
+          window.open(telLink, '_self');
+        }, 500);
         
       } else {
         throw new Error(result.message || 'Call preparation failed');

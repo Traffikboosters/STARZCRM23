@@ -4,20 +4,19 @@ import { WebSocketServer } from "ws";
 import { z } from "zod";
 import { eq, desc, and, gte, lte, sql, asc } from "drizzle-orm";
 import { 
-  insertUserSchema, 
+  insertUserSchema,
+  insertCompanySchema,
   insertContactSchema, 
   insertEventSchema, 
   insertFileSchema,
   insertAutomationSchema,
   insertScrapingJobSchema,
   insertCallLogSchema,
-  insertWorkOrderSchema,
   type User,
   type Contact,
   type Event,
   type File,
-  type CallLog,
-  type WorkOrder
+  type CallLog
 } from "../shared/schema";
 import { storage } from "./storage";
 import { mightyCallEnhanced } from "./mightycall-enhanced";
