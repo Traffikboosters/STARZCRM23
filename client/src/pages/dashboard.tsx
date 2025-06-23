@@ -16,6 +16,7 @@ import WorkOrders from "@/pages/work-orders";
 import SecureFileManager from "@/components/secure-file-manager";
 import ChatWidget from "@/components/chat-widget";
 import DocumentSigning from "@/components/document-signing";
+import VideoCallsView from "@/components/video-calls-view";
 import HRPortal from "./hr-portal";
 import RightSidebar from "@/components/right-sidebar";
 import VideoCallModal from "@/components/video-call-modal";
@@ -44,7 +45,7 @@ export default function Dashboard() {
       case "campaigns":
         return <CampaignManagementView />;
       case "video":
-        return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
+        return <VideoCallsView />;
       case "analytics":
         return <ScrapingAnalytics />;
       case "scraping":

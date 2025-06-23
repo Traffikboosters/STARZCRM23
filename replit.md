@@ -148,6 +148,7 @@ The application uses a comprehensive schema including:
 - June 23, 2025. Implemented smart messaging that notifies customers when contacting outside business hours that a growth expert will call within 24 business hours
 - June 23, 2025. Added visual business hours status indicator in chat widget header showing "Online Now" or "Will Call Within 24hrs" with color-coded status dots
 - June 23, 2025. Updated all phone numbers throughout platform to correct Traffik Boosters number: (877) 840-6250, including admin user profile, MightyCall integration, and chat widget contact information
+- June 23, 2025. Fixed Video Calls navigation issue where clicking Video Calls showed calendar instead of video conferencing interface with meeting scheduling, active calls, and call history
 
 ## User Preferences
 
