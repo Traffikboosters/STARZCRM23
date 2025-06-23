@@ -129,11 +129,11 @@ export default function Header() {
                     className="text-white text-sm font-medium"
                     style={{ backgroundColor: (company as any)?.primaryColor || '#e45c2b' }}
                   >
-                    {user ? `${(user as any).firstName?.[0] || 'A'}${(user as any).lastName?.[0] || 'U'}` : 'AU'}
+                    {user ? `${(user as any).firstName?.[0] || 'M'}${(user as any).lastName?.[0] || 'T'}` : 'MT'}
                   </AvatarFallback>
                 </Avatar>
                 <span className="text-sm font-medium text-neutral-dark hidden md:block">
-                  {user ? `${(user as any).firstName || 'Admin'} ${(user as any).lastName || 'User'}` : 'Admin User'}
+                  {user ? `${(user as any).firstName || 'Michael'} ${(user as any).lastName || 'Thompson'}` : 'Michael Thompson'}
                 </span>
                 <ChevronDown className="h-4 w-4 text-neutral-light" />
               </Button>
