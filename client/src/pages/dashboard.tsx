@@ -17,6 +17,7 @@ import SecureFileManager from "@/components/secure-file-manager";
 import ChatWidget from "@/components/chat-widget";
 import DocumentSigning from "@/components/document-signing";
 import VideoCallsView from "@/components/video-calls-view";
+import SalesPipeline from "@/components/sales-pipeline";
 import HRPortal from "./hr-portal";
 import RightSidebar from "@/components/right-sidebar";
 import VideoCallModal from "@/components/video-call-modal";
@@ -46,6 +47,8 @@ export default function Dashboard() {
         return <CampaignManagementView />;
       case "video":
         return <VideoCallsView />;
+      case "pipeline":
+        return <SalesPipeline />;
       case "analytics":
         return <ScrapingAnalytics />;
       case "scraping":

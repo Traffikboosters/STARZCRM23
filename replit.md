@@ -149,6 +149,10 @@ The application uses a comprehensive schema including:
 - June 23, 2025. Added visual business hours status indicator in chat widget header showing "Online Now" or "Will Call Within 24hrs" with color-coded status dots
 - June 23, 2025. Updated all phone numbers throughout platform to correct Traffik Boosters number: (877) 840-6250, including admin user profile, MightyCall integration, and chat widget contact information
 - June 23, 2025. Fixed Video Calls navigation issue where clicking Video Calls showed calendar instead of video conferencing interface with meeting scheduling, active calls, and call history
+- June 23, 2025. Added comprehensive sales pipeline system with lead assignment, drag-and-drop pipeline stages, role-based access control for sales reps and managers
+- June 23, 2025. Implemented sales rep assignment functionality where managers can allocate leads to individual sales representatives with proper tracking and notifications
+- June 23, 2025. Created dedicated Sales Pipeline navigation tab with Kanban-style board showing prospects, qualified leads, demos, proposals, negotiations, and closed deals
+- June 23, 2025. Added sample sales representatives (Sarah Johnson, David Chen, Amanda Davis) with individual extensions and role-based lead access control
 
 ## User Preferences
 

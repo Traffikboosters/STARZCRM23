@@ -39,12 +39,17 @@ export const contacts = pgTable("contacts", {
   avatar: text("avatar"),
   tags: text("tags").array(),
   notes: text("notes"),
-  leadStatus: text("lead_status").default("new"), // new, contacted, qualified, proposal, closed_won, closed_lost
+  leadStatus: text("lead_status").default("new"), // new, contacted, qualified, proposal, negotiation, closed_won, closed_lost
   leadSource: text("lead_source"), // yelp, google_maps, google_ads, facebook, instagram, tiktok, linkedin, youtube, twitter, website, referral, cold_call, email, event, chat_widget
   disposition: text("disposition"), // interested, not_interested, callback, do_not_call, wrong_number, busy
   priority: text("priority").default("medium"), // low, medium, high, urgent
   budget: integer("budget"), // in cents
   timeline: text("timeline"), // immediate, 1_month, 3_months, 6_months, 1_year, unknown
+  assignedTo: integer("assigned_to").references(() => users.id), // sales rep assigned to this lead
+  assignedBy: integer("assigned_by").references(() => users.id), // manager who assigned the lead
+  assignedAt: timestamp("assigned_at"),
+  pipelineStage: text("pipeline_stage").default("prospect"), // prospect, qualified, demo, proposal, negotiation, closed_won, closed_lost
+  dealValue: integer("deal_value"), // expected deal value in cents
   lastContactedAt: timestamp("last_contacted_at"),
   nextFollowUpAt: timestamp("next_follow_up_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),

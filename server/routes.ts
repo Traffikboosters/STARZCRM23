@@ -553,6 +553,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sales pipeline endpoints
+  app.post("/api/leads/assign", requireAuth, async (req: any, res) => {
+    try {
+      const { leadId, assignedTo, notes } = req.body;
+      
+      const updatedLead = await storage.assignLead(leadId, assignedTo, req.user.id, notes);
+      
+      if (!updatedLead) {
+        return res.status(404).json({ error: "Lead not found" });
+      }
+
+      res.json({
+        success: true,
+        lead: updatedLead,
+        message: "Lead assigned successfully"
+      });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  app.get("/api/leads/by-rep/:repId", requireAuth, async (req: any, res) => {
+    try {
+      const repId = parseInt(req.params.repId);
+      const leads = await storage.getLeadsByRep(repId);
+      res.json(leads);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
   // Routes for marketing analytics
   app.get("/api/analytics/campaigns", (req, res) => {
     try {

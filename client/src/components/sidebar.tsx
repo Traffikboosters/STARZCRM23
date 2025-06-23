@@ -16,7 +16,8 @@ import {
   MessageCircle,
   Shield,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  TrendingUp
 } from "lucide-react";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ export default function Sidebar({
   const navigationItems = [
     { id: "calendar", label: "Calendar", icon: Calendar },
     { id: "crm", label: "CRM", icon: Users },
+    { id: "pipeline", label: "Sales Pipeline", icon: TrendingUp },
     { id: "campaigns", label: "Campaigns", icon: Target },
     { id: "video", label: "Video Calls", icon: Video },
     { id: "analytics", label: "Analytics", icon: BarChart3 },

@@ -212,6 +212,53 @@ export class MemStorage implements IStorage {
     };
     this.users.set(adminUser.id, adminUser);
 
+    // Add sample sales representatives
+    const salesReps = [
+      {
+        username: "sarah.johnson",
+        email: "sarah.johnson@traffikboosters.com",
+        firstName: "Sarah",
+        lastName: "Johnson",
+        phone: "+1-877-840-6251",
+        extension: "101"
+      },
+      {
+        username: "david.chen",
+        email: "david.chen@traffikboosters.com", 
+        firstName: "David",
+        lastName: "Chen",
+        phone: "+1-877-840-6252",
+        extension: "102"
+      },
+      {
+        username: "amanda.davis",
+        email: "amanda.davis@traffikboosters.com",
+        firstName: "Amanda", 
+        lastName: "Davis",
+        phone: "+1-877-840-6253",
+        extension: "103"
+      }
+    ];
+
+    salesReps.forEach(rep => {
+      const salesRep: User = {
+        id: this.currentUserId++,
+        username: rep.username,
+        password: "salesrep123",
+        email: rep.email,
+        role: "sales_rep",
+        firstName: rep.firstName,
+        lastName: rep.lastName,
+        phone: rep.phone,
+        mobilePhone: rep.phone,
+        extension: rep.extension,
+        avatar: null,
+        isActive: true,
+        createdAt: new Date(),
+      };
+      this.users.set(salesRep.id, salesRep);
+    });
+
     // Initialize sample contacts with diverse lead sources
     this.initializeSampleContacts();
     
@@ -437,6 +484,11 @@ export class MemStorage implements IStorage {
         nextFollowUpAt: Math.random() > 0.3 ? new Date(Date.now() + Math.random() * 14 * 24 * 60 * 60 * 1000) : null,
         updatedAt: new Date(),
         updatedBy: null,
+        assignedTo: Math.random() > 0.3 ? 1 : null, // Some leads assigned to admin user
+        assignedBy: Math.random() > 0.3 ? 1 : null,
+        assignedAt: Math.random() > 0.3 ? new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000) : null,
+        pipelineStage: ['prospect', 'qualified', 'demo', 'proposal', 'negotiation'][Math.floor(Math.random() * 5)],
+        dealValue: contactData.budget ? contactData.budget + Math.floor(Math.random() * 50000) : null,
       };
       this.contacts.set(contact.id, contact);
     });
@@ -718,6 +770,11 @@ Client Approval:
       tags: insertContact.tags ?? null,
       lastContactedAt: insertContact.lastContactedAt ?? null,
       nextFollowUpAt: insertContact.nextFollowUpAt ?? null,
+      assignedTo: insertContact.assignedTo ?? null,
+      assignedBy: insertContact.assignedBy ?? null,
+      assignedAt: insertContact.assignedAt ?? null,
+      pipelineStage: insertContact.pipelineStage ?? "prospect",
+      dealValue: insertContact.dealValue ?? null,
       createdBy: insertContact.createdBy,
       updatedBy: null,
     };
@@ -736,6 +793,28 @@ Client Approval:
 
   async deleteContact(id: number): Promise<boolean> {
     return this.contacts.delete(id);
+  }
+
+  async assignLead(leadId: number, assignedTo: number, assignedBy: number, notes?: string): Promise<Contact | undefined> {
+    const contact = this.contacts.get(leadId);
+    if (!contact) return undefined;
+    
+    const updatedContact: Contact = {
+      ...contact,
+      assignedTo,
+      assignedBy,
+      assignedAt: new Date(),
+      updatedAt: new Date(),
+      updatedBy: assignedBy
+    };
+    
+    this.contacts.set(leadId, updatedContact);
+    return updatedContact;
+  }
+
+  async getLeadsByRep(repId: number): Promise<Contact[]> {
+    const contacts = Array.from(this.contacts.values());
+    return contacts.filter(contact => contact.assignedTo === repId);
   }
 
   async searchContacts(query: string): Promise<Contact[]> {
