@@ -27,9 +27,9 @@ interface MightyCallConfig {
 
 export default function MightyCallIntegration() {
   const [config, setConfig] = useState<MightyCallConfig>({
-    apiKey: 'traffikboosters_api_key',
-    accountId: 'traffikboosters@gmail.com',
-    phoneNumber: '+1-888-TRAFFIK',
+    apiKey: 'Your MightyCall API Key',
+    accountId: '4f917f13-aae1-401d-8241-010db91da5b2',
+    phoneNumber: '+1-954-793-9065',
     isEnabled: true
   });
   const [callLogs, setCallLogs] = useState<CallLog[]>([]);
@@ -73,10 +73,10 @@ export default function MightyCallIntegration() {
   }, []);
 
   const handleClickToCall = async (phoneNumber: string, contactName?: string) => {
-    if (!config.isEnabled || !config.apiKey) {
+    if (!config.isEnabled) {
       toast({
-        title: "MightyCall Not Configured",
-        description: "Please configure your MightyCall settings first.",
+        title: "MightyCall Disabled",
+        description: "Please enable MightyCall integration first.",
         variant: "destructive",
       });
       return;
@@ -84,26 +84,24 @@ export default function MightyCallIntegration() {
 
     setIsConnecting(true);
 
-    // Simulate API call to MightyCall
     try {
-      // In production, this would make actual API call to MightyCall
-      const response = await fetch('/api/mightycall/initiate-call', {
+      const response = await fetch('/api/mightycall/call', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           phoneNumber,
-          contactName,
-          apiKey: config.apiKey,
-          accountId: config.accountId
+          contactName
         })
       });
 
-      if (response.ok) {
+      const result = await response.json();
+
+      if (result.success) {
         const newCall: CallLog = {
-          id: Date.now().toString(),
-          phoneNumber,
+          id: result.callId,
+          phoneNumber: result.phoneNumber,
           contactName,
           duration: 0,
           timestamp: new Date(),
@@ -111,28 +109,41 @@ export default function MightyCallIntegration() {
           direction: 'outbound'
         };
 
-        setActiveCall(newCall);
-        toast({
-          title: "Call Initiated",
-          description: `Calling ${contactName || phoneNumber}...`,
+        // Log the call in backend
+        await fetch('/api/call-logs', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            phoneNumber: result.phoneNumber,
+            status: "initiated",
+            userId: 1,
+            direction: "outbound",
+            startTime: new Date().toISOString(),
+            notes: `Core plan call via ${result.method}`,
+            contactName: contactName || ""
+          })
         });
 
-        // Simulate call duration
-        setTimeout(() => {
-          setActiveCall(null);
-          setCallLogs(prev => [{ ...newCall, duration: Math.floor(Math.random() * 300) + 30 }, ...prev]);
-          toast({
-            title: "Call Completed",
-            description: `Call with ${contactName || phoneNumber} ended.`,
-          });
-        }, 5000);
+        // Open phone dialer for Core plan
+        const telLink = `tel:${phoneNumber.replace(/\D/g, '')}`;
+        window.open(telLink, '_self');
+
+        setCallLogs(prev => [newCall, ...prev]);
+        
+        toast({
+          title: "Call Ready",
+          description: `Opening dialer for ${contactName || phoneNumber}. Use your MightyCall app to complete the call.`,
+        });
+
       } else {
-        throw new Error('Failed to initiate call');
+        throw new Error(result.message || 'Call preparation failed');
       }
     } catch (error) {
       toast({
-        title: "Call Failed",
-        description: "Unable to connect to MightyCall service.",
+        title: "Call Setup Failed",
+        description: "Unable to prepare call. Check your MightyCall configuration.",
         variant: "destructive",
       });
     } finally {

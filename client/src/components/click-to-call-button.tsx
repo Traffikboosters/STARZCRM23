@@ -35,25 +35,47 @@ export default function ClickToCallButton({
     setIsConnecting(true);
 
     try {
-      const response = await apiRequest("POST", "/api/mightycall/initiate-call", {
+      const response = await apiRequest("POST", "/api/mightycall/call", {
         phoneNumber,
-        contactName,
-        apiKey: "demo-key", // In production, this would come from user settings
-        accountId: "demo-account"
+        contactName
       });
 
-      if (response.ok) {
-        toast({
-          title: "Call Initiated",
-          description: `Calling ${contactName || phoneNumber}...`,
+      const result = await response.json();
+
+      if (result.success) {
+        // Log the call attempt
+        await apiRequest("POST", "/api/call-logs", {
+          phoneNumber: result.phoneNumber,
+          status: "initiated",
+          userId: 1,
+          direction: "outbound",
+          startTime: new Date().toISOString(),
+          notes: `Core plan call prepared via ${result.method}`,
+          contactName: contactName || ""
         });
+
+        // Create click-to-call action
+        const telLink = `tel:${phoneNumber.replace(/\D/g, '')}`;
+        
+        toast({
+          title: "Call Ready",
+          description: `Opening ${contactName || phoneNumber} - Use your MightyCall app to complete`,
+          action: {
+            label: "Open Dialer",
+            onClick: () => window.open(telLink, '_self')
+          }
+        });
+
+        // Auto-open the phone dialer
+        window.open(telLink, '_self');
+        
       } else {
-        throw new Error('Failed to initiate call');
+        throw new Error(result.message || 'Call preparation failed');
       }
     } catch (error) {
       toast({
-        title: "Call Failed",
-        description: "Unable to connect. Please check your MightyCall configuration.",
+        title: "Call Setup Failed",
+        description: "Unable to prepare call. Check your MightyCall configuration.",
         variant: "destructive",
       });
     } finally {

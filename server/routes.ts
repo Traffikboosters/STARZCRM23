@@ -21,6 +21,7 @@ import {
 } from "../shared/schema";
 import { storage } from "./storage";
 import { mightyCallEnhanced } from "./mightycall-enhanced";
+import { workingCaller } from "./mightycall-working";
 
 function logAuditEvent(action: string, entityType: string, entityId: number, userId: number = 1, oldValues?: any, newValues?: any, description?: string) {
   console.log(`[AUDIT] ${new Date().toISOString()} - User ${userId} performed ${action} on ${entityType} ${entityId}${description ? ': ' + description : ''}`);
@@ -50,7 +51,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Companies API
   app.get("/api/companies", async (req, res) => {
     try {
-      const companies = await storage.getCompanies();
+      const companies = await storage.getAllCompanies();
       res.json(companies);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
@@ -59,7 +60,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/companies", async (req, res) => {
     try {
-      const validation = insertUserSchema.omit({ id: true }).safeParse(req.body);
+      const validation = insertCompanySchema.omit({ id: true }).safeParse(req.body);
       if (!validation.success) {
         return res.status(400).json({ error: validation.error.errors });
       }
@@ -74,11 +75,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/contacts", async (req, res) => {
     try {
       const { search, leadSource, leadStatus } = req.query;
-      const contacts = await storage.getContacts({
-        search: search as string,
-        leadSource: leadSource as string,
-        leadStatus: leadStatus as string
-      });
+      let contacts = await storage.getAllContacts();
+      
+      // Apply filters
+      if (search) {
+        const searchTerm = (search as string).toLowerCase();
+        contacts = contacts.filter(contact => 
+          contact.firstName?.toLowerCase().includes(searchTerm) ||
+          contact.lastName?.toLowerCase().includes(searchTerm) ||
+          contact.email?.toLowerCase().includes(searchTerm) ||
+          contact.company?.toLowerCase().includes(searchTerm)
+        );
+      }
+      
+      if (leadSource) {
+        contacts = contacts.filter(contact => contact.leadSource === leadSource);
+      }
+      
+      if (leadStatus) {
+        contacts = contacts.filter(contact => contact.leadStatus === leadStatus);
+      }
       res.json(contacts);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
@@ -138,10 +154,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/events", async (req, res) => {
     try {
       const { start, end } = req.query;
-      const events = await storage.getEvents({
-        start: start ? new Date(start as string) : undefined,
-        end: end ? new Date(end as string) : undefined
-      });
+      let events = await storage.getAllEvents();
+      
+      // Apply date range filter if provided
+      if (start && end) {
+        const startDate = new Date(start as string);
+        const endDate = new Date(end as string);
+        events = events.filter(event => 
+          event.startDate >= startDate && event.endDate <= endDate
+        );
+      }
       res.json(events);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
@@ -200,7 +222,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Files API
   app.get("/api/files", async (req, res) => {
     try {
-      const files = await storage.getFiles();
+      const files = await storage.getAllFiles();
       res.json(files);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
@@ -226,7 +248,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Automations API
   app.get("/api/automations", async (req, res) => {
     try {
-      const automations = await storage.getAutomations();
+      const automations = await storage.getAllAutomations();
       res.json(automations);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
@@ -252,7 +274,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Scraping Jobs API
   app.get("/api/scraping-jobs", async (req, res) => {
     try {
-      const jobs = await storage.getScrapingJobs();
+      const jobs = await storage.getAllScrapingJobs();
       res.json(jobs);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
@@ -279,11 +301,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/call-logs", async (req, res) => {
     try {
       const { contactId, userId, direction } = req.query;
-      const callLogs = await storage.getCallLogs({
-        contactId: contactId ? parseInt(contactId as string) : undefined,
-        userId: userId ? parseInt(userId as string) : undefined,
-        direction: direction as "inbound" | "outbound" | undefined
-      });
+      let callLogs = await storage.getAllCallLogs();
+      
+      // Apply filters
+      if (contactId) {
+        const contactIdNum = parseInt(contactId as string);
+        callLogs = callLogs.filter(log => log.contactId === contactIdNum);
+      }
+      
+      if (userId) {
+        const userIdNum = parseInt(userId as string);
+        callLogs = callLogs.filter(log => log.userId === userIdNum);
+      }
+      
+      if (direction) {
+        callLogs = callLogs.filter(log => log.direction === direction);
+      }
       res.json(callLogs);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
@@ -306,31 +339,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Work Orders API
-  app.get("/api/work-orders", async (req, res) => {
-    try {
-      const workOrders = await storage.getWorkOrders();
-      res.json(workOrders);
-    } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
-    }
-  });
-
-  app.post("/api/work-orders", async (req, res) => {
-    try {
-      const validation = insertWorkOrderSchema.omit({ id: true }).safeParse(req.body);
-      if (!validation.success) {
-        return res.status(400).json({ error: validation.error.errors });
-      }
-      const workOrder = await storage.createWorkOrder(validation.data);
-      
-      logAuditEvent("CREATE", "work_order", workOrder.id, 1, null, workOrder, "Work order created");
-      
-      res.json(workOrder);
-    } catch (error) {
-      res.status(500).json({ error: (error as Error).message });
-    }
-  });
+  // Work Orders API - TODO: Implement in storage layer
 
   // MightyCall status endpoint
   app.get("/api/mightycall/status", async (req, res) => {
@@ -398,6 +407,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({
         success: false,
         message: `Connection test failed: ${(error as Error).message}`
+      });
+    }
+  });
+
+  // MightyCall Working Call endpoint optimized for Core plan
+  app.post("/api/mightycall/call", async (req, res) => {
+    try {
+      const { phoneNumber, contactName } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({
+          success: false,
+          message: "Phone number is required"
+        });
+      }
+
+      const result = await workingCaller.initiateWorkingCall(phoneNumber, contactName);
+      
+      res.json({
+        success: result.success,
+        callId: result.callId,
+        phoneNumber: result.phoneNumber,
+        dialString: result.dialString,
+        message: result.message,
+        method: result.method,
+        instructions: result.instructions
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: `Call initiation failed: ${(error as Error).message}`
+      });
+    }
+  });
+
+  // MightyCall Working Status endpoint
+  app.get("/api/mightycall/working-status", async (req, res) => {
+    try {
+      const status = await workingCaller.getWorkingStatus();
+      res.json(status);
+    } catch (error) {
+      res.status(500).json({
+        error: `Status check failed: ${(error as Error).message}`
       });
     }
   });

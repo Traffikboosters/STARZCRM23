@@ -121,41 +121,104 @@ export class MightyCallEnhanced {
     const displayNumber = extension ? `${phoneNumber} ext. ${extension}` : phoneNumber;
     const dialString = extension ? `tel:+1${cleanNumber},,${extension}` : `tel:+1${cleanNumber}`;
 
-    // Check if API access is available
+    // Try multiple Core plan API endpoints for call initiation
+    const endpoints = [
+      {
+        name: 'Core Plan API v4',
+        url: 'https://api.mightycall.com/v4/api/calls/initiate',
+        method: 'POST'
+      },
+      {
+        name: 'Core Plan API v4 Alternative',
+        url: 'https://api.mightycall.com/v4/api/call',
+        method: 'POST'
+      },
+      {
+        name: 'Core Plan Legacy API',
+        url: 'https://api.mightycall.com/api/v3/calls',
+        method: 'POST'
+      }
+    ];
+
+    // First, let's verify API access status
     const status = await this.getStatus();
+    console.log('MightyCall API Status:', status);
     
-    if (status.apiAccess) {
+    if (!status.connected) {
+      return {
+        success: false,
+        callId: '',
+        dialString,
+        displayNumber,
+        message: 'MightyCall service is not accessible',
+        status: 'failed',
+        instructions: 'Check your internet connection and try again'
+      };
+    }
+
+    for (const endpoint of endpoints) {
       try {
-        // Attempt API call initiation
+        console.log(`\n=== Attempting ${endpoint.name} for Core plan ===`);
+        console.log(`URL: ${endpoint.url}`);
+        console.log(`Account ID: ${this.accountId}`);
+        console.log(`API Key: ${this.apiKey ? 'Present' : 'Missing'}`);
+        console.log(`Secret Key: ${this.secretKey ? 'Present' : 'Missing'}`);
+        
         const authToken = this.generateAuthToken();
-        const callResponse = await fetch('https://api.mightycall.com/v4/api/calls', {
-          method: 'POST',
+        console.log(`Auth Token Generated: ${authToken.substring(0, 20)}...`);
+        
+        const requestBody = {
+          to: `+1${cleanNumber}`,
+          from: '+19547939065',
+          account_id: this.accountId,
+          extension: extension || undefined,
+          contact_name: contactName || 'Unknown Contact'
+        };
+        console.log('Request Body:', JSON.stringify(requestBody, null, 2));
+        
+        const response = await fetch(endpoint.url, {
+          method: endpoint.method,
           headers: {
             'Content-Type': 'application/json',
             'X-API-Key': this.apiKey,
-            'X-Auth-Token': authToken
+            'X-Secret-Key': this.secretKey,
+            'X-Account-ID': this.accountId,
+            'Authorization': `Bearer ${authToken}`,
+            'User-Agent': 'Starz-CRM/1.0'
           },
-          body: JSON.stringify({
-            to: cleanNumber,
-            from: '9547939065',
-            extension: extension || undefined
-          })
+          body: JSON.stringify(requestBody)
         });
 
-        if (callResponse.ok) {
-          const result = await callResponse.json();
+        console.log(`${endpoint.name} HTTP Response: ${response.status} ${response.statusText}`);
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log(`${endpoint.name}: SUCCESS - Call initiated`, result);
+          
           return {
             success: true,
-            callId: result.id || `mc_${Date.now()}`,
+            callId: result.call_id || result.id || `mc_${Date.now()}`,
             dialString,
             displayNumber,
-            message: `Call initiated via MightyCall API to ${displayNumber}`,
+            message: `Call initiated via MightyCall Core plan to ${displayNumber}`,
             status: 'api_initiated',
-            instructions: 'Call will appear in your MightyCall softphone'
+            instructions: 'Call will ring through your MightyCall system'
           };
+        } else {
+          const errorText = await response.text();
+          console.log(`${endpoint.name} ERROR ${response.status}:`, errorText);
+          
+          // Try to parse error response
+          try {
+            const errorJson = JSON.parse(errorText);
+            console.log('Parsed error response:', errorJson);
+          } catch (e) {
+            console.log('Raw error response:', errorText);
+          }
         }
       } catch (error) {
-        console.log(`API call failed: ${(error as Error).message}`);
+        console.log(`${endpoint.name} EXCEPTION:`, (error as Error).message);
+        console.log('Full error:', error);
       }
     }
 
