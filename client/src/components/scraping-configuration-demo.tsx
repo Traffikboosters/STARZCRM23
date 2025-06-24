@@ -457,13 +457,17 @@ export default function ScrapingConfigurationDemo() {
                 Available Data Sources - Choose Your Target Website
               </CardTitle>
               <CardDescription className="text-base">
-                Select from {scrapingTemplates.length} pre-configured websites optimized for lead generation. Each template targets different business types and demographics including Craigslist local services and Angie's List verified contractors.
+                Select from {scrapingTemplates.length} pre-configured websites optimized for lead generation. All platforms are active: Bark.com, Business Insider, Yelp, LinkedIn, Google My Business, Crunchbase, Industry Directories, Craigslist, and Angie's List.
               </CardDescription>
             </CardHeader>
           </Card>
 
           {/* All 9 Websites - Clear Selection Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold mb-3">Available Platforms ({scrapingTemplates.length} total)</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-6">
             {scrapingTemplates.map((template) => (
               <Card 
                 key={`quick-${template.id}`}
