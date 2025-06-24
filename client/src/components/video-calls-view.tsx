@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
+import VideoCallInterface from "./video-call-interface";
 
 interface VideoCall {
   id: number;
@@ -53,6 +54,7 @@ const mockCalls: VideoCall[] = [
 export default function VideoCallsView() {
   const [isCreateCallOpen, setIsCreateCallOpen] = useState(false);
   const [calls, setCalls] = useState<VideoCall[]>(mockCalls);
+  const [activeVideoCall, setActiveVideoCall] = useState<VideoCall | null>(null);
 
   const getStatusColor = (status: VideoCall['status']) => {
     switch (status) {
@@ -75,8 +77,15 @@ export default function VideoCallsView() {
   };
 
   const handleJoinCall = (call: VideoCall) => {
-    // In a real implementation, this would open the video call interface
-    console.log(`Joining call: ${call.title}`);
+    // Update call status to active if it was scheduled
+    if (call.status === 'scheduled') {
+      setCalls(prev => prev.map(c => 
+        c.id === call.id ? { ...c, status: 'active' as const } : c
+      ));
+    }
+    
+    // Open video call interface
+    setActiveVideoCall(call);
   };
 
   const handleStartInstantMeeting = () => {
@@ -278,6 +287,23 @@ export default function VideoCallsView() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Video Call Interface */}
+      {activeVideoCall && (
+        <VideoCallInterface
+          isOpen={!!activeVideoCall}
+          onClose={() => {
+            // Update call status to completed when ending
+            setCalls(prev => prev.map(c => 
+              c.id === activeVideoCall.id ? { ...c, status: 'completed' as const } : c
+            ));
+            setActiveVideoCall(null);
+          }}
+          callTitle={activeVideoCall.title}
+          participants={activeVideoCall.participants}
+          isHost={true}
+        />
+      )}
     </div>
   );
 }
