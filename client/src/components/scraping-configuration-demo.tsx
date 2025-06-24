@@ -457,64 +457,85 @@ export default function ScrapingConfigurationDemo() {
                 Available Data Sources - Choose Your Target Website
               </CardTitle>
               <CardDescription className="text-base">
-                Select from {scrapingTemplates.length} pre-configured websites optimized for lead generation. All platforms are active: Bark.com, Business Insider, Yelp, LinkedIn, Google My Business, Crunchbase, Industry Directories, Craigslist, and Angie's List.
+                Configure automated data collection from {scrapingTemplates.length} pre-configured websites. Use the dropdown below to select your target platform.
               </CardDescription>
             </CardHeader>
           </Card>
 
-          {/* All 9 Websites - Clear Selection Grid */}
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold mb-3">Available Platforms ({scrapingTemplates.length} total)</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"></div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 mb-6">
-            {scrapingTemplates.map((template) => (
-              <Card 
-                key={`quick-${template.id}`}
-                className={`cursor-pointer transition-all duration-200 hover:shadow-lg border-2 ${
-                  selectedTemplate.id === template.id 
-                    ? 'border-[#e45c2b] bg-orange-50 shadow-lg' 
-                    : 'border-gray-200 hover:border-[#f28b56]'
-                }`}
-                onClick={() => setSelectedTemplate(template)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <Globe className={`w-5 h-5 ${
-                      selectedTemplate.id === template.id ? "text-[#e45c2b]" : "text-gray-400"
-                    }`} />
-                    {selectedTemplate.id === template.id && (
-                      <CheckCircle className="w-5 h-5 text-[#e45c2b]" />
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <h4 className="font-semibold text-gray-900 text-sm leading-tight">
-                      {template.name}
-                    </h4>
-                    <p className="text-xs text-gray-600 line-clamp-2">
-                      {template.description}
-                    </p>
-                    
-                    <div className="pt-2 space-y-1">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-gray-500">Expected:</span>
-                        <Badge variant="outline" className="text-xs">
-                          {template.expectedLeads}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs text-gray-500">Conversion:</span>
-                        <span className="text-xs font-semibold text-[#e45c2b]">
-                          {template.conversionRate}
-                        </span>
-                      </div>
+          {/* Website Selection Dropdown */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="w-5 h-5 text-blue-600" />
+                Choose Target Website
+              </CardTitle>
+              <CardDescription>
+                Select from {scrapingTemplates.length} available platforms for lead generation
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="website-select" className="text-sm font-medium">
+                    Target Platform
+                  </Label>
+                  <Select 
+                    value={selectedTemplate.id.toString()} 
+                    onValueChange={(value) => {
+                      const template = scrapingTemplates.find(t => t.id.toString() === value);
+                      if (template) setSelectedTemplate(template);
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Choose a website to scrape">
+                        <div className="flex items-center gap-2">
+                          <Globe className="w-4 h-4 text-[#e45c2b]" />
+                          {selectedTemplate.name}
+                        </div>
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {scrapingTemplates.map((template) => (
+                        <SelectItem key={template.id} value={template.id.toString()}>
+                          <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-2">
+                              <Globe className="w-4 h-4 text-gray-500" />
+                              <div>
+                                <div className="font-medium">{template.name}</div>
+                                <div className="text-xs text-gray-500 truncate max-w-[200px]">
+                                  {template.description}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 ml-4">
+                              <Badge variant="outline" className="text-xs">
+                                {template.expectedLeads}
+                              </Badge>
+                              <span className="text-xs font-semibold text-[#e45c2b]">
+                                {template.conversionRate}
+                              </span>
+                            </div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-blue-900 mb-1">Platform Ready</h4>
+                      <p className="text-sm text-blue-700">
+                        {selectedTemplate.name} is configured and ready for lead extraction with {selectedTemplate.expectedLeads} expected results.
+                      </p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Selected Website Configuration */}
           <Card className="mb-6">
