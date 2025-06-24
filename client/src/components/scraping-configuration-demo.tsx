@@ -224,6 +224,32 @@ const scrapingTemplates = [
     expectedLeads: "80-120 per city",
     conversionRate: "20%",
     targetAudience: "Local service providers actively seeking new business and clients"
+  },
+  {
+    id: 9,
+    name: "Angie's List Contractors",
+    description: "Verified home improvement and professional service contractors from Angie's List",
+    url: "https://www.angieslist.com/contractors",
+    selectors: {
+      business_name: ".business-name, .contractor-name",
+      contact_info: ".phone-number, .contact-info",
+      location: ".service-area, .location",
+      rating: ".rating-stars, .average-rating",
+      reviews: ".review-count, .total-reviews",
+      services: ".services-offered, .categories",
+      verification: ".verified-badge, .background-check"
+    },
+    filters: {
+      categories: ["plumbing", "electrical", "hvac", "roofing", "landscaping", "painting", "flooring"],
+      min_rating: 4.0,
+      verified_only: true,
+      has_reviews: true,
+      min_review_count: 10,
+      service_radius: "25 miles"
+    },
+    expectedLeads: "60-90 per region",
+    conversionRate: "25%",
+    targetAudience: "Verified home improvement contractors and professional service providers with established track records"
   }
 ];
 
@@ -287,6 +313,8 @@ export default function ScrapingConfigurationDemo() {
         endpoint = '/api/scraping-jobs/businessinsider';
       } else if (selectedTemplate.name.includes('Craigslist')) {
         endpoint = '/api/scraping-jobs/craigslist';
+      } else if (selectedTemplate.name.includes('Angie\'s List')) {
+        endpoint = '/api/scraping-jobs/angieslist';
       }
       
       if (endpoint) {
@@ -429,13 +457,13 @@ export default function ScrapingConfigurationDemo() {
                 Available Data Sources - Choose Your Target Website
               </CardTitle>
               <CardDescription className="text-base">
-                Select from {scrapingTemplates.length} pre-configured websites optimized for lead generation. Each template targets different business types and demographics including Craigslist local services.
+                Select from {scrapingTemplates.length} pre-configured websites optimized for lead generation. Each template targets different business types and demographics including Craigslist local services and Angie's List verified contractors.
               </CardDescription>
             </CardHeader>
           </Card>
 
           {/* Quick Website Selection Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-9 gap-3 mb-6">
             {scrapingTemplates.map((template) => (
               <Card 
                 key={`quick-${template.id}`}
