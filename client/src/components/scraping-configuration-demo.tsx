@@ -463,21 +463,21 @@ export default function ScrapingConfigurationDemo() {
           </Card>
 
           {/* Website Selection Dropdown */}
-          <Card className="mb-6">
+          <Card className="mb-6 border-2 border-[#e45c2b] bg-orange-50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Globe className="w-5 h-5 text-blue-600" />
-                Choose Target Website
+              <CardTitle className="flex items-center gap-2 text-[#e45c2b]">
+                <Target className="w-5 h-5" />
+                Select Target Platform ({scrapingTemplates.length} Available)
               </CardTitle>
-              <CardDescription>
-                Select from {scrapingTemplates.length} available platforms for lead generation
+              <CardDescription className="text-base font-medium">
+                Choose from our complete collection of lead generation platforms
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="website-select" className="text-sm font-medium">
-                    Target Platform
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold text-gray-800">
+                    Lead Generation Platform
                   </Label>
                   <Select 
                     value={selectedTemplate.id.toString()} 
@@ -486,33 +486,32 @@ export default function ScrapingConfigurationDemo() {
                       if (template) setSelectedTemplate(template);
                     }}
                   >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Choose a website to scrape">
-                        <div className="flex items-center gap-2">
-                          <Globe className="w-4 h-4 text-[#e45c2b]" />
-                          {selectedTemplate.name}
+                    <SelectTrigger className="w-full h-12 border-2 border-[#e45c2b] bg-white">
+                      <SelectValue>
+                        <div className="flex items-center gap-3">
+                          <Target className="w-5 h-5 text-[#e45c2b]" />
+                          <div className="text-left">
+                            <div className="font-semibold text-gray-900">{selectedTemplate.name}</div>
+                            <div className="text-xs text-gray-600">{selectedTemplate.expectedLeads} • {selectedTemplate.conversionRate} conversion</div>
+                          </div>
                         </div>
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-[400px]">
                       {scrapingTemplates.map((template) => (
-                        <SelectItem key={template.id} value={template.id.toString()}>
-                          <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center gap-2">
-                              <Globe className="w-4 h-4 text-gray-500" />
-                              <div>
-                                <div className="font-medium">{template.name}</div>
-                                <div className="text-xs text-gray-500 truncate max-w-[200px]">
-                                  {template.description}
-                                </div>
-                              </div>
+                        <SelectItem key={template.id} value={template.id.toString()} className="p-4">
+                          <div className="w-full">
+                            <div className="flex items-center gap-3 mb-2">
+                              <Target className="w-4 h-4 text-[#e45c2b]" />
+                              <div className="font-semibold text-gray-900">{template.name}</div>
                             </div>
-                            <div className="flex items-center gap-2 ml-4">
-                              <Badge variant="outline" className="text-xs">
+                            <div className="text-sm text-gray-600 mb-2">{template.description}</div>
+                            <div className="flex items-center gap-3">
+                              <Badge variant="outline" className="text-xs bg-blue-50">
                                 {template.expectedLeads}
                               </Badge>
                               <span className="text-xs font-semibold text-[#e45c2b]">
-                                {template.conversionRate}
+                                {template.conversionRate} conversion
                               </span>
                             </div>
                           </div>
@@ -522,13 +521,13 @@ export default function ScrapingConfigurationDemo() {
                   </Select>
                 </div>
                 
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="p-4 bg-green-50 rounded-lg border-2 border-green-200">
                   <div className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <CheckCircle className="w-6 h-6 text-green-600 mt-0.5" />
                     <div>
-                      <h4 className="font-medium text-blue-900 mb-1">Platform Ready</h4>
-                      <p className="text-sm text-blue-700">
-                        {selectedTemplate.name} is configured and ready for lead extraction with {selectedTemplate.expectedLeads} expected results.
+                      <h4 className="font-semibold text-green-900 mb-1">✓ Platform Configured</h4>
+                      <p className="text-sm text-green-800">
+                        <strong>{selectedTemplate.name}</strong> is ready for lead extraction. Expected results: <strong>{selectedTemplate.expectedLeads}</strong> with <strong>{selectedTemplate.conversionRate}</strong> conversion rate.
                       </p>
                     </div>
                   </div>

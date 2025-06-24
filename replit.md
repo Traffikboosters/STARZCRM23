@@ -163,6 +163,7 @@ The application uses a comprehensive schema including:
 - June 23, 2025. Fixed and completed scraping system implementation with fully operational Bark.com and Business Insider lead extraction endpoints
 - June 23, 2025. Scraping program now generates 25+ Bark leads and 18+ Business Insider leads per run with automatic CRM integration and contact creation
 - June 23, 2025. All schema issues resolved, scraping endpoints tested and confirmed working, leads automatically processed with proper scoring and source tracking
+- June 24, 2025. Replaced grid-based scraping interface with clean dropdown selection for all 9 platforms based on user preference for better usability
 
 ## User Preferences
 
