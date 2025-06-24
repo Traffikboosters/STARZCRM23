@@ -199,6 +199,31 @@ const scrapingTemplates = [
     expectedLeads: "70-100 per scrape",
     conversionRate: "15%",
     targetAudience: "Professional service providers looking to expand their digital footprint"
+  },
+  {
+    id: 8,
+    name: "Craigslist Business Services",
+    description: "Local businesses advertising services on Craigslist for digital marketing outreach",
+    url: "https://craigslist.org/search/bfs",
+    selectors: {
+      business_name: ".result-title",
+      service_description: ".result-info",
+      location: ".result-hood",
+      contact_info: ".reply-button",
+      category: ".result-meta .result-price",
+      posting_date: ".result-date",
+      images: ".result-image"
+    },
+    filters: {
+      categories: ["computer services", "marketing", "creative services", "business services", "financial services"],
+      exclude_keywords: ["adult", "massage", "escort", "personal"],
+      posting_age: "7 days",
+      has_contact_info: true,
+      min_description_length: 50
+    },
+    expectedLeads: "80-120 per city",
+    conversionRate: "20%",
+    targetAudience: "Local service providers actively seeking new business and clients"
   }
 ];
 
@@ -260,6 +285,8 @@ export default function ScrapingConfigurationDemo() {
         endpoint = '/api/scraping-jobs/bark';
       } else if (selectedTemplate.name.includes('Business Insider')) {
         endpoint = '/api/scraping-jobs/businessinsider';
+      } else if (selectedTemplate.name.includes('Craigslist')) {
+        endpoint = '/api/scraping-jobs/craigslist';
       }
       
       if (endpoint) {
@@ -402,13 +429,13 @@ export default function ScrapingConfigurationDemo() {
                 Available Data Sources - Choose Your Target Website
               </CardTitle>
               <CardDescription className="text-base">
-                Select from {scrapingTemplates.length} pre-configured websites optimized for lead generation. Each template targets different business types and demographics.
+                Select from {scrapingTemplates.length} pre-configured websites optimized for lead generation. Each template targets different business types and demographics including Craigslist local services.
               </CardDescription>
             </CardHeader>
           </Card>
 
           {/* Quick Website Selection Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
             {scrapingTemplates.map((template) => (
               <Card 
                 key={`quick-${template.id}`}

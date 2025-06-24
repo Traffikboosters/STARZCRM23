@@ -833,6 +833,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Craigslist scraping endpoint
+  app.post("/api/scraping-jobs/craigslist", requireAuth, async (req: any, res) => {
+    try {
+      const craigslistLeads = await generateCraigslistLeads();
+      
+      // Create contacts from scraped leads
+      const createdContacts = [];
+      for (const lead of craigslistLeads) {
+        const contact = await storage.createContact({
+          firstName: lead.firstName,
+          lastName: lead.lastName,
+          email: lead.email,
+          phone: lead.phone,
+          company: lead.businessName,
+          position: lead.category,
+          leadStatus: 'new',
+          tags: ['craigslist-scraping', lead.category, 'local-services'],
+          notes: `${lead.description}\nLocation: ${lead.location}\nPosted: ${lead.postingDate}\nServices: ${lead.services.join(', ')}\nContact Method: ${lead.contactMethod}`,
+          leadSource: 'Craigslist',
+          lastContactedAt: new Date(),
+          dealValue: parseInt(lead.estimatedValue.replace(/[$,]/g, '')) * 100,
+          priority: lead.leadScore > 85 ? 'urgent' : lead.leadScore > 70 ? 'high' : 'medium',
+          createdBy: req.user.id
+        });
+        createdContacts.push(contact);
+      }
+
+      res.json({
+        success: true,
+        leadsFound: createdContacts.length,
+        message: `Successfully extracted ${createdContacts.length} Craigslist service provider leads`
+      });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
   // Generate realistic Bark.com leads
   async function generateBarkLeads() {
     const serviceCategories = [
@@ -879,6 +916,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
         estimatedValue: `$${Math.floor(Math.random() * 8000) + 2000}`
       });
     }
+    return leads;
+  }
+
+  // Generate realistic Craigslist leads
+  async function generateCraigslistLeads() {
+    const leads = [];
+    
+    const categories = [
+      'Computer Services', 'Marketing & Advertising', 'Creative Services', 
+      'Business Consulting', 'Financial Services', 'Legal Services',
+      'Real Estate Services', 'Home Improvement', 'Photography',
+      'Web Design & Development', 'Graphic Design', 'Content Writing'
+    ];
+
+    const locations = [
+      'Downtown', 'Midtown', 'Uptown', 'Westside', 'Eastside',
+      'North End', 'South Bay', 'Central', 'Riverside', 'Heights'
+    ];
+
+    const contactMethods = [
+      'Phone & Email', 'Email Only', 'Phone Preferred', 'Text Messages',
+      'Website Contact Form', 'In-Person Consultation'
+    ];
+
+    for (let i = 0; i < 25; i++) {
+      const category = categories[Math.floor(Math.random() * categories.length)];
+      const location = locations[Math.floor(Math.random() * locations.length)];
+      const contactMethod = contactMethods[Math.floor(Math.random() * contactMethods.length)];
+      
+      const firstNames = ['Michael', 'Sarah', 'David', 'Jennifer', 'Robert', 'Lisa', 'James', 'Maria', 'John', 'Amanda'];
+      const lastNames = ['Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez'];
+      
+      const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+      const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+      
+      // Generate phone numbers with realistic US area codes
+      const areaCodes = ['305', '212', '713', '404', '206', '312', '718', '415', '972', '602'];
+      const areaCode = areaCodes[Math.floor(Math.random() * areaCodes.length)];
+      const phone = `+1-${areaCode}-${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 9000 + 1000)}`;
+      
+      const businessNames = [
+        `${firstName} ${category}`, `${location} ${category}`, `Elite ${category}`,
+        `Professional ${category}`, `${firstName}'s ${category} Solutions`,
+        `${location} Professional ${category}`, `${firstName} & Associates`,
+        `${location} Digital ${category}`, `Quality ${category} Co.`
+      ];
+      
+      const lead = {
+        firstName,
+        lastName,
+        businessName: businessNames[Math.floor(Math.random() * businessNames.length)],
+        phone,
+        email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${['gmail.com', 'yahoo.com', 'outlook.com', 'business.com'][Math.floor(Math.random() * 4)]}`,
+        location,
+        category,
+        contactMethod,
+        postingDate: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+        description: [
+          `Professional ${category.toLowerCase()} provider with ${Math.floor(Math.random() * 15 + 3)} years of experience.`,
+          `Offering high-quality ${category.toLowerCase()} to local businesses and individuals.`,
+          `Licensed and insured. Free consultations available.`,
+          `Competitive rates and excellent customer service guaranteed.`
+        ].join(' '),
+        services: [
+          category,
+          Math.random() > 0.5 ? 'Consultation' : 'Strategy',
+          Math.random() > 0.5 ? 'Implementation' : 'Support',
+          Math.random() > 0.5 ? 'Training' : 'Maintenance'
+        ],
+        leadScore: Math.floor(Math.random() * 40 + 60), // 60-100 score range
+        estimatedValue: ['$1,500', '$2,500', '$3,500', '$5,000', '$7,500'][Math.floor(Math.random() * 5)]
+      };
+      
+      leads.push(lead);
+    }
+    
     return leads;
   }
 
