@@ -304,6 +304,7 @@ export default function PricingSheet() {
                               <SelectContent>
                                 <SelectItem value="digital_marketing">Digital Marketing</SelectItem>
                                 <SelectItem value="seo">SEO Services</SelectItem>
+                                <SelectItem value="gmb">Google My Business</SelectItem>
                                 <SelectItem value="ppc">PPC Advertising</SelectItem>
                                 <SelectItem value="web_design">Web Design</SelectItem>
                                 <SelectItem value="social_media">Social Media</SelectItem>

@@ -167,6 +167,7 @@ The application uses a comprehensive schema including:
 - June 24, 2025. Implemented comprehensive pricing and profitability system with service package management, cost structure analysis, and profit margin calculations
 - June 24, 2025. Added "Pricing & Profit" navigation tab with complete cost tracking, closing probability analysis, and expected value calculations for service packages
 - June 24, 2025. Created service package creation interface with features, pricing tiers, delivery timeframes, and automated profitability scoring system
+- June 24, 2025. Added Google My Business (GMB) service packages including GMB optimization, local SEO bundles, and multi-location management with specialized pricing structures
 
 ## User Preferences
 
