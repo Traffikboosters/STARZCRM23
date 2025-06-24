@@ -168,6 +168,8 @@ The application uses a comprehensive schema including:
 - June 24, 2025. Added "Pricing & Profit" navigation tab with complete cost tracking, closing probability analysis, and expected value calculations for service packages
 - June 24, 2025. Created service package creation interface with features, pricing tiers, delivery timeframes, and automated profitability scoring system
 - June 24, 2025. Added Google My Business (GMB) service packages including GMB optimization, local SEO bundles, and multi-location management with specialized pricing structures
+- June 24, 2025. Created standardized work order agreement with comprehensive refund policy: 3-day full refund period followed by 50% refund policy for all client work orders
+- June 24, 2025. Implemented professional agreement template with client signatures, project timelines, terms and conditions, and clear refund policy documentation
 
 ## User Preferences
 
