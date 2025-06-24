@@ -306,6 +306,94 @@ export const insertEmployeeSchema = createInsertSchema(employees).omit({
   updatedAt: true,
 });
 
+// Pricing and Profitability Tables
+export const servicePackages = pgTable("service_packages", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(), // 'digital_marketing', 'seo', 'ppc', 'web_design', 'social_media', 'consulting'
+  basePrice: text("base_price").notNull(),
+  setupFee: text("setup_fee").default('0.00'),
+  monthlyRecurring: text("monthly_recurring").default('0.00'),
+  deliveryTimeframe: text("delivery_timeframe").notNull(), // '1-2 weeks', '30 days', 'ongoing'
+  features: text("features").array().notNull(), // array of feature descriptions
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
+});
+
+export const costStructure = pgTable("cost_structure", {
+  id: serial("id").primaryKey(),
+  servicePackageId: integer("service_package_id").notNull(),
+  costType: text("cost_type").notNull(), // 'labor', 'tools', 'advertising', 'overhead', 'third_party'
+  costName: text("cost_name").notNull(),
+  fixedCost: text("fixed_cost").default('0.00'),
+  variableCostPercentage: text("variable_cost_percentage").default('0.00'),
+  monthlyRecurringCost: text("monthly_recurring_cost").default('0.00'),
+  notes: text("notes"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
+export const profitabilityAnalysis = pgTable("profitability_analysis", {
+  id: serial("id").primaryKey(),
+  servicePackageId: integer("service_package_id").notNull(),
+  clientSize: text("client_size").notNull(), // 'small_business', 'medium_business', 'enterprise'
+  industry: text("industry"),
+  averageContractValue: text("average_contract_value").notNull(),
+  totalCosts: text("total_costs").notNull(),
+  grossProfit: text("gross_profit").notNull(),
+  profitMargin: text("profit_margin").notNull(),
+  closingProbability: text("closing_probability").notNull(), // 0-100%
+  expectedValue: text("expected_value").notNull(),
+  timeToClose: integer("time_to_close"), // days
+  customerLifetimeValue: text("customer_lifetime_value"),
+  churnRate: text("churn_rate"), // monthly churn %
+  analysisDate: timestamp("analysis_date").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
+export const pricingProposals = pgTable("pricing_proposals", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").notNull(),
+  servicePackageId: integer("service_package_id").notNull(),
+  customPrice: text("custom_price"),
+  discount: text("discount").default('0.00'),
+  finalPrice: text("final_price").notNull(),
+  proposalStatus: text("proposal_status").notNull().default('draft'), // 'draft', 'sent', 'viewed', 'accepted', 'rejected', 'negotiating'
+  validUntil: timestamp("valid_until"),
+  customTerms: text("custom_terms"),
+  notes: text("notes"),
+  sentAt: timestamp("sent_at"),
+  acceptedAt: timestamp("accepted_at"),
+  createdBy: integer("created_by").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
+});
+
+// Insert schemas for pricing
+export const insertServicePackageSchema = createInsertSchema(servicePackages).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertCostStructureSchema = createInsertSchema(costStructure).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertProfitabilityAnalysisSchema = createInsertSchema(profitabilityAnalysis).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPricingProposalSchema = createInsertSchema(pricingProposals).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types for HR module
 export type JobPosting = typeof jobPostings.$inferSelect;
 export type InsertJobPosting = z.infer<typeof insertJobPostingSchema>;
@@ -315,6 +403,16 @@ export type Interview = typeof interviews.$inferSelect;
 export type InsertInterview = z.infer<typeof insertInterviewSchema>;
 export type Employee = typeof employees.$inferSelect;
 export type InsertEmployee = z.infer<typeof insertEmployeeSchema>;
+
+// Types for pricing
+export type ServicePackage = typeof servicePackages.$inferSelect;
+export type InsertServicePackage = z.infer<typeof insertServicePackageSchema>;
+export type CostStructure = typeof costStructure.$inferSelect;
+export type InsertCostStructure = z.infer<typeof insertCostStructureSchema>;
+export type ProfitabilityAnalysis = typeof profitabilityAnalysis.$inferSelect;
+export type InsertProfitabilityAnalysis = z.infer<typeof insertProfitabilityAnalysisSchema>;
+export type PricingProposal = typeof pricingProposals.$inferSelect;
+export type InsertPricingProposal = z.infer<typeof insertPricingProposalSchema>;
 
 export const callLogs = pgTable("call_logs", {
   id: serial("id").primaryKey(),

@@ -164,6 +164,9 @@ The application uses a comprehensive schema including:
 - June 23, 2025. Scraping program now generates 25+ Bark leads and 18+ Business Insider leads per run with automatic CRM integration and contact creation
 - June 23, 2025. All schema issues resolved, scraping endpoints tested and confirmed working, leads automatically processed with proper scoring and source tracking
 - June 24, 2025. Replaced grid-based scraping interface with clean dropdown selection for all 9 platforms based on user preference for better usability
+- June 24, 2025. Implemented comprehensive pricing and profitability system with service package management, cost structure analysis, and profit margin calculations
+- June 24, 2025. Added "Pricing & Profit" navigation tab with complete cost tracking, closing probability analysis, and expected value calculations for service packages
+- June 24, 2025. Created service package creation interface with features, pricing tiers, delivery timeframes, and automated profitability scoring system
 
 ## User Preferences
 

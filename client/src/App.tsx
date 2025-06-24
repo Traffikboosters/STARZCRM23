@@ -10,6 +10,7 @@ import MightyCallPage from "@/pages/mightycall";
 import WorkOrders from "@/pages/work-orders";
 import CareersPage from "@/pages/careers";
 import DialTrackingPage from "@/pages/dial-tracking";
+import PricingSheet from "@/pages/pricing-sheet";
 
 function Router() {
   return (
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/work-orders" component={WorkOrders} />
       <Route path="/careers" component={CareersPage} />
       <Route path="/dial-tracking" component={DialTrackingPage} />
+      <Route path="/pricing-sheet" component={PricingSheet} />
       <Route component={NotFound} />
     </Switch>
   );

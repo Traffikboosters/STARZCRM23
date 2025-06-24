@@ -2207,6 +2207,95 @@ Appointment Details:
     }
   });
 
+  // Service Packages API
+  app.get("/api/service-packages", async (req, res) => {
+    try {
+      const packages = await storage.getServicePackages();
+      res.json(packages);
+    } catch (error: any) {
+      console.error('Error fetching service packages:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/service-packages", async (req, res) => {
+    try {
+      const packageData = req.body;
+      const newPackage = await storage.createServicePackage(packageData);
+      res.json(newPackage);
+    } catch (error: any) {
+      console.error('Error creating service package:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Cost Structures API
+  app.get("/api/cost-structures/:packageId", async (req, res) => {
+    try {
+      const packageId = parseInt(req.params.packageId);
+      const costs = await storage.getCostStructureByPackage(packageId);
+      res.json(costs);
+    } catch (error: any) {
+      console.error('Error fetching cost structures:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/cost-structures", async (req, res) => {
+    try {
+      const costData = req.body;
+      const newCost = await storage.createCostStructure(costData);
+      res.json(newCost);
+    } catch (error: any) {
+      console.error('Error creating cost structure:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Profitability Analysis API
+  app.get("/api/profitability-analyses", async (req, res) => {
+    try {
+      const analyses = await storage.getProfitabilityAnalyses();
+      res.json(analyses);
+    } catch (error: any) {
+      console.error('Error fetching profitability analyses:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/profitability-analyses", async (req, res) => {
+    try {
+      const analysisData = req.body;
+      const newAnalysis = await storage.createProfitabilityAnalysis(analysisData);
+      res.json(newAnalysis);
+    } catch (error: any) {
+      console.error('Error creating profitability analysis:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Pricing Proposals API
+  app.get("/api/pricing-proposals", async (req, res) => {
+    try {
+      const proposals = await storage.getPricingProposals();
+      res.json(proposals);
+    } catch (error: any) {
+      console.error('Error fetching pricing proposals:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/pricing-proposals", async (req, res) => {
+    try {
+      const proposalData = req.body;
+      const newProposal = await storage.createPricingProposal(proposalData);
+      res.json(newProposal);
+    } catch (error: any) {
+      console.error('Error creating pricing proposal:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // WebSocket server for real-time updates
   const httpServer = createServer(app);
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
@@ -2217,7 +2306,6 @@ Appointment Details:
     ws.on('message', (message) => {
       try {
         const data = JSON.parse(message.toString());
-        // Handle WebSocket messages
         console.log('WebSocket message:', data);
       } catch (error) {
         console.error('WebSocket message error:', error);

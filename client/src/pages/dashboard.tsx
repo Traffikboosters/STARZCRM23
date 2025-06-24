@@ -23,6 +23,7 @@ import RightSidebar from "@/components/right-sidebar";
 import { UserManagement } from "@/components/user-management";
 import { SalesRepAnalytics } from "@/components/sales-rep-analytics";
 import { DialTrackingDashboard } from "@/components/dial-tracking-dashboard";
+import PricingSheet from "@/pages/pricing-sheet";
 import VideoCallModal from "@/components/video-call-modal";
 import EventModal from "@/components/event-modal";
 import ContactDetailsModal from "@/components/contact-details-modal";
@@ -83,6 +84,8 @@ export default function Dashboard() {
         return <HRPortal />;
       case "dial-tracking":
         return <DialTrackingDashboard />;
+      case "pricing":
+        return <PricingSheet />;
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
     }
