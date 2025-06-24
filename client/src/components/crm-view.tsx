@@ -176,6 +176,17 @@ export default function CRMView() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-2">Error loading contacts</p>
+          <p className="text-sm text-gray-600">Please refresh the page</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="h-full flex flex-col">
       {/* CRM Header */}
