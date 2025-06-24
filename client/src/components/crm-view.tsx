@@ -441,7 +441,7 @@ export default function CRMView() {
       </div>
 
       {/* CRM Content */}
-      <div className="flex-1 bg-neutral-lightest p-6">
+      <div className="flex-1 bg-neutral-lightest p-3 md:p-6">
         {filteredContacts.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-neutral-medium text-lg mb-4">
@@ -456,7 +456,7 @@ export default function CRMView() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
             {filteredContacts.map((contact) => (
               <Card 
                 key={contact.id} 
@@ -466,21 +466,21 @@ export default function CRMView() {
                   setIsDetailsModalOpen(true);
                 }}
               >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="w-12 h-12">
+                <CardHeader className="pb-2 p-3 md:pb-3 md:p-6">
+                  <div className="flex flex-col space-y-2 md:flex-row md:items-start md:justify-between md:space-y-0">
+                    <div className="flex items-center space-x-2 md:space-x-3">
+                      <Avatar className="w-8 h-8 md:w-12 md:h-12 flex-shrink-0">
                         <AvatarImage src={contact.avatar || ""} />
-                        <AvatarFallback className="bg-brand-primary text-white font-medium">
+                        <AvatarFallback className="bg-brand-primary text-white font-medium text-xs md:text-sm">
                           {getContactInitials(contact)}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <CardTitle className="text-lg text-neutral-dark">
+                      <div className="min-w-0 flex-1">
+                        <CardTitle className="text-sm md:text-lg text-neutral-dark truncate">
                           {contact.firstName} {contact.lastName}
                         </CardTitle>
-                        <p className="text-sm text-neutral-medium">{contact.position}</p>
-                        <p className="text-sm text-neutral-light">{contact.company}</p>
+                        <p className="text-xs md:text-sm text-neutral-medium truncate">{contact.position}</p>
+                        <p className="text-xs md:text-sm text-neutral-light truncate">{contact.company}</p>
                       </div>
                     </div>
                     <DropdownMenu>

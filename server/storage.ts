@@ -135,6 +135,11 @@ export class MemStorage implements IStorage {
   private leadAllocations: Map<number, LeadAllocation>;
   private documentTemplates: Map<number, DocumentTemplate>;
   private signingRequests: Map<number, SigningRequest>;
+  private servicePackages: any[] = [];
+  private costStructures: any[] = [];
+  private profitabilityAnalyses: any[] = [];
+  private pricingProposals: any[] = [];
+  private lastId: number = 1;
   private currentUserId: number;
   private currentCompanyId: number;
   private currentContactId: number;
@@ -1352,6 +1357,128 @@ Client Approval:
 
   async deleteSigningRequest(id: number): Promise<boolean> {
     return this.signingRequests.delete(id);
+  }
+
+  // Service Package methods
+  async createServicePackage(data: any): Promise<any> {
+    const newPackage = {
+      id: ++this.lastId,
+      ...data,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    this.servicePackages.push(newPackage);
+    return newPackage;
+  }
+
+  async getServicePackages(): Promise<any[]> {
+    return this.servicePackages.filter(pkg => pkg.isActive);
+  }
+
+  async getServicePackageById(id: number): Promise<any | null> {
+    return this.servicePackages.find(pkg => pkg.id === id && pkg.isActive) || null;
+  }
+
+  async updateServicePackage(id: number, data: any): Promise<any> {
+    const index = this.servicePackages.findIndex(pkg => pkg.id === id);
+    if (index !== -1) {
+      this.servicePackages[index] = { ...this.servicePackages[index], ...data, updatedAt: new Date() };
+      return this.servicePackages[index];
+    }
+    return null;
+  }
+
+  async deleteServicePackage(id: number): Promise<void> {
+    const index = this.servicePackages.findIndex(pkg => pkg.id === id);
+    if (index !== -1) {
+      this.servicePackages[index].isActive = false;
+    }
+  }
+
+  // Cost Structure methods
+  async createCostStructure(data: any): Promise<any> {
+    const newCost = {
+      id: ++this.lastId,
+      ...data,
+      createdAt: new Date()
+    };
+    this.costStructures.push(newCost);
+    return newCost;
+  }
+
+  async getCostStructureByPackage(packageId: number): Promise<any[]> {
+    return this.costStructures.filter(cost => cost.packageId === packageId);
+  }
+
+  async updateCostStructure(id: number, data: any): Promise<any> {
+    const index = this.costStructures.findIndex(cost => cost.id === id);
+    if (index !== -1) {
+      this.costStructures[index] = { ...this.costStructures[index], ...data };
+      return this.costStructures[index];
+    }
+    return null;
+  }
+
+  async deleteCostStructure(id: number): Promise<void> {
+    const index = this.costStructures.findIndex(cost => cost.id === id);
+    if (index !== -1) {
+      this.costStructures.splice(index, 1);
+    }
+  }
+
+  // Profitability Analysis methods
+  async createProfitabilityAnalysis(data: any): Promise<any> {
+    const newAnalysis = {
+      id: ++this.lastId,
+      ...data,
+      createdAt: new Date()
+    };
+    this.profitabilityAnalyses.push(newAnalysis);
+    return newAnalysis;
+  }
+
+  async getProfitabilityAnalyses(): Promise<any[]> {
+    return this.profitabilityAnalyses;
+  }
+
+  async getProfitabilityByPackage(packageId: number): Promise<any[]> {
+    return this.profitabilityAnalyses.filter(analysis => analysis.packageId === packageId);
+  }
+
+  // Pricing Proposal methods
+  async createPricingProposal(data: any): Promise<any> {
+    const newProposal = {
+      id: ++this.lastId,
+      ...data,
+      createdAt: new Date()
+    };
+    this.pricingProposals.push(newProposal);
+    return newProposal;
+  }
+
+  async getPricingProposals(): Promise<any[]> {
+    return this.pricingProposals;
+  }
+
+  async getPricingProposalsByContact(contactId: number): Promise<any[]> {
+    return this.pricingProposals.filter(proposal => proposal.contactId === contactId);
+  }
+
+  async updatePricingProposal(id: number, data: any): Promise<any> {
+    const index = this.pricingProposals.findIndex(proposal => proposal.id === id);
+    if (index !== -1) {
+      this.pricingProposals[index] = { ...this.pricingProposals[index], ...data };
+      return this.pricingProposals[index];
+    }
+    return null;
+  }
+
+  async deletePricingProposal(id: number): Promise<void> {
+    const index = this.pricingProposals.findIndex(proposal => proposal.id === id);
+    if (index !== -1) {
+      this.pricingProposals.splice(index, 1);
+    }
   }
 }
 
