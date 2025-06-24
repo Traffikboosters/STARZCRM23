@@ -60,16 +60,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       fileSize: 50 * 1024 * 1024, // 50MB limit
     },
     fileFilter: (req, file, cb) => {
-      // Allow common file types
-      const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv|zip|rar/;
-      const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-      const mimetype = allowedTypes.test(file.mimetype);
+      // Simplified and more permissive file validation
+      console.log(`File upload attempt: ${file.originalname}, mimetype: ${file.mimetype}`);
       
-      if (mimetype && extname) {
-        return cb(null, true);
-      } else {
-        cb(new Error('Invalid file type'));
+      // Reject only dangerous file types
+      const dangerousTypes = /\.(exe|bat|cmd|scr|pif|vbs|js|jar|com|pif|msi|dll)$/i;
+      
+      if (dangerousTypes.test(file.originalname)) {
+        console.log(`File rejected for security: ${file.originalname}`);
+        return cb(new Error('File type not allowed for security reasons'));
       }
+      
+      // Allow everything else
+      cb(null, true);
     }
   });
 

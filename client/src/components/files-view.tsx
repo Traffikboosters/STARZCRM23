@@ -70,8 +70,10 @@ export default function FilesView() {
 
   const uploadMutation = useMutation({
     mutationFn: async (files: FileList) => {
+      console.log('Starting file upload for', files.length, 'files');
       const formData = new FormData();
-      Array.from(files).forEach((file) => {
+      Array.from(files).forEach((file, index) => {
+        console.log(`Adding file ${index + 1}:`, file.name, file.type, file.size);
         formData.append('files', file);
       });
       formData.append('folder', folderFilter === 'all' ? 'Default' : folderFilter);
@@ -79,16 +81,35 @@ export default function FilesView() {
       const response = await fetch('/api/files/upload', {
         method: 'POST',
         body: formData,
+        credentials: 'same-origin'
       });
 
+      console.log('Upload response status:', response.status);
+
       if (!response.ok) {
-        throw new Error('Upload failed');
+        const errorText = await response.text();
+        console.error('Upload error response:', errorText);
+        let errorMessage = 'Upload failed';
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          errorMessage = errorText || errorMessage;
+        }
+        throw new Error(errorMessage);
       }
 
-      return response.json();
+      const result = await response.json();
+      console.log('Upload success:', result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Upload completed successfully:', data);
       queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+    },
+    onError: (error) => {
+      console.error('Upload mutation error:', error);
+      alert(`Upload failed: ${error.message}`);
     },
   });
 
