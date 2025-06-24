@@ -68,10 +68,60 @@ export default function FilesView() {
     );
   };
 
+  const uploadMutation = useMutation({
+    mutationFn: async (files: FileList) => {
+      const formData = new FormData();
+      Array.from(files).forEach((file) => {
+        formData.append('files', file);
+      });
+      formData.append('folder', folderFilter === 'all' ? 'Default' : folderFilter);
+
+      const response = await fetch('/api/files/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (fileId: number) => {
+      const response = await fetch(`/api/files/${fileId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Delete failed');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+    },
+  });
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const uploadedFiles = Array.from(event.target.files || []);
-    // In a real app, you would upload these files to your server
-    console.log('Files to upload:', uploadedFiles);
+    const uploadedFiles = event.target.files;
+    if (uploadedFiles && uploadedFiles.length > 0) {
+      uploadMutation.mutate(uploadedFiles);
+    }
+    // Reset input
+    event.target.value = '';
+  }
+
+  const handleDeleteFile = (fileId: number) => {
+    if (confirm('Are you sure you want to delete this file?')) {
+      deleteMutation.mutate(fileId);
+    }
   };
 
   if (isLoading) {
@@ -136,9 +186,19 @@ export default function FilesView() {
             <Button 
               className="bg-brand-primary text-white hover:bg-brand-secondary"
               onClick={() => document.getElementById('file-upload')?.click()}
+              disabled={uploadMutation.isPending}
             >
-              <Upload className="h-4 w-4 mr-2" />
-              Upload Files
+              {uploadMutation.isPending ? (
+                <>
+                  <div className="animate-spin w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full"></div>
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload Files
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -148,11 +208,24 @@ export default function FilesView() {
             <span className="text-sm text-neutral-medium">
               {selectedFiles.length} files selected
             </span>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={() => {
+              selectedFiles.forEach(fileId => {
+                window.open(`/api/files/${fileId}/download`, '_blank');
+              });
+            }}>
               <Download className="h-4 w-4 mr-2" />
               Download
             </Button>
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                if (confirm(`Are you sure you want to delete ${selectedFiles.length} file(s)?`)) {
+                  selectedFiles.forEach(fileId => handleDeleteFile(fileId));
+                  setSelectedFiles([]);
+                }
+              }}
+            >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete
             </Button>
@@ -168,13 +241,20 @@ export default function FilesView() {
             <p className="text-neutral-medium text-lg mb-4">
               {searchQuery || folderFilter !== "all" ? "No files match your filters" : "No files yet"}
             </p>
-            <Button 
-              className="bg-brand-primary text-white hover:bg-brand-secondary"
-              onClick={() => document.getElementById('file-upload')?.click()}
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              Upload Your First File
-            </Button>
+            {uploadMutation.isPending ? (
+              <div className="flex items-center gap-2">
+                <div className="animate-spin w-4 h-4 border-2 border-brand-primary border-t-transparent rounded-full"></div>
+                <span>Uploading files...</span>
+              </div>
+            ) : (
+              <Button 
+                className="bg-brand-primary text-white hover:bg-brand-secondary"
+                onClick={() => document.getElementById('file-upload')?.click()}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Upload Your First File
+              </Button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -201,14 +281,17 @@ export default function FilesView() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => window.open(`/api/files/${file.id}/download`, '_blank')}>
                           <Download className="h-4 w-4 mr-2" />
                           Download
                         </DropdownMenuItem>
                         <DropdownMenuItem>Rename</DropdownMenuItem>
                         <DropdownMenuItem>Move to Folder</DropdownMenuItem>
                         <DropdownMenuItem>Add Tags</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem 
+                          className="text-destructive"
+                          onClick={() => handleDeleteFile(file.id)}
+                        >
                           <Trash2 className="h-4 w-4 mr-2" />
                           Delete
                         </DropdownMenuItem>

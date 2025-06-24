@@ -3,6 +3,9 @@ import { createServer, type Server } from "http";
 import { WebSocketServer } from "ws";
 import { z } from "zod";
 import { eq, desc, and, gte, lte, sql, asc } from "drizzle-orm";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 import { 
   insertUserSchema,
   insertCompanySchema,
@@ -33,6 +36,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     req.user = { id: 1, username: "admin", role: "admin" };
     next();
   };
+
+  // Create uploads directory if it doesn't exist
+  const uploadsDir = path.join(process.cwd(), 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+
+  // Configure multer for file uploads
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+  });
+
+  const upload = multer({ 
+    storage: storage,
+    limits: {
+      fileSize: 50 * 1024 * 1024, // 50MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      // Allow common file types
+      const allowedTypes = /jpeg|jpg|png|gif|pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv|zip|rar/;
+      const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+      const mimetype = allowedTypes.test(file.mimetype);
+      
+      if (mimetype && extname) {
+        return cb(null, true);
+      } else {
+        cb(new Error('Invalid file type'));
+      }
+    }
+  });
 
   // Basic user endpoints
   app.get("/api/users/me", requireAuth, async (req: any, res) => {
@@ -258,17 +297,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/files", async (req, res) => {
+  // File upload endpoint with multer middleware
+  app.post("/api/files/upload", requireAuth, upload.array('files', 10), async (req: any, res) => {
     try {
-      const validation = insertFileSchema.safeParse(req.body);
-      if (!validation.success) {
-        return res.status(400).json({ error: validation.error.errors });
+      const uploadedFiles = req.files as Express.Multer.File[];
+      
+      if (!uploadedFiles || uploadedFiles.length === 0) {
+        return res.status(400).json({ error: "No files uploaded" });
       }
-      const file = await storage.createFile({ ...validation.data, uploadedBy: 1 });
+
+      const fileRecords = [];
       
-      logAuditEvent("CREATE", "file", file.id, 1, null, file, "File uploaded");
+      for (const file of uploadedFiles) {
+        const fileData = {
+          name: file.filename, // The stored filename
+          originalName: file.originalname, // The original filename
+          path: file.path,
+          size: file.size,
+          type: file.mimetype,
+          folder: req.body.folder || 'Default',
+          uploadedBy: req.user.id
+        };
+
+        const createdFile = await storage.createFile(fileData);
+        fileRecords.push(createdFile);
+        
+        logAuditEvent("CREATE", "file", createdFile.id, req.user.id, null, createdFile, `File uploaded: ${file.originalname}`);
+      }
       
-      res.json(file);
+      res.json({ 
+        success: true, 
+        files: fileRecords,
+        message: `${fileRecords.length} file(s) uploaded successfully`
+      });
+    } catch (error) {
+      console.error('File upload error:', error);
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  // File download endpoint
+  app.get("/api/files/:id/download", requireAuth, async (req: any, res) => {
+    try {
+      const fileId = parseInt(req.params.id);
+      const file = await storage.getFile(fileId);
+      
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      if (!fs.existsSync(file.path)) {
+        return res.status(404).json({ error: "File not found on disk" });
+      }
+
+      logAuditEvent("DOWNLOAD", "file", fileId, req.user.id, null, null, `File downloaded: ${file.originalName}`);
+      
+      res.download(file.path, file.originalName);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  // File deletion endpoint
+  app.delete("/api/files/:id", requireAuth, async (req: any, res) => {
+    try {
+      const fileId = parseInt(req.params.id);
+      const file = await storage.getFile(fileId);
+      
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      // Delete physical file
+      if (fs.existsSync(file.path)) {
+        fs.unlinkSync(file.path);
+      }
+
+      // Delete from database
+      await storage.deleteFile(fileId);
+      
+      logAuditEvent("DELETE", "file", fileId, req.user.id, file, null, `File deleted: ${file.originalName}`);
+      
+      res.json({ success: true });
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
     }
