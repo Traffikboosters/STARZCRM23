@@ -25,6 +25,12 @@ export const companies = pgTable("companies", {
   primaryColor: text("primary_color").default("#0078D4"),
   secondaryColor: text("secondary_color").default("#106EBE"),
   domain: text("domain"),
+  timezone: text("timezone").default("America/New_York"),
+  businessHoursStart: text("business_hours_start").default("09:00"),
+  businessHoursEnd: text("business_hours_end").default("18:00"),
+  businessDays: text("business_days").array().default(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]),
+  restrictedTimeZones: text("restricted_time_zones").array().default([]),
+  allowedRegions: text("allowed_regions").array().default(["US", "CA"]),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

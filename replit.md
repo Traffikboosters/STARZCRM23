@@ -170,6 +170,8 @@ The application uses a comprehensive schema including:
 - June 24, 2025. Added Google My Business (GMB) service packages including GMB optimization, local SEO bundles, and multi-location management with specialized pricing structures
 - June 24, 2025. Created standardized work order agreement with comprehensive refund policy: 3-day full refund period followed by 50% refund policy for all client work orders
 - June 24, 2025. Implemented professional agreement template with client signatures, project timelines, terms and conditions, and clear refund policy documentation
+- June 24, 2025. Added comprehensive time zone restriction system with business hours management, regional access controls, and time-based operation restrictions
+- June 24, 2025. Implemented time zone manager with EST business hours (9 AM - 6 PM), US/Canada regional restrictions, and real-time business status monitoring
 
 ## User Preferences
 

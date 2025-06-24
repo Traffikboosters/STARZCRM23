@@ -197,6 +197,12 @@ export class MemStorage implements IStorage {
       primaryColor: "#e45c2b",
       secondaryColor: "#f28b56",
       domain: "traffikboosters.com",
+      timezone: "America/New_York",
+      businessHoursStart: "09:00",
+      businessHoursEnd: "18:00",
+      businessDays: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+      restrictedTimeZones: [],
+      allowedRegions: ["US", "CA"],
       createdAt: new Date(),
     };
     this.companies.set(defaultCompany.id, defaultCompany);
