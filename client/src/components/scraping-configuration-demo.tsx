@@ -97,52 +97,108 @@ const scrapingTemplates = [
     filters: {
       min_rating: 4.0,
       min_reviews: 50,
-      exclude_chains: true
+      exclude_chains: true,
+      location_radius: "25 miles"
     },
-    expectedLeads: "60-80 per city",
-    conversionRate: "12%"
+    expectedLeads: "60-90 per scrape",
+    conversionRate: "22%",
+    targetAudience: "Local restaurants needing digital marketing and online presence"
   },
   {
     id: 4,
-    name: "High-Growth B2B (Inc 5000)",
-    description: "Fast-growing companies needing digital marketing scale",
-    url: "https://www.inc.com/inc5000/",
+    name: "LinkedIn Sales Navigator",
+    description: "B2B decision makers and company executives for outreach campaigns",
+    url: "https://www.linkedin.com/sales/search/",
     selectors: {
-      company_name: ".company-name",
-      revenue: ".revenue",
-      growth_rate: ".growth",
-      industry: ".industry",
-      location: ".location",
-      employees: ".employees"
+      name: ".search-result__info h3",
+      title: ".search-result__info .subline-level-1",
+      company: ".search-result__info .subline-level-2",
+      location: ".search-result__info .t-black--light",
+      industry: ".company-industry",
+      employees: ".company-size"
     },
     filters: {
-      min_growth: 50,
-      revenue_range: "10M-500M",
-      exclude_industries: ["finance", "healthcare"]
+      seniority_levels: ["Director", "VP", "C-Level", "Owner"],
+      company_size: "10-1000 employees",
+      industry_focus: ["Marketing", "Technology", "Professional Services", "Healthcare"],
+      geography: "North America"
     },
-    expectedLeads: "200-300 per scrape",
-    conversionRate: "8%"
+    expectedLeads: "40-60 per scrape",
+    conversionRate: "16%",
+    targetAudience: "B2B executives and decision makers for enterprise marketing services"
   },
   {
-    id: 3,
-    name: "Local Service Businesses",
-    description: "Professional services lacking digital presence",
-    url: "https://www.yellowpages.com/search?search_terms=",
+    id: 5,
+    name: "Google My Business (Local)",
+    description: "Local businesses with Google listings for local SEO and marketing services",
+    url: "https://www.google.com/maps/search/",
     selectors: {
-      business_name: ".business-name",
-      category: ".categories",
-      phone: ".phones",
-      address: ".street-address",
-      website: ".website-link",
-      years_in_business: ".years-in-business"
+      business_name: "[data-value='Name']",
+      category: "[data-value='Category']", 
+      rating: "[data-value='Rating']",
+      reviews: "[data-value='Reviews']",
+      phone: "[data-value='Phone']",
+      website: "[data-value='Website']",
+      address: "[data-value='Address']"
     },
     filters: {
-      min_years: 3,
+      min_rating: 3.5,
       has_website: false,
-      categories: ["legal", "accounting", "consulting", "real estate"]
+      categories: ["retail", "services", "food", "healthcare", "automotive"],
+      verified_listing: true
     },
-    expectedLeads: "40-60 per area",
-    conversionRate: "15%"
+    expectedLeads: "100-150 per scrape",
+    conversionRate: "19%",
+    targetAudience: "Local businesses without websites needing digital marketing solutions"
+  },
+  {
+    id: 6,
+    name: "Crunchbase Startups",
+    description: "Funded startups and growing companies for B2B marketing and growth services",
+    url: "https://www.crunchbase.com/discover/organization.companies/",
+    selectors: {
+      company_name: ".cb-overflow-ellipsis",
+      description: ".description-text",
+      funding: ".funding-amount",
+      stage: ".funding-stage",
+      location: ".location-text",
+      website: ".website-link",
+      employees: ".employee-count"
+    },
+    filters: {
+      funding_range: "$500K - $50M",
+      founded_years: "2-8 years",
+      employee_range: "10-500",
+      funding_stages: ["Seed", "Series A", "Series B"],
+      exclude_enterprise: true
+    },
+    expectedLeads: "30-50 per scrape",
+    conversionRate: "12%",
+    targetAudience: "Fast-growing startups needing marketing infrastructure and growth hacking"
+  },
+  {
+    id: 7, 
+    name: "Industry Directory Sites",
+    description: "Professional service providers from niche industry directories",
+    url: "https://www.expertise.com/",
+    selectors: {
+      provider_name: ".provider-name",
+      specialties: ".specialties-list",
+      location: ".provider-location", 
+      phone: ".contact-phone",
+      website: ".provider-website",
+      rating: ".provider-rating",
+      years_experience: ".experience-years"
+    },
+    filters: {
+      min_experience: "3 years",
+      verified_providers: true,
+      service_areas: ["Marketing", "Consulting", "Design", "Development", "Legal"],
+      exclude_agencies: false
+    },
+    expectedLeads: "70-100 per scrape",
+    conversionRate: "15%",
+    targetAudience: "Professional service providers looking to expand their digital footprint"
   }
 ];
 
@@ -338,10 +394,50 @@ export default function ScrapingConfigurationDemo() {
         </TabsList>
 
         <TabsContent value="templates" className="space-y-6">
-          {/* Template Selection */}
+          {/* Website Selection Header */}
+          <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Globe className="w-5 h-5 text-blue-600" />
+                Available Data Sources - Choose Your Target Website
+              </CardTitle>
+              <CardDescription className="text-base">
+                Select from {scrapingTemplates.length} pre-configured websites optimized for lead generation. Each template targets different business types and demographics.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          {/* Quick Website Selection Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
+            {scrapingTemplates.map((template) => (
+              <Card 
+                key={`quick-${template.id}`}
+                className={`cursor-pointer text-center p-3 transition-all duration-200 ${
+                  selectedTemplate.id === template.id 
+                    ? "ring-2 ring-primary border-primary bg-primary/10" 
+                    : "hover:shadow-md hover:bg-gray-50"
+                }`}
+                onClick={() => setSelectedTemplate(template)}
+              >
+                <div className="space-y-2">
+                  <Globe className={`w-6 h-6 mx-auto ${
+                    selectedTemplate.id === template.id ? "text-primary" : "text-gray-400"
+                  }`} />
+                  <div className="text-xs font-medium text-center">
+                    {template.url.replace('https://', '').split('/')[0].replace('www.', '')}
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    {template.expectedLeads.split(' ')[0]}
+                  </Badge>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* Detailed Template Selection */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Choose Scraping Template</h3>
+              <h3 className="text-lg font-semibold">Detailed Website Information</h3>
               <div className="space-y-3">
                 {scrapingTemplates.map((template) => (
                   <Card 
@@ -367,9 +463,16 @@ export default function ScrapingConfigurationDemo() {
                       </div>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Expected: {template.expectedLeads}</span>
-                        <Badge variant="secondary">{template.conversionRate} conversion</Badge>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">Expected: {template.expectedLeads}</span>
+                          <Badge variant="secondary">{template.conversionRate} conversion</Badge>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Globe className="w-3 h-3 text-blue-500" />
+                          <span className="text-xs text-blue-600 font-medium">{template.url.replace('https://', '').split('/')[0]}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{template.targetAudience}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -379,7 +482,13 @@ export default function ScrapingConfigurationDemo() {
 
             {/* Template Configuration */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Configure Selected Template</h3>
+              <h3 className="text-lg font-semibold">Configure Selected Website</h3>
+              <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <Target className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-900">
+                  Target: {selectedTemplate.url.replace('https://', '').split('/')[0]}
+                </span>
+              </div>
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -398,15 +507,33 @@ export default function ScrapingConfigurationDemo() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Geographic Area</Label>
-                    <Select defaultValue="all">
+                    <Label>Geographic Targeting</Label>
+                    <Select defaultValue="usa">
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Major Cities</SelectItem>
-                        <SelectItem value="tier1">Tier 1 Cities Only</SelectItem>
-                        <SelectItem value="custom">Custom Selection</SelectItem>
+                        <SelectItem value="usa">United States</SelectItem>
+                        <SelectItem value="uk">United Kingdom</SelectItem>
+                        <SelectItem value="canada">Canada</SelectItem>
+                        <SelectItem value="australia">Australia</SelectItem>
+                        <SelectItem value="global">Global (All Countries)</SelectItem>
+                        <SelectItem value="custom">Custom Regions</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Data Quality Filters</Label>
+                    <Select defaultValue="high">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Available Data</SelectItem>
+                        <SelectItem value="medium">Medium Quality (Basic Info)</SelectItem>
+                        <SelectItem value="high">High Quality (Complete Profiles)</SelectItem>
+                        <SelectItem value="premium">Premium Only (Verified + Rich Data)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
