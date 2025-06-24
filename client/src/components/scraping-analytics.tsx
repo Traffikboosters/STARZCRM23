@@ -3,8 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { Calendar, Target, TrendingUp, Users, Database, Mail, Phone, CheckCircle, Volume2, Bell } from "lucide-react";
+import { Calendar, Target, TrendingUp, Users, Database, Mail, Phone, CheckCircle, Volume2, Bell, Settings, Play, Pause, RotateCcw } from "lucide-react";
 import WorkflowDemo from "./workflow-demo";
 import { useLeadNotifications } from "@/hooks/use-lead-notifications";
 import { useEffect, useState } from "react";
@@ -40,6 +45,8 @@ const leadSourceData = [
 export default function ScrapingAnalytics() {
   const [isScrapingActive, setIsScrapingActive] = useState(false);
   const [recentLeads, setRecentLeads] = useState<any[]>([]);
+  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const {
     handleIncomingLead,
@@ -254,11 +261,47 @@ export default function ScrapingAnalytics() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {[
-                  { name: 'Inc 5000 High Growth', status: 'running', progress: 78, nextRun: '2 hours' },
-                  { name: 'Yelp Restaurant Prospects', status: 'running', progress: 45, nextRun: '6 hours' },
-                  { name: 'LinkedIn B2B Contacts', status: 'paused', progress: 0, nextRun: 'Manual' },
-                  { name: 'Local Business Directory', status: 'completed', progress: 100, nextRun: '1 day' }
+{[
+                  { 
+                    id: 1, 
+                    name: 'Inc 5000 High Growth', 
+                    status: 'running', 
+                    progress: 78, 
+                    nextRun: '2 hours',
+                    frequency: 'Daily',
+                    targetCount: 50,
+                    filters: { minRevenue: '$1M+', location: 'US' }
+                  },
+                  { 
+                    id: 2, 
+                    name: 'Yelp Restaurant Prospects', 
+                    status: 'running', 
+                    progress: 45, 
+                    nextRun: '6 hours',
+                    frequency: 'Every 6 hours',
+                    targetCount: 25,
+                    filters: { rating: '4.0+', reviewCount: '50+' }
+                  },
+                  { 
+                    id: 3, 
+                    name: 'LinkedIn B2B Contacts', 
+                    status: 'paused', 
+                    progress: 0, 
+                    nextRun: 'Manual',
+                    frequency: 'Weekly',
+                    targetCount: 100,
+                    filters: { industry: 'Technology', employees: '50-200' }
+                  },
+                  { 
+                    id: 4, 
+                    name: 'Local Business Directory', 
+                    status: 'completed', 
+                    progress: 100, 
+                    nextRun: '1 day',
+                    frequency: 'Daily',
+                    targetCount: 30,
+                    filters: { hasWebsite: false, category: 'Services' }
+                  }
                 ].map((job, index) => (
                   <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="space-y-2 flex-1">
@@ -277,9 +320,107 @@ export default function ScrapingAnalytics() {
                         </span>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">
-                      Configure
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      {job.status === 'running' ? (
+                        <Button variant="outline" size="sm">
+                          <Pause className="h-3 w-3 mr-1" />
+                          Pause
+                        </Button>
+                      ) : job.status === 'paused' ? (
+                        <Button variant="outline" size="sm">
+                          <Play className="h-3 w-3 mr-1" />
+                          Resume
+                        </Button>
+                      ) : (
+                        <Button variant="outline" size="sm">
+                          <RotateCcw className="h-3 w-3 mr-1" />
+                          Restart
+                        </Button>
+                      )}
+                      <Dialog open={isSettingsOpen && selectedJob?.id === job.id} onOpenChange={(open) => {
+                        if (!open) {
+                          setIsSettingsOpen(false);
+                          setSelectedJob(null);
+                        }
+                      }}>
+                        <DialogTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              setSelectedJob(job);
+                              setIsSettingsOpen(true);
+                            }}
+                          >
+                            <Settings className="h-3 w-3 mr-1" />
+                            Configure
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                          <DialogHeader>
+                            <DialogTitle>Configure Scraping Job</DialogTitle>
+                            <DialogDescription>
+                              Adjust settings for "{job.name}" scraping job
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="frequency" className="text-right">
+                                Frequency
+                              </Label>
+                              <Select defaultValue={job.frequency}>
+                                <SelectTrigger className="col-span-3">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Hourly">Every Hour</SelectItem>
+                                  <SelectItem value="Every 6 hours">Every 6 Hours</SelectItem>
+                                  <SelectItem value="Daily">Daily</SelectItem>
+                                  <SelectItem value="Weekly">Weekly</SelectItem>
+                                  <SelectItem value="Manual">Manual Only</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="target" className="text-right">
+                                Target Count
+                              </Label>
+                              <Input
+                                id="target"
+                                defaultValue={job.targetCount}
+                                className="col-span-3"
+                                type="number"
+                                min="1"
+                                max="1000"
+                              />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label className="text-right">
+                                Auto-notify
+                              </Label>
+                              <Switch defaultChecked className="col-span-3" />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label className="text-right">
+                                Active
+                              </Label>
+                              <Switch defaultChecked={job.status !== 'paused'} className="col-span-3" />
+                            </div>
+                          </div>
+                          <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={() => setIsSettingsOpen(false)}>
+                              Cancel
+                            </Button>
+                            <Button onClick={() => {
+                              setIsSettingsOpen(false);
+                              setSelectedJob(null);
+                            }}>
+                              Save Changes
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
                   </div>
                 ))}
               </div>
