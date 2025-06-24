@@ -462,122 +462,146 @@ export default function ScrapingConfigurationDemo() {
             </CardHeader>
           </Card>
 
-          {/* Quick Website Selection Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-9 gap-3 mb-6">
+          {/* All 9 Websites - Clear Selection Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             {scrapingTemplates.map((template) => (
               <Card 
                 key={`quick-${template.id}`}
-                className={`cursor-pointer text-center p-3 transition-all duration-200 ${
+                className={`cursor-pointer transition-all duration-200 hover:shadow-lg border-2 ${
                   selectedTemplate.id === template.id 
-                    ? "ring-2 ring-primary border-primary bg-primary/10" 
-                    : "hover:shadow-md hover:bg-gray-50"
+                    ? 'border-[#e45c2b] bg-orange-50 shadow-lg' 
+                    : 'border-gray-200 hover:border-[#f28b56]'
                 }`}
                 onClick={() => setSelectedTemplate(template)}
               >
-                <div className="space-y-2">
-                  <Globe className={`w-6 h-6 mx-auto ${
-                    selectedTemplate.id === template.id ? "text-primary" : "text-gray-400"
-                  }`} />
-                  <div className="text-xs font-medium text-center">
-                    {template.url.replace('https://', '').split('/')[0].replace('www.', '')}
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <Globe className={`w-5 h-5 ${
+                      selectedTemplate.id === template.id ? "text-[#e45c2b]" : "text-gray-400"
+                    }`} />
+                    {selectedTemplate.id === template.id && (
+                      <CheckCircle className="w-5 h-5 text-[#e45c2b]" />
+                    )}
                   </div>
-                  <Badge variant="outline" className="text-xs">
-                    {template.expectedLeads.split(' ')[0]}
-                  </Badge>
-                </div>
+                  
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-gray-900 text-sm leading-tight">
+                      {template.name}
+                    </h4>
+                    <p className="text-xs text-gray-600 line-clamp-2">
+                      {template.description}
+                    </p>
+                    
+                    <div className="pt-2 space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-gray-500">Expected:</span>
+                        <Badge variant="outline" className="text-xs">
+                          {template.expectedLeads}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-gray-500">Conversion:</span>
+                        <span className="text-xs font-semibold text-[#e45c2b]">
+                          {template.conversionRate}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
               </Card>
             ))}
           </div>
 
-          {/* Detailed Template Selection */}
+          {/* Selected Website Configuration */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-[#e45c2b]">
+                <Settings className="w-5 h-5" />
+                Selected: {selectedTemplate.name}
+              </CardTitle>
+              <CardDescription className="text-base">
+                {selectedTemplate.description}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div>
+                  <h4 className="font-semibold mb-3 text-gray-900">Target Information</h4>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Website:</span> {selectedTemplate.url}</div>
+                    <div><span className="font-medium">Expected Leads:</span> {selectedTemplate.expectedLeads}</div>
+                    <div><span className="font-medium">Conversion Rate:</span> {selectedTemplate.conversionRate}</div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold mb-3 text-gray-900">Key Filters</h4>
+                  <div className="space-y-2 text-sm">
+                    {Object.entries(selectedTemplate.filters).slice(0, 4).map(([key, value]) => (
+                      <div key={key}>
+                        <span className="font-medium text-gray-700 capitalize">{key.replace('_', ' ')}:</span>
+                        <div className="text-gray-600 text-xs mt-1">
+                          {Array.isArray(value) ? value.slice(0, 3).join(', ') + (value.length > 3 ? '...' : '') : String(value)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold mb-3 text-gray-900">Target Audience</h4>
+                  <div className="text-sm text-gray-600 leading-relaxed mb-4">
+                    {selectedTemplate.targetAudience}
+                  </div>
+                  
+                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                    <div className="text-sm font-medium text-green-800 mb-1">Ready to Extract</div>
+                    <div className="text-xs text-green-700">All systems configured for {selectedTemplate.name} lead generation</div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Action Buttons */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Detailed Website Information</h3>
+              <h3 className="text-lg font-semibold">Quick Actions</h3>
               <div className="space-y-3">
-                {scrapingTemplates.map((template) => (
-                  <Card 
-                    key={template.id}
-                    className={`cursor-pointer transition-all duration-200 ${
-                      selectedTemplate.id === template.id 
-                        ? "ring-2 ring-primary border-primary bg-primary/5" 
-                        : "hover:shadow-md"
-                    }`}
-                    onClick={() => setSelectedTemplate(template)}
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-base">{template.name}</CardTitle>
-                          <CardDescription className="text-sm">
-                            {template.description}
-                          </CardDescription>
-                        </div>
-                        {selectedTemplate.id === template.id && (
-                          <CheckCircle className="w-5 h-5 text-primary" />
-                        )}
-                      </div>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-muted-foreground">Expected: {template.expectedLeads}</span>
-                          <Badge variant="secondary">{template.conversionRate} conversion</Badge>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Globe className="w-3 h-3 text-blue-500" />
-                          <span className="text-xs text-blue-600 font-medium">{template.url.replace('https://', '').split('/')[0]}</span>
-                        </div>
-                        <p className="text-xs text-muted-foreground">{template.targetAudience}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                <Card className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Start Scraping Now</h4>
+                      <p className="text-sm text-gray-600">Begin immediate data extraction</p>
+                    </div>
+                    <Button 
+                      onClick={handleStartScraping}
+                      disabled={isConfiguring}
+                      className="bg-[#e45c2b] hover:bg-[#d44d20]"
+                    >
+                      {isConfiguring ? 'Processing...' : 'Extract Leads'}
+                    </Button>
+                  </div>
+                </Card>
+                
+                <Card className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Schedule Scraping</h4>
+                      <p className="text-sm text-gray-600">Set up automated data collection</p>
+                    </div>
+                    <Button variant="outline">
+                      Schedule
+                    </Button>
+                  </div>
+                </Card>
               </div>
             </div>
-
-            {/* Template Configuration */}
+            
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Configure Selected Website</h3>
-              <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                <Target className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-900">
-                  Target: {selectedTemplate.url.replace('https://', '').split('/')[0]}
-                </span>
-              </div>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Globe className="w-5 h-5" />
-                    {selectedTemplate.name}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Target URL Pattern</Label>
-                    <Input 
-                      value={selectedTemplate.url} 
-                      readOnly 
-                      className="bg-muted"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Geographic Targeting</Label>
-                    <Select defaultValue="usa">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="usa">United States</SelectItem>
-                        <SelectItem value="uk">United Kingdom</SelectItem>
-                        <SelectItem value="canada">Canada</SelectItem>
-                        <SelectItem value="australia">Australia</SelectItem>
-                        <SelectItem value="global">Global (All Countries)</SelectItem>
-                        <SelectItem value="custom">Custom Regions</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
+              <h3 className="text-lg font-semibold">Configuration Options</h3>
+              <Card className="p-4">
+                <div className="space-y-4">
                   <div className="space-y-2">
                     <Label>Data Quality Filters</Label>
                     <Select defaultValue="high">
@@ -586,44 +610,28 @@ export default function ScrapingConfigurationDemo() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Available Data</SelectItem>
-                        <SelectItem value="medium">Medium Quality (Basic Info)</SelectItem>
-                        <SelectItem value="high">High Quality (Complete Profiles)</SelectItem>
-                        <SelectItem value="premium">Premium Only (Verified + Rich Data)</SelectItem>
+                        <SelectItem value="medium">Medium Quality</SelectItem>
+                        <SelectItem value="high">High Quality</SelectItem>
+                        <SelectItem value="premium">Premium Only</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-
+                  
                   <div className="space-y-2">
-                    <Label>Schedule Frequency</Label>
-                    <Select defaultValue="daily">
+                    <Label>Geographic Targeting</Label>
+                    <Select defaultValue="us">
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="hourly">Every Hour</SelectItem>
-                        <SelectItem value="daily">Daily</SelectItem>
-                        <SelectItem value="weekly">Weekly</SelectItem>
-                        <SelectItem value="manual">Manual Only</SelectItem>
+                        <SelectItem value="us">United States</SelectItem>
+                        <SelectItem value="ca">Canada</SelectItem>
+                        <SelectItem value="uk">United Kingdom</SelectItem>
+                        <SelectItem value="global">Global</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-
-                  <Separator />
-
-                  <div className="space-y-3">
-                    <Label className="text-sm font-medium">Quality Filters</Label>
-                    {Object.entries(selectedTemplate.filters).map(([key, value]) => (
-                      <div key={key} className="flex items-center justify-between">
-                        <span className="text-sm capitalize">
-                          {key.replace('_', ' ')}
-                        </span>
-                        <Badge variant="outline" className="text-xs">
-                          {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
+                </div>
               </Card>
             </div>
           </div>
@@ -637,171 +645,23 @@ export default function ScrapingConfigurationDemo() {
               Add Rule
             </Button>
           </div>
-
-          <div className="grid gap-4">
-            {automationRules.map((rule) => (
-              <Card key={rule.id}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Zap className="w-4 h-4" />
-                        {rule.name}
-                      </CardTitle>
-                      <CardDescription className="mt-1">
-                        <strong>Trigger:</strong> {rule.trigger}
-                      </CardDescription>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge 
-                        variant={rule.priority === 'Critical' ? 'destructive' : 
-                                rule.priority === 'High' ? 'default' : 'secondary'}
-                      >
-                        {rule.priority}
-                      </Badge>
-                      <Switch checked={rule.isActive} />
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Automated Actions:</Label>
-                    <ul className="space-y-1">
-                      {rule.actions.map((action, index) => (
-                        <li key={index} className="flex items-center gap-2 text-sm">
-                          <CheckCircle className="w-3 h-3 text-green-500" />
-                          {action}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="monitoring" className="space-y-6">
-          {/* Live Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Jobs</CardTitle>
-                <Database className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">3</div>
-                <p className="text-xs text-muted-foreground">2 running, 1 scheduled</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Today's Leads</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">47</div>
-                <p className="text-xs text-muted-foreground">+12% from yesterday</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Auto-Assigned</CardTitle>
-                <Mail className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">31</div>
-                <p className="text-xs text-muted-foreground">66% automation rate</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Revenue Impact</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">$8,400</div>
-                <p className="text-xs text-muted-foreground">This week's pipeline</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Active Jobs Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Live Scraping Status</CardTitle>
-              <CardDescription>Real-time monitoring of active data collection jobs</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { name: "Yelp Restaurant Scan - Chicago", status: "running", progress: 67, leads: 23, eta: "45 min" },
-                  { name: "Inc 5000 Tech Companies", status: "running", progress: 34, leads: 12, eta: "2h 15min" },
-                  { name: "Local Service Businesses - Miami", status: "scheduled", progress: 0, leads: 0, eta: "6h 30min" }
-                ].map((job, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="space-y-2 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="font-medium">{job.name}</h4>
-                        <Badge variant={job.status === 'running' ? 'default' : 'secondary'}>
-                          {job.status}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="flex-1">
-                          <Progress value={job.progress} className="h-2" />
-                        </div>
-                        <span className="text-sm text-muted-foreground">
-                          {job.leads} leads • ETA: {job.eta}
-                        </span>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      <Settings className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Recent Automation Triggers */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Automation Activity</CardTitle>
-              <CardDescription>Latest automated actions triggered by new leads</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {[
-                  { time: "2 min ago", action: "High-value restaurant auto-assigned to Sarah M.", type: "assignment" },
-                  { time: "8 min ago", action: "B2B growth company added to enterprise pipeline", type: "pipeline" },
-                  { time: "15 min ago", action: "Local service business flagged for website audit", type: "opportunity" },
-                  { time: "23 min ago", action: "Premium restaurant campaign automatically created", type: "campaign" },
-                  { time: "31 min ago", action: "CEO outreach scheduled for high-growth tech company", type: "outreach" }
-                ].map((activity, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                    <div className={`w-2 h-2 rounded-full ${
-                      activity.type === 'assignment' ? 'bg-blue-500' :
-                      activity.type === 'pipeline' ? 'bg-green-500' :
-                      activity.type === 'opportunity' ? 'bg-yellow-500' :
-                      activity.type === 'campaign' ? 'bg-purple-500' :
-                      'bg-red-500'
-                    }`} />
-                    <div className="flex-1">
-                      <p className="text-sm">{activity.action}</p>
-                      <p className="text-xs text-muted-foreground">{activity.time}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Progress Display */}
+      {isConfiguring && (
+        <Card className="mt-6">
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Processing {selectedTemplate.name}</span>
+                <span className="text-sm text-gray-500">{progress}%</span>
+              </div>
+              <Progress value={progress} className="w-full" />
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
