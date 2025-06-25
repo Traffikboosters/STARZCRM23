@@ -224,7 +224,7 @@ export default function EmbeddedChatWidget({
           style={{ backgroundColor: primaryColor }}
         >
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 bg-white rounded-full flex items-center justify-center p-1">
+            <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center p-1">
               <img 
                 src={traffikBoostersLogo} 
                 alt="Traffik Boosters" 
@@ -284,7 +284,7 @@ export default function EmbeddedChatWidget({
                           <img 
                             src={traffikBoostersLogo} 
                             alt="TB" 
-                            className="h-6 w-6 object-contain"
+                            className="h-7 w-7 object-contain"
                             style={{ imageRendering: 'crisp-edges' }}
                           />
                         )}
@@ -395,11 +395,11 @@ export default function EmbeddedChatWidget({
                       {!isVideoCallActive && (
                         <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
                           <div className="text-white text-center">
-                            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-2">
+                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-2">
                               <img 
                                 src={traffikBoostersLogo} 
                                 alt="Agent" 
-                                className="w-8 h-8 object-contain"
+                                className="w-12 h-12 object-contain"
                               />
                             </div>
                             <p className="text-xs">Connecting to agent...</p>

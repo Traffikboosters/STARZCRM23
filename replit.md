@@ -177,6 +177,7 @@ The application uses a comprehensive schema including:
 - June 24, 2025. Added required company name field to lead capture form alongside enhanced email field (business email) for better lead qualification
 - June 24, 2025. Created complete chat widget plugin as standalone JavaScript file with email distribution system for easy website installation
 - June 24, 2025. Built comprehensive widget email service with installation guide, plugin files, and professional email template for client distribution
+- June 24, 2025. Enhanced chat widget logo sizing throughout interface - header logo increased to 16x16, message avatars to 7x7, and video call agent display to 16x16 for improved brand visibility
 
 ## User Preferences
 
