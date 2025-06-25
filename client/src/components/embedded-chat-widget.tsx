@@ -13,6 +13,7 @@ import {
   Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 
 interface EmbeddedChatWidgetProps {
   className?: string;
@@ -212,8 +213,13 @@ export default function EmbeddedChatWidget({
           style={{ backgroundColor: primaryColor }}
         >
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 bg-white rounded-full flex items-center justify-center">
-              <Zap className="h-5 w-5" style={{ color: primaryColor }} />
+            <div className="h-12 w-12 bg-white rounded-full flex items-center justify-center p-1">
+              <img 
+                src={traffikBoostersLogo} 
+                alt="Traffik Boosters" 
+                className="h-full w-full object-contain"
+                style={{ imageRendering: 'crisp-edges' }}
+              />
             </div>
             <div>
               <div className="font-semibold text-sm">{companyName}</div>
@@ -259,9 +265,18 @@ export default function EmbeddedChatWidget({
                     <Avatar className="h-8 w-8">
                       <AvatarFallback className={cn(
                         "text-xs",
-                        msg.isFromUser ? "bg-gray-100" : "text-white"
-                      )} style={!msg.isFromUser ? { backgroundColor: primaryColor } : {}}>
-                        {msg.isFromUser ? <User className="h-4 w-4" /> : <Zap className="h-4 w-4" />}
+                        msg.isFromUser ? "bg-gray-100" : "bg-white"
+                      )}>
+                        {msg.isFromUser ? (
+                          <User className="h-4 w-4 text-gray-600" />
+                        ) : (
+                          <img 
+                            src={traffikBoostersLogo} 
+                            alt="TB" 
+                            className="h-6 w-6 object-contain"
+                            style={{ imageRendering: 'crisp-edges' }}
+                          />
+                        )}
                       </AvatarFallback>
                     </Avatar>
                     <div
