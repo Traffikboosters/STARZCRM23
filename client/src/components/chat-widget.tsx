@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
+import WidgetEmailForm from "./widget-email-form";
 
 interface ChatMessage {
   id: string;
@@ -377,6 +378,9 @@ export default function ChatWidget() {
               </Button>
             </CardContent>
           </Card>
+
+          {/* Email Widget Plugin */}
+          <WidgetEmailForm />
 
           {/* Active Sessions */}
           {currentView === 'sessions' && (
