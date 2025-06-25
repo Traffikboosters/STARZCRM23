@@ -14,6 +14,10 @@ export const users = pgTable("users", {
   mobilePhone: text("mobile_phone"), // employee's mobile number
   extension: text("extension"), // office extension if applicable
   avatar: text("avatar"),
+  commissionRate: text("commission_rate").default("10.0"), // commission percentage as decimal string (10.0 = 10%)
+  baseCommissionRate: text("base_commission_rate").default("10.0"), // base rate before bonuses
+  bonusCommissionRate: text("bonus_commission_rate").default("0.0"), // additional bonus percentage
+  commissionTier: text("commission_tier").default("standard"), // standard, bronze, silver, gold, platinum
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

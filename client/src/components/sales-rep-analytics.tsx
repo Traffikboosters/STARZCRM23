@@ -24,7 +24,11 @@ import {
   AlertCircle,
   Star,
   PlayCircle,
-  Database
+  Database,
+  Percent,
+  Repeat,
+  Filter,
+  RefreshCw
 } from "lucide-react";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 
@@ -48,6 +52,10 @@ interface SalesRepPerformance {
   contactRate: number;
   appointmentConversionRate: number;
   commission: number;
+  commissionRate: number;
+  bonusCommissionRate: number;
+  totalCommissionRate: number;
+  commissionTier: string;
   residualEarnings: number;
   totalEarnings: number;
   avgEarningsPerSale: number;
@@ -80,6 +88,14 @@ const mockSalesRepData: SalesRepPerformance[] = [
     closingRatio: 75.0,
     contactRate: 93.3,
     appointmentConversionRate: 66.7,
+    commission: 40824, // 12.6% total commission rate
+    commissionRate: 10.0,
+    bonusCommissionRate: 2.6, // performance bonus
+    totalCommissionRate: 12.6,
+    commissionTier: "gold",
+    residualEarnings: 9000,
+    totalEarnings: 49824,
+    avgEarningsPerSale: 2768,
     callsToClosedWon: 2.5,
     avgSalesCycleLength: 12,
     monthlyGoal: 150000,
@@ -107,6 +123,14 @@ const mockSalesRepData: SalesRepPerformance[] = [
     closingRatio: 66.7,
     contactRate: 92.1,
     appointmentConversionRate: 62.9,
+    commission: 25536, // 11.2% total commission rate
+    commissionRate: 10.0,
+    bonusCommissionRate: 1.2, // moderate performance bonus
+    totalCommissionRate: 11.2,
+    commissionTier: "silver",
+    residualEarnings: 6000,
+    totalEarnings: 31536,
+    avgEarningsPerSale: 2628,
     callsToClosedWon: 2.9,
     avgSalesCycleLength: 14,
     monthlyGoal: 140000,
@@ -120,29 +144,37 @@ const mockSalesRepData: SalesRepPerformance[] = [
   {
     id: 4,
     name: "Amanda Davis",
-    email: "amanda.davis@traffikboosters.com",
+    email: "amanda.davis@traffikboosters.com", 
     extension: "103",
-    totalLeadsAssigned: 41,
-    leadsContacted: 36,
-    appointmentsSet: 19,
-    appointmentsCompleted: 16,
-    appointmentShowRate: 84.2,
-    dealsWon: 9,
+    totalLeadsAssigned: 32,
+    leadsContacted: 28,
+    appointmentsSet: 18,
+    appointmentsCompleted: 15,
+    appointmentShowRate: 83.3,
+    dealsWon: 8,
     dealsLost: 7,
-    totalRevenue: 162000,
-    avgDealSize: 18000,
-    closingRatio: 56.3,
-    contactRate: 87.8,
-    appointmentConversionRate: 52.8,
-    callsToClosedWon: 4.1,
+    totalRevenue: 168000,
+    avgDealSize: 21000,
+    closingRatio: 53.3,
+    contactRate: 87.5,
+    appointmentConversionRate: 64.3,
+    commission: 16800, // 10% standard commission rate
+    commissionRate: 10.0,
+    bonusCommissionRate: 0.0, // no bonus yet
+    totalCommissionRate: 10.0,
+    commissionTier: "standard",
+    residualEarnings: 4000,
+    totalEarnings: 20800,
+    avgEarningsPerSale: 2600,
+    callsToClosedWon: 3.8,
     avgSalesCycleLength: 18,
-    monthlyGoal: 130000,
-    currentMonthRevenue: 108000,
+    monthlyGoal: 120000,
+    currentMonthRevenue: 84000,
     rank: 3,
     improvement: -2.1,
-    topLeadSources: ["Facebook", "Instagram", "Website"],
+    topLeadSources: ["Website", "Google Ads", "Facebook"],
     bestPerformingTime: "Monday 9-11 AM",
-    lastActivity: new Date("2025-06-23T11:20:00")
+    lastActivity: new Date("2025-06-23T16:20:00")
   }
 ];
 
@@ -211,6 +243,10 @@ export function SalesRepAnalytics() {
     contactRate: rep.contactRate,
     appointmentConversionRate: rep.appointmentConversionRate,
     commission: rep.commission,
+    commissionRate: rep.commissionRate || 10.0,
+    bonusCommissionRate: rep.bonusCommissionRate || 0.0,
+    totalCommissionRate: rep.totalCommissionRate || 10.0,
+    commissionTier: rep.commissionTier || "standard",
     residualEarnings: rep.residualEarnings,
     totalEarnings: rep.totalEarnings,
     avgEarningsPerSale: rep.avgEarningsPerSale,
@@ -306,14 +342,14 @@ export function SalesRepAnalytics() {
         </div>
       </div>
 
-      {/* Team Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+      {/* Team Overview Stats */}
+      <div className="grid md:grid-cols-6 gap-6 mb-8">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center">
-              <Target className="h-6 w-6 text-blue-600" />
+              <Target className="h-6 w-6 text-green-600" />
               <div className="ml-3">
-                <p className="text-xs font-medium text-gray-600">Closing Ratio</p>
+                <p className="text-xs font-medium text-gray-600">Avg Closing Ratio</p>
                 <p className="text-xl font-bold text-gray-900">{apiTeamAverages.closingRatio.toFixed(1)}%</p>
               </div>
             </div>
@@ -321,6 +357,70 @@ export function SalesRepAnalytics() {
         </Card>
         <Card>
           <CardContent className="p-4">
+            <div className="flex items-center">
+              <Phone className="h-6 w-6 text-blue-600" />
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Avg Contact Rate</p>
+                <p className="text-xl font-bold text-gray-900">{apiTeamAverages.contactRate.toFixed(1)}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <Percent className="h-6 w-6 text-purple-600" />
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Avg Commission</p>
+                <p className="text-xl font-bold text-gray-900">{(repsData.reduce((sum, rep) => sum + rep.totalCommissionRate, 0) / Math.max(repsData.length, 1)).toFixed(1)}%</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <DollarSign className="h-6 w-6 text-yellow-600" />
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Avg Deal Size</p>
+                <p className="text-xl font-bold text-gray-900">${apiTeamAverages.avgDealSize.toLocaleString()}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <TrendingUp className="h-6 w-6 text-green-600" />
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Total Commission</p>
+                <p className="text-xl font-bold text-gray-900">${repsData.reduce((sum, rep) => sum + rep.commission, 0).toLocaleString()}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <Repeat className="h-6 w-6 text-indigo-600" />
+              <div className="ml-3">
+                <p className="text-xs font-medium text-gray-600">Total Residual</p>
+                <p className="text-xl font-bold text-gray-900">${repsData.reduce((sum, rep) => sum + rep.residualEarnings, 0).toLocaleString()}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Sales Rep Performance Cards */}
+      <div className="space-y-6">
+        {sortedReps.map((rep, index) => {
+          const performanceBadge = getPerformanceBadge(rep.closingRatio);
+          const goalProgress = (rep.currentMonthRevenue / rep.monthlyGoal) * 100;
+          
+          return (
+            <Card key={rep.id} className="hover:shadow-lg transition-shadow">
+              <CardContent className="p-6">
             <div className="flex items-center">
               <Calendar className="h-6 w-6 text-green-600" />
               <div className="ml-3">
@@ -411,6 +511,9 @@ export function SalesRepAnalytics() {
                         <Badge className={`${performanceBadge.color} text-white`}>
                           #{rep.rank} {performanceBadge.label}
                         </Badge>
+                        <Badge className={`${getCommissionTierColor(rep.commissionTier)} text-xs`}>
+                          {rep.commissionTier?.charAt(0).toUpperCase() + rep.commissionTier?.slice(1)} Tier
+                        </Badge>
                         {rep.improvement > 0 ? (
                           <Badge className="bg-green-100 text-green-800">
                             <TrendingUp className="h-3 w-3 mr-1" />
@@ -469,7 +572,7 @@ export function SalesRepAnalytics() {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="text-center p-4 bg-emerald-50 rounded-lg">
                           <p className="text-2xl font-bold text-emerald-600">{formatCurrency(rep.commission)}</p>
-                          <p className="text-xs text-gray-600">Commission (10%)</p>
+                          <p className="text-xs text-gray-600">Commission ({rep.totalCommissionRate}%)</p>
                         </div>
                         <div className="text-center p-4 bg-purple-50 rounded-lg">
                           <p className="text-2xl font-bold text-purple-600">{formatCurrency(rep.residualEarnings)}</p>
