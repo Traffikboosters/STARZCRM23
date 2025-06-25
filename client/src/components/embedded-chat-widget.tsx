@@ -10,7 +10,12 @@ import {
   X, 
   Minimize2, 
   User,
-  Zap
+  Zap,
+  Video,
+  VideoOff,
+  Mic,
+  MicOff,
+  Phone
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
@@ -50,7 +55,13 @@ export default function EmbeddedChatWidget({
     phone: "",
     message: ""
   });
-  const [chatPhase, setChatPhase] = useState<"greeting" | "form" | "chat">("greeting");
+  const [chatPhase, setChatPhase] = useState<"greeting" | "form" | "chat" | "video">("greeting");
+  const [isVideoCallActive, setIsVideoCallActive] = useState(false);
+  const [isCameraOn, setIsCameraOn] = useState(false);
+  const [isMicOn, setIsMicOn] = useState(false);
+  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteVideoRef = useRef<HTMLVideoElement>(null);
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   // Initialize messages with business hours awareness
@@ -205,7 +216,7 @@ export default function EmbeddedChatWidget({
     <div className={cn("fixed z-50", positionClasses[position], className)}>
       <div className={cn(
         "bg-white border border-gray-200 rounded-lg shadow-2xl w-80 flex flex-col",
-        isMinimized ? "h-14" : "h-96"
+        isMinimized ? "h-14" : chatPhase === "video" ? "h-[450px]" : "h-96"
       )}>
         {/* Header */}
         <div 
@@ -328,17 +339,18 @@ export default function EmbeddedChatWidget({
                   />
                   <Input
                     type="email"
-                    placeholder="Email address *"
+                    placeholder="Business email address *"
                     value={leadForm.email}
                     onChange={(e) => setLeadForm({...leadForm, email: e.target.value})}
                     className="text-sm"
                     required
                   />
                   <Input
-                    placeholder="Company name"
+                    placeholder="Company name *"
                     value={leadForm.company}
                     onChange={(e) => setLeadForm({...leadForm, company: e.target.value})}
                     className="text-sm"
+                    required
                   />
                   <Input
                     placeholder="Phone number"
@@ -346,35 +358,160 @@ export default function EmbeddedChatWidget({
                     onChange={(e) => setLeadForm({...leadForm, phone: e.target.value})}
                     className="text-sm"
                   />
-                  <Button 
-                    type="submit" 
-                    className="w-full text-sm"
-                    style={{ backgroundColor: primaryColor }}
-                    disabled={isSubmitting || !leadForm.name || !leadForm.email}
-                  >
-                    {isSubmitting ? "Submitting..." : "Get My Free Consultation"}
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      type="submit" 
+                      className="flex-1 text-sm"
+                      style={{ backgroundColor: primaryColor }}
+                      disabled={isSubmitting || !leadForm.name || !leadForm.email || !leadForm.company}
+                    >
+                      {isSubmitting ? "Submitting..." : "Start Chat"}
+                    </Button>
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      className="text-sm px-3"
+                      onClick={() => setChatPhase("video")}
+                      disabled={!leadForm.name || !leadForm.email || !leadForm.company}
+                    >
+                      <Video className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </form>
               )}
 
+              {chatPhase === "video" && (
+                <div className="space-y-3">
+                  <div className="bg-gray-900 rounded-lg overflow-hidden">
+                    {/* Video Call Interface */}
+                    <div className="relative h-32">
+                      {/* Remote video (agent) */}
+                      <video 
+                        ref={remoteVideoRef}
+                        className="w-full h-full object-cover bg-gray-800"
+                        autoPlay
+                        playsInline
+                      />
+                      {!isVideoCallActive && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+                          <div className="text-white text-center">
+                            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-2">
+                              <img 
+                                src={traffikBoostersLogo} 
+                                alt="Agent" 
+                                className="w-8 h-8 object-contain"
+                              />
+                            </div>
+                            <p className="text-xs">Connecting to agent...</p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Local video (user) - small overlay */}
+                      <div className="absolute bottom-2 right-2 w-16 h-12 bg-gray-700 rounded overflow-hidden">
+                        <video 
+                          ref={localVideoRef}
+                          className="w-full h-full object-cover"
+                          autoPlay
+                          playsInline
+                          muted
+                        />
+                        {!isCameraOn && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-gray-700">
+                            <VideoOff className="h-4 w-4 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Video Controls */}
+                    <div className="p-3 bg-gray-800 flex items-center justify-center gap-2">
+                      <Button
+                        size="sm"
+                        variant={isMicOn ? "default" : "secondary"}
+                        className="h-8 w-8 p-0"
+                        onClick={() => setIsMicOn(!isMicOn)}
+                      >
+                        {isMicOn ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={isCameraOn ? "default" : "secondary"}
+                        className="h-8 w-8 p-0"
+                        onClick={startVideoCall}
+                      >
+                        {isCameraOn ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="h-8 w-8 p-0"
+                        onClick={endVideoCall}
+                      >
+                        <Phone className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-xs px-2"
+                        onClick={() => setChatPhase("chat")}
+                      >
+                        Chat
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="text-center">
+                    <p className="text-xs text-gray-600 mb-2">
+                      Video consultation with Traffik Boosters expert
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {leadForm.name} from {leadForm.company}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {chatPhase === "chat" && (
-                <form onSubmit={handleChatSubmit} className="flex gap-2">
-                  <Input
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Ask us anything..."
-                    className="flex-1 text-sm"
-                  />
-                  <Button 
-                    type="submit" 
-                    size="sm" 
-                    className="px-3"
-                    style={{ backgroundColor: primaryColor }}
-                    disabled={!message.trim()}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </form>
+                <div className="space-y-2">
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-xs px-2"
+                      onClick={() => setChatPhase("video")}
+                    >
+                      <Video className="h-3 w-3 mr-1" />
+                      Video
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-xs px-2"
+                      onClick={() => window.open(`tel:(877) 840-6250`)}
+                    >
+                      <Phone className="h-3 w-3 mr-1" />
+                      Call
+                    </Button>
+                  </div>
+                  <form onSubmit={handleChatSubmit} className="flex gap-2">
+                    <Input
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Ask us anything..."
+                      className="flex-1 text-sm"
+                    />
+                    <Button 
+                      type="submit" 
+                      size="sm" 
+                      className="px-3"
+                      style={{ backgroundColor: primaryColor }}
+                      disabled={!message.trim()}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </form>
+                </div>
               )}
             </div>
           </>

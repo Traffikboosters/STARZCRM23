@@ -157,6 +157,7 @@ export default function ChatWidget() {
   const [visitorInfo, setVisitorInfo] = useState({
     name: "",
     email: "",
+    company: "",
     phone: "",
     message: ""
   });
@@ -318,7 +319,7 @@ export default function ChatWidget() {
 
     toast({
       title: "New Chat Started",
-      description: `Chat session with ${visitorInfo.name} has been created.`,
+      description: `Chat session with ${visitorInfo.name} from ${visitorInfo.company} has been created.`,
     });
   };
 
