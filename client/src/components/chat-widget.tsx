@@ -373,6 +373,14 @@ export default function ChatWidget() {
                 <Settings className="w-4 h-4 mr-2" />
                 Widget Settings
               </Button>
+              <Button 
+                onClick={() => setCurrentView('metrics')}
+                variant={currentView === 'metrics' ? 'default' : 'outline'}
+                className="w-full justify-start"
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Sales Metrics
+              </Button>
               <Button onClick={generateWidgetCode} className="w-full justify-start">
                 <Code className="w-4 h-4 mr-2" />
                 Get Widget Code
