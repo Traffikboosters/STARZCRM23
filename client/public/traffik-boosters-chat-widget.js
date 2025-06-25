@@ -104,8 +104,8 @@
       }
       
       .tb-chat-logo {
-        width: 50px;
-        height: 50px;
+        width: 70px;
+        height: 70px;
         border-radius: 50%;
         background: white;
         display: flex;
@@ -114,7 +114,7 @@
         margin-right: 12px;
         font-weight: bold;
         color: ${WIDGET_CONFIG.primaryColor};
-        font-size: 14px;
+        font-size: 16px;
       }
       
       .tb-chat-controls {
@@ -156,14 +156,14 @@
       }
       
       .tb-message-avatar {
-        width: 32px;
-        height: 32px;
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
         background: #f0f0f0;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 14px;
+        font-size: 16px;
         flex-shrink: 0;
       }
       

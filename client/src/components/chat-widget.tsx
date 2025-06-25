@@ -464,7 +464,7 @@ export default function ChatWidget() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                               <div className="flex flex-col items-center">
-                                <img src={traffikBoostersLogo} alt="Logo" className="w-10 h-10 rounded" />
+                                <img src={traffikBoostersLogo} alt="Logo" className="w-16 h-16 rounded" />
                                 <p className="text-xs opacity-90 font-medium text-center">More Traffik! More Sales!</p>
                               </div>
                               <div>
