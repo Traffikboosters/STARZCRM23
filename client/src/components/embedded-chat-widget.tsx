@@ -234,6 +234,7 @@ export default function EmbeddedChatWidget({
             </div>
             <div>
               <div className="font-semibold text-sm">{companyName}</div>
+              <div className="text-xs opacity-90 font-medium mb-1">More Traffik! More Sales!</div>
               <div className="text-xs opacity-90 flex items-center gap-1">
                 <span className={`inline-block w-2 h-2 rounded-full ${isBusinessHours() ? 'bg-green-400' : 'bg-yellow-400'}`}></span>
                 {isBusinessHours() ? 'Online Now' : 'Will Call Within 24hrs'}

@@ -466,7 +466,8 @@ export default function ChatWidget() {
                               <img src={traffikBoostersLogo} alt="Logo" className="w-10 h-10 rounded" />
                               <div>
                                 <p className="font-medium text-sm">Traffik Boosters</p>
-                                <p className="text-xs opacity-90">We're online!</p>
+                                <p className="text-xs opacity-90 font-medium">More Traffik! More Sales!</p>
+                                <p className="text-xs opacity-80">We're online!</p>
                               </div>
                             </div>
                             <div className="flex gap-1">
