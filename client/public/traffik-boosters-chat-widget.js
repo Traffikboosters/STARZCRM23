@@ -335,10 +335,12 @@
     chatWindow.innerHTML = `
       <div class="tb-chat-header">
         <div style="display: flex; align-items: center;">
-          <div class="tb-chat-logo">TB</div>
+          <div style="display: flex; flex-direction: column; align-items: center; margin-right: 12px;">
+            <div class="tb-chat-logo">TB</div>
+            <div style="font-weight: 500; font-size: 10px; opacity: 0.9; text-align: center; margin-top: 2px;">More Traffik! More Sales!</div>
+          </div>
           <div>
             <div style="font-weight: 600; font-size: 14px;">${WIDGET_CONFIG.companyName}</div>
-            <div style="font-weight: 500; font-size: 11px; opacity: 0.9; margin-bottom: 2px;">More Traffik! More Sales!</div>
             <div class="tb-business-status">
               <div class="tb-status-dot"></div>
               ${isBusinessHours() ? 'Online Now' : 'Will Call Within 24hrs'}

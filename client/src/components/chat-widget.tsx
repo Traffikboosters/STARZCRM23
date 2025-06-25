@@ -463,10 +463,12 @@ export default function ChatWidget() {
                         <CardHeader className="p-3" style={{ backgroundColor: settings.primaryColor, color: 'white' }}>
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <img src={traffikBoostersLogo} alt="Logo" className="w-10 h-10 rounded" />
+                              <div className="flex flex-col items-center">
+                                <img src={traffikBoostersLogo} alt="Logo" className="w-10 h-10 rounded" />
+                                <p className="text-xs opacity-90 font-medium text-center">More Traffik! More Sales!</p>
+                              </div>
                               <div>
                                 <p className="font-medium text-sm">Traffik Boosters</p>
-                                <p className="text-xs opacity-90 font-medium">More Traffik! More Sales!</p>
                                 <p className="text-xs opacity-80">We're online!</p>
                               </div>
                             </div>

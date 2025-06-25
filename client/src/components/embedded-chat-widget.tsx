@@ -224,17 +224,19 @@ export default function EmbeddedChatWidget({
           style={{ backgroundColor: primaryColor }}
         >
           <div className="flex items-center gap-3">
-            <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center p-1">
-              <img 
-                src={traffikBoostersLogo} 
-                alt="Traffik Boosters" 
-                className="h-full w-full object-contain"
-                style={{ imageRendering: 'crisp-edges' }}
-              />
+            <div className="flex flex-col items-center">
+              <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center p-1">
+                <img 
+                  src={traffikBoostersLogo} 
+                  alt="Traffik Boosters" 
+                  className="h-full w-full object-contain"
+                  style={{ imageRendering: 'crisp-edges' }}
+                />
+              </div>
+              <div className="text-xs opacity-90 font-medium text-center mt-1">More Traffik! More Sales!</div>
             </div>
             <div>
               <div className="font-semibold text-sm">{companyName}</div>
-              <div className="text-xs opacity-90 font-medium mb-1">More Traffik! More Sales!</div>
               <div className="text-xs opacity-90 flex items-center gap-1">
                 <span className={`inline-block w-2 h-2 rounded-full ${isBusinessHours() ? 'bg-green-400' : 'bg-yellow-400'}`}></span>
                 {isBusinessHours() ? 'Online Now' : 'Will Call Within 24hrs'}
