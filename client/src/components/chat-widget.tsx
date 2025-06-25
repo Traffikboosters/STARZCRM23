@@ -152,7 +152,7 @@ const sampleSessions: ChatSession[] = [
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [currentView, setCurrentView] = useState<'demo' | 'sessions' | 'settings'>('demo');
+  const [currentView, setCurrentView] = useState<'demo' | 'sessions' | 'settings' | 'metrics'>('demo');
   const [sessions, setSessions] = useState<ChatSession[]>(sampleSessions);
   const [selectedSession, setSelectedSession] = useState<ChatSession | null>(sessions[0]);
   const [newMessage, setNewMessage] = useState("");
@@ -437,6 +437,11 @@ export default function ChatWidget() {
 
         {/* Main Content */}
         <div className="lg:col-span-2">
+          {/* Sales Metrics View */}
+          {currentView === 'metrics' && (
+            <WidgetSalesMetrics />
+          )}
+
           {currentView === 'demo' && (
             <Card>
               <CardHeader>
