@@ -73,7 +73,7 @@ export default function WidgetEmailForm() {
           <Alert className="border-green-200 bg-green-50">
             <Mail className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
-              The Traffik Boosters chat widget plugin has been sent to <strong>{email}</strong>
+              The Starz chat widget plugin has been sent to <strong>{email}</strong>
             </AlertDescription>
           </Alert>
           
@@ -82,7 +82,7 @@ export default function WidgetEmailForm() {
             <ul className="space-y-2 text-sm text-gray-600">
               <li className="flex items-center space-x-2">
                 <Download className="h-4 w-4 text-blue-500" />
-                <span><code>traffik-boosters-chat-widget.js</code> - Complete plugin file</span>
+                <span><code>starz-chat-widget.js</code> - Complete plugin file</span>
               </li>
               <li className="flex items-center space-x-2">
                 <Download className="h-4 w-4 text-blue-500" />
@@ -127,10 +127,10 @@ export default function WidgetEmailForm() {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <Mail className="h-5 w-5" />
-          <span>Get Chat Widget Plugin</span>
+          <span>Get Starz Widget Plugin</span>
         </CardTitle>
         <CardDescription>
-          Enter your email to receive the complete chat widget plugin files and installation guide
+          Enter your email to receive the complete Starz chat widget plugin files and installation guide
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -160,7 +160,7 @@ export default function WidgetEmailForm() {
 
           <Alert>
             <AlertDescription>
-              The plugin includes lead capture forms, video call integration, business hours detection, 
+              The Starz plugin includes lead capture forms, video call integration, business hours detection, 
               and professional Traffik Boosters branding. Ready for immediate installation on any website.
             </AlertDescription>
           </Alert>

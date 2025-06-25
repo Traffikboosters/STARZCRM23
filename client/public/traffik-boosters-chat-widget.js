@@ -7,7 +7,7 @@
 
   const WIDGET_CONFIG = {
     apiEndpoint: 'https://your-domain.com/api/leads',
-    companyName: 'Traffik Boosters',
+    companyName: 'Starz Widget',
     primaryColor: '#e45c2b',
     welcomeMessage: 'Hi! How can we help boost your traffic today?',
     position: 'bottom-right',

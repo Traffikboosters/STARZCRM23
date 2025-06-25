@@ -32,6 +32,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import WidgetEmailForm from "./widget-email-form";
+import WidgetSalesMetrics from "./widget-sales-metrics";
 
 interface ChatMessage {
   id: string;
@@ -468,7 +469,7 @@ export default function ChatWidget() {
                                 <p className="text-xs opacity-90 font-medium text-center">More Traffik! More Sales!</p>
                               </div>
                               <div>
-                                <p className="font-medium text-sm">Traffik Boosters</p>
+                                <p className="font-medium text-sm">Starz Widget</p>
                                 <p className="text-xs opacity-80">We're online!</p>
                               </div>
                             </div>

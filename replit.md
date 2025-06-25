@@ -180,6 +180,8 @@ The application uses a comprehensive schema including:
 - June 24, 2025. Enhanced chat widget logo sizing throughout interface - header logo increased to 16x16, message avatars to 7x7, and video call agent display to 16x16 for improved brand visibility
 - June 24, 2025. Added "More Traffik! More Sales!" slogan to chat widget header in both embedded widget and management interface for complete brand messaging
 - June 25, 2025. Significantly enlarged chat widget logos throughout interface - header logo increased to 24x24, message avatars to 10x10, video call display to 20x20, demo preview to 16x16, and plugin logo to 70x70 for maximum brand visibility
+- June 25, 2025. Renamed chat widget to "Starz Widget" while maintaining Traffik Boosters branding and slogan throughout the interface and plugin files
+- June 25, 2025. Added comprehensive sales metrics dashboard with performance analytics, engagement tracking, revenue breakdown, and optimization insights for marketing management
 
 ## User Preferences
 
