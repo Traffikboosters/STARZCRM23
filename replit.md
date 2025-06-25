@@ -184,6 +184,9 @@ The application uses a comprehensive schema including:
 - June 25, 2025. Added comprehensive sales metrics dashboard with performance analytics, engagement tracking, revenue breakdown, and optimization insights for marketing management
 - June 25, 2025. Implemented individual sales rep commission percentage tracking with base rates, bonus rates, tier levels (standard, bronze, silver, gold, platinum), and dynamic commission calculations
 - June 25, 2025. Enhanced sales analytics to display commission rates, tier badges, bonus percentages, and commission-based performance metrics for comprehensive sales rep compensation tracking
+- June 25, 2025. Added dual employee compensation structure with commission-based sales representatives and salary-based HR department staff for organizational structure
+- June 25, 2025. Created comprehensive HR Portal with employee management, compensation tracking, department filtering, and role-based access for both salary and commission employees
+- June 25, 2025. Enhanced user schema with compensation type fields (commission/salary), base salary, commission rates, tier levels, and department categorization
 
 ## User Preferences
 
