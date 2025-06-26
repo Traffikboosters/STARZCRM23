@@ -55,6 +55,7 @@ import { formatPhoneNumber } from "@/lib/utils";
 import ClickToCallButton from "@/components/click-to-call-button";
 import { authService } from "@/lib/auth";
 import { Contact, ContactNote, LeadIntake } from "@shared/schema";
+import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 
 interface ContactDetailsModalProps {
   contact: Contact | null;
@@ -223,12 +224,25 @@ export default function ContactDetailsModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
-            <User className="h-5 w-5" />
-            {contact.firstName} {contact.lastName}
-            <Badge variant={getStatusBadgeVariant(contact.leadStatus || "new")}>
-              {contact.leadStatus}
-            </Badge>
+          <DialogTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <User className="h-5 w-5" />
+              {contact.firstName} {contact.lastName}
+              <Badge variant={getStatusBadgeVariant(contact.leadStatus || "new")}>
+                {contact.leadStatus}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <img 
+                src={traffikBoostersLogo} 
+                alt="Traffik Boosters" 
+                className="h-12 w-auto"
+              />
+              <div className="text-right">
+                <p className="text-sm font-medium text-black">More Traffik! More Sales!</p>
+                <p className="text-xs text-gray-600">CRM Lead Details</p>
+              </div>
+            </div>
           </DialogTitle>
         </DialogHeader>
 
