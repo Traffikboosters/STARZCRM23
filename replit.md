@@ -213,6 +213,9 @@ The application uses a comprehensive schema including:
 - June 26, 2025. Enhanced add contact form with integrated appointment scheduling functionality including date/time selection, meeting types, and automated event creation
 - June 26, 2025. Added checkbox-enabled scheduling option allowing immediate appointment booking during contact creation with 6 meeting types (consultation, discovery, demo, proposal, follow-up, closing)
 - June 26, 2025. Implemented automatic calendar event creation when scheduling is enabled, with contact linking and comprehensive appointment details integration
+- June 26, 2025. Enhanced lead cards with comprehensive action capabilities including phone, schedule, email, notes, and disposition buttons with visual icons and color coding
+- June 26, 2025. Implemented role-based access control hiding "point of origin" (lead source) information from regular users while keeping it management-only access
+- June 26, 2025. Added five-button action grid to each lead card with call functionality, scheduling, email integration, notes access, and status management capabilities
 
 ## User Preferences
 

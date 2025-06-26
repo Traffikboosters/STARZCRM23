@@ -53,6 +53,7 @@ import {
 import { apiRequest } from "@/lib/queryClient";
 import { formatPhoneNumber } from "@/lib/utils";
 import ClickToCallButton from "@/components/click-to-call-button";
+import { authService } from "@/lib/auth";
 import { Contact, ContactNote, LeadIntake } from "@shared/schema";
 
 interface ContactDetailsModalProps {
@@ -105,6 +106,8 @@ export default function ContactDetailsModal({
 }: ContactDetailsModalProps) {
   const [activeTab, setActiveTab] = useState("overview");
   const queryClient = useQueryClient();
+  const currentUser = authService.getCurrentUser();
+  const isManagement = currentUser?.role === 'admin' || currentUser?.role === 'manager';
 
   const { data: notes = [] } = useQuery<ContactNote[]>({
     queryKey: ["/api/contact-notes", contact?.id],
@@ -290,10 +293,13 @@ export default function ContactDetailsModal({
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground">Source:</span>
-                    <span>{contact.leadSource || "Unknown"}</span>
-                  </div>
+                  {/* Lead Source - Management Only */}
+                  {isManagement && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">Source:</span>
+                      <span>{contact.leadSource || "Unknown"}</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">Disposition:</span>
                     <span>{contact.disposition || "Not set"}</span>

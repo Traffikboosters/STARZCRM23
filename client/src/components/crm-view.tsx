@@ -20,6 +20,7 @@ import {
   Globe,
   FileText,
   User,
+  Users,
   Calendar,
   CalendarPlus
 } from "lucide-react";
@@ -51,6 +52,7 @@ import {
 } from "@/components/ui/select";
 import { formatPhoneNumber } from "@/lib/utils";
 import ClickToCallButton from "@/components/click-to-call-button";
+import { authService } from "@/lib/auth";
 import type { Contact } from "@shared/schema";
 
 const contactFormSchema = z.object({
@@ -83,6 +85,8 @@ export default function CRMView() {
   const [activeTab, setActiveTab] = useState("contacts");
   
   const { toast } = useToast();
+  const currentUser = authService.getCurrentUser();
+  const isManagement = currentUser?.role === 'admin' || currentUser?.role === 'manager';
 
   const { data: contacts = [], isLoading, error } = useQuery<Contact[]>({
     queryKey: ['/api/contacts'],
@@ -415,33 +419,36 @@ export default function CRMView() {
                       />
                     </div>
                     
-                    <div className="grid grid-cols-3 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="leadSource"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Lead Source</FormLabel>
-                            <FormControl>
-                              <Select value={field.value} onValueChange={field.onChange}>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select source" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="manual">Manual Entry</SelectItem>
-                                  <SelectItem value="website">Website</SelectItem>
-                                  <SelectItem value="referral">Referral</SelectItem>
-                                  <SelectItem value="social_media">Social Media</SelectItem>
-                                  <SelectItem value="google_ads">Google Ads</SelectItem>
-                                  <SelectItem value="yelp">Yelp</SelectItem>
-                                  <SelectItem value="cold_outreach">Cold Outreach</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                    <div className={`grid gap-4 ${isManagement ? 'grid-cols-3' : 'grid-cols-2'}`}>
+                      {/* Lead Source - Management Only */}
+                      {isManagement && (
+                        <FormField
+                          control={form.control}
+                          name="leadSource"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Lead Source</FormLabel>
+                              <FormControl>
+                                <Select value={field.value} onValueChange={field.onChange}>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select source" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="manual">Manual Entry</SelectItem>
+                                    <SelectItem value="website">Website</SelectItem>
+                                    <SelectItem value="referral">Referral</SelectItem>
+                                    <SelectItem value="social_media">Social Media</SelectItem>
+                                    <SelectItem value="google_ads">Google Ads</SelectItem>
+                                    <SelectItem value="yelp">Yelp</SelectItem>
+                                    <SelectItem value="cold_outreach">Cold Outreach</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )}
                       <FormField
                         control={form.control}
                         name="leadStatus"
@@ -745,62 +752,161 @@ export default function CRMView() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
+                    {/* Contact Information */}
+                    <div className="space-y-2">
+                      {contact.email && (
+                        <p className="text-sm text-neutral-medium flex items-center gap-2">
+                          <Mail className="h-3 w-3" />
+                          {contact.email}
+                        </p>
+                      )}
+                      {contact.phone && (
+                        <p className="text-sm text-neutral-medium flex items-center gap-2">
+                          <Phone className="h-3 w-3" />
+                          {formatPhoneNumber(contact.phone)}
+                        </p>
+                      )}
+                    </div>
+                    
+                    {/* Lead Status */}
                     <div className="flex items-center justify-between">
                       <Badge className={getStatusColor(contact.leadStatus || "new")}>
                         {contact.leadStatus?.replace("_", " ") || "new"}
                       </Badge>
-                      <div className="flex space-x-2">
-                        {contact.phone && (
-                          <ClickToCallButton 
-                            phoneNumber={contact.phone} 
-                            contactName={`${contact.firstName} ${contact.lastName}`}
-                            variant="ghost"
-                            size="sm"
-                          />
-                        )}
-                        {contact.email && (
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-brand-primary hover:text-brand-secondary"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.location.href = `mailto:${contact.email}`;
-                            }}
-                          >
-                            <Mail className="h-4 w-4" />
-                          </Button>
-                        )}
+                      <div className="text-xs text-neutral-light">
+                        {new Date(contact.createdAt).toLocaleDateString()}
                       </div>
                     </div>
                     
-                    {contact.email && (
-                      <p className="text-sm text-neutral-medium">{contact.email}</p>
-                    )}
-                    {contact.phone && (
-                      <p className="text-sm text-neutral-medium">{formatPhoneNumber(contact.phone)}</p>
-                    )}
-                    
-                    {contact.tags && contact.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1">
-                        {contact.tags.slice(0, 3).map((tag, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                        {contact.tags.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{contact.tags.length - 3}
-                          </Badge>
-                        )}
-                      </div>
-                    )}
-                    
+                    {/* Notes Preview */}
                     {contact.notes && (
-                      <p className="text-sm text-neutral-medium line-clamp-2">
-                        {contact.notes}
+                      <p className="text-sm text-neutral-medium line-clamp-2 bg-gray-50 p-2 rounded text-xs">
+                        "{contact.notes}"
                       </p>
                     )}
+                    
+                    {/* Action Buttons */}
+                    <div className="grid grid-cols-5 gap-1 pt-2 border-t">
+                      {/* Phone Button */}
+                      {contact.phone ? (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-blue-600 hover:text-blue-800"
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (!contact.phone) return;
+                            try {
+                              const response = await apiRequest("POST", "/api/mightycall/call", {
+                                phoneNumber: contact.phone,
+                                contactName: `${contact.firstName} ${contact.lastName}`
+                              });
+                              const result = await response.json();
+                              if (result.success) {
+                                toast({
+                                  title: "Call Prepared",
+                                  description: `Ready to call ${contact.firstName} ${contact.lastName}`,
+                                });
+                                window.open(`tel:${contact.phone.replace(/\D/g, '')}`, '_self');
+                              }
+                            } catch (error) {
+                              toast({
+                                title: "Call Failed",
+                                description: "Unable to initiate call",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
+                        >
+                          <Phone className="h-3 w-3 mb-1" />
+                          <span className="text-[10px]">Call</span>
+                        </Button>
+                      ) : (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          disabled
+                          className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 opacity-50"
+                        >
+                          <Phone className="h-3 w-3 mb-1" />
+                          <span className="text-[10px]">Call</span>
+                        </Button>
+                      )}
+                      
+                      {/* Schedule Button */}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-blue-600 hover:text-blue-800"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Open scheduling modal - we'll implement this
+                          toast({
+                            title: "Schedule Meeting",
+                            description: `Opening scheduler for ${contact.firstName} ${contact.lastName}`,
+                          });
+                        }}
+                      >
+                        <CalendarPlus className="h-3 w-3 mb-1" />
+                        <span className="text-[10px]">Schedule</span>
+                      </Button>
+                      
+                      {/* Email Button */}
+                      {contact.email ? (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-green-600 hover:text-green-800"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.location.href = `mailto:${contact.email}`;
+                          }}
+                        >
+                          <Mail className="h-3 w-3 mb-1" />
+                          <span className="text-[10px]">Email</span>
+                        </Button>
+                      ) : (
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          disabled
+                          className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 opacity-50"
+                        >
+                          <Mail className="h-3 w-3 mb-1" />
+                          <span className="text-[10px]">Email</span>
+                        </Button>
+                      )}
+                      
+                      {/* Notes Button */}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-purple-600 hover:text-purple-800"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedContactForDetails(contact);
+                          setIsDetailsModalOpen(true);
+                        }}
+                      >
+                        <FileText className="h-3 w-3 mb-1" />
+                        <span className="text-[10px]">Notes</span>
+                      </Button>
+                      
+                      {/* Disposition Button */}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-orange-600 hover:text-orange-800"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedContactForDetails(contact);
+                          setIsDetailsModalOpen(true);
+                        }}
+                      >
+                        <User className="h-3 w-3 mb-1" />
+                        <span className="text-[10px]">Status</span>
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
