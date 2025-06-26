@@ -22,7 +22,9 @@ import {
   User,
   Users,
   Calendar,
-  CalendarPlus
+  CalendarPlus,
+  Calculator,
+  ChevronDown
 } from "lucide-react";
 import ChatWidget from "./chat-widget";
 import WebsiteFormIntegration from "./website-form-integration";
@@ -74,6 +76,46 @@ const contactFormSchema = z.object({
 });
 
 type ContactFormData = z.infer<typeof contactFormSchema>;
+
+// Service pricing data for sales reps
+const servicePricing = [
+  {
+    category: "SEO & Digital Marketing",
+    services: [
+      { name: "Local SEO Package", price: 1200, timeframe: "3-6 months" },
+      { name: "Google My Business Optimization", price: 450, timeframe: "2-4 weeks" },
+      { name: "Website SEO Audit", price: 275, timeframe: "1-2 weeks" },
+      { name: "Social Media Management", price: 1500, timeframe: "Monthly" }
+    ]
+  },
+  {
+    category: "Web Development",
+    services: [
+      { name: "Business Website (5-10 pages)", price: 3500, timeframe: "4-6 weeks" },
+      { name: "E-commerce Website", price: 5500, timeframe: "6-8 weeks" },
+      { name: "Website Redesign", price: 2800, timeframe: "3-5 weeks" },
+      { name: "Mobile App Development", price: 8500, timeframe: "8-12 weeks" }
+    ]
+  },
+  {
+    category: "PPC Advertising",
+    services: [
+      { name: "Google Ads Setup & Management", price: 1800, timeframe: "Monthly" },
+      { name: "Facebook Ads Campaign", price: 1200, timeframe: "Monthly" },
+      { name: "PPC Audit & Optimization", price: 650, timeframe: "2-3 weeks" },
+      { name: "Landing Page Creation", price: 850, timeframe: "1-2 weeks" }
+    ]
+  },
+  {
+    category: "Content & Branding",
+    services: [
+      { name: "Content Marketing Strategy", price: 2200, timeframe: "Monthly" },
+      { name: "Logo & Brand Identity", price: 1100, timeframe: "2-3 weeks" },
+      { name: "Video Production", price: 3200, timeframe: "3-4 weeks" },
+      { name: "Copywriting Services", price: 800, timeframe: "1-2 weeks" }
+    ]
+  }
+];
 
 export default function CRMView() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -786,7 +828,7 @@ export default function CRMView() {
                     )}
                     
                     {/* Action Buttons */}
-                    <div className="grid grid-cols-5 gap-1 pt-2 border-t">
+                    <div className="grid grid-cols-6 gap-1 pt-2 border-t">
                       {/* Phone Button */}
                       {contact.phone ? (
                         <Button 
@@ -906,6 +948,52 @@ export default function CRMView() {
                         <User className="h-3 w-3 mb-1" />
                         <span className="text-[10px]">Status</span>
                       </Button>
+                      
+                      {/* Service Pricing Dropdown */}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-green-600 hover:text-green-800"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Calculator className="h-3 w-3 mb-1" />
+                            <span className="text-[10px]">Pricing</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
+                          {servicePricing.map((category, categoryIndex) => (
+                            <div key={categoryIndex} className="p-2">
+                              <div className="font-semibold text-sm text-gray-900 mb-2 border-b pb-1">
+                                {category.category}
+                              </div>
+                              {category.services.map((service, serviceIndex) => (
+                                <DropdownMenuItem 
+                                  key={serviceIndex}
+                                  className="cursor-pointer p-2 hover:bg-gray-50"
+                                  onClick={() => {
+                                    toast({
+                                      title: "Service Selected",
+                                      description: `${service.name} - $${service.price.toLocaleString()} (${service.timeframe})`,
+                                    });
+                                  }}
+                                >
+                                  <div className="flex justify-between items-start w-full">
+                                    <div className="flex-1">
+                                      <div className="font-medium text-sm">{service.name}</div>
+                                      <div className="text-xs text-gray-500">{service.timeframe}</div>
+                                    </div>
+                                    <div className="text-sm font-bold text-green-600">
+                                      ${service.price.toLocaleString()}
+                                    </div>
+                                  </div>
+                                </DropdownMenuItem>
+                              ))}
+                            </div>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </CardContent>
