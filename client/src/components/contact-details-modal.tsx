@@ -52,6 +52,7 @@ import {
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { formatPhoneNumber } from "@/lib/utils";
+import ClickToCallButton from "@/components/click-to-call-button";
 import { Contact, ContactNote, LeadIntake } from "@shared/schema";
 
 interface ContactDetailsModalProps {
@@ -253,7 +254,20 @@ export default function ContactDetailsModal({
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span>{contact.phone ? formatPhoneNumber(contact.phone) : "No phone"}</span>
+                    {contact.phone ? (
+                      <div className="flex items-center gap-2">
+                        <span>{formatPhoneNumber(contact.phone)}</span>
+                        <ClickToCallButton 
+                          phoneNumber={contact.phone} 
+                          contactName={`${contact.firstName} ${contact.lastName}`}
+                          variant="outline"
+                          size="sm"
+                          showText
+                        />
+                      </div>
+                    ) : (
+                      <span>No phone</span>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Building className="h-4 w-4 text-muted-foreground" />

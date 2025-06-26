@@ -48,6 +48,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatPhoneNumber } from "@/lib/utils";
+import ClickToCallButton from "@/components/click-to-call-button";
 import type { Contact } from "@shared/schema";
 
 const contactFormSchema = z.object({
@@ -517,12 +518,23 @@ export default function CRMView() {
                       </Badge>
                       <div className="flex space-x-2">
                         {contact.phone && (
-                          <Button variant="ghost" size="sm" className="text-success hover:text-green-600">
-                            <Phone className="h-4 w-4" />
-                          </Button>
+                          <ClickToCallButton 
+                            phoneNumber={contact.phone} 
+                            contactName={`${contact.firstName} ${contact.lastName}`}
+                            variant="ghost"
+                            size="sm"
+                          />
                         )}
                         {contact.email && (
-                          <Button variant="ghost" size="sm" className="text-brand-primary hover:text-brand-secondary">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-brand-primary hover:text-brand-secondary"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.location.href = `mailto:${contact.email}`;
+                            }}
+                          >
                             <Mail className="h-4 w-4" />
                           </Button>
                         )}
