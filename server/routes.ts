@@ -762,6 +762,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         `Bark.com scraping completed: ${barkLeads.length} leads extracted and ${createdContacts.length} contacts created`
       );
 
+      // Broadcast live monitoring update
+      if ((global as any).broadcast) {
+        (global as any).broadcast({
+          type: 'scraping_completed',
+          platform: 'Bark.com',
+          leadsFound: barkLeads.length,
+          contactsCreated: createdContacts.length,
+          timestamp: new Date().toISOString(),
+          jobId: scrapingJob.id,
+          status: 'success'
+        });
+      }
+
       res.json({
         success: true,
         jobId: scrapingJob.id,
@@ -836,6 +849,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { leadsFound: businessLeads.length, contactsCreated: createdContacts.length },
         `Business Insider scraping completed: ${businessLeads.length} leads extracted`
       );
+
+      // Broadcast live monitoring update
+      if ((global as any).broadcast) {
+        (global as any).broadcast({
+          type: 'scraping_completed',
+          platform: 'Business Insider',
+          leadsFound: businessLeads.length,
+          contactsCreated: createdContacts.length,
+          timestamp: new Date().toISOString(),
+          jobId: scrapingJob.id,
+          status: 'success'
+        });
+      }
 
       res.json({
         success: true,
@@ -2300,13 +2326,42 @@ Appointment Details:
   const httpServer = createServer(app);
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
+  // Store active WebSocket connections
+  const activeConnections = new Set();
+
+  // Broadcast function for live notifications
+  const broadcast = (data: any) => {
+    const message = JSON.stringify(data);
+    activeConnections.forEach((ws: any) => {
+      if (ws.readyState === 1) { // WebSocket.OPEN
+        ws.send(message);
+      }
+    });
+  };
+
+  // Make broadcast available globally for route handlers
+  (global as any).broadcast = broadcast;
+
   wss.on('connection', (ws) => {
     console.log('WebSocket client connected');
+    activeConnections.add(ws);
+    
+    // Send connection confirmation
+    ws.send(JSON.stringify({
+      type: 'connection',
+      message: 'Live monitoring activated',
+      timestamp: new Date().toISOString()
+    }));
     
     ws.on('message', (message) => {
       try {
         const data = JSON.parse(message.toString());
         console.log('WebSocket message:', data);
+        
+        // Handle client messages
+        if (data.type === 'ping') {
+          ws.send(JSON.stringify({ type: 'pong', timestamp: new Date().toISOString() }));
+        }
       } catch (error) {
         console.error('WebSocket message error:', error);
       }
@@ -2314,6 +2369,12 @@ Appointment Details:
 
     ws.on('close', () => {
       console.log('WebSocket client disconnected');
+      activeConnections.delete(ws);
+    });
+
+    ws.on('error', (error) => {
+      console.error('WebSocket error:', error);
+      activeConnections.delete(ws);
     });
   });
 

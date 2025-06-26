@@ -28,6 +28,7 @@ import VideoCallModal from "@/components/video-call-modal";
 import EventModal from "@/components/event-modal";
 import ContactDetailsModal from "@/components/contact-details-modal";
 import LeadNotification from "@/components/lead-notification";
+import LiveMonitoring from "@/components/live-monitoring";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 

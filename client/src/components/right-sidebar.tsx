@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatPhoneNumber } from "@/lib/utils";
+import LiveMonitoring from "@/components/live-monitoring";
 import type { Event, Contact } from "@shared/schema";
 
 interface RightSidebarProps {
@@ -155,6 +156,11 @@ export default function RightSidebar({ onJoinCall, onCreateEvent, onContactClick
               ))
             )}
           </div>
+        </div>
+
+        {/* Live Monitoring */}
+        <div className="mb-6">
+          <LiveMonitoring />
         </div>
 
         {/* File Upload Zone */}
