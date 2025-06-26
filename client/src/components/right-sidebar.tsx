@@ -115,7 +115,12 @@ export default function RightSidebar({ onJoinCall, onCreateEvent, onContactClick
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-neutral-dark">Recent Contacts</h3>
-            <Button variant="ghost" size="sm" className="text-brand-primary hover:text-brand-secondary">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-brand-primary hover:text-brand-secondary"
+              onClick={() => window.location.href = '/crm'}
+            >
               View All
             </Button>
           </div>

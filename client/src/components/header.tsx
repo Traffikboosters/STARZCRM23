@@ -188,7 +188,17 @@ export default function Header() {
                 </DropdownMenuItem>
               </div>
               <div className="px-4 py-2 border-t">
-                <Button variant="ghost" size="sm" className="w-full justify-start">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full justify-start"
+                  onClick={() => {
+                    toast({
+                      title: "Notifications",
+                      description: "All notifications are displayed above. No additional notifications at this time.",
+                    });
+                  }}
+                >
                   View All Notifications
                 </Button>
               </div>
