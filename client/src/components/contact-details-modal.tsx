@@ -274,22 +274,38 @@ export default function ContactDetailsModal({
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => window.location.href = `mailto:${contact.email}`}
+                            onClick={() => {
+                              const subject = encodeURIComponent("Follow up from Traffik Boosters");
+                              const body = encodeURIComponent(`Hi ${contact.firstName},\n\nThank you for your interest in our digital marketing services. I wanted to follow up and see if you have any questions about how we can help grow your business.\n\nOur team specializes in:\n• Local SEO optimization\n• Google My Business management\n• Website development\n• Social media marketing\n\nWould you be available for a brief 15-minute call this week to discuss your specific needs?\n\nBest regards,\nTraflik Boosters\n(877) 840-6250`);
+                              window.location.href = `mailto:${contact.email}?subject=${subject}&body=${body}`;
+                            }}
                             className="text-green-600 border-green-200 hover:bg-green-50"
                           >
                             <Mail className="h-3 w-3 mr-1" />
-                            Email
+                            Compose Email
                           </Button>
                           <Button 
                             variant="ghost" 
                             size="sm"
                             onClick={() => {
-                              navigator.clipboard.writeText(contact.email);
-                              // toast functionality would go here
+                              if (contact.email) {
+                                navigator.clipboard.writeText(contact.email).then(() => {
+                                  // Success - could add toast here
+                                }).catch(() => {
+                                  // Fallback for older browsers
+                                  const textArea = document.createElement('textarea');
+                                  textArea.value = contact.email!;
+                                  document.body.appendChild(textArea);
+                                  textArea.select();
+                                  document.execCommand('copy');
+                                  document.body.removeChild(textArea);
+                                });
+                              }
                             }}
-                            className="text-blue-600"
+                            className="text-blue-600 hover:bg-blue-50"
                           >
-                            Copy
+                            <User className="h-3 w-3 mr-1" />
+                            Copy Email
                           </Button>
                         </div>
                       </div>
