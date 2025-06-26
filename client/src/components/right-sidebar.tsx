@@ -119,7 +119,7 @@ export default function RightSidebar({ onJoinCall, onCreateEvent, onContactClick
               variant="ghost" 
               size="sm" 
               className="text-brand-primary hover:text-brand-secondary"
-              onClick={() => window.location.href = '/crm'}
+              onClick={() => window.location.href = '/dashboard'}
             >
               View All
             </Button>
