@@ -24,10 +24,14 @@ import {
   Calendar,
   CalendarPlus,
   Calculator,
-  ChevronDown
+  ChevronDown,
+  Send,
+  Inbox,
+  MailOpen
 } from "lucide-react";
 import ChatWidget from "./chat-widget";
 import WebsiteFormIntegration from "./website-form-integration";
+import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -124,6 +128,8 @@ export default function CRMView() {
   const [selectedContactForDetails, setSelectedContactForDetails] = useState<Contact | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [selectedEmailContact, setSelectedEmailContact] = useState<Contact | null>(null);
   const [activeTab, setActiveTab] = useState("contacts");
   
   const { toast } = useToast();
@@ -895,18 +901,55 @@ export default function CRMView() {
                       
                       {/* Email Button */}
                       {contact.email ? (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-green-600 hover:text-green-800"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            window.location.href = `mailto:${contact.email}`;
-                          }}
-                        >
-                          <Mail className="h-3 w-3 mb-1" />
-                          <span className="text-[10px]">Email</span>
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-green-600 hover:text-green-800"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Mail className="h-3 w-3 mb-1" />
+                              <span className="text-[10px]">Email</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem 
+                              className="cursor-pointer"
+                              onClick={() => {
+                                setSelectedEmailContact(contact);
+                                setIsEmailModalOpen(true);
+                              }}
+                            >
+                              <Send className="h-4 w-4 mr-2" />
+                              Compose Email
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="cursor-pointer"
+                              onClick={() => {
+                                window.location.href = `mailto:${contact.email}`;
+                              }}
+                            >
+                              <MailOpen className="h-4 w-4 mr-2" />
+                              Open Email Client
+                            </DropdownMenuItem>
+                            <DropdownMenuItem 
+                              className="cursor-pointer"
+                              onClick={() => {
+                                if (contact.email) {
+                                  navigator.clipboard.writeText(contact.email);
+                                  toast({
+                                    title: "Email Copied",
+                                    description: `${contact.email} copied to clipboard`,
+                                  });
+                                }
+                              }}
+                            >
+                              <Inbox className="h-4 w-4 mr-2" />
+                              Copy Email Address
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       ) : (
                         <Button 
                           variant="ghost" 
@@ -1014,6 +1057,144 @@ export default function CRMView() {
             setSelectedContactForDetails(null);
           }}
         />
+      )}
+
+      {/* Email Composer Modal */}
+      {selectedEmailContact && (
+        <Dialog open={isEmailModalOpen} onOpenChange={setIsEmailModalOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Send className="h-5 w-5" />
+                  Email to {selectedEmailContact.firstName} {selectedEmailContact.lastName}
+                </div>
+                <div className="flex items-center gap-2">
+                  <img 
+                    src={traffikBoostersLogo} 
+                    alt="Traffik Boosters" 
+                    className="h-8 w-auto"
+                  />
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-black">More Traffik! More Sales!</p>
+                    <p className="text-xs text-gray-600">Email Communication</p>
+                  </div>
+                </div>
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              {/* Email Header */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">To:</label>
+                  <p className="text-sm font-semibold">{selectedEmailContact.email}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Contact:</label>
+                  <p className="text-sm">{selectedEmailContact.firstName} {selectedEmailContact.lastName}</p>
+                  {selectedEmailContact.company && (
+                    <p className="text-xs text-gray-600">{selectedEmailContact.company}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Email Templates */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Quick Email Templates</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {[
+                    {
+                      name: "Initial Follow-up",
+                      subject: "Following up on your inquiry",
+                      preview: "Thank you for your interest in our services...",
+                      template: `Hi ${selectedEmailContact.firstName},\n\nThank you for your interest in our digital marketing services. I wanted to follow up and see if you have any questions about how we can help grow your business.\n\nOur team specializes in:\n• Local SEO optimization\n• Google My Business management\n• Website development\n• Social media marketing\n\nWould you be available for a brief 15-minute call this week to discuss your specific needs?\n\nBest regards,\n${currentUser?.username || 'Sales Team'}\nTraflik Boosters\n(877) 840-6250`
+                    },
+                    {
+                      name: "Service Proposal",
+                      subject: "Digital Marketing Proposal for " + (selectedEmailContact.company || selectedEmailContact.firstName),
+                      preview: "Attached is our comprehensive proposal...",
+                      template: `Hi ${selectedEmailContact.firstName},\n\nThank you for taking the time to discuss your digital marketing needs. Based on our conversation, I've prepared a customized proposal that addresses your specific goals.\n\nOur recommended strategy includes:\n• Local SEO package - $1,200/month\n• Google My Business optimization - $450 one-time\n• Website audit and optimization - $275\n\nThis comprehensive approach will help you achieve "More Traffik! More Sales!" for your business.\n\nI'm available to discuss any questions you may have. When would be a good time for a follow-up call?\n\nBest regards,\n${currentUser?.username || 'Sales Team'}\nTraflik Boosters\n(877) 840-6250`
+                    },
+                    {
+                      name: "Check-in",
+                      subject: "Checking in - Any questions?",
+                      preview: "Just wanted to check in and see how everything is going...",
+                      template: `Hi ${selectedEmailContact.firstName},\n\nI hope this email finds you well. I wanted to check in and see if you have any questions about our digital marketing services.\n\nSince we last spoke, we've helped several businesses like yours increase their online visibility and generate more leads. I'd love to share some recent success stories with you.\n\nAre you still interested in exploring how we can help grow your business? I'm happy to schedule a quick call at your convenience.\n\nBest regards,\n${currentUser?.username || 'Sales Team'}\nTraflik Boosters\n(877) 840-6250`
+                    }
+                  ].map((template, index) => (
+                    <Card key={index} className="cursor-pointer hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <h4 className="font-semibold text-sm">{template.name}</h4>
+                        <p className="text-xs text-gray-600 mt-1">{template.preview}</p>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="mt-3 w-full"
+                          onClick={() => {
+                            const subject = encodeURIComponent(template.subject);
+                            const body = encodeURIComponent(template.template);
+                            window.location.href = `mailto:${selectedEmailContact.email}?subject=${subject}&body=${body}`;
+                            
+                            toast({
+                              title: "Email Template Opened",
+                              description: `${template.name} template opened in your email client`,
+                            });
+                            
+                            setIsEmailModalOpen(false);
+                          }}
+                        >
+                          <Send className="h-3 w-3 mr-2" />
+                          Use Template
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="flex gap-3 pt-4 border-t">
+                <Button 
+                  className="flex-1"
+                  onClick={() => {
+                    window.location.href = `mailto:${selectedEmailContact.email}`;
+                    toast({
+                      title: "Email Client Opened",
+                      description: `Compose email to ${selectedEmailContact.firstName} ${selectedEmailContact.lastName}`,
+                    });
+                    setIsEmailModalOpen(false);
+                  }}
+                >
+                  <MailOpen className="h-4 w-4 mr-2" />
+                  Open Email Client
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    const email = selectedEmailContact.email;
+                    if (email) {
+                      navigator.clipboard.writeText(email);
+                      toast({
+                        title: "Email Copied",
+                        description: `${email} copied to clipboard`,
+                      });
+                    }
+                  }}
+                >
+                  <Inbox className="h-4 w-4 mr-2" />
+                  Copy Email
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setIsEmailModalOpen(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Chat Widget Integration */}
