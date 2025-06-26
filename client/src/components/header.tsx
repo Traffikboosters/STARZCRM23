@@ -336,7 +336,7 @@ export default function Header() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="youtubeUrl" className="text-right">YouTube</label>
-              <Input id="youtubeUrl" placeholder="https://youtube.com/@traffikboosters" className="col-span-3" />
+              <Input id="youtubeUrl" defaultValue="https://www.youtube.com/@TraffikBoosters" className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="tiktokUrl" className="text-right">TikTok</label>

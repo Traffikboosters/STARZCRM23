@@ -73,11 +73,11 @@ export default function SocialMediaPanel({ company }: SocialMediaPanelProps) {
     {
       name: "YouTube",
       icon: Youtube,
-      url: company?.youtubeUrl || "#",
-      followers: "432",
-      engagement: "7.2%",
+      url: company?.youtubeUrl || "https://www.youtube.com/@TraffikBoosters",
+      followers: "892",
+      engagement: "9.1%",
       color: "#FF0000",
-      lastPost: "3 days ago",
+      lastPost: "2 days ago",
       status: company?.youtubeUrl ? "connected" : "pending"
     },
     {
@@ -191,21 +191,60 @@ export default function SocialMediaPanel({ company }: SocialMediaPanelProps) {
           </div>
         )}
 
-        {/* Social Media Insights */}
+        {/* Social Media Insights - Updated for 3 Platforms */}
         <div className="grid grid-cols-3 gap-4 pt-4 border-t">
           <div className="text-center">
-            <div className="font-semibold text-lg text-[#e45c2b]">4.8K</div>
+            <div className="font-semibold text-lg text-[#e45c2b]">7.2K</div>
             <div className="text-xs text-gray-600">Total Reach</div>
           </div>
           <div className="text-center">
-            <div className="font-semibold text-lg text-[#e45c2b]">186</div>
+            <div className="font-semibold text-lg text-[#e45c2b]">312</div>
             <div className="text-xs text-gray-600">This Week</div>
           </div>
           <div className="text-center">
-            <div className="font-semibold text-lg text-[#e45c2b]">5.2%</div>
+            <div className="font-semibold text-lg text-[#e45c2b]">7.4%</div>
             <div className="text-xs text-gray-600">Avg Engagement</div>
           </div>
         </div>
+
+        {/* YouTube Channel Highlight - New Platform */}
+        {socialChannels.find(p => p.name === "YouTube")?.status === "connected" && (
+          <Card className="bg-red-50 border-red-200 mt-4">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <Youtube className="h-6 w-6 text-[#FF0000]" />
+                <div>
+                  <h4 className="font-medium text-[#FF0000]">YouTube @TraffikBoosters</h4>
+                  <p className="text-xs text-gray-600">Video content and tutorials for business growth</p>
+                </div>
+                <Badge variant="secondary" className="bg-red-500 text-white text-xs ml-auto">
+                  NEW
+                </Badge>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Subscribers:</span>
+                  <span className="font-medium text-red-700">892</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Engagement:</span>
+                  <span className="font-medium text-green-600">9.1%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Last Upload:</span>
+                  <span className="font-medium">2 days ago</span>
+                </div>
+              </div>
+              <Button 
+                size="sm" 
+                className="bg-red-600 hover:bg-red-700 text-white text-xs h-7 w-full mt-3"
+                onClick={() => window.open(socialChannels.find(p => p.name === "YouTube")?.url, '_blank')}
+              >
+                Visit YouTube Channel
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Facebook Profile Highlight */}
         <Card className="bg-blue-50 border-blue-200">
