@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { 
   Plus, 
   Play, 
@@ -307,6 +309,13 @@ export default function ScrapingConfigurationDemo() {
     setIsConfiguring(true);
     setProgress(0);
     
+    // Show initial "Fetching leads..." notification
+    toast({
+      title: "🔍 Fetching leads...",
+      description: `Starting lead extraction from ${selectedTemplate.name}`,
+      duration: 3000,
+    });
+    
     try {
       let endpoint = '';
       if (selectedTemplate.name.includes('Bark.com')) {
@@ -340,6 +349,13 @@ export default function ScrapingConfigurationDemo() {
         // Show success notification with real results and audio alert
         setTimeout(() => {
           setIsConfiguring(false);
+          
+          // Show completion toast notification
+          toast({
+            title: "✅ Lead extraction complete!",
+            description: `Successfully found ${result.leadsFound || 0} leads from ${selectedTemplate.name}`,
+            duration: 5000,
+          });
           
           // Play audio notification for new leads
           const audio = new Audio('data:audio/wav;base64,UklGRvIBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU4BAABBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+H+sEA');
@@ -383,7 +399,14 @@ export default function ScrapingConfigurationDemo() {
     } catch (error) {
       setIsConfiguring(false);
       setProgress(0);
-      alert('Failed to start scraping job. Please try again.');
+      
+      // Show error notification
+      toast({
+        title: "❌ Lead extraction failed",
+        description: `Unable to extract leads from ${selectedTemplate.name}. Please try again.`,
+        duration: 5000,
+        variant: "destructive"
+      });
     }
   };
 
