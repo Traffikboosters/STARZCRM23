@@ -9,6 +9,8 @@ import {
   type Campaign, type InsertCampaign, type LeadAllocation, type InsertLeadAllocation,
   type DocumentTemplate, type InsertDocumentTemplate, type SigningRequest, type InsertSigningRequest
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, like, and, between } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -118,6 +120,513 @@ export interface IStorage {
   createSigningRequest(request: InsertSigningRequest & { createdBy: number }): Promise<SigningRequest>;
   updateSigningRequest(id: number, updates: Partial<InsertSigningRequest>): Promise<SigningRequest | undefined>;
   deleteSigningRequest(id: number): Promise<boolean>;
+}
+
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  async updateUserPhone(id: number, phone: string, mobilePhone?: string, extension?: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ phone, mobilePhone, extension })
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    const result = await db.delete(users).where(eq(users.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Companies
+  async getCompany(id: number): Promise<Company | undefined> {
+    const [company] = await db.select().from(companies).where(eq(companies.id, id));
+    return company || undefined;
+  }
+
+  async getAllCompanies(): Promise<Company[]> {
+    return await db.select().from(companies);
+  }
+
+  async createCompany(insertCompany: InsertCompany): Promise<Company> {
+    const [company] = await db
+      .insert(companies)
+      .values(insertCompany)
+      .returning();
+    return company;
+  }
+
+  async updateCompany(id: number, updates: Partial<InsertCompany>): Promise<Company | undefined> {
+    const [company] = await db
+      .update(companies)
+      .set(updates)
+      .where(eq(companies.id, id))
+      .returning();
+    return company || undefined;
+  }
+
+  // Contacts
+  async getAllContacts(): Promise<Contact[]> {
+    return await db.select().from(contacts);
+  }
+
+  async getContact(id: number): Promise<Contact | undefined> {
+    const [contact] = await db.select().from(contacts).where(eq(contacts.id, id));
+    return contact || undefined;
+  }
+
+  async createContact(contact: InsertContact & { createdBy: number }): Promise<Contact> {
+    const [newContact] = await db
+      .insert(contacts)
+      .values(contact)
+      .returning();
+    return newContact;
+  }
+
+  async updateContact(id: number, updates: Partial<InsertContact>): Promise<Contact | undefined> {
+    const [contact] = await db
+      .update(contacts)
+      .set(updates)
+      .where(eq(contacts.id, id))
+      .returning();
+    return contact || undefined;
+  }
+
+  async deleteContact(id: number): Promise<boolean> {
+    const result = await db.delete(contacts).where(eq(contacts.id, id));
+    return result.rowCount > 0;
+  }
+
+  async searchContacts(query: string): Promise<Contact[]> {
+    return await db.select().from(contacts).where(
+      like(contacts.firstName, `%${query}%`)
+    );
+  }
+
+  // Events
+  async getAllEvents(): Promise<Event[]> {
+    return await db.select().from(events);
+  }
+
+  async getEvent(id: number): Promise<Event | undefined> {
+    const [event] = await db.select().from(events).where(eq(events.id, id));
+    return event || undefined;
+  }
+
+  async getEventsByDateRange(startDate: Date, endDate: Date): Promise<Event[]> {
+    return await db.select().from(events).where(
+      and(
+        between(events.startDate, startDate, endDate)
+      )
+    );
+  }
+
+  async createEvent(event: InsertEvent & { createdBy: number }): Promise<Event> {
+    const [newEvent] = await db
+      .insert(events)
+      .values(event)
+      .returning();
+    return newEvent;
+  }
+
+  async updateEvent(id: number, updates: Partial<InsertEvent>): Promise<Event | undefined> {
+    const [event] = await db
+      .update(events)
+      .set(updates)
+      .where(eq(events.id, id))
+      .returning();
+    return event || undefined;
+  }
+
+  async deleteEvent(id: number): Promise<boolean> {
+    const result = await db.delete(events).where(eq(events.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Files
+  async getAllFiles(): Promise<File[]> {
+    return await db.select().from(files);
+  }
+
+  async getFile(id: number): Promise<File | undefined> {
+    const [file] = await db.select().from(files).where(eq(files.id, id));
+    return file || undefined;
+  }
+
+  async getFilesByFolder(folder: string): Promise<File[]> {
+    return await db.select().from(files).where(eq(files.folder, folder));
+  }
+
+  async createFile(file: InsertFile & { uploadedBy: number }): Promise<File> {
+    const [newFile] = await db
+      .insert(files)
+      .values(file)
+      .returning();
+    return newFile;
+  }
+
+  async updateFile(id: number, updates: Partial<InsertFile>): Promise<File | undefined> {
+    const [file] = await db
+      .update(files)
+      .set(updates)
+      .where(eq(files.id, id))
+      .returning();
+    return file || undefined;
+  }
+
+  async deleteFile(id: number): Promise<boolean> {
+    const result = await db.delete(files).where(eq(files.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Placeholder implementations for other methods - these would need full implementation
+  async getAllAutomations(): Promise<Automation[]> {
+    return await db.select().from(automations);
+  }
+
+  async getAutomation(id: number): Promise<Automation | undefined> {
+    const [automation] = await db.select().from(automations).where(eq(automations.id, id));
+    return automation || undefined;
+  }
+
+  async createAutomation(automation: InsertAutomation & { createdBy: number }): Promise<Automation> {
+    const [newAutomation] = await db
+      .insert(automations)
+      .values(automation)
+      .returning();
+    return newAutomation;
+  }
+
+  async updateAutomation(id: number, updates: Partial<InsertAutomation>): Promise<Automation | undefined> {
+    const [automation] = await db
+      .update(automations)
+      .set(updates)
+      .where(eq(automations.id, id))
+      .returning();
+    return automation || undefined;
+  }
+
+  async deleteAutomation(id: number): Promise<boolean> {
+    const result = await db.delete(automations).where(eq(automations.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getAllScrapingJobs(): Promise<ScrapingJob[]> {
+    return await db.select().from(scrapingJobs);
+  }
+
+  async getScrapingJob(id: number): Promise<ScrapingJob | undefined> {
+    const [job] = await db.select().from(scrapingJobs).where(eq(scrapingJobs.id, id));
+    return job || undefined;
+  }
+
+  async createScrapingJob(job: InsertScrapingJob & { createdBy: number }): Promise<ScrapingJob> {
+    const [newJob] = await db
+      .insert(scrapingJobs)
+      .values(job)
+      .returning();
+    return newJob;
+  }
+
+  async updateScrapingJob(id: number, updates: Partial<InsertScrapingJob>): Promise<ScrapingJob | undefined> {
+    const [job] = await db
+      .update(scrapingJobs)
+      .set(updates)
+      .where(eq(scrapingJobs.id, id))
+      .returning();
+    return job || undefined;
+  }
+
+  async deleteScrapingJob(id: number): Promise<boolean> {
+    const result = await db.delete(scrapingJobs).where(eq(scrapingJobs.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Chat functionality stubs
+  async getAllChatMessages(): Promise<ChatMessage[]> {
+    return await db.select().from(chatMessages);
+  }
+
+  async getChatMessage(id: number): Promise<ChatMessage | undefined> {
+    const [message] = await db.select().from(chatMessages).where(eq(chatMessages.id, id));
+    return message || undefined;
+  }
+
+  async getChatMessagesByContact(contactId: number): Promise<ChatMessage[]> {
+    return await db.select().from(chatMessages).where(eq(chatMessages.contactId, contactId));
+  }
+
+  async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
+    const [newMessage] = await db
+      .insert(chatMessages)
+      .values(message)
+      .returning();
+    return newMessage;
+  }
+
+  async updateChatMessage(id: number, updates: Partial<InsertChatMessage>): Promise<ChatMessage | undefined> {
+    const [message] = await db
+      .update(chatMessages)
+      .set(updates)
+      .where(eq(chatMessages.id, id))
+      .returning();
+    return message || undefined;
+  }
+
+  async deleteChatMessage(id: number): Promise<boolean> {
+    const result = await db.delete(chatMessages).where(eq(chatMessages.id, id));
+    return result.rowCount > 0;
+  }
+
+  async getAllChatConversations(): Promise<ChatConversation[]> {
+    return await db.select().from(chatConversations);
+  }
+
+  async getChatConversation(id: number): Promise<ChatConversation | undefined> {
+    const [conversation] = await db.select().from(chatConversations).where(eq(chatConversations.id, id));
+    return conversation || undefined;
+  }
+
+  async createChatConversation(conversation: InsertChatConversation): Promise<ChatConversation> {
+    const [newConversation] = await db
+      .insert(chatConversations)
+      .values(conversation)
+      .returning();
+    return newConversation;
+  }
+
+  async updateChatConversation(id: number, updates: Partial<InsertChatConversation>): Promise<ChatConversation | undefined> {
+    const [conversation] = await db
+      .update(chatConversations)
+      .set(updates)
+      .where(eq(chatConversations.id, id))
+      .returning();
+    return conversation || undefined;
+  }
+
+  async deleteChatConversation(id: number): Promise<boolean> {
+    const result = await db.delete(chatConversations).where(eq(chatConversations.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Call logs functionality stubs
+  async getAllCallLogs(): Promise<CallLog[]> {
+    return await db.select().from(callLogs);
+  }
+
+  async getCallLog(id: number): Promise<CallLog | undefined> {
+    const [log] = await db.select().from(callLogs).where(eq(callLogs.id, id));
+    return log || undefined;
+  }
+
+  async getCallLogsByContact(contactId: number): Promise<CallLog[]> {
+    return await db.select().from(callLogs).where(eq(callLogs.contactId, contactId));
+  }
+
+  async getCallLogsByUser(userId: number): Promise<CallLog[]> {
+    return await db.select().from(callLogs).where(eq(callLogs.userId, userId));
+  }
+
+  async createCallLog(log: InsertCallLog): Promise<CallLog> {
+    const [newLog] = await db
+      .insert(callLogs)
+      .values(log)
+      .returning();
+    return newLog;
+  }
+
+  async updateCallLog(id: number, updates: Partial<InsertCallLog>): Promise<CallLog | undefined> {
+    const [log] = await db
+      .update(callLogs)
+      .set(updates)
+      .where(eq(callLogs.id, id))
+      .returning();
+    return log || undefined;
+  }
+
+  async deleteCallLog(id: number): Promise<boolean> {
+    const result = await db.delete(callLogs).where(eq(callLogs.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Campaign functionality stubs
+  async getAllCampaigns(): Promise<Campaign[]> {
+    return await db.select().from(campaigns);
+  }
+
+  async getCampaign(id: number): Promise<Campaign | undefined> {
+    const [campaign] = await db.select().from(campaigns).where(eq(campaigns.id, id));
+    return campaign || undefined;
+  }
+
+  async createCampaign(campaign: InsertCampaign & { createdBy: number }): Promise<Campaign> {
+    const [newCampaign] = await db
+      .insert(campaigns)
+      .values(campaign)
+      .returning();
+    return newCampaign;
+  }
+
+  async updateCampaign(id: number, updates: Partial<InsertCampaign>): Promise<Campaign | undefined> {
+    const [campaign] = await db
+      .update(campaigns)
+      .set(updates)
+      .where(eq(campaigns.id, id))
+      .returning();
+    return campaign || undefined;
+  }
+
+  async deleteCampaign(id: number): Promise<boolean> {
+    const result = await db.delete(campaigns).where(eq(campaigns.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Lead allocation functionality stubs
+  async getAllLeadAllocations(): Promise<LeadAllocation[]> {
+    return await db.select().from(leadAllocations);
+  }
+
+  async getLeadAllocation(id: number): Promise<LeadAllocation | undefined> {
+    const [allocation] = await db.select().from(leadAllocations).where(eq(leadAllocations.id, id));
+    return allocation || undefined;
+  }
+
+  async getLeadAllocationsByContact(contactId: number): Promise<LeadAllocation[]> {
+    return await db.select().from(leadAllocations).where(eq(leadAllocations.contactId, contactId));
+  }
+
+  async getLeadAllocationsByAssignee(assignedTo: number): Promise<LeadAllocation[]> {
+    return await db.select().from(leadAllocations).where(eq(leadAllocations.assignedTo, assignedTo));
+  }
+
+  async getLeadAllocationsByCampaign(campaignId: number): Promise<LeadAllocation[]> {
+    return await db.select().from(leadAllocations).where(eq(leadAllocations.campaignId, campaignId));
+  }
+
+  async createLeadAllocation(allocation: InsertLeadAllocation): Promise<LeadAllocation> {
+    const [newAllocation] = await db
+      .insert(leadAllocations)
+      .values(allocation)
+      .returning();
+    return newAllocation;
+  }
+
+  async updateLeadAllocation(id: number, updates: Partial<InsertLeadAllocation>): Promise<LeadAllocation | undefined> {
+    const [allocation] = await db
+      .update(leadAllocations)
+      .set(updates)
+      .where(eq(leadAllocations.id, id))
+      .returning();
+    return allocation || undefined;
+  }
+
+  async deleteLeadAllocation(id: number): Promise<boolean> {
+    const result = await db.delete(leadAllocations).where(eq(leadAllocations.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Document template functionality stubs
+  async getAllDocumentTemplates(): Promise<DocumentTemplate[]> {
+    return await db.select().from(documentTemplates);
+  }
+
+  async getDocumentTemplate(id: number): Promise<DocumentTemplate | undefined> {
+    const [template] = await db.select().from(documentTemplates).where(eq(documentTemplates.id, id));
+    return template || undefined;
+  }
+
+  async createDocumentTemplate(template: InsertDocumentTemplate & { createdBy: number }): Promise<DocumentTemplate> {
+    const [newTemplate] = await db
+      .insert(documentTemplates)
+      .values(template)
+      .returning();
+    return newTemplate;
+  }
+
+  async updateDocumentTemplate(id: number, updates: Partial<InsertDocumentTemplate>): Promise<DocumentTemplate | undefined> {
+    const [template] = await db
+      .update(documentTemplates)
+      .set(updates)
+      .where(eq(documentTemplates.id, id))
+      .returning();
+    return template || undefined;
+  }
+
+  async deleteDocumentTemplate(id: number): Promise<boolean> {
+    const result = await db.delete(documentTemplates).where(eq(documentTemplates.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Signing request functionality stubs
+  async getAllSigningRequests(): Promise<SigningRequest[]> {
+    return await db.select().from(signingRequests);
+  }
+
+  async getSigningRequest(id: number): Promise<SigningRequest | undefined> {
+    const [request] = await db.select().from(signingRequests).where(eq(signingRequests.id, id));
+    return request || undefined;
+  }
+
+  async getSigningRequestsByUser(userId: number): Promise<SigningRequest[]> {
+    return await db.select().from(signingRequests).where(eq(signingRequests.createdBy, userId));
+  }
+
+  async createSigningRequest(request: InsertSigningRequest & { createdBy: number }): Promise<SigningRequest> {
+    const [newRequest] = await db
+      .insert(signingRequests)
+      .values(request)
+      .returning();
+    return newRequest;
+  }
+
+  async updateSigningRequest(id: number, updates: Partial<InsertSigningRequest>): Promise<SigningRequest | undefined> {
+    const [request] = await db
+      .update(signingRequests)
+      .set(updates)
+      .where(eq(signingRequests.id, id))
+      .returning();
+    return request || undefined;
+  }
+
+  async deleteSigningRequest(id: number): Promise<boolean> {
+    const result = await db.delete(signingRequests).where(eq(signingRequests.id, id));
+    return result.rowCount > 0;
+  }
 }
 
 export class MemStorage implements IStorage {
@@ -1488,4 +1997,4 @@ Client Approval:
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
