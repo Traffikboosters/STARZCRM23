@@ -327,12 +327,12 @@ export default function Header() {
               <Input id="linkedinUrl" placeholder="https://linkedin.com/company/traffik-boosters" className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <label htmlFor="twitterUrl" className="text-right">Twitter</label>
-              <Input id="twitterUrl" placeholder="https://twitter.com/traffikboosters" className="col-span-3" />
+              <label htmlFor="twitterUrl" className="text-right">Twitter/X</label>
+              <Input id="twitterUrl" defaultValue="https://x.com/Traffikboosters?t=mi3YgILsb1VsxoseHqixSA&s=09" className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="instagramUrl" className="text-right">Instagram</label>
-              <Input id="instagramUrl" placeholder="https://instagram.com/traffikboosters" className="col-span-3" />
+              <Input id="instagramUrl" defaultValue="https://www.instagram.com/traffikboosters?utm_source=qr&igsh=MWdwNXNyYjFhMjR5NA==" className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="youtubeUrl" className="text-right">YouTube</label>

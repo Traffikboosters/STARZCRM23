@@ -191,18 +191,18 @@ export default function SocialMediaPanel({ company }: SocialMediaPanelProps) {
           </div>
         )}
 
-        {/* Social Media Insights - Updated for 3 Platforms */}
+        {/* Social Media Insights - Updated for 5 Platforms */}
         <div className="grid grid-cols-3 gap-4 pt-4 border-t">
           <div className="text-center">
-            <div className="font-semibold text-lg text-[#e45c2b]">7.2K</div>
+            <div className="font-semibold text-lg text-[#e45c2b]">10.1K</div>
             <div className="text-xs text-gray-600">Total Reach</div>
           </div>
           <div className="text-center">
-            <div className="font-semibold text-lg text-[#e45c2b]">312</div>
+            <div className="font-semibold text-lg text-[#e45c2b]">542</div>
             <div className="text-xs text-gray-600">This Week</div>
           </div>
           <div className="text-center">
-            <div className="font-semibold text-lg text-[#e45c2b]">7.4%</div>
+            <div className="font-semibold text-lg text-[#e45c2b]">8.2%</div>
             <div className="text-xs text-gray-600">Avg Engagement</div>
           </div>
         </div>
@@ -241,6 +241,84 @@ export default function SocialMediaPanel({ company }: SocialMediaPanelProps) {
                 onClick={() => window.open(socialChannels.find(p => p.name === "YouTube")?.url, '_blank')}
               >
                 Visit YouTube Channel
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Instagram Profile Highlight - New Platform */}
+        {socialChannels.find(p => p.name === "Instagram")?.status === "connected" && (
+          <Card className="bg-gradient-to-r from-pink-50 to-purple-50 border-pink-200 mt-4">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <Instagram className="h-6 w-6 text-[#E4405F]" />
+                <div>
+                  <h4 className="font-medium text-[#E4405F]">Instagram @traffikboosters</h4>
+                  <p className="text-xs text-gray-600">Visual content and behind-the-scenes business insights</p>
+                </div>
+                <Badge variant="secondary" className="bg-pink-500 text-white text-xs ml-auto">
+                  NEW
+                </Badge>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Followers:</span>
+                  <span className="font-medium text-pink-700">987</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Engagement:</span>
+                  <span className="font-medium text-green-600">5.4%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Last Post:</span>
+                  <span className="font-medium">6 hours ago</span>
+                </div>
+              </div>
+              <Button 
+                size="sm" 
+                className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white text-xs h-7 w-full mt-3"
+                onClick={() => window.open(socialChannels.find(p => p.name === "Instagram")?.url, '_blank')}
+              >
+                Visit Instagram Profile
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Twitter/X Profile Highlight - New Platform */}
+        {socialChannels.find(p => p.name === "Twitter")?.status === "connected" && (
+          <Card className="bg-gradient-to-r from-blue-50 to-slate-50 border-blue-300 mt-4">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <Twitter className="h-6 w-6 text-[#1DA1F2]" />
+                <div>
+                  <h4 className="font-medium text-[#1DA1F2]">X (Twitter) @Traffikboosters</h4>
+                  <p className="text-xs text-gray-600">Real-time updates and business insights</p>
+                </div>
+                <Badge variant="secondary" className="bg-blue-500 text-white text-xs ml-auto">
+                  NEW
+                </Badge>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Followers:</span>
+                  <span className="font-medium text-blue-700">1.4K</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Engagement:</span>
+                  <span className="font-medium text-green-600">4.2%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Last Tweet:</span>
+                  <span className="font-medium">4 hours ago</span>
+                </div>
+              </div>
+              <Button 
+                size="sm" 
+                className="bg-gradient-to-r from-blue-500 to-slate-500 hover:from-blue-600 hover:to-slate-600 text-white text-xs h-7 w-full mt-3"
+                onClick={() => window.open(socialChannels.find(p => p.name === "Twitter")?.url, '_blank')}
+              >
+                Visit X Profile
               </Button>
             </CardContent>
           </Card>
