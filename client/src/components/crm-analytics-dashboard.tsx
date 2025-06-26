@@ -213,17 +213,25 @@ const leadSourceAnalytics = [
 export default function CRMAnalyticsDashboard() {
   const [sortBy, setSortBy] = useState("closingRatio");
 
-  const { data: contacts = [] } = useQuery({
+  const { data: contacts = [] } = useQuery<any[]>({
     queryKey: ["/api/contacts"],
   });
 
-  // Calculate overall metrics
-  const totalMetrics = leadSourceAnalytics.reduce((acc, platform) => ({
-    totalLeads: acc.totalLeads + platform.totalLeads,
-    closedWon: acc.closedWon + platform.closedWon,
-    totalRevenue: acc.totalRevenue + platform.totalRevenue,
-    totalCost: acc.totalCost + (platform.totalLeads * platform.costPerLead)
-  }), { totalLeads: 0, closedWon: 0, totalRevenue: 0, totalCost: 0 });
+  // Calculate real metrics from actual database contacts
+  const actualTotalLeads = contacts.length;
+  const actualClosedWon = contacts.filter((contact: any) => contact.leadStatus === 'closed-won').length;
+  const actualInProgress = contacts.filter((contact: any) => ['new', 'contacted', 'qualified', 'proposal'].includes(contact.leadStatus)).length;
+  const actualLost = contacts.filter((contact: any) => contact.leadStatus === 'closed-lost').length;
+  
+  // Use real data for main metrics, supplement with analytics for additional insights
+  const totalMetrics = {
+    totalLeads: actualTotalLeads,
+    closedWon: actualClosedWon,
+    inProgress: actualInProgress,
+    closedLost: actualLost,
+    totalRevenue: actualClosedWon * 8500, // Average deal size estimate
+    totalCost: actualTotalLeads * 15 // Average cost per lead estimate
+  };
 
   const overallClosingRatio = (totalMetrics.closedWon / totalMetrics.totalLeads * 100).toFixed(1);
   const overallROI = ((totalMetrics.totalRevenue - totalMetrics.totalCost) / totalMetrics.totalCost * 100).toFixed(0);

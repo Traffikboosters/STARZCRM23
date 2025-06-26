@@ -229,9 +229,14 @@ export default function CRMView() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <h2 className="text-2xl font-semibold text-neutral-dark">CRM</h2>
-            <Badge variant="secondary" className="text-xs">
-              {filteredContacts.length} contacts
+            <Badge variant="secondary" className="text-sm px-3 py-1">
+              {filteredContacts.length} of {contacts.length} contacts
             </Badge>
+            {filteredContacts.length !== contacts.length && (
+              <Badge variant="outline" className="text-xs text-blue-600">
+                Filtered
+              </Badge>
+            )}
           </div>
           
           <div className="flex items-center space-x-3">
