@@ -27,7 +27,9 @@ import {
   ChevronDown,
   Send,
   Inbox,
-  MailOpen
+  MailOpen,
+  CreditCard,
+  ExternalLink
 } from "lucide-react";
 import ChatWidget from "./chat-widget";
 import WebsiteFormIntegration from "./website-form-integration";
@@ -977,49 +979,128 @@ export default function CRMView() {
                         <span className="text-[10px]">Status</span>
                       </Button>
                       
-                      {/* Service Pricing Dropdown */}
+                      {/* Payment & Services Dropdown */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-green-600 hover:text-green-800"
+                            className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-blue-600 hover:text-blue-800"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <Calculator className="h-3 w-3 mb-1" />
-                            <span className="text-[10px]">Pricing</span>
+                            <DollarSign className="h-3 w-3 mb-1" />
+                            <span className="text-[10px]">Payment</span>
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
-                          {servicePricing.map((category, categoryIndex) => (
-                            <div key={categoryIndex} className="p-2">
-                              <div className="font-semibold text-sm text-gray-900 mb-2 border-b pb-1">
-                                {category.category}
-                              </div>
-                              {category.services.map((service, serviceIndex) => (
-                                <DropdownMenuItem 
-                                  key={serviceIndex}
-                                  className="cursor-pointer p-2 hover:bg-gray-50"
-                                  onClick={() => {
+                        <DropdownMenuContent align="end" className="w-96 max-h-96 overflow-y-auto">
+                          {/* Payment Processing Section */}
+                          <div className="p-3 border-b bg-blue-50">
+                            <div className="flex items-center gap-2 mb-2">
+                              <CreditCard className="h-4 w-4 text-blue-600" />
+                              <span className="font-semibold text-sm">Payment Tools</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                className="text-xs h-8"
+                                onClick={() => {
+                                  const amount = prompt("Enter payment amount ($):");
+                                  if (amount) {
+                                    const paymentLink = `https://buy.stripe.com/test_payment?amount=${amount}&client=${contact.firstName}_${contact.lastName}`;
+                                    navigator.clipboard.writeText(paymentLink);
                                     toast({
-                                      title: "Service Selected",
-                                      description: `${service.name} - $${service.price.toLocaleString()} (${service.timeframe})`,
+                                      title: "Payment Link Created",
+                                      description: `$${amount} payment link copied to clipboard`,
+                                    });
+                                  }
+                                }}
+                              >
+                                <ExternalLink className="h-3 w-3 mr-1" />
+                                Payment Link
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                className="text-xs h-8"
+                                onClick={() => {
+                                  const invoiceData = {
+                                    client: `${contact.firstName} ${contact.lastName}`,
+                                    email: contact.email,
+                                    company: contact.company,
+                                    date: new Date().toLocaleDateString(),
+                                    dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString()
+                                  };
+                                  const emailBody = `Invoice for ${invoiceData.client}%0D%0A%0D%0AThank you for choosing Traffik Boosters!%0D%0A%0D%0AInvoice Details:%0D%0AClient: ${invoiceData.client}%0D%0ADate: ${invoiceData.date}%0D%0ADue Date: ${invoiceData.dueDate}%0D%0A%0D%0APlease remit payment at your earliest convenience.%0D%0A%0D%0ABest regards,%0D%0ATraflik Boosters%0D%0A(877) 840-6250`;
+                                  window.location.href = `mailto:${contact.email}?subject=Invoice from Traffik Boosters&body=${emailBody}`;
+                                  toast({
+                                    title: "Invoice Email Prepared",
+                                    description: `Invoice email opened for ${contact.firstName}`,
+                                  });
+                                }}
+                              >
+                                <FileText className="h-3 w-3 mr-1" />
+                                Send Invoice
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Quick Payment Amounts */}
+                          <div className="p-3 border-b">
+                            <div className="font-semibold text-sm text-gray-900 mb-2">Quick Payment Requests</div>
+                            <div className="grid grid-cols-3 gap-2">
+                              {[500, 1000, 2500].map((amount) => (
+                                <Button 
+                                  key={amount}
+                                  size="sm" 
+                                  variant="ghost"
+                                  className="text-xs h-8 bg-green-50 hover:bg-green-100"
+                                  onClick={() => {
+                                    const paymentRequest = `Hi ${contact.firstName},%0D%0A%0D%0ATo proceed with your digital marketing services, please complete your payment of $${amount.toLocaleString()}.%0D%0A%0D%0APayment Link: [Secure Payment Portal]%0D%0A%0D%0AThanks!%0D%0ATraflik Boosters%0D%0A(877) 840-6250`;
+                                    window.location.href = `mailto:${contact.email}?subject=Payment Request - $${amount.toLocaleString()}&body=${paymentRequest}`;
+                                    toast({
+                                      title: "Payment Request Sent",
+                                      description: `$${amount.toLocaleString()} payment request opened`,
                                     });
                                   }}
                                 >
-                                  <div className="flex justify-between items-start w-full">
+                                  ${amount.toLocaleString()}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Service Packages with Payment Integration */}
+                          <div className="p-3">
+                            <div className="font-semibold text-sm text-gray-900 mb-2">Service Packages</div>
+                            {servicePricing.slice(0, 2).map((category, categoryIndex) => (
+                              <div key={categoryIndex} className="mb-3">
+                                <div className="font-medium text-xs text-gray-700 mb-1">{category.category}</div>
+                                {category.services.slice(0, 3).map((service, serviceIndex) => (
+                                  <div 
+                                    key={serviceIndex}
+                                    className="flex justify-between items-center p-2 hover:bg-gray-50 rounded cursor-pointer"
+                                    onClick={() => {
+                                      const serviceProposal = `Hi ${contact.firstName},%0D%0A%0D%0AI'm excited to propose our ${service.name} package for your business.%0D%0A%0D%0AService: ${service.name}%0D%0ADelivery: ${service.timeframe}%0D%0AInvestment: $${service.price.toLocaleString()}%0D%0A%0D%0AThis service will help you achieve "More Traffik! More Sales!" Let's schedule a call to discuss details.%0D%0A%0D%0ABest regards,%0D%0ATraflik Boosters%0D%0A(877) 840-6250`;
+                                      window.location.href = `mailto:${contact.email}?subject=${service.name} Proposal - $${service.price.toLocaleString()}&body=${serviceProposal}`;
+                                      toast({
+                                        title: "Service Proposal Sent",
+                                        description: `${service.name} proposal email opened`,
+                                      });
+                                    }}
+                                  >
                                     <div className="flex-1">
-                                      <div className="font-medium text-sm">{service.name}</div>
+                                      <div className="font-medium text-xs">{service.name}</div>
                                       <div className="text-xs text-gray-500">{service.timeframe}</div>
                                     </div>
-                                    <div className="text-sm font-bold text-green-600">
+                                    <div className="text-xs font-bold text-green-600">
                                       ${service.price.toLocaleString()}
                                     </div>
                                   </div>
-                                </DropdownMenuItem>
-                              ))}
-                            </div>
-                          ))}
+                                ))}
+                              </div>
+                            ))}
+                          </div>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
