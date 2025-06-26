@@ -191,18 +191,18 @@ export default function SocialMediaPanel({ company }: SocialMediaPanelProps) {
           </div>
         )}
 
-        {/* Social Media Insights - Updated for 5 Platforms */}
+        {/* Social Media Insights - Updated for 6 Platforms */}
         <div className="grid grid-cols-3 gap-4 pt-4 border-t">
           <div className="text-center">
-            <div className="font-semibold text-lg text-[#e45c2b]">10.1K</div>
+            <div className="font-semibold text-lg text-[#e45c2b]">12.6K</div>
             <div className="text-xs text-gray-600">Total Reach</div>
           </div>
           <div className="text-center">
-            <div className="font-semibold text-lg text-[#e45c2b]">542</div>
+            <div className="font-semibold text-lg text-[#e45c2b]">687</div>
             <div className="text-xs text-gray-600">This Week</div>
           </div>
           <div className="text-center">
-            <div className="font-semibold text-lg text-[#e45c2b]">8.2%</div>
+            <div className="font-semibold text-lg text-[#e45c2b]">8.7%</div>
             <div className="text-xs text-gray-600">Avg Engagement</div>
           </div>
         </div>
@@ -319,6 +319,45 @@ export default function SocialMediaPanel({ company }: SocialMediaPanelProps) {
                 onClick={() => window.open(socialChannels.find(p => p.name === "Twitter")?.url, '_blank')}
               >
                 Visit X Profile
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* LinkedIn Company Profile Highlight - New Platform */}
+        {socialChannels.find(p => p.name === "LinkedIn")?.status === "connected" && (
+          <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-400 mt-4">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <Linkedin className="h-6 w-6 text-[#0077B5]" />
+                <div>
+                  <h4 className="font-medium text-[#0077B5]">LinkedIn Company Page</h4>
+                  <p className="text-xs text-gray-600">Professional networking and B2B connections</p>
+                </div>
+                <Badge variant="secondary" className="bg-blue-600 text-white text-xs ml-auto">
+                  NEW
+                </Badge>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Followers:</span>
+                  <span className="font-medium text-blue-700">2.5K</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Engagement:</span>
+                  <span className="font-medium text-green-600">12.3%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Last Update:</span>
+                  <span className="font-medium">1 day ago</span>
+                </div>
+              </div>
+              <Button 
+                size="sm" 
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs h-7 w-full mt-3"
+                onClick={() => window.open(socialChannels.find(p => p.name === "LinkedIn")?.url, '_blank')}
+              >
+                Visit LinkedIn Company Page
               </Button>
             </CardContent>
           </Card>

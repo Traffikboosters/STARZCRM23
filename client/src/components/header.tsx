@@ -324,7 +324,7 @@ export default function Header() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="linkedinUrl" className="text-right">LinkedIn</label>
-              <Input id="linkedinUrl" placeholder="https://linkedin.com/company/traffik-boosters" className="col-span-3" />
+              <Input id="linkedinUrl" defaultValue="https://www.linkedin.com/company/traffik-boosters/?viewAsMember=true" className="col-span-3" />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="twitterUrl" className="text-right">Twitter/X</label>
