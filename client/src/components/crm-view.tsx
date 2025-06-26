@@ -30,7 +30,8 @@ import {
   MailOpen,
   CreditCard,
   ExternalLink,
-  Briefcase
+  Briefcase,
+  X
 } from "lucide-react";
 import ChatWidget from "./chat-widget";
 import WebsiteFormIntegration from "./website-form-integration";
@@ -165,6 +166,21 @@ export default function CRMView() {
       appointmentTime: "",
       appointmentType: "consultation",
       appointmentNotes: "",
+    },
+  });
+
+  const updateContactMutation = useMutation({
+    mutationFn: async (data: { id: number; status: string }) => {
+      const response = await apiRequest("PATCH", `/api/contacts/${data.id}`, {
+        leadStatus: data.status
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update contact');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/contacts'] });
     },
   });
 
@@ -966,19 +982,177 @@ export default function CRMView() {
                       </Button>
                       
                       {/* Disposition Button */}
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-orange-600 hover:text-orange-800"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedContactForDetails(contact);
-                          setIsDetailsModalOpen(true);
-                        }}
-                      >
-                        <User className="h-3 w-3 mb-1" />
-                        <span className="text-[10px]">Status</span>
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-orange-600 hover:text-orange-800"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <User className="h-3 w-3 mb-1" />
+                            <span className="text-[10px]">Status</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem 
+                            className="cursor-pointer"
+                            onClick={async () => {
+                              try {
+                                const response = await apiRequest("PATCH", `/api/contacts/${contact.id}`, {
+                                  leadStatus: "contacted"
+                                });
+                                if (response.ok) {
+                                  queryClient.invalidateQueries({ queryKey: ['/api/contacts'] });
+                                  toast({
+                                    title: "Status Updated",
+                                    description: `${contact.firstName} ${contact.lastName} marked as contacted`,
+                                  });
+                                }
+                              } catch (error) {
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to update status",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                          >
+                            <Phone className="h-3 w-3 mr-2 text-blue-600" />
+                            Mark as Contacted
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="cursor-pointer"
+                            onClick={async () => {
+                              try {
+                                const response = await apiRequest("PATCH", `/api/contacts/${contact.id}`, {
+                                  leadStatus: "qualified"
+                                });
+                                if (response.ok) {
+                                  queryClient.invalidateQueries({ queryKey: ['/api/contacts'] });
+                                  toast({
+                                    title: "Status Updated", 
+                                    description: `${contact.firstName} ${contact.lastName} marked as qualified lead`,
+                                  });
+                                }
+                              } catch (error) {
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to update status",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                          >
+                            <Star className="h-3 w-3 mr-2 text-yellow-600" />
+                            Mark as Qualified
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="cursor-pointer"
+                            onClick={async () => {
+                              try {
+                                const response = await apiRequest("PATCH", `/api/contacts/${contact.id}`, {
+                                  leadStatus: "interested"
+                                });
+                                if (response.ok) {
+                                  queryClient.invalidateQueries({ queryKey: ['/api/contacts'] });
+                                  toast({
+                                    title: "Status Updated",
+                                    description: `${contact.firstName} ${contact.lastName} marked as interested`,
+                                  });
+                                }
+                              } catch (error) {
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to update status",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                          >
+                            <MessageCircle className="h-3 w-3 mr-2 text-green-600" />
+                            Mark as Interested
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="cursor-pointer"
+                            onClick={async () => {
+                              try {
+                                const response = await apiRequest("PATCH", `/api/contacts/${contact.id}`, {
+                                  leadStatus: "not_interested"
+                                });
+                                if (response.ok) {
+                                  queryClient.invalidateQueries({ queryKey: ['/api/contacts'] });
+                                  toast({
+                                    title: "Status Updated",
+                                    description: `${contact.firstName} ${contact.lastName} marked as not interested`,
+                                  });
+                                }
+                              } catch (error) {
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to update status",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                          >
+                            <X className="h-3 w-3 mr-2 text-red-600" />
+                            Mark as Not Interested
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="cursor-pointer"
+                            onClick={async () => {
+                              try {
+                                const response = await apiRequest("PATCH", `/api/contacts/${contact.id}`, {
+                                  leadStatus: "callback"
+                                });
+                                if (response.ok) {
+                                  queryClient.invalidateQueries({ queryKey: ['/api/contacts'] });
+                                  toast({
+                                    title: "Status Updated",
+                                    description: `${contact.firstName} ${contact.lastName} scheduled for callback`,
+                                  });
+                                }
+                              } catch (error) {
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to update status",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                          >
+                            <Clock className="h-3 w-3 mr-2 text-purple-600" />
+                            Schedule Callback
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            className="cursor-pointer"
+                            onClick={async () => {
+                              try {
+                                const response = await apiRequest("PATCH", `/api/contacts/${contact.id}`, {
+                                  leadStatus: "converted"
+                                });
+                                if (response.ok) {
+                                  queryClient.invalidateQueries({ queryKey: ['/api/contacts'] });
+                                  toast({
+                                    title: "Status Updated",
+                                    description: `${contact.firstName} ${contact.lastName} marked as converted - congratulations!`,
+                                  });
+                                }
+                              } catch (error) {
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to update status",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                          >
+                            <DollarSign className="h-3 w-3 mr-2 text-green-700" />
+                            Mark as Converted
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                       
                       {/* Payment & Services Dropdown */}
                       <DropdownMenu>
