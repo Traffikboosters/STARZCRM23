@@ -18,10 +18,25 @@ interface LiveUpdate {
   platform?: string;
   leadsFound?: number;
   contactsCreated?: number;
+  totalLeads?: number;
+  progress?: number;
   timestamp: string;
   jobId?: number;
-  status: string;
+  status?: string;
   message?: string;
+  lead?: {
+    id: number;
+    name: string;
+    company: string;
+    phone: string;
+    email: string;
+    leadScore?: number;
+    estimatedValue?: string;
+    location?: string;
+    category?: string;
+    industry?: string;
+    position?: string;
+  };
 }
 
 export default function LiveMonitoring() {
@@ -51,10 +66,22 @@ export default function LiveMonitoring() {
           const data = JSON.parse(event.data);
           console.log('Live monitoring update:', data);
           
-          if (data.type === 'connection') {
-            console.log(data.message);
-          } else if (data.type === 'scraping_completed' || data.type === 'new_lead' || data.type === 'call_completed') {
-            setUpdates(prev => [data, ...prev.slice(0, 9)]); // Keep last 10 updates
+          if (data.type === 'pong') {
+            // Just maintain connection, don't add to updates
+            return;
+          }
+          
+          const update: LiveUpdate = {
+            ...data,
+            timestamp: data.timestamp || new Date().toISOString()
+          };
+          
+          // Handle all live monitoring events
+          if (data.type === 'scraping_started' || 
+              data.type === 'scraping_completed' || 
+              data.type === 'new_lead' || 
+              data.type === 'call_completed') {
+            setUpdates(prev => [update, ...prev.slice(0, 49)]); // Keep last 50 updates
           }
         } catch (error) {
           console.error('Error parsing WebSocket message:', error);
@@ -173,18 +200,55 @@ export default function LiveMonitoring() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <span className="font-medium text-sm">
-                  {update.type === 'scraping_completed' && `${update.platform} Scraping Complete`}
-                  {update.type === 'new_lead' && 'New Lead Captured'}
+                  {update.type === 'scraping_started' && `${update.platform} - Starting Lead Extraction`}
+                  {update.type === 'scraping_completed' && `${update.platform} - Extraction Complete`}
+                  {update.type === 'new_lead' && `New Lead: ${update.platform}`}
                   {update.type === 'call_completed' && 'Call Completed'}
                 </span>
                 <Badge variant="outline" className="text-xs">
                   {formatTimestamp(update.timestamp)}
                 </Badge>
               </div>
+              
+              {update.type === 'new_lead' && update.lead && (
+                <div className="space-y-1 mb-2 p-2 bg-white dark:bg-gray-700 rounded border">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-sm text-[#e45c2b]">{update.lead.name}</span>
+                    {update.lead.estimatedValue && (
+                      <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                        {update.lead.estimatedValue}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                    <div>{update.lead.company}</div>
+                    <div className="flex gap-4 mt-1">
+                      {update.lead.phone && <span>📞 {update.lead.phone}</span>}
+                      {update.lead.email && <span>✉️ {update.lead.email}</span>}
+                    </div>
+                    {update.lead.location && <div>📍 {update.lead.location}</div>}
+                    {update.lead.category && <div>🏷️ {update.lead.category}</div>}
+                    {update.lead.industry && <div>🏢 {update.lead.industry}</div>}
+                    {update.lead.leadScore && (
+                      <div className="mt-1">
+                        <span className="text-xs font-medium">Score: {update.lead.leadScore}/100</span>
+                      </div>
+                    )}
+                  </div>
+                  {update.progress && (
+                    <div className="text-xs text-gray-500">
+                      Progress: {update.progress}%
+                    </div>
+                  )}
+                </div>
+              )}
+              
               <p className="text-sm text-gray-600 dark:text-gray-300">
+                {update.type === 'scraping_started' && update.message}
                 {update.type === 'scraping_completed' && 
-                  `${update.leadsFound} leads found, ${update.contactsCreated} contacts created`}
-                {update.message && update.message}
+                  `Successfully extracted ${update.totalLeads} leads`}
+                {update.type === 'new_lead' && !update.lead && update.message}
+                {update.type === 'call_completed' && update.message}
               </p>
             </div>
             <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
