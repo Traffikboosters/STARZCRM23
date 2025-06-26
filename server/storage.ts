@@ -170,7 +170,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(id: number): Promise<boolean> {
     const result = await db.delete(users).where(eq(users.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Companies
@@ -229,7 +229,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteContact(id: number): Promise<boolean> {
     const result = await db.delete(contacts).where(eq(contacts.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async searchContacts(query: string): Promise<Contact[]> {
@@ -275,7 +275,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteEvent(id: number): Promise<boolean> {
     const result = await db.delete(events).where(eq(events.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Files
@@ -311,7 +311,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteFile(id: number): Promise<boolean> {
     const result = await db.delete(files).where(eq(files.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Placeholder implementations for other methods - these would need full implementation
@@ -343,7 +343,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAutomation(id: number): Promise<boolean> {
     const result = await db.delete(automations).where(eq(automations.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async getAllScrapingJobs(): Promise<ScrapingJob[]> {
@@ -374,10 +374,10 @@ export class DatabaseStorage implements IStorage {
 
   async deleteScrapingJob(id: number): Promise<boolean> {
     const result = await db.delete(scrapingJobs).where(eq(scrapingJobs.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
-  // Chat functionality stubs
+  // Chat functionality
   async getAllChatMessages(): Promise<ChatMessage[]> {
     return await db.select().from(chatMessages);
   }
@@ -387,8 +387,21 @@ export class DatabaseStorage implements IStorage {
     return message || undefined;
   }
 
+  async getChatMessages(contactId: number): Promise<ChatMessage[]> {
+    return await db.select().from(chatMessages).where(eq(chatMessages.contactId, contactId));
+  }
+
   async getChatMessagesByContact(contactId: number): Promise<ChatMessage[]> {
     return await db.select().from(chatMessages).where(eq(chatMessages.contactId, contactId));
+  }
+
+  async markMessageAsRead(messageId: number): Promise<ChatMessage | undefined> {
+    const [message] = await db
+      .update(chatMessages)
+      .set({ readAt: new Date() })
+      .where(eq(chatMessages.id, messageId))
+      .returning();
+    return message || undefined;
   }
 
   async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
@@ -410,15 +423,41 @@ export class DatabaseStorage implements IStorage {
 
   async deleteChatMessage(id: number): Promise<boolean> {
     const result = await db.delete(chatMessages).where(eq(chatMessages.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async getAllChatConversations(): Promise<ChatConversation[]> {
     return await db.select().from(chatConversations);
   }
 
+  async getAllConversations(): Promise<ChatConversation[]> {
+    return await db.select().from(chatConversations);
+  }
+
   async getChatConversation(id: number): Promise<ChatConversation | undefined> {
     const [conversation] = await db.select().from(chatConversations).where(eq(chatConversations.id, id));
+    return conversation || undefined;
+  }
+
+  async getConversation(contactId: number): Promise<ChatConversation | undefined> {
+    const [conversation] = await db.select().from(chatConversations).where(eq(chatConversations.contactId, contactId));
+    return conversation || undefined;
+  }
+
+  async createConversation(conversation: InsertChatConversation): Promise<ChatConversation> {
+    const [newConversation] = await db
+      .insert(chatConversations)
+      .values(conversation)
+      .returning();
+    return newConversation;
+  }
+
+  async updateConversation(id: number, updates: Partial<InsertChatConversation>): Promise<ChatConversation | undefined> {
+    const [conversation] = await db
+      .update(chatConversations)
+      .set(updates)
+      .where(eq(chatConversations.id, id))
+      .returning();
     return conversation || undefined;
   }
 
@@ -441,7 +480,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteChatConversation(id: number): Promise<boolean> {
     const result = await db.delete(chatConversations).where(eq(chatConversations.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Call logs functionality stubs
@@ -481,10 +520,10 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCallLog(id: number): Promise<boolean> {
     const result = await db.delete(callLogs).where(eq(callLogs.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
-  // Campaign functionality stubs
+  // Campaign functionality
   async getAllCampaigns(): Promise<Campaign[]> {
     return await db.select().from(campaigns);
   }
@@ -492,6 +531,14 @@ export class DatabaseStorage implements IStorage {
   async getCampaign(id: number): Promise<Campaign | undefined> {
     const [campaign] = await db.select().from(campaigns).where(eq(campaigns.id, id));
     return campaign || undefined;
+  }
+
+  async getCampaignsByCreator(createdBy: number): Promise<Campaign[]> {
+    return await db.select().from(campaigns).where(eq(campaigns.createdBy, createdBy));
+  }
+
+  async getCampaignsByAssignee(assignedTo: number): Promise<Campaign[]> {
+    return await db.select().from(campaigns).where(eq(campaigns.assignedTo, assignedTo));
   }
 
   async createCampaign(campaign: InsertCampaign & { createdBy: number }): Promise<Campaign> {
@@ -513,7 +560,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCampaign(id: number): Promise<boolean> {
     const result = await db.delete(campaigns).where(eq(campaigns.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Lead allocation functionality stubs
@@ -557,7 +604,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteLeadAllocation(id: number): Promise<boolean> {
     const result = await db.delete(leadAllocations).where(eq(leadAllocations.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Document template functionality stubs
@@ -589,7 +636,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteDocumentTemplate(id: number): Promise<boolean> {
     const result = await db.delete(documentTemplates).where(eq(documentTemplates.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Signing request functionality stubs
@@ -625,7 +672,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSigningRequest(id: number): Promise<boolean> {
     const result = await db.delete(signingRequests).where(eq(signingRequests.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 }
 
@@ -728,6 +775,10 @@ export class MemStorage implements IStorage {
       mobilePhone: "+1-877-840-6250",
       extension: "100",
       avatar: null,
+      commissionRate: "10.0",
+      baseCommissionRate: "10.0",
+      bonusCommissionRate: "0.0",
+      commissionTier: "standard",
       isActive: true,
       createdAt: new Date(),
     };
@@ -774,6 +825,10 @@ export class MemStorage implements IStorage {
         mobilePhone: rep.phone,
         extension: rep.extension,
         avatar: null,
+        commissionRate: "12.0",
+        baseCommissionRate: "10.0",
+        bonusCommissionRate: "2.0",
+        commissionTier: "bronze",
         isActive: true,
         createdAt: new Date(),
       };
