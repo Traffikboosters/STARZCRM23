@@ -757,7 +757,17 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Company = typeof companies.$inferSelect;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
-export type Contact = typeof contacts.$inferSelect;
+export type Contact = typeof contacts.$inferSelect & {
+  assignedUser?: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string | null;
+    mobilePhone: string | null;
+    extension: string | null;
+  } | null;
+};
 export type InsertContact = z.infer<typeof insertContactSchema>;
 export type ContactNote = typeof contactNotes.$inferSelect;
 export type InsertContactNote = z.infer<typeof insertContactNoteSchema>;

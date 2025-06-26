@@ -202,7 +202,52 @@ export class DatabaseStorage implements IStorage {
 
   // Contacts
   async getAllContacts(): Promise<Contact[]> {
-    return await db.select().from(contacts);
+    const result = await db
+      .select({
+        id: contacts.id,
+        firstName: contacts.firstName,
+        lastName: contacts.lastName,
+        email: contacts.email,
+        phone: contacts.phone,
+        company: contacts.company,
+        position: contacts.position,
+        avatar: contacts.avatar,
+        tags: contacts.tags,
+        notes: contacts.notes,
+        leadStatus: contacts.leadStatus,
+        leadSource: contacts.leadSource,
+        disposition: contacts.disposition,
+        priority: contacts.priority,
+        budget: contacts.budget,
+        timeline: contacts.timeline,
+        assignedTo: contacts.assignedTo,
+        assignedBy: contacts.assignedBy,
+        assignedAt: contacts.assignedAt,
+        pipelineStage: contacts.pipelineStage,
+        dealValue: contacts.dealValue,
+        lastContactedAt: contacts.lastContactedAt,
+        nextFollowUpAt: contacts.nextFollowUpAt,
+        createdAt: contacts.createdAt,
+        updatedAt: contacts.updatedAt,
+        createdBy: contacts.createdBy,
+        updatedBy: contacts.updatedBy,
+        assignedUser: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+          phone: users.phone,
+          mobilePhone: users.mobilePhone,
+          extension: users.extension
+        }
+      })
+      .from(contacts)
+      .leftJoin(users, eq(contacts.assignedTo, users.id));
+    
+    return result.map(row => ({
+      ...row,
+      assignedUser: (row.assignedUser && row.assignedUser.id) ? row.assignedUser : null
+    })) as any;
   }
 
   async getContact(id: number): Promise<Contact | undefined> {

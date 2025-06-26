@@ -143,6 +143,10 @@ export default function CRMView() {
     queryKey: ['/api/contacts'],
   });
 
+  const { data: users = [] } = useQuery<any[]>({
+    queryKey: ['/api/users'],
+  });
+
   const queryClient = useQueryClient();
 
   // Debug logging
@@ -181,6 +185,32 @@ export default function CRMView() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/contacts'] });
+    },
+  });
+
+  const reassignContactMutation = useMutation({
+    mutationFn: async (data: { contactId: number; assignedTo: number }) => {
+      const response = await apiRequest("PATCH", `/api/contacts/${data.contactId}`, {
+        assignedTo: data.assignedTo
+      });
+      if (!response.ok) {
+        throw new Error('Failed to reassign contact');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/contacts'] });
+      toast({
+        title: "Contact reassigned",
+        description: "Contact has been successfully assigned to new sales rep.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to reassign contact. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -863,6 +893,56 @@ export default function CRMView() {
                       </div>
                     </div>
                     
+                    {/* Assigned Sales Rep */}
+                    <div className="bg-blue-50 p-2 rounded border border-blue-200">
+                      <div className="flex items-center gap-2">
+                        <User className="h-3 w-3 text-blue-600" />
+                        <div className="flex-1">
+                          {(contact as any).assignedUser ? (
+                            <>
+                              <p className="text-xs font-medium text-blue-900">
+                                {(contact as any).assignedUser.firstName} {(contact as any).assignedUser.lastName}
+                              </p>
+                              <p className="text-xs text-blue-700">
+                                {(contact as any).assignedUser.email}
+                              </p>
+                              {(contact as any).assignedUser.phone && (
+                                <p className="text-xs text-blue-700">
+                                  {formatPhoneNumber((contact as any).assignedUser.phone)}
+                                </p>
+                              )}
+                            </>
+                          ) : (
+                            <p className="text-xs text-blue-600">Unassigned</p>
+                          )}
+                        </div>
+                        {isManagement && (
+                          <Select 
+                            value={(contact as any).assignedTo?.toString() || "unassigned"} 
+                            onValueChange={(value) => {
+                              const assignedTo = value === "unassigned" ? null : parseInt(value);
+                              reassignContactMutation.mutate({
+                                contactId: contact.id,
+                                assignedTo: assignedTo || 0
+                              });
+                            }}
+                          >
+                            <SelectTrigger className="h-6 w-16 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="unassigned">Unassigned</SelectItem>
+                              {users.map((user: any) => (
+                                <SelectItem key={user.id} value={user.id.toString()}>
+                                  {user.firstName} {user.lastName}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+                    </div>
+
                     {/* Notes Preview */}
                     {contact.notes && (
                       <p className="text-sm text-neutral-medium line-clamp-2 bg-gray-50 p-2 rounded text-xs">
