@@ -6,7 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { formatPhoneNumber } from "@/lib/utils";
 import LiveMonitoring from "@/components/live-monitoring";
-import type { Event, Contact } from "@shared/schema";
+import SocialMediaPanel from "@/components/social-media-panel";
+import type { Event, Contact, Company } from "@shared/schema";
 
 interface RightSidebarProps {
   onJoinCall: () => void;
@@ -22,6 +23,12 @@ export default function RightSidebar({ onJoinCall, onCreateEvent, onContactClick
   const { data: contacts = [] } = useQuery<Contact[]>({
     queryKey: ['/api/contacts'],
   });
+
+  const { data: companies = [] } = useQuery<Company[]>({
+    queryKey: ['/api/companies'],
+  });
+
+  const company = companies[0]; // Get primary company
 
   // Get upcoming events (next 5)
   const upcomingEvents = events
@@ -156,6 +163,11 @@ export default function RightSidebar({ onJoinCall, onCreateEvent, onContactClick
               ))
             )}
           </div>
+        </div>
+
+        {/* Social Media Management */}
+        <div className="mb-6">
+          <SocialMediaPanel company={company} />
         </div>
 
         {/* Live Monitoring */}

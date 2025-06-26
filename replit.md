@@ -192,6 +192,8 @@ The application uses a comprehensive schema including:
 - June 26, 2025. Applied database schema push to provision all tables for users, companies, contacts, events, files, automations, and business management systems
 - June 26, 2025. Implemented comprehensive industry selection system with 12 major industry categories, lead value estimates, competition analysis, and growth indicators for targeted lead generation
 - June 26, 2025. Enhanced scraping configuration with dedicated industry targeting tab, advanced filtering options, and industry-specific campaign customization capabilities
+- June 26, 2025. Integrated Facebook business profile (https://www.facebook.com/profile.php?id=61558218231561) into CRM system with comprehensive social media management panel
+- June 26, 2025. Added social media URL fields to company schema and created dedicated social media management interface with engagement metrics and direct profile access
 
 ## User Preferences
 

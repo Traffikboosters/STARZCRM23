@@ -300,7 +300,7 @@ export default function Header() {
               Manage Traffik Boosters company configuration and branding.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 py-4 max-h-[60vh] overflow-y-auto">
             <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="companyName" className="text-right">Company Name</label>
               <Input id="companyName" defaultValue="Traffik Boosters" className="col-span-3" />
@@ -309,6 +309,44 @@ export default function Header() {
               <label htmlFor="domain" className="text-right">Domain</label>
               <Input id="domain" defaultValue="traffikboosters.com" className="col-span-3" />
             </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="website" className="text-right">Website</label>
+              <Input id="website" placeholder="https://www.traffikboosters.com" className="col-span-3" />
+            </div>
+            
+            <div className="col-span-4 border-t pt-4 mt-2">
+              <h4 className="font-medium text-sm mb-3 text-[#e45c2b]">Social Media Links</h4>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="facebookUrl" className="text-right">Facebook</label>
+              <Input id="facebookUrl" defaultValue="https://www.facebook.com/profile.php?id=61558218231561" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="linkedinUrl" className="text-right">LinkedIn</label>
+              <Input id="linkedinUrl" placeholder="https://linkedin.com/company/traffik-boosters" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="twitterUrl" className="text-right">Twitter</label>
+              <Input id="twitterUrl" placeholder="https://twitter.com/traffikboosters" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="instagramUrl" className="text-right">Instagram</label>
+              <Input id="instagramUrl" placeholder="https://instagram.com/traffikboosters" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="youtubeUrl" className="text-right">YouTube</label>
+              <Input id="youtubeUrl" placeholder="https://youtube.com/@traffikboosters" className="col-span-3" />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <label htmlFor="tiktokUrl" className="text-right">TikTok</label>
+              <Input id="tiktokUrl" placeholder="https://tiktok.com/@traffikboosters" className="col-span-3" />
+            </div>
+
+            <div className="col-span-4 border-t pt-4 mt-2">
+              <h4 className="font-medium text-sm mb-3 text-[#e45c2b]">Branding</h4>
+            </div>
+            
             <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="primaryColor" className="text-right">Primary Color</label>
               <Input id="primaryColor" defaultValue="#e45c2b" className="col-span-3" />
