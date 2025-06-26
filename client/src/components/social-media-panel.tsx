@@ -79,6 +79,20 @@ export default function SocialMediaPanel({ company }: SocialMediaPanelProps) {
       color: "#FF0000",
       lastPost: "3 days ago",
       status: company?.youtubeUrl ? "connected" : "pending"
+    },
+    {
+      name: "TikTok",
+      icon: () => (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19.321 5.562a5.122 5.122 0 0 1-.443-.258 6.228 6.228 0 0 1-1.137-.966c-.849-.849-1.307-1.95-1.307-3.144V1H12.85v14.47c0 .014 0 .028-.001.042v.014a3.233 3.233 0 0 1-3.233 3.23 3.233 3.233 0 0 1-3.233-3.23 3.233 3.233 0 0 1 3.233-3.232c.34 0 .67.054.978.155V8.9a6.817 6.817 0 0 0-.978-.071A6.826 6.826 0 0 0 2.79 15.655a6.826 6.826 0 0 0 6.826 6.826 6.826 6.826 0 0 0 6.826-6.826V9.311a9.724 9.724 0 0 0 5.558 1.729V7.456a5.558 5.558 0 0 1-2.679-1.894z"/>
+        </svg>
+      ),
+      url: company?.tiktokUrl || "https://www.tiktok.com/@traffikboosters?lang=en",
+      followers: "1.2K",
+      engagement: "8.4%",
+      color: "#000000",
+      lastPost: "1 day ago",
+      status: company?.tiktokUrl ? "connected" : "pending"
     }
   ];
 

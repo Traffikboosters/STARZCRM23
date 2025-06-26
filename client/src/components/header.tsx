@@ -340,7 +340,7 @@ export default function Header() {
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <label htmlFor="tiktokUrl" className="text-right">TikTok</label>
-              <Input id="tiktokUrl" placeholder="https://tiktok.com/@traffikboosters" className="col-span-3" />
+              <Input id="tiktokUrl" defaultValue="https://www.tiktok.com/@traffikboosters?lang=en" className="col-span-3" />
             </div>
 
             <div className="col-span-4 border-t pt-4 mt-2">

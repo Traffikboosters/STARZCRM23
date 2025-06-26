@@ -194,6 +194,7 @@ The application uses a comprehensive schema including:
 - June 26, 2025. Enhanced scraping configuration with dedicated industry targeting tab, advanced filtering options, and industry-specific campaign customization capabilities
 - June 26, 2025. Integrated Facebook business profile (https://www.facebook.com/profile.php?id=61558218231561) into CRM system with comprehensive social media management panel
 - June 26, 2025. Added social media URL fields to company schema and created dedicated social media management interface with engagement metrics and direct profile access
+- June 26, 2025. Connected TikTok profile (@traffikboosters) and enhanced social media dashboard with dual-platform management for Facebook and TikTok business presence
 
 ## User Preferences
 
