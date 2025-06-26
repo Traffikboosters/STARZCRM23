@@ -77,9 +77,13 @@ export default function CRMView() {
   
   const { toast } = useToast();
 
-  const { data: contacts = [], isLoading } = useQuery<Contact[]>({
+  const { data: contacts = [], isLoading, error } = useQuery<Contact[]>({
     queryKey: ['/api/contacts'],
   });
+
+  // Debug logging
+  console.log("Total contacts loaded:", contacts.length);
+  console.log("Filtered contacts:", filteredContacts.length);
 
   const queryClient = useQueryClient();
 
