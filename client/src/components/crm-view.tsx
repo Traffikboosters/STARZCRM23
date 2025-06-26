@@ -834,7 +834,7 @@ export default function CRMView() {
                     )}
                     
                     {/* Action Buttons */}
-                    <div className="grid grid-cols-6 gap-1 pt-2 border-t">
+                    <div className="grid grid-cols-6 gap-1 pt-2 border-t bg-gray-50 p-2 rounded-b-lg">
                       {/* Phone Button */}
                       {contact.phone ? (
                         <Button 
@@ -900,58 +900,28 @@ export default function CRMView() {
                       </Button>
                       
                       {/* Email Button */}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-green-600 hover:text-green-800"
-                            onClick={(e) => e.stopPropagation()}
-                            disabled={!contact.email}
-                          >
-                            <Mail className="h-3 w-3 mb-1" />
-                            <span className="text-[10px]">Email</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        {contact.email && (
-                          <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem 
-                              className="cursor-pointer"
-                              onClick={() => {
-                                setSelectedEmailContact(contact);
-                                setIsEmailModalOpen(true);
-                              }}
-                            >
-                              <Send className="h-4 w-4 mr-2" />
-                              Compose Email
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              className="cursor-pointer"
-                              onClick={() => {
-                                window.location.href = `mailto:${contact.email}`;
-                              }}
-                            >
-                              <MailOpen className="h-4 w-4 mr-2" />
-                              Open Email Client
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              className="cursor-pointer"
-                              onClick={() => {
-                                if (contact.email) {
-                                  navigator.clipboard.writeText(contact.email);
-                                  toast({
-                                    title: "Email Copied",
-                                    description: `${contact.email} copied to clipboard`,
-                                  });
-                                }
-                              }}
-                            >
-                              <Inbox className="h-4 w-4 mr-2" />
-                              Copy Email Address
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        )}
-                      </DropdownMenu>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-green-600 hover:text-green-800 bg-green-50 border-green-200"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (contact.email) {
+                            setSelectedEmailContact(contact);
+                            setIsEmailModalOpen(true);
+                          } else {
+                            toast({
+                              title: "No Email",
+                              description: "This contact doesn't have an email address",
+                              variant: "destructive",
+                            });
+                          }
+                        }}
+                        disabled={!contact.email}
+                      >
+                        <Mail className="h-3 w-3 mb-1" />
+                        <span className="text-[10px]">Email</span>
+                      </Button>
                       
                       {/* Notes Button */}
                       <Button 
