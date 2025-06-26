@@ -29,7 +29,8 @@ import {
   Inbox,
   MailOpen,
   CreditCard,
-  ExternalLink
+  ExternalLink,
+  Briefcase
 } from "lucide-react";
 import ChatWidget from "./chat-widget";
 import WebsiteFormIntegration from "./website-form-integration";
@@ -999,7 +1000,7 @@ export default function CRMView() {
                               <CreditCard className="h-4 w-4 text-blue-600" />
                               <span className="font-semibold text-sm">Payment Tools</span>
                             </div>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-3 gap-2">
                               <Button 
                                 size="sm" 
                                 variant="outline"
@@ -1041,6 +1042,69 @@ export default function CRMView() {
                               >
                                 <FileText className="h-3 w-3 mr-1" />
                                 Send Invoice
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                className="text-xs h-8"
+                                onClick={() => {
+                                  const workOrderData = {
+                                    client: `${contact.firstName} ${contact.lastName}`,
+                                    email: contact.email,
+                                    company: contact.company || `${contact.firstName}'s Business`,
+                                    date: new Date().toLocaleDateString(),
+                                    workOrderId: `WO-${Date.now().toString().slice(-6)}`,
+                                    terms: "Payment is due within 3 business days. Full refund available within 3 days of work commencement, 50% refund thereafter."
+                                  };
+                                  
+                                  const workOrderEmail = `WORK ORDER AGREEMENT%0D%0A%0D%0A━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%0D%0A   TRAFFIK BOOSTERS - More Traffik! More Sales!%0D%0A━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%0D%0A%0D%0AWork Order #: ${workOrderData.workOrderId}%0D%0ADate: ${workOrderData.date}%0D%0A%0D%0ACLIENT INFORMATION:%0D%0AName: ${workOrderData.client}%0D%0ACompany: ${workOrderData.company}%0D%0AEmail: ${workOrderData.email}%0D%0A%0D%0ASERVICES REQUESTED:%0D%0A☐ SEO Optimization%0D%0A☐ Local Business Listings%0D%0A☐ Google My Business Setup%0D%0A☐ Website Development%0D%0A☐ Social Media Marketing%0D%0A☐ PPC Advertising%0D%0A☐ Content Creation%0D%0A☐ Other: ________________%0D%0A%0D%0APROJECT DETAILS:%0D%0AEstimated Timeline: ________________%0D%0ATotal Investment: $________________%0D%0ADeposit Required: $________________%0D%0A%0D%0ATERMS & CONDITIONS:%0D%0A${workOrderData.terms}%0D%0A%0D%0ACLIENT SIGNATURE:%0D%0ASignature: __________________________%0D%0ADate: _______________ %0D%0A%0D%0ABy signing this work order, you agree to the terms and authorize Traffik Boosters to proceed with the requested services.%0D%0A%0D%0AQuestions? Call us at (877) 840-6250%0D%0A%0D%0AThank you for choosing Traffik Boosters!%0D%0A"More Traffik! More Sales!"`;
+                                  
+                                  window.location.href = `mailto:${contact.email}?subject=Work Order Agreement - ${workOrderData.workOrderId}&body=${workOrderEmail}`;
+                                  toast({
+                                    title: "Work Order Created",
+                                    description: `Work order ${workOrderData.workOrderId} ready for ${contact.firstName}`,
+                                  });
+                                }}
+                              >
+                                <FileText className="h-3 w-3 mr-1" />
+                                Work Order
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Quick Work Order Templates */}
+                          <div className="p-3 border-b bg-amber-50">
+                            <div className="font-semibold text-sm text-gray-900 mb-2">Quick Work Orders</div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                className="text-xs h-8 bg-amber-100 hover:bg-amber-200"
+                                onClick={() => {
+                                  const seoWorkOrder = `SEO WORK ORDER AGREEMENT%0D%0A%0D%0A━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%0D%0A   TRAFFIK BOOSTERS - More Traffik! More Sales!%0D%0A━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%0D%0A%0D%0AClient: ${contact.firstName} ${contact.lastName}%0D%0ACompany: ${contact.company || `${contact.firstName}'s Business`}%0D%0ADate: ${new Date().toLocaleDateString()}%0D%0A%0D%0ASEO SERVICES INCLUDED:%0D%0A✓ Keyword Research & Strategy%0D%0A✓ On-Page SEO Optimization%0D%0A✓ Google My Business Setup%0D%0A✓ Local Citation Building%0D%0A✓ Monthly Progress Reports%0D%0A%0D%0ATimeline: 30-60 days for initial results%0D%0AInvestment: $1,200/month%0D%0ASetup Fee: $450 (one-time)%0D%0A%0D%0ARefund Policy: 3-day full refund, 50% thereafter%0D%0A%0D%0AClient Signature: _________________ Date: _______`;
+                                  window.location.href = `mailto:${contact.email}?subject=SEO Work Order Agreement&body=${seoWorkOrder}`;
+                                  toast({
+                                    title: "SEO Work Order Ready",
+                                    description: `SEO agreement prepared for ${contact.firstName}`,
+                                  });
+                                }}
+                              >
+                                SEO Package
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                className="text-xs h-8 bg-amber-100 hover:bg-amber-200"
+                                onClick={() => {
+                                  const webWorkOrder = `WEBSITE WORK ORDER AGREEMENT%0D%0A%0D%0A━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%0D%0A   TRAFFIK BOOSTERS - More Traffik! More Sales!%0D%0A━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━%0D%0A%0D%0AClient: ${contact.firstName} ${contact.lastName}%0D%0ACompany: ${contact.company || `${contact.firstName}'s Business`}%0D%0ADate: ${new Date().toLocaleDateString()}%0D%0A%0D%0AWEBSITE SERVICES INCLUDED:%0D%0A✓ Custom Website Design%0D%0A✓ Mobile-Responsive Layout%0D%0A✓ SEO-Optimized Content%0D%0A✓ Contact Forms & Lead Capture%0D%0A✓ Social Media Integration%0D%0A%0D%0ATimeline: 14-21 business days%0D%0AInvestment: $2,500 (one-time)%0D%0ADeposit: $1,250 (50% upfront)%0D%0A%0D%0ARefund Policy: 3-day full refund, 50% thereafter%0D%0A%0D%0AClient Signature: _________________ Date: _______`;
+                                  window.location.href = `mailto:${contact.email}?subject=Website Work Order Agreement&body=${webWorkOrder}`;
+                                  toast({
+                                    title: "Website Work Order Ready",
+                                    description: `Website agreement prepared for ${contact.firstName}`,
+                                  });
+                                }}
+                              >
+                                Website Build
                               </Button>
                             </div>
                           </div>
