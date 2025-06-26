@@ -27,6 +27,7 @@ import {
   Mail,
   DollarSign
 } from "lucide-react";
+import IndustrySelector from "@/components/industry-selector";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 
 const scrapingTemplates = [
@@ -300,6 +301,7 @@ export default function ScrapingConfigurationDemo() {
   const [isConfiguring, setIsConfiguring] = useState(false);
   const [progress, setProgress] = useState(0);
   const [activeTab, setActiveTab] = useState("templates");
+  const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
 
   const handleStartScraping = async () => {
     setIsConfiguring(true);
@@ -442,8 +444,9 @@ export default function ScrapingConfigurationDemo() {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="templates">Scraping Templates</TabsTrigger>
+          <TabsTrigger value="industries">Target Industries</TabsTrigger>
           <TabsTrigger value="automation">Automation Rules</TabsTrigger>
           <TabsTrigger value="monitoring">Live Monitoring</TabsTrigger>
         </TabsList>
@@ -659,6 +662,76 @@ export default function ScrapingConfigurationDemo() {
               </Card>
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="industries" className="space-y-6">
+          <IndustrySelector
+            selectedIndustries={selectedIndustries}
+            onIndustryChange={setSelectedIndustries}
+            onSearch={(industries) => {
+              // Trigger industry-specific lead search
+              console.log('Searching industries:', industries);
+              handleStartScraping();
+            }}
+            title="Target Industries for Lead Generation"
+            description="Select specific industries to focus your lead generation efforts and maximize conversion rates"
+          />
+          
+          {selectedIndustries.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Industry-Specific Campaign Settings</CardTitle>
+                <CardDescription>
+                  Customize your approach for the selected industries
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Lead Value Range</Label>
+                    <Select defaultValue="standard">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Value Ranges</SelectItem>
+                        <SelectItem value="low">$1,000 - $5,000</SelectItem>
+                        <SelectItem value="standard">$5,000 - $15,000</SelectItem>
+                        <SelectItem value="high">$15,000 - $50,000</SelectItem>
+                        <SelectItem value="enterprise">$50,000+</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Company Size Filter</Label>
+                    <Select defaultValue="all">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Company Sizes</SelectItem>
+                        <SelectItem value="startup">Startup (1-10 employees)</SelectItem>
+                        <SelectItem value="small">Small Business (11-50)</SelectItem>
+                        <SelectItem value="medium">Medium Business (51-200)</SelectItem>
+                        <SelectItem value="large">Large Enterprise (200+)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Switch id="verified-only" />
+                  <Label htmlFor="verified-only">Verified businesses only</Label>
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Switch id="growth-companies" />
+                  <Label htmlFor="growth-companies">Focus on growing companies</Label>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="automation" className="space-y-6">

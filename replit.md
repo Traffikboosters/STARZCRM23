@@ -190,6 +190,8 @@ The application uses a comprehensive schema including:
 - June 26, 2025. Successfully migrated from memory-based storage to PostgreSQL database using Neon serverless driver with Drizzle ORM
 - June 26, 2025. Implemented DatabaseStorage class to replace MemStorage, enabling persistent data storage for all platform entities
 - June 26, 2025. Applied database schema push to provision all tables for users, companies, contacts, events, files, automations, and business management systems
+- June 26, 2025. Implemented comprehensive industry selection system with 12 major industry categories, lead value estimates, competition analysis, and growth indicators for targeted lead generation
+- June 26, 2025. Enhanced scraping configuration with dedicated industry targeting tab, advanced filtering options, and industry-specific campaign customization capabilities
 
 ## User Preferences
 
