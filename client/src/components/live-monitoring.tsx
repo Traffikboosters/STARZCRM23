@@ -51,6 +51,11 @@ export default function LiveMonitoring() {
   const [isConnected, setIsConnected] = useState(false);
   const [updates, setUpdates] = useState<LiveUpdate[]>([]);
   const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [dailyLeadStats, setDailyLeadStats] = useState({
+    totalExtracted: 0,
+    lastUpdateTime: '',
+    platforms: {} as Record<string, number>
+  });
   const wsRef = useRef<WebSocket | null>(null);
 
   const connectWebSocket = () => {
@@ -104,6 +109,43 @@ export default function LiveMonitoring() {
                 body: `${data.leadName} from ${data.company}`,
                 icon: "/favicon.ico",
                 tag: 'lead-assignment'
+              });
+            }
+          }
+
+          // Handle scraping completion with lead extraction totals
+          if (data.type === 'scraping_completed' && data.leadsFound) {
+            const currentTime = new Date().toLocaleTimeString();
+            const platform = data.platform || 'Unknown Platform';
+            
+            // Update daily statistics
+            setDailyLeadStats(prev => ({
+              totalExtracted: prev.totalExtracted + (data.leadsFound || 0),
+              lastUpdateTime: currentTime,
+              platforms: {
+                ...prev.platforms,
+                [platform]: (prev.platforms[platform] || 0) + (data.leadsFound || 0)
+              }
+            }));
+
+            // Show comprehensive notification for lead extraction
+            toast({
+              title: `📊 ${data.leadsFound} New Leads Extracted!`,
+              description: `From ${platform} at ${currentTime}. Total today: ${dailyLeadStats.totalExtracted + (data.leadsFound || 0)}`,
+              duration: 10000,
+            });
+
+            // Play extraction success sound
+            const extractionAudio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+H2sGkcCECLy+zQfyEIIm7A7+OUOwkZXbLs66hWEw5HmN/3sGAcCUeLx+vOgCACJoLA8OKSPAkeXLbs7qhXFAxFlt743r2FVi8LMYjL8duOQAYcZ7zp6Z9SEA1KpuT0tm6xrJKggFhNZC8yN4Hj9ti5rqGRnmFNZTAv');
+            extractionAudio.volume = 0.4;
+            extractionAudio.play().catch(() => {});
+
+            // Show desktop notification for extraction
+            if ("Notification" in window && Notification.permission === "granted") {
+              new Notification(`${data.leadsFound} Leads Extracted`, {
+                body: `From ${platform}. Total today: ${dailyLeadStats.totalExtracted + (data.leadsFound || 0)}`,
+                icon: "/favicon.ico",
+                tag: 'lead-extraction'
               });
             }
           }
@@ -210,6 +252,42 @@ export default function LiveMonitoring() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
+        {/* Daily Lead Extraction Statistics */}
+        <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-lg flex items-center gap-2">
+              <Database className="h-5 w-5 text-blue-600" />
+              Today's Lead Extraction
+            </h3>
+            <Badge variant="outline" className="text-sm">
+              {dailyLeadStats.lastUpdateTime ? `Last: ${dailyLeadStats.lastUpdateTime}` : 'No extractions yet'}
+            </Badge>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg">
+              <div className="text-3xl font-bold text-[#e45c2b] mb-1">
+                {dailyLeadStats.totalExtracted}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Total Leads Extracted</div>
+            </div>
+            
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-gray-700 dark:text-gray-300">By Platform:</div>
+              {Object.entries(dailyLeadStats.platforms).length > 0 ? (
+                Object.entries(dailyLeadStats.platforms).map(([platform, count]) => (
+                  <div key={platform} className="flex justify-between items-center p-2 bg-white dark:bg-gray-800 rounded">
+                    <span className="text-sm">{platform}</span>
+                    <Badge variant="secondary">{count}</Badge>
+                  </div>
+                ))
+              ) : (
+                <div className="text-sm text-gray-500 italic">No platform data yet</div>
+              )}
+            </div>
+          </div>
+        </div>
+
         {connectionError && (
           <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
             <AlertCircle className="h-4 w-4 text-red-600" />

@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { WebSocketServer } from "ws";
+import { WebSocketServer, WebSocket } from "ws";
 import { z } from "zod";
 import { eq, desc, and, gte, lte, sql, asc } from "drizzle-orm";
 import multer from "multer";
@@ -760,15 +760,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      // Broadcast completion
+      // Broadcast completion with lead extraction notification
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify({
             type: 'scraping_completed',
             platform: 'Bark.com',
+            leadsFound: barkLeads.length,
+            contactsCreated: createdContacts.length,
             totalLeads: createdContacts.length,
             timestamp: new Date().toISOString(),
-            message: `Successfully extracted ${createdContacts.length} leads from Bark.com`
+            message: `Successfully extracted ${barkLeads.length} leads from Bark.com`
           }));
         }
       });
@@ -907,15 +909,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await new Promise(resolve => setTimeout(resolve, 150));
       }
       
-      // Broadcast completion
+      // Broadcast completion with lead extraction notification
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(JSON.stringify({
             type: 'scraping_completed',
             platform: 'Business Insider',
+            leadsFound: businessLeads.length,
+            contactsCreated: createdContacts.length,
             totalLeads: createdContacts.length,
             timestamp: new Date().toISOString(),
-            message: `Successfully extracted ${createdContacts.length} leads from Business Insider`
+            message: `Successfully extracted ${businessLeads.length} leads from Business Insider`
           }));
         }
       });
