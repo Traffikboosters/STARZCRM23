@@ -18,6 +18,7 @@ import ChatWidget from "@/components/chat-widget";
 import DocumentSigning from "@/components/document-signing";
 import VideoCallsView from "@/components/video-calls-view";
 import SalesPipeline from "@/components/sales-pipeline";
+import SalesFunnelBuilder from "@/components/sales-funnel-builder";
 import HRPortal from "./hr-portal";
 import RightSidebar from "@/components/right-sidebar";
 import { UserManagement } from "@/components/user-management";
@@ -87,6 +88,8 @@ export default function Dashboard() {
         return <DialTrackingDashboard />;
       case "pricing":
         return <PricingSheet />;
+      case "sales-funnels":
+        return <SalesFunnelBuilder />;
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
     }
