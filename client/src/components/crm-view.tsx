@@ -900,19 +900,20 @@ export default function CRMView() {
                       </Button>
                       
                       {/* Email Button */}
-                      {contact.email ? (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-green-600 hover:text-green-800"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <Mail className="h-3 w-3 mb-1" />
-                              <span className="text-[10px]">Email</span>
-                            </Button>
-                          </DropdownMenuTrigger>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-green-600 hover:text-green-800"
+                            onClick={(e) => e.stopPropagation()}
+                            disabled={!contact.email}
+                          >
+                            <Mail className="h-3 w-3 mb-1" />
+                            <span className="text-[10px]">Email</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        {contact.email && (
                           <DropdownMenuContent align="end" className="w-48">
                             <DropdownMenuItem 
                               className="cursor-pointer"
@@ -949,18 +950,8 @@ export default function CRMView() {
                               Copy Email Address
                             </DropdownMenuItem>
                           </DropdownMenuContent>
-                        </DropdownMenu>
-                      ) : (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          disabled
-                          className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 opacity-50"
-                        >
-                          <Mail className="h-3 w-3 mb-1" />
-                          <span className="text-[10px]">Email</span>
-                        </Button>
-                      )}
+                        )}
+                      </DropdownMenu>
                       
                       {/* Notes Button */}
                       <Button 
