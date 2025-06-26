@@ -1177,6 +1177,16 @@ export default function CRMView() {
         </Dialog>
       )}
 
+      {/* Contact Details Modal */}
+      <ContactDetailsModal
+        contact={selectedContactForDetails}
+        isOpen={isDetailsModalOpen}
+        onClose={() => {
+          setIsDetailsModalOpen(false);
+          setSelectedContactForDetails(null);
+        }}
+      />
+
       {/* Chat Widget Integration */}
       <ChatWidget />
     </div>

@@ -267,7 +267,35 @@ export default function ContactDetailsModal({
                 <CardContent className="space-y-3">
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span>{contact.email || "No email"}</span>
+                    {contact.email ? (
+                      <div className="flex items-center gap-2">
+                        <span>{contact.email}</span>
+                        <div className="flex gap-1">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => window.location.href = `mailto:${contact.email}`}
+                            className="text-green-600 border-green-200 hover:bg-green-50"
+                          >
+                            <Mail className="h-3 w-3 mr-1" />
+                            Email
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => {
+                              navigator.clipboard.writeText(contact.email);
+                              // toast functionality would go here
+                            }}
+                            className="text-blue-600"
+                          >
+                            Copy
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <span>No email</span>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-muted-foreground" />
