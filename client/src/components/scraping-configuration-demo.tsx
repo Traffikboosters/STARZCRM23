@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   Plus, 
   Play, 
@@ -304,6 +305,14 @@ export default function ScrapingConfigurationDemo() {
   const [progress, setProgress] = useState(0);
   const [activeTab, setActiveTab] = useState("templates");
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
+  const [showScheduleDialog, setShowScheduleDialog] = useState(false);
+  const [scheduleConfig, setScheduleConfig] = useState({
+    frequency: 'daily',
+    time: '09:00',
+    timezone: 'EST',
+    maxLeads: 100,
+    enabled: true
+  });
 
   const handleStartScraping = async () => {
     setIsConfiguring(true);
@@ -411,6 +420,59 @@ export default function ScrapingConfigurationDemo() {
       toast({
         title: "❌ Lead extraction failed",
         description: `Unable to extract leads from ${selectedTemplate.name}. Please try again.`,
+        duration: 5000,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleScheduleScraping = async () => {
+    try {
+      // Show scheduling notification
+      toast({
+        title: "⏰ Setting up automated collection...",
+        description: `Configuring ${scheduleConfig.frequency} scraping for ${selectedTemplate.name}`,
+        duration: 3000,
+      });
+
+      let endpoint = '';
+      if (selectedTemplate.name.includes('Bark.com')) {
+        endpoint = '/api/scraping-jobs/bark';
+      } else if (selectedTemplate.name.includes('Business Insider')) {
+        endpoint = '/api/scraping-jobs/businessinsider';
+      } else if (selectedTemplate.name.includes('Craigslist')) {
+        endpoint = '/api/scraping-jobs/craigslist';
+      } else if (selectedTemplate.name.includes('Angie\'s List')) {
+        endpoint = '/api/scraping-jobs/angieslist';
+      }
+
+      if (endpoint) {
+        const scheduleData = {
+          name: `${selectedTemplate.name} - Scheduled`,
+          url: selectedTemplate.url,
+          schedule: `${scheduleConfig.frequency} at ${scheduleConfig.time} ${scheduleConfig.timezone}`,
+          maxLeads: scheduleConfig.maxLeads,
+          enabled: scheduleConfig.enabled,
+          selectors: selectedTemplate.selectors,
+          filters: selectedTemplate.filters
+        };
+
+        const response = await apiRequest("POST", "/api/scraping-jobs", scheduleData);
+        const result = await response.json();
+
+        setShowScheduleDialog(false);
+        
+        toast({
+          title: "✅ Automated collection scheduled!",
+          description: `${scheduleConfig.frequency} lead extraction set up for ${scheduleConfig.time} ${scheduleConfig.timezone}`,
+          duration: 5000,
+        });
+      }
+    } catch (error) {
+      console.error('Error scheduling scraping:', error);
+      toast({
+        title: "❌ Scheduling failed",
+        description: "Unable to set up automated collection. Please try again.",
         duration: 5000,
         variant: "destructive"
       });
@@ -647,7 +709,10 @@ export default function ScrapingConfigurationDemo() {
                       <h4 className="font-medium">Schedule Scraping</h4>
                       <p className="text-sm text-gray-600">Set up automated data collection</p>
                     </div>
-                    <Button variant="outline">
+                    <Button 
+                      variant="outline"
+                      onClick={() => setShowScheduleDialog(true)}
+                    >
                       Schedule
                     </Button>
                   </div>
@@ -789,6 +854,93 @@ export default function ScrapingConfigurationDemo() {
           </CardContent>
         </Card>
       )}
+
+      {/* Schedule Scraping Dialog */}
+      <Dialog open={showScheduleDialog} onOpenChange={setShowScheduleDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Schedule Automated Data Collection</DialogTitle>
+            <DialogDescription>
+              Set up automated lead extraction for {selectedTemplate.name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Frequency</Label>
+              <Select value={scheduleConfig.frequency} onValueChange={(value) => 
+                setScheduleConfig(prev => ({ ...prev, frequency: value }))
+              }>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="hourly">Every Hour</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Time</Label>
+                <Input 
+                  type="time" 
+                  value={scheduleConfig.time}
+                  onChange={(e) => setScheduleConfig(prev => ({ ...prev, time: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Timezone</Label>
+                <Select value={scheduleConfig.timezone} onValueChange={(value) => 
+                  setScheduleConfig(prev => ({ ...prev, timezone: value }))
+                }>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="EST">EST</SelectItem>
+                    <SelectItem value="PST">PST</SelectItem>
+                    <SelectItem value="MST">MST</SelectItem>
+                    <SelectItem value="CST">CST</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Max Leads Per Run</Label>
+              <Input 
+                type="number" 
+                value={scheduleConfig.maxLeads}
+                onChange={(e) => setScheduleConfig(prev => ({ ...prev, maxLeads: parseInt(e.target.value) }))}
+                min="10"
+                max="500"
+              />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Switch 
+                id="schedule-enabled"
+                checked={scheduleConfig.enabled}
+                onCheckedChange={(checked) => setScheduleConfig(prev => ({ ...prev, enabled: checked }))}
+              />
+              <Label htmlFor="schedule-enabled">Enable automated collection</Label>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowScheduleDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleScheduleScraping} className="bg-[#e45c2b] hover:bg-[#d44d20]">
+              Schedule Collection
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
