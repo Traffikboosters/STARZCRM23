@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 import { 
   Activity, 
   AlertCircle, 
@@ -10,7 +11,9 @@ import {
   Phone,
   Database,
   Wifi,
-  WifiOff
+  WifiOff,
+  UserPlus,
+  Bell
 } from "lucide-react";
 
 interface LiveUpdate {
@@ -24,6 +27,11 @@ interface LiveUpdate {
   jobId?: number;
   status?: string;
   message?: string;
+  priority?: string;
+  leadId?: number;
+  leadName?: string;
+  company?: string;
+  assignedBy?: string;
   lead?: {
     id: number;
     name: string;
@@ -76,11 +84,36 @@ export default function LiveMonitoring() {
             timestamp: data.timestamp || new Date().toISOString()
           };
           
+          // Handle lead assignment notifications
+          if (data.type === 'lead_assigned') {
+            // Show toast notification for lead assignment
+            toast({
+              title: "🎯 New Lead Assigned!",
+              description: `${data.leadName} from ${data.company} assigned by ${data.assignedBy}`,
+              duration: 8000,
+            });
+
+            // Play audio notification
+            const audio = new Audio('data:audio/wav;base64,UklGRvIBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU4BAABBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+H+sEA');
+            audio.volume = 0.6;
+            audio.play().catch(() => {}); // Ignore audio errors
+
+            // Show desktop notification if permission granted
+            if ("Notification" in window && Notification.permission === "granted") {
+              new Notification("New Lead Assigned", {
+                body: `${data.leadName} from ${data.company}`,
+                icon: "/favicon.ico",
+                tag: 'lead-assignment'
+              });
+            }
+          }
+
           // Handle all live monitoring events
           if (data.type === 'scraping_started' || 
               data.type === 'scraping_completed' || 
               data.type === 'new_lead' || 
-              data.type === 'call_completed') {
+              data.type === 'call_completed' ||
+              data.type === 'lead_assigned') {
             setUpdates(prev => [update, ...prev.slice(0, 49)]); // Keep last 50 updates
           }
         } catch (error) {
@@ -110,6 +143,11 @@ export default function LiveMonitoring() {
   useEffect(() => {
     connectWebSocket();
 
+    // Request notification permissions on component mount
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+
     // Cleanup on unmount
     return () => {
       wsRef.current?.close();
@@ -135,6 +173,8 @@ export default function LiveMonitoring() {
         return <Database className="h-4 w-4 text-green-600" />;
       case 'new_lead':
         return <Users className="h-4 w-4 text-blue-600" />;
+      case 'lead_assigned':
+        return <UserPlus className="h-4 w-4 text-orange-600" />;
       case 'call_completed':
         return <Phone className="h-4 w-4 text-purple-600" />;
       default:
@@ -203,6 +243,7 @@ export default function LiveMonitoring() {
                   {update.type === 'scraping_started' && `${update.platform} - Starting Lead Extraction`}
                   {update.type === 'scraping_completed' && `${update.platform} - Extraction Complete`}
                   {update.type === 'new_lead' && `New Lead: ${update.platform}`}
+                  {update.type === 'lead_assigned' && `Lead Assignment`}
                   {update.type === 'call_completed' && 'Call Completed'}
                 </span>
                 <Badge variant="outline" className="text-xs">
@@ -243,11 +284,35 @@ export default function LiveMonitoring() {
                 </div>
               )}
               
+              {update.type === 'lead_assigned' && (
+                <div className="space-y-1 mb-2 p-2 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-200 dark:border-orange-800">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-sm text-orange-700 dark:text-orange-300">
+                      {update.leadName}
+                    </span>
+                    <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+                      High Priority
+                    </Badge>
+                  </div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
+                    <div className="font-medium">Company: {update.company || 'No Company'}</div>
+                    <div className="mt-1">Assigned by: {update.assignedBy}</div>
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Bell className="h-3 w-3 text-orange-600" />
+                    <span className="text-xs text-orange-700 dark:text-orange-300">
+                      Notification sent to sales rep
+                    </span>
+                  </div>
+                </div>
+              )}
+              
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 {update.type === 'scraping_started' && update.message}
                 {update.type === 'scraping_completed' && 
                   `Successfully extracted ${update.totalLeads} leads`}
                 {update.type === 'new_lead' && !update.lead && update.message}
+                {update.type === 'lead_assigned' && update.message}
                 {update.type === 'call_completed' && update.message}
               </p>
             </div>

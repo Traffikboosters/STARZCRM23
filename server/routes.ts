@@ -2289,7 +2289,13 @@ Appointment Details:
       
       let updatedLead;
       if (assignedTo) {
-        updatedLead = await storage.assignLead(leadId, assignedTo, req.user.id, notes);
+        // Assign the lead
+        updatedLead = await storage.updateContact(leadId, {
+          assignedTo: assignedTo,
+          assignedBy: req.user.id,
+          assignedAt: new Date(),
+          updatedBy: req.user.id
+        });
       } else {
         // Unassign the lead
         updatedLead = await storage.updateContact(leadId, {
@@ -2302,6 +2308,33 @@ Appointment Details:
       
       if (!updatedLead) {
         return res.status(404).json({ error: "Lead not found" });
+      }
+
+      // Send notification to assigned sales rep
+      if (assignedTo) {
+        const assignedUser = await storage.getUser(assignedTo);
+        const assignedByUser = await storage.getUser(req.user.id);
+        
+        if (assignedUser && assignedByUser) {
+          // Send WebSocket notification to assigned sales rep
+          const notificationData = {
+            type: 'lead_assigned',
+            leadId: leadId,
+            leadName: `${updatedLead.firstName} ${updatedLead.lastName}`,
+            company: updatedLead.company || 'No Company',
+            assignedBy: `${assignedByUser.firstName} ${assignedByUser.lastName}`,
+            timestamp: new Date().toISOString(),
+            message: `New lead assigned: ${updatedLead.firstName} ${updatedLead.lastName}`,
+            priority: 'high'
+          };
+
+          // Broadcast to all connected clients (in production, you'd target specific user)
+          wss.clients.forEach(client => {
+            if (client.readyState === WebSocket.OPEN) {
+              client.send(JSON.stringify(notificationData));
+            }
+          });
+        }
       }
 
       const actionMessage = assignedTo ? "Lead assigned successfully" : "Lead unassigned successfully";
