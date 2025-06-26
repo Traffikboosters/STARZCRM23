@@ -223,6 +223,8 @@ The application uses a comprehensive schema including:
 - June 26, 2025. Enhanced email functionality with comprehensive dropdown menu on lead cards featuring compose email, open client, and copy address options
 - June 26, 2025. Added professional email composer modal with pre-built templates (initial follow-up, service proposal, check-in) and Traffik Boosters branding
 - June 26, 2025. Implemented email template system with personalized content, pricing information, and company contact details for streamlined sales communication
+- June 26, 2025. Fixed email button visibility issues and implemented simplified green outlined email button in third position of 6-button action grid on lead cards
+- June 26, 2025. Added "View All" functionality with smart button that appears when filters are active, allowing users to instantly display all 156 leads with one click
 
 ## User Preferences
 

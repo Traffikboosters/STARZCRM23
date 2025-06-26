@@ -362,6 +362,25 @@ export default function CRMView() {
                 <SelectItem value="closed_lost">Closed Lost</SelectItem>
               </SelectContent>
             </Select>
+
+            {/* View All Button */}
+            {(searchQuery || statusFilter !== "all") && (
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  setSearchQuery("");
+                  setStatusFilter("all");
+                  toast({
+                    title: "Filters Cleared",
+                    description: `Showing all ${contacts.length} contacts`,
+                  });
+                }}
+                className="text-blue-600 border-blue-200 hover:bg-blue-50"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                View All ({contacts.length})
+              </Button>
+            )}
             
             {/* Add Contact */}
             <Dialog open={isAddContactModalOpen} onOpenChange={setIsAddContactModalOpen}>
