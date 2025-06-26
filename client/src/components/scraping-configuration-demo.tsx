@@ -346,15 +346,22 @@ export default function ScrapingConfigurationDemo() {
         clearInterval(progressInterval);
         setProgress(100);
         
+        // Show immediate completion notification with lead count
+        toast({
+          title: `📊 Lead fetching completed!`,
+          description: `Found ${result.leadsFound || result.leads || 0} new leads ready for review`,
+          duration: 4000,
+        });
+        
         // Show success notification with real results and audio alert
         setTimeout(() => {
           setIsConfiguring(false);
           
-          // Show completion toast notification
+          // Show final import completion notification
           toast({
-            title: "✅ Lead extraction complete!",
-            description: `Successfully found ${result.leadsFound || 0} leads from ${selectedTemplate.name}`,
-            duration: 5000,
+            title: "✅ Lead import successful!",
+            description: `${result.leadsFound || result.leads || 0} leads imported to CRM and ready for outreach`,
+            duration: 6000,
           });
           
           // Play audio notification for new leads
