@@ -13,6 +13,7 @@ import DialTrackingPage from "@/pages/dial-tracking";
 import PricingSheet from "@/pages/pricing-sheet";
 import WidgetDemo from "@/pages/widget-demo";
 import TimeZoneManager from "@/components/timezone-manager";
+import SalesFunnelsPage from "@/pages/sales-funnels";
 
 function Router() {
   return (
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/pricing-sheet" component={PricingSheet} />
       <Route path="/widget-demo" component={WidgetDemo} />
       <Route path="/timezone-settings" component={TimeZoneManager} />
+      <Route path="/sales-funnels" component={SalesFunnelsPage} />
       <Route component={NotFound} />
     </Switch>
   );

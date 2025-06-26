@@ -19,7 +19,8 @@ import {
   ChevronRight,
   TrendingUp,
   Timer,
-  DollarSign
+  DollarSign,
+  Filter
 } from "lucide-react";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { Button } from "@/components/ui/button";
@@ -59,6 +60,7 @@ export default function Sidebar({
     { id: "files", label: "Secure Files", icon: Shield },
     { id: "chat", label: "Chat Widget", icon: MessageCircle },
     { id: "documents", label: "Document Signing", icon: FileText },
+    { id: "sales-funnels", label: "Sales Funnels", icon: Filter },
     { id: "hr", label: "HR Portal", icon: UserPlus },
   ];
 
