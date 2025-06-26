@@ -14,6 +14,7 @@ import PricingSheet from "@/pages/pricing-sheet";
 import WidgetDemo from "@/pages/widget-demo";
 import TimeZoneManager from "@/components/timezone-manager";
 import SalesFunnelsPage from "@/pages/sales-funnels";
+import CompetitivePricingPage from "@/pages/competitive-pricing";
 
 function Router() {
   return (
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/widget-demo" component={WidgetDemo} />
       <Route path="/timezone-settings" component={TimeZoneManager} />
       <Route path="/sales-funnels" component={SalesFunnelsPage} />
+      <Route path="/competitive-pricing" component={CompetitivePricingPage} />
       <Route component={NotFound} />
     </Switch>
   );
