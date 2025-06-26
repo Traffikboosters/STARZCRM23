@@ -27,7 +27,8 @@ import {
   Eye,
   Download,
   Palette,
-  Monitor
+  Monitor,
+  BarChart3
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";

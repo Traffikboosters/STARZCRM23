@@ -233,6 +233,9 @@ The application uses a comprehensive schema including:
 - June 26, 2025. Updated all email templates, work orders, invoices, and payment requests to include individual sales rep signatures with corporate email addresses
 - June 26, 2025. Removed fictional employee accounts (Sarah Johnson, David Chen, Amanda Davis) and maintained only authentic admin user Michael Thompson
 - June 26, 2025. Reassigned all lead contacts to authentic admin user to reflect actual company structure rather than placeholder personnel data
+- June 26, 2025. Implemented dynamic sales rep assignment display on lead cards with name, email, and phone information that updates when reassigned
+- June 26, 2025. Added management-only reassignment dropdown functionality for instant lead assignment with real-time visual updates
+- June 26, 2025. Fixed CRM navigation issue where clicking CRM tab showed analytics dashboard instead of actual lead cards with "View All" functionality
 
 ## User Preferences
 

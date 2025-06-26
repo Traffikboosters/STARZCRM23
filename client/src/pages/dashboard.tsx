@@ -53,7 +53,7 @@ export default function Dashboard() {
       case "calendar":
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
       case "crm":
-        return <CRMAnalyticsDashboard />;
+        return <CRMView />;
       case "campaigns":
         return <CampaignManagementView />;
       case "video":
