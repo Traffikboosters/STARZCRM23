@@ -81,11 +81,10 @@ export default function CRMView() {
     queryKey: ['/api/contacts'],
   });
 
+  const queryClient = useQueryClient();
+
   // Debug logging
   console.log("Total contacts loaded:", contacts.length);
-  console.log("Filtered contacts:", filteredContacts.length);
-
-  const queryClient = useQueryClient();
 
   const form = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
@@ -159,6 +158,37 @@ export default function CRMView() {
       case "closed_lost": return "bg-red-100 text-red-800";
       default: return "bg-gray-100 text-gray-800";
     }
+  };
+
+  const getLeadAgeAlert = (contact: Contact) => {
+    const now = new Date();
+    const createdAt = new Date(contact.createdAt);
+    const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+    
+    if (hoursDiff <= 2) {
+      // New leads (within 2 hours) - Green flash
+      return {
+        alertClass: "animate-pulse-green",
+        badgeText: "NEW",
+        badgeColor: "bg-green-500 text-white"
+      };
+    } else if (hoursDiff <= 24) {
+      // 24-hour old leads - Yellow flash
+      return {
+        alertClass: "animate-pulse-yellow",
+        badgeText: "24H",
+        badgeColor: "bg-yellow-500 text-white"
+      };
+    } else if (hoursDiff <= 72) {
+      // 3-day old leads - Red flash
+      return {
+        alertClass: "animate-pulse-red",
+        badgeText: "3D",
+        badgeColor: "bg-red-500 text-white"
+      };
+    }
+    
+    return null;
   };
 
   const filteredContacts = contacts.filter(contact => {
@@ -473,16 +503,26 @@ export default function CRMView() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
-            {filteredContacts.map((contact) => (
-              <Card 
-                key={contact.id} 
-                className="hover:shadow-md transition-shadow cursor-pointer"
-                onClick={() => {
-                  setSelectedContactForDetails(contact);
-                  setIsDetailsModalOpen(true);
-                }}
-              >
+            {filteredContacts.map((contact) => {
+              const ageAlert = getLeadAgeAlert(contact);
+              return (
+                <Card 
+                  key={contact.id} 
+                  className={`hover:shadow-md transition-shadow cursor-pointer relative ${ageAlert ? ageAlert.alertClass : ''}`}
+                  onClick={() => {
+                    setSelectedContactForDetails(contact);
+                    setIsDetailsModalOpen(true);
+                  }}
+                >
                 <CardHeader className="pb-2 p-3 md:pb-3 md:p-6">
+                  {/* Age Alert Badge */}
+                  {ageAlert && (
+                    <div className="absolute top-2 right-2 z-10">
+                      <Badge className={`text-xs px-2 py-1 ${ageAlert.badgeColor} animate-pulse`}>
+                        {ageAlert.badgeText}
+                      </Badge>
+                    </div>
+                  )}
                   <div className="flex flex-col space-y-2 md:flex-row md:items-start md:justify-between md:space-y-0">
                     <div className="flex items-center space-x-2 md:space-x-3">
                       <Avatar className="w-8 h-8 md:w-12 md:h-12 flex-shrink-0">
@@ -575,7 +615,8 @@ export default function CRMView() {
                   </div>
                 </CardContent>
               </Card>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

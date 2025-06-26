@@ -4,6 +4,7 @@ import { Video, User, FileText, Phone, Mail, Play, ChevronRight, Upload } from "
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { formatPhoneNumber } from "@/lib/utils";
 import LiveMonitoring from "@/components/live-monitoring";
 import SocialMediaPanel from "@/components/social-media-panel";
@@ -45,6 +46,37 @@ export default function RightSidebar({ onJoinCall, onCreateEvent, onContactClick
 
   const getContactInitials = (contact: Contact) => {
     return `${contact.firstName[0]}${contact.lastName[0]}`.toUpperCase();
+  };
+
+  const getLeadAgeAlert = (contact: Contact) => {
+    const now = new Date();
+    const createdAt = new Date(contact.createdAt);
+    const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+    
+    if (hoursDiff <= 2) {
+      // New leads (within 2 hours) - Green flash
+      return {
+        alertClass: "animate-pulse-green",
+        badgeText: "NEW",
+        badgeColor: "bg-green-500 text-white"
+      };
+    } else if (hoursDiff <= 24) {
+      // 24-hour old leads - Yellow flash
+      return {
+        alertClass: "animate-pulse-yellow",
+        badgeText: "24H",
+        badgeColor: "bg-yellow-500 text-white"
+      };
+    } else if (hoursDiff <= 72) {
+      // 3-day old leads - Red flash
+      return {
+        alertClass: "animate-pulse-red",
+        badgeText: "3D",
+        badgeColor: "bg-red-500 text-white"
+      };
+    }
+    
+    return null;
   };
 
   const getEventIcon = (event: Event) => {
@@ -130,13 +162,23 @@ export default function RightSidebar({ onJoinCall, onCreateEvent, onContactClick
                 <p className="text-neutral-medium text-sm">No recent contacts</p>
               </div>
             ) : (
-              recentContacts.map((contact) => (
-                <Card 
-                  key={contact.id} 
-                  className="p-3 border border-neutral-lighter hover:bg-neutral-lightest cursor-pointer"
-                  onClick={() => onContactClick?.(contact)}
-                >
-                  <div className="flex items-center space-x-3">
+              recentContacts.map((contact) => {
+                const ageAlert = getLeadAgeAlert(contact);
+                return (
+                  <Card 
+                    key={contact.id} 
+                    className={`p-3 border border-neutral-lighter hover:bg-neutral-lightest cursor-pointer relative ${ageAlert ? ageAlert.alertClass : ''}`}
+                    onClick={() => onContactClick?.(contact)}
+                  >
+                    {/* Age Alert Badge */}
+                    {ageAlert && (
+                      <div className="absolute top-2 right-2 z-10">
+                        <Badge className={`text-xs px-1 py-0.5 ${ageAlert.badgeColor} animate-pulse`}>
+                          {ageAlert.badgeText}
+                        </Badge>
+                      </div>
+                    )}
+                    <div className="flex items-center space-x-3">
                     <Avatar className="w-10 h-10">
                       <AvatarImage src={contact.avatar || ""} />
                       <AvatarFallback className="bg-brand-primary text-white text-sm font-medium">
@@ -177,7 +219,8 @@ export default function RightSidebar({ onJoinCall, onCreateEvent, onContactClick
                     </div>
                   </div>
                 </Card>
-              ))
+                );
+              })
             )}
           </div>
         </div>
