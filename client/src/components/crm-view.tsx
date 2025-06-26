@@ -19,7 +19,9 @@ import {
   Clock,
   Globe,
   FileText,
-  User
+  User,
+  Calendar,
+  CalendarPlus
 } from "lucide-react";
 import ChatWidget from "./chat-widget";
 import WebsiteFormIntegration from "./website-form-integration";
@@ -62,6 +64,11 @@ const contactFormSchema = z.object({
   leadStatus: z.string().optional(),
   priority: z.string().optional(),
   notes: z.string().optional(),
+  scheduleAppointment: z.boolean().optional(),
+  appointmentDate: z.string().optional(),
+  appointmentTime: z.string().optional(),
+  appointmentType: z.string().optional(),
+  appointmentNotes: z.string().optional(),
 });
 
 type ContactFormData = z.infer<typeof contactFormSchema>;
@@ -99,12 +106,18 @@ export default function CRMView() {
       leadStatus: "new",
       priority: "medium",
       notes: "",
+      scheduleAppointment: false,
+      appointmentDate: "",
+      appointmentTime: "",
+      appointmentType: "consultation",
+      appointmentNotes: "",
     },
   });
 
   const createContactMutation = useMutation({
     mutationFn: async (data: ContactFormData) => {
-      const response = await apiRequest("POST", "/api/contacts", {
+      // Create the contact first
+      const contactResponse = await apiRequest("POST", "/api/contacts", {
         ...data,
         email: data.email || null,
         phone: data.phone || null,
@@ -116,19 +129,49 @@ export default function CRMView() {
         notes: data.notes || null,
       });
       
-      if (!response.ok) {
+      if (!contactResponse.ok) {
         throw new Error('Failed to create contact');
       }
       
-      return response.json();
+      const contact = await contactResponse.json();
+      
+      // If appointment scheduling is enabled, create the event
+      if (data.scheduleAppointment && data.appointmentDate && data.appointmentTime) {
+        const appointmentDateTime = new Date(`${data.appointmentDate}T${data.appointmentTime}`);
+        const endDateTime = new Date(appointmentDateTime.getTime() + (60 * 60 * 1000)); // 1 hour duration
+        
+        const eventResponse = await apiRequest("POST", "/api/events", {
+          title: `${data.appointmentType || 'Meeting'} with ${data.firstName} ${data.lastName}`,
+          description: data.appointmentNotes || `Scheduled ${data.appointmentType || 'meeting'} with ${data.firstName} ${data.lastName} from ${data.company || 'N/A'}`,
+          startTime: appointmentDateTime.toISOString(),
+          endTime: endDateTime.toISOString(),
+          location: "Phone/Video Call",
+          attendees: data.email ? [data.email] : [],
+          contactId: contact.id,
+          type: "appointment",
+          status: "scheduled"
+        });
+        
+        if (!eventResponse.ok) {
+          console.warn('Contact created but failed to schedule appointment');
+        }
+      }
+      
+      return contact;
     },
-    onSuccess: () => {
+    onSuccess: (contact, variables) => {
       queryClient.invalidateQueries({ queryKey: ['/api/contacts'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/events'] });
       setIsAddContactModalOpen(false);
       form.reset();
+      
+      const appointmentMessage = variables.scheduleAppointment && variables.appointmentDate && variables.appointmentTime
+        ? ` Appointment scheduled for ${new Date(`${variables.appointmentDate}T${variables.appointmentTime}`).toLocaleDateString()} at ${new Date(`${variables.appointmentDate}T${variables.appointmentTime}`).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}.`
+        : '';
+      
       toast({
-        title: "Contact created",
-        description: "New contact has been added to your CRM.",
+        title: "Contact created successfully",
+        description: `${contact.firstName} ${contact.lastName} has been added to your CRM.${appointmentMessage}`,
       });
     },
     onError: (error) => {
@@ -466,6 +509,147 @@ export default function CRMView() {
                         </FormItem>
                       )}
                     />
+
+                    {/* Schedule Appointment Section */}
+                    <div className="border-t pt-4 space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="scheduleAppointment"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-base flex items-center gap-2">
+                                <CalendarPlus className="h-4 w-4 text-brand-primary" />
+                                Schedule Appointment
+                              </FormLabel>
+                              <div className="text-sm text-muted-foreground">
+                                Book a meeting with this contact immediately after creating them
+                              </div>
+                            </div>
+                            <FormControl>
+                              <div className="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  checked={field.value}
+                                  onChange={field.onChange}
+                                  className="w-4 h-4 text-brand-primary bg-gray-100 border-gray-300 rounded focus:ring-brand-primary focus:ring-2"
+                                />
+                              </div>
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      {form.watch("scheduleAppointment") && (
+                        <div className="bg-blue-50 p-4 rounded-lg space-y-4 border border-blue-200">
+                          <div className="flex items-center gap-2 text-blue-800">
+                            <Calendar className="h-4 w-4" />
+                            <span className="font-medium">Appointment Details</span>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="appointmentDate"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Date</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="date" 
+                                      {...field} 
+                                      min={new Date().toISOString().split('T')[0]}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="appointmentTime"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Time</FormLabel>
+                                  <FormControl>
+                                    <Select value={field.value} onValueChange={field.onChange}>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select time" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="09:00">9:00 AM</SelectItem>
+                                        <SelectItem value="09:30">9:30 AM</SelectItem>
+                                        <SelectItem value="10:00">10:00 AM</SelectItem>
+                                        <SelectItem value="10:30">10:30 AM</SelectItem>
+                                        <SelectItem value="11:00">11:00 AM</SelectItem>
+                                        <SelectItem value="11:30">11:30 AM</SelectItem>
+                                        <SelectItem value="12:00">12:00 PM</SelectItem>
+                                        <SelectItem value="12:30">12:30 PM</SelectItem>
+                                        <SelectItem value="13:00">1:00 PM</SelectItem>
+                                        <SelectItem value="13:30">1:30 PM</SelectItem>
+                                        <SelectItem value="14:00">2:00 PM</SelectItem>
+                                        <SelectItem value="14:30">2:30 PM</SelectItem>
+                                        <SelectItem value="15:00">3:00 PM</SelectItem>
+                                        <SelectItem value="15:30">3:30 PM</SelectItem>
+                                        <SelectItem value="16:00">4:00 PM</SelectItem>
+                                        <SelectItem value="16:30">4:30 PM</SelectItem>
+                                        <SelectItem value="17:00">5:00 PM</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <FormField
+                            control={form.control}
+                            name="appointmentType"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Meeting Type</FormLabel>
+                                <FormControl>
+                                  <Select value={field.value} onValueChange={field.onChange}>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select meeting type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="consultation">Initial Consultation</SelectItem>
+                                      <SelectItem value="discovery">Discovery Call</SelectItem>
+                                      <SelectItem value="demo">Product Demo</SelectItem>
+                                      <SelectItem value="proposal">Proposal Presentation</SelectItem>
+                                      <SelectItem value="follow_up">Follow-up Meeting</SelectItem>
+                                      <SelectItem value="closing">Closing Call</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="appointmentNotes"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Meeting Notes</FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Agenda, preparation notes, or special requirements..."
+                                    className="min-h-[60px]"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      )}
+                    </div>
                     
                     <div className="flex justify-end gap-2 pt-4">
                       <Button 
