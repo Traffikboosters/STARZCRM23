@@ -31,6 +31,7 @@ import EventModal from "@/components/event-modal";
 import ContactDetailsModal from "@/components/contact-details-modal";
 import LeadNotification from "@/components/lead-notification";
 import LiveMonitoring from "@/components/live-monitoring";
+import { AILeadScoring } from "@/components/ai-lead-scoring";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -95,6 +96,8 @@ export default function Dashboard() {
         return <SalesFunnelBuilder />;
       case "leaderboard":
         return <SalesLeaderboard />;
+      case "ai-scoring":
+        return <AILeadScoring />;
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
     }

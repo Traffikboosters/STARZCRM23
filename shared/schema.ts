@@ -69,6 +69,15 @@ export const contacts = pgTable("contacts", {
   dealValue: integer("deal_value"), // expected deal value in cents
   lastContactedAt: timestamp("last_contacted_at"),
   nextFollowUpAt: timestamp("next_follow_up_at"),
+  // AI Lead Scoring fields
+  aiScore: integer("ai_score").default(0), // AI-calculated score 0-100
+  scoreFactors: json("score_factors"), // detailed scoring breakdown
+  industryScore: integer("industry_score").default(0), // industry-specific scoring
+  companySize: text("company_size"), // startup, small, medium, large, enterprise
+  urgencyLevel: text("urgency_level").default("low"), // low, medium, high, critical
+  engagementScore: integer("engagement_score").default(0), // based on interactions
+  qualificationScore: integer("qualification_score").default(0), // BANT qualification score
+  lastScoreUpdate: timestamp("last_score_update"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   createdBy: integer("created_by").references(() => users.id),

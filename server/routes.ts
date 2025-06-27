@@ -22,6 +22,7 @@ import {
   type CallLog
 } from "../shared/schema";
 import { storage } from "./storage";
+import { AILeadScoringEngine } from "./ai-lead-scoring";
 import { mightyCallEnhanced } from "./mightycall-enhanced";
 import { workingCaller } from "./mightycall-working";
 
@@ -2596,6 +2597,129 @@ Appointment Details:
       };
       
       res.json(userStats);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // AI Lead Scoring endpoints
+  app.post("/api/contacts/:id/score", requireAuth, async (req: any, res) => {
+    try {
+      const contactId = parseInt(req.params.id);
+      const contact = await storage.getContact(contactId);
+      
+      if (!contact) {
+        return res.status(404).json({ message: "Contact not found" });
+      }
+
+      const scoringResult = AILeadScoringEngine.calculateLeadScore(contact);
+      
+      // Update contact with AI scoring data
+      await storage.updateContact(contactId, {
+        aiScore: scoringResult.aiScore,
+        scoreFactors: scoringResult.scoreFactors,
+        industryScore: scoringResult.industryScore,
+        urgencyLevel: scoringResult.urgencyLevel,
+        qualificationScore: scoringResult.qualificationScore,
+        lastScoreUpdate: new Date()
+      });
+      
+      res.json(scoringResult);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/contacts/score-batch", requireAuth, async (req: any, res) => {
+    try {
+      const { contactIds } = req.body;
+      const contacts = await Promise.all(
+        contactIds.map((id: number) => storage.getContact(id))
+      );
+      
+      const validContacts = contacts.filter(contact => contact !== undefined);
+      const scoringResults = AILeadScoringEngine.scoreMultipleLeads(validContacts);
+      
+      // Update contacts with scoring data
+      const updatePromises = Array.from(scoringResults.entries()).map(([contactId, result]) => 
+        storage.updateContact(contactId, {
+          aiScore: result.aiScore,
+          scoreFactors: result.scoreFactors,
+          industryScore: result.industryScore,
+          urgencyLevel: result.urgencyLevel,
+          qualificationScore: result.qualificationScore,
+          lastScoreUpdate: new Date()
+        })
+      );
+      
+      await Promise.all(updatePromises);
+      
+      res.json(Object.fromEntries(scoringResults));
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/contacts/prioritized", requireAuth, async (req: any, res) => {
+    try {
+      const { assignedTo, limit = 50, minScore = 0 } = req.query;
+      let contacts = await storage.getAllContacts();
+      
+      // Filter by assigned rep if specified
+      if (assignedTo) {
+        contacts = contacts.filter(contact => contact.assignedTo === parseInt(assignedTo));
+      }
+      
+      // Sort by priority using AI scoring
+      const prioritizedContacts = AILeadScoringEngine.sortLeadsByPriority(contacts)
+        .filter((contact: any) => (contact.calculatedScore?.aiScore || 0) >= parseInt(minScore))
+        .slice(0, parseInt(limit))
+        .map((contact: any) => ({
+          ...contact,
+          scoringData: contact.calculatedScore
+        }));
+      
+      res.json(prioritizedContacts);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/analytics/lead-scoring", requireAuth, async (req: any, res) => {
+    try {
+      const contacts = await storage.getAllContacts();
+      const scoredContacts = contacts.filter(contact => contact.aiScore && contact.aiScore > 0);
+      
+      // Calculate analytics
+      const analytics = {
+        totalContacts: contacts.length,
+        scoredContacts: scoredContacts.length,
+        averageScore: scoredContacts.length > 0 
+          ? Math.round(scoredContacts.reduce((sum, contact) => sum + (contact.aiScore || 0), 0) / scoredContacts.length)
+          : 0,
+        scoreDistribution: {
+          high: scoredContacts.filter(c => (c.aiScore || 0) >= 80).length,
+          medium: scoredContacts.filter(c => (c.aiScore || 0) >= 50 && (c.aiScore || 0) < 80).length,
+          low: scoredContacts.filter(c => (c.aiScore || 0) < 50).length
+        },
+        urgencyLevels: {
+          critical: scoredContacts.filter(c => c.urgencyLevel === "critical").length,
+          high: scoredContacts.filter(c => c.urgencyLevel === "high").length,
+          medium: scoredContacts.filter(c => c.urgencyLevel === "medium").length,
+          low: scoredContacts.filter(c => c.urgencyLevel === "low").length
+        },
+        topScoringLeads: AILeadScoringEngine.sortLeadsByPriority(scoredContacts)
+          .slice(0, 10)
+          .map((contact: any) => ({
+            id: contact.id,
+            name: `${contact.firstName} ${contact.lastName}`,
+            company: contact.company,
+            score: contact.calculatedScore?.aiScore || contact.aiScore,
+            urgencyLevel: contact.calculatedScore?.urgencyLevel || contact.urgencyLevel
+          }))
+      };
+      
+      res.json(analytics);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
