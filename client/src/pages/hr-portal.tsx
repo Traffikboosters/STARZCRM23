@@ -96,11 +96,27 @@ export default function HRPortal() {
       });
     },
     onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to add employee.",
-        variant: "destructive",
-      });
+      const errorMessage = error.message || error.response?.data?.error || "Failed to add employee.";
+      
+      if (errorMessage.includes("Email already exists")) {
+        toast({
+          title: "Email Already Exists",
+          description: "This email address is already registered in the system. Please use a different email.",
+          variant: "destructive",
+        });
+      } else if (errorMessage.includes("Username already exists")) {
+        toast({
+          title: "Username Already Exists", 
+          description: "This username is already taken. Please choose a different username.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      }
     }
   });
 
