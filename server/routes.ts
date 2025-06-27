@@ -1347,6 +1347,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
+  // User invitation endpoints
+  app.post("/api/invitations", requireAuth, async (req: any, res) => {
+    try {
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: "Only admins can send invitations" });
+      }
+
+      const { email, role = "user" } = req.body;
+      
+      // Generate unique invitation token
+      const invitationToken = require("crypto").randomBytes(32).toString("hex");
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7); // Expires in 7 days
+
+      const invitation = await storage.createUserInvitation({
+        email,
+        role,
+        invitationToken,
+        status: "pending",
+        expiresAt,
+        invitedBy: req.user.id
+      });
+
+      res.json(invitation);
+    } catch (error) {
+      res.status(400).json({ error: "Failed to create invitation" });
+    }
+  });
+
+  app.get("/api/invitations", requireAuth, async (req: any, res) => {
+    try {
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: "Only admins can view invitations" });
+      }
+
+      const invitations = await storage.getAllUserInvitations();
+      res.json(invitations);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch invitations" });
+    }
+  });
+
+  app.get("/api/invitations/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+      const invitation = await storage.getUserInvitationByToken(token);
+      
+      if (!invitation) {
+        return res.status(404).json({ error: "Invitation not found" });
+      }
+
+      if (invitation.status !== "pending") {
+        return res.status(400).json({ error: "Invitation already used" });
+      }
+
+      if (new Date() > invitation.expiresAt) {
+        return res.status(400).json({ error: "Invitation expired" });
+      }
+
+      res.json({ 
+        email: invitation.email, 
+        role: invitation.role,
+        token: invitation.invitationToken 
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to validate invitation" });
+    }
+  });
+
   // User management endpoints
   app.get("/api/users", requireAuth, async (req: any, res) => {
     try {

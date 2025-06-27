@@ -1,7 +1,7 @@
 import { 
   users, contacts, events, files, automations, scrapingJobs, companies, chatMessages, chatConversations,
-  callLogs, campaigns, leadAllocations, documentTemplates, signingRequests, servicePackages, costStructure, profitabilityAnalysis,
-  type User, type InsertUser, type Contact, type InsertContact,
+  callLogs, campaigns, leadAllocations, documentTemplates, signingRequests, servicePackages, costStructure, profitabilityAnalysis, userInvitations,
+  type User, type InsertUser, type UserInvitation, type InsertUserInvitation, type Contact, type InsertContact,
   type Event, type InsertEvent, type File, type InsertFile,
   type Automation, type InsertAutomation, type ScrapingJob, type InsertScrapingJob,
   type Company, type InsertCompany, type ChatMessage, type InsertChatMessage,
@@ -24,6 +24,12 @@ export interface IStorage {
   updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined>;
   updateUserPhone(id: number, phone: string, mobilePhone?: string, extension?: string): Promise<User | undefined>;
   deleteUser(id: number): Promise<boolean>;
+  
+  // User Invitations
+  createUserInvitation(invitation: InsertUserInvitation): Promise<UserInvitation>;
+  getUserInvitationByToken(token: string): Promise<UserInvitation | undefined>;
+  updateUserInvitationStatus(token: string, status: string, acceptedAt?: Date): Promise<UserInvitation | undefined>;
+  getAllUserInvitations(): Promise<UserInvitation[]>;
   
   // Companies
   getCompany(id: number): Promise<Company | undefined>;
@@ -142,6 +148,12 @@ export interface IStorage {
   updateProfitabilityAnalysis(id: number, updates: Partial<InsertProfitabilityAnalysis>): Promise<ProfitabilityAnalysis | undefined>;
   deleteProfitabilityAnalysis(id: number): Promise<boolean>;
 
+  // User invitation methods
+  createUserInvitation(invitation: InsertUserInvitation): Promise<UserInvitation>;
+  getUserInvitationByToken(token: string): Promise<UserInvitation | undefined>;
+  updateUserInvitationStatus(token: string, status: string): Promise<void>;
+  getAllUserInvitations(): Promise<UserInvitation[]>;
+
   // Additional methods needed by routes
   getLeadsByRep(repId: number): Promise<Contact[]>;
   getPricingProposals(): Promise<any[]>;
@@ -176,6 +188,34 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  // User invitation methods
+  async createUserInvitation(invitation: InsertUserInvitation): Promise<UserInvitation> {
+    const [created] = await db
+      .insert(userInvitations)
+      .values(invitation)
+      .returning();
+    return created;
+  }
+
+  async getUserInvitationByToken(token: string): Promise<UserInvitation | undefined> {
+    const [invitation] = await db
+      .select()
+      .from(userInvitations)
+      .where(eq(userInvitations.invitationToken, token));
+    return invitation || undefined;
+  }
+
+  async updateUserInvitationStatus(token: string, status: string): Promise<void> {
+    await db
+      .update(userInvitations)
+      .set({ status })
+      .where(eq(userInvitations.invitationToken, token));
+  }
+
+  async getAllUserInvitations(): Promise<UserInvitation[]> {
+    return await db.select().from(userInvitations);
+  }
+
   async updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined> {
     const [user] = await db
       .update(users)
@@ -197,6 +237,36 @@ export class DatabaseStorage implements IStorage {
   async deleteUser(id: number): Promise<boolean> {
     const result = await db.delete(users).where(eq(users.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  // User Invitations
+  async createUserInvitation(invitation: InsertUserInvitation): Promise<UserInvitation> {
+    const [newInvitation] = await db
+      .insert(userInvitations)
+      .values(invitation)
+      .returning();
+    return newInvitation;
+  }
+
+  async getUserInvitationByToken(token: string): Promise<UserInvitation | undefined> {
+    const [invitation] = await db
+      .select()
+      .from(userInvitations)
+      .where(eq(userInvitations.invitationToken, token));
+    return invitation || undefined;
+  }
+
+  async updateUserInvitationStatus(token: string, status: string, acceptedAt?: Date): Promise<UserInvitation | undefined> {
+    const [invitation] = await db
+      .update(userInvitations)
+      .set({ status, acceptedAt })
+      .where(eq(userInvitations.invitationToken, token))
+      .returning();
+    return invitation || undefined;
+  }
+
+  async getAllUserInvitations(): Promise<UserInvitation[]> {
+    return await db.select().from(userInvitations).orderBy(desc(userInvitations.createdAt));
   }
 
   // Companies

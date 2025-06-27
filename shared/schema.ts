@@ -25,6 +25,25 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const userInvitations = pgTable("user_invitations", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull(),
+  invitationToken: text("invitation_token").notNull().unique(),
+  role: text("role").notNull().default("viewer"),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  phone: text("phone"),
+  department: text("department").default("sales"),
+  compensationType: text("compensation_type").default("commission"),
+  commissionRate: text("commission_rate").default("10.0"),
+  baseSalary: integer("base_salary"),
+  invitedBy: integer("invited_by").references(() => users.id).notNull(),
+  status: text("status").default("pending"), // pending, accepted, expired
+  expiresAt: timestamp("expires_at").notNull(),
+  acceptedAt: timestamp("accepted_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const companies = pgTable("companies", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -714,6 +733,12 @@ export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
 });
 
+export const insertUserInvitationSchema = createInsertSchema(userInvitations).omit({
+  id: true,
+  createdAt: true,
+  acceptedAt: true,
+});
+
 export const insertCompanySchema = createInsertSchema(companies).omit({
   id: true,
   createdAt: true,
@@ -767,6 +792,8 @@ export const insertChatConversationSchema = createInsertSchema(chatConversations
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UserInvitation = typeof userInvitations.$inferSelect;
+export type InsertUserInvitation = z.infer<typeof insertUserInvitationSchema>;
 export type Company = typeof companies.$inferSelect;
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
 export type Contact = typeof contacts.$inferSelect & {
