@@ -314,6 +314,8 @@ The application uses a comprehensive schema including:
 - June 27, 2025. Fixed invitation link generation to use proper Replit HTTPS domain instead of localhost, resolving connection refused errors for external email recipients
 - June 27, 2025. Removed "TRAFFIK BOOSTERS" text from invitation emails to create maximum space for logo display, increasing header logo to 300px and footer logo to 280px
 - June 27, 2025. LOGO ENHANCEMENT: Significantly increased Traffik Boosters logo visibility across entire Starz platform - lead cards (h-16), CRM header (h-20), email templates (400-500px), test emails (400px), invitation emails (500px), onboarding emails (400px), and marketing emails (400px) for maximum brand impact
+- June 27, 2025. Fixed lead card animation targeting to only flash "NEW" text badges on 0-24H status leads instead of entire cards, improving visual focus while maintaining color-coded status indicators
+- June 27, 2025. Sent fresh HR portal invitation to Steve Williams (dnarcisse48@gmail.com) with enhanced Traffik Boosters branding, steve.williams@traffikboosters.com work email, and 10% commission structure
 
 ## User Preferences
 
