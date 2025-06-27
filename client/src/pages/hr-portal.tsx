@@ -122,7 +122,12 @@ export default function HRPortal() {
 
   // Edit employee mutation
   const editEmployeeMutation = useMutation({
-    mutationFn: (employeeData: any) => apiRequest('PUT', `/api/users/${employeeData.id}`, employeeData),
+    mutationFn: (employeeData: any) => apiRequest('PUT', `/api/users/${employeeData.id}`, {
+      ...employeeData,
+      commissionRate: employeeData.commissionRate?.toString() || '10',
+      baseCommissionRate: employeeData.commissionRate?.toString() || '10',
+      bonusCommissionRate: (employeeData.bonusCommissionRate || 0).toString(),
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
       setIsEditEmployeeModalOpen(false);
@@ -733,7 +738,7 @@ export default function HRPortal() {
                 
                 <div>
                   <Label htmlFor="editCompensationType">Compensation Type</Label>
-                  <Select value={editingEmployee.compensationType} onValueChange={(value) => setEditingEmployee({...editingEmployee, compensationType: value})}>
+                  <Select value={editingEmployee.compensationType} onValueChange={(value: "commission" | "salary") => setEditingEmployee({...editingEmployee, compensationType: value})}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select compensation type" />
                     </SelectTrigger>

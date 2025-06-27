@@ -18,6 +18,9 @@ export const users = pgTable("users", {
   baseCommissionRate: text("base_commission_rate").default("10.0"), // base rate before bonuses
   bonusCommissionRate: text("bonus_commission_rate").default("0.0"), // additional bonus percentage
   commissionTier: text("commission_tier").default("standard"), // standard, bronze, silver, gold, platinum
+  compensationType: text("compensation_type").default("commission"), // commission, salary
+  baseSalary: integer("base_salary"), // annual salary in dollars for salary employees
+  department: text("department").default("sales"), // sales, hr, marketing, operations
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
