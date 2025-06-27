@@ -23,7 +23,8 @@ import {
   Filter,
   Calculator,
   Trophy,
-  Brain
+  Brain,
+  MapPin
 } from "lucide-react";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,7 @@ export default function Sidebar({
     { id: "chat", label: "Chat Widget", icon: MessageCircle },
     { id: "documents", label: "Document Signing", icon: FileText },
     { id: "sales-funnels", label: "Sales Funnels", icon: Filter },
+    { id: "locations", label: "Location Intelligence", icon: MapPin },
     { id: "hr", label: "HR Portal", icon: UserPlus },
   ];
 

@@ -32,6 +32,7 @@ import ContactDetailsModal from "@/components/contact-details-modal";
 import LeadNotification from "@/components/lead-notification";
 import LiveMonitoring from "@/components/live-monitoring";
 import { AILeadScoring } from "@/components/ai-lead-scoring";
+import { LocationTracker } from "@/components/location-tracker";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -98,6 +99,8 @@ export default function Dashboard() {
         return <SalesLeaderboard />;
       case "ai-scoring":
         return <AILeadScoring />;
+      case "locations":
+        return <LocationTracker />;
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
     }
