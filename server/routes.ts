@@ -191,6 +191,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Lead allocation endpoint
+  app.post("/api/contacts/allocate", requireAuth, async (req: any, res) => {
+    try {
+      const { contactIds, assignedTo } = req.body;
+      
+      if (!contactIds || !Array.isArray(contactIds) || contactIds.length === 0) {
+        return res.status(400).json({ error: "Contact IDs are required" });
+      }
+      
+      if (!assignedTo) {
+        return res.status(400).json({ error: "Sales representative assignment is required" });
+      }
+      
+      // Verify the assigned user exists and is a sales rep
+      const salesRep = await storage.getUser(assignedTo);
+      if (!salesRep) {
+        return res.status(400).json({ error: "Sales representative not found" });
+      }
+      
+      let updatedCount = 0;
+      const updatedContacts = [];
+      
+      // Update each contact assignment
+      for (const contactId of contactIds) {
+        try {
+          const contact = await storage.getContact(contactId);
+          if (contact) {
+            const updatedContact = await storage.updateContact(contactId, {
+              assignedTo: assignedTo,
+              updatedBy: req.user.id,
+              updatedAt: new Date()
+            });
+            updatedContacts.push(updatedContact);
+            updatedCount++;
+            
+            // Log audit event
+            logAuditEvent(
+              "UPDATE", 
+              "contact", 
+              contactId, 
+              req.user.id, 
+              { assignedTo: contact.assignedTo }, 
+              { assignedTo: assignedTo },
+              `Lead allocated to ${salesRep.firstName} ${salesRep.lastName}`
+            );
+          }
+        } catch (error) {
+          console.error(`Failed to update contact ${contactId}:`, error);
+        }
+      }
+      
+      res.json({ 
+        success: true, 
+        updatedCount,
+        message: `${updatedCount} leads successfully allocated to ${salesRep.firstName} ${salesRep.lastName}`,
+        assignedTo: {
+          id: salesRep.id,
+          name: `${salesRep.firstName} ${salesRep.lastName}`,
+          email: salesRep.email
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
   app.put("/api/contacts/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);

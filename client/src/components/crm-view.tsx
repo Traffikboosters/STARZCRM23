@@ -387,8 +387,11 @@ export default function CRMView() {
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isWorkOrderModalOpen, setIsWorkOrderModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [isLeadAllocationModalOpen, setIsLeadAllocationModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [selectedContactForDetails, setSelectedContactForDetails] = useState<Contact | null>(null);
+  const [selectedLeadsForAllocation, setSelectedLeadsForAllocation] = useState<number[]>([]);
+  const [selectedSalesRep, setSelectedSalesRep] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
@@ -437,6 +440,10 @@ export default function CRMView() {
 
   const { data: currentUser } = useQuery<UserType>({
     queryKey: ["/api/user"],
+  });
+
+  const { data: salesReps = [] } = useQuery<UserType[]>({
+    queryKey: ["/api/users"],
   });
 
   // Click-to-call functionality
@@ -590,6 +597,38 @@ export default function CRMView() {
     },
   });
 
+  // Lead allocation mutation
+  const allocateLeadsMutation = useMutation({
+    mutationFn: async ({ leadIds, salesRepId }: { leadIds: number[], salesRepId: number }) => {
+      const response = await apiRequest("POST", "/api/contacts/allocate", {
+        contactIds: leadIds,
+        assignedTo: salesRepId,
+      });
+      if (!response.ok) {
+        throw new Error("Failed to allocate leads");
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+      setIsLeadAllocationModalOpen(false);
+      setSelectedLeadsForAllocation([]);
+      setSelectedSalesRep("");
+      
+      toast({
+        title: "Leads Allocated",
+        description: `${data.updatedCount} leads successfully assigned`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Allocation Failed",
+        description: "Failed to allocate leads. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Form submission
   const onSubmit = (data: ContactFormData) => {
     addContactMutation.mutate(data);
@@ -610,14 +649,25 @@ export default function CRMView() {
             Manage your contacts and leads • Last updated: {format(new Date(), 'p')}
           </p>
         </div>
-        <Dialog open={isAddContactModalOpen} onOpenChange={setIsAddContactModalOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-orange-600 hover:bg-orange-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Add New Leads
-            </Button>
-          </DialogTrigger>
-        </Dialog>
+        <div className="flex gap-3">
+          <Dialog open={isLeadAllocationModalOpen} onOpenChange={setIsLeadAllocationModalOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="border-orange-600 text-orange-600 hover:bg-orange-50">
+                <Users className="h-4 w-4 mr-2" />
+                Allocate Leads
+              </Button>
+            </DialogTrigger>
+          </Dialog>
+          
+          <Dialog open={isAddContactModalOpen} onOpenChange={setIsAddContactModalOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-orange-600 hover:bg-orange-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Add New Leads
+              </Button>
+            </DialogTrigger>
+          </Dialog>
+        </div>
       </div>
 
       {/* Filters */}
@@ -1143,6 +1193,140 @@ export default function CRMView() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Lead Allocation Modal */}
+      <Dialog open={isLeadAllocationModalOpen} onOpenChange={setIsLeadAllocationModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Allocate Leads to Sales Representatives
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Sales Rep Selection */}
+            <div>
+              <Label htmlFor="sales-rep-select">Assign to Sales Representative:</Label>
+              <Select value={selectedSalesRep} onValueChange={setSelectedSalesRep}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a sales representative..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {salesReps.filter(rep => rep.role !== 'admin').map((rep) => (
+                    <SelectItem key={rep.id} value={rep.id.toString()}>
+                      {rep.firstName} {rep.lastName} - {rep.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Lead Selection */}
+            <div>
+              <div className="flex justify-between items-center mb-3">
+                <Label>Select Leads to Allocate ({selectedLeadsForAllocation.length} selected):</Label>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedLeadsForAllocation(filteredContacts.map(c => c.id))}
+                  >
+                    Select All
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedLeadsForAllocation([])}
+                  >
+                    Clear All
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="border rounded-lg max-h-96 overflow-y-auto">
+                <div className="grid gap-2 p-4">
+                  {filteredContacts.map((contact) => {
+                    const ageStatus = getLeadAgeStatus(contact.createdAt);
+                    const isSelected = selectedLeadsForAllocation.includes(contact.id);
+                    
+                    return (
+                      <div
+                        key={contact.id}
+                        className={`flex items-center space-x-3 p-3 rounded-lg border ${
+                          isSelected ? 'bg-orange-50 border-orange-200' : 'bg-white border-gray-200'
+                        } hover:bg-gray-50 cursor-pointer`}
+                        onClick={() => {
+                          if (isSelected) {
+                            setSelectedLeadsForAllocation(prev => prev.filter(id => id !== contact.id));
+                          } else {
+                            setSelectedLeadsForAllocation(prev => [...prev, contact.id]);
+                          }
+                        }}
+                      >
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={() => {}} // Handled by parent onClick
+                        />
+                        
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">
+                              {contact.company || `${contact.firstName} ${contact.lastName}`}
+                            </span>
+                            <Badge 
+                              className={`text-xs ${ageStatus.animation}`}
+                              style={{ backgroundColor: ageStatus.badgeColor }}
+                            >
+                              {ageStatus.description}
+                            </Badge>
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {formatPhoneNumber(contact.phone)} • {contact.email}
+                          </div>
+                          {contact.assignedTo && (
+                            <div className="text-xs text-blue-600 mt-1">
+                              Currently assigned to: {salesReps.find(rep => rep.id === contact.assignedTo)?.firstName} {salesReps.find(rep => rep.id === contact.assignedTo)?.lastName}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsLeadAllocationModalOpen(false);
+                  setSelectedLeadsForAllocation([]);
+                  setSelectedSalesRep("");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-orange-600 hover:bg-orange-700"
+                disabled={!selectedSalesRep || selectedLeadsForAllocation.length === 0 || allocateLeadsMutation.isPending}
+                onClick={() => {
+                  if (selectedSalesRep && selectedLeadsForAllocation.length > 0) {
+                    allocateLeadsMutation.mutate({
+                      leadIds: selectedLeadsForAllocation,
+                      salesRepId: parseInt(selectedSalesRep)
+                    });
+                  }
+                }}
+              >
+                {allocateLeadsMutation.isPending ? "Allocating..." : `Allocate ${selectedLeadsForAllocation.length} Leads`}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
