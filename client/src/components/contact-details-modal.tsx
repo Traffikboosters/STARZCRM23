@@ -232,11 +232,12 @@ export default function ContactDetailsModal({
                 {contact.leadStatus}
               </Badge>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <img 
                 src={traffikBoostersLogo} 
                 alt="Traffik Boosters" 
-                className="h-12 w-auto"
+                className="h-16 w-auto object-contain"
+                style={{ imageRendering: 'crisp-edges' }}
               />
               <div className="text-right">
                 <p className="text-sm font-medium text-black">More Traffik! More Sales!</p>
