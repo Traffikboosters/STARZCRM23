@@ -95,113 +95,35 @@ export default function HRPortal() {
     }
   });
 
-  // Calculate HR metrics from actual data
+  // Calculate HR metrics from filtered employee data (excluding admins)
+  const nonAdminEmployees = employees.filter((emp: User) => emp.role !== 'admin');
   const hrData = {
-    totalEmployees: employees.length,
-    salesReps: employees.filter((emp: User) => emp.role === 'sales_rep').length,
-    hrStaff: employees.filter((emp: User) => emp.department === 'hr').length,
-    admins: employees.filter((emp: User) => emp.role === 'admin').length,
-    totalPayroll: employees.reduce((sum: number, emp: User) => {
+    totalEmployees: nonAdminEmployees.length,
+    salesReps: nonAdminEmployees.filter((emp: User) => emp.role === 'sales_rep').length,
+    hrStaff: nonAdminEmployees.filter((emp: User) => emp.role === 'hr_staff').length,
+    totalPayroll: nonAdminEmployees.reduce((sum: number, emp: User) => {
       if (emp.compensationType === 'salary') {
         return sum + (emp.baseSalary || 0);
       } else {
         return sum + 60000; // Estimated annual commission earnings
       }
     }, 0),
-    avgSalary: employees.length > 0 ? employees.reduce((sum: number, emp: User) => 
-      sum + (emp.baseSalary || 60000), 0) / employees.length : 0,
-    commissionPaid: employees.filter((emp: User) => emp.compensationType === 'commission')
+    avgSalary: nonAdminEmployees.length > 0 ? nonAdminEmployees.reduce((sum: number, emp: User) => 
+      sum + (emp.baseSalary || 60000), 0) / nonAdminEmployees.length : 0,
+    commissionPaid: nonAdminEmployees.filter((emp: User) => emp.compensationType === 'commission')
       .reduce((sum: number, emp: User) => {
         const rate = typeof emp.commissionRate === 'string' ? parseFloat(emp.commissionRate) : (emp.commissionRate || 10);
         return sum + (rate * 500);
       }, 0)
   };
 
-  const mockEmployees: User[] = [
-    {
-      id: 1,
-      username: "admin",
-      role: "admin",
-      email: "michael.thompson@traffikboosters.com",
-      phone: "(877) 840-6250",
-      firstName: "Michael",
-      lastName: "Thompson",
-      extension: "101",
-      compensationType: "salary",
-      baseSalary: 85000,
-      department: "admin",
-      isActive: true,
-      createdAt: "2025-01-15T09:00:00Z",
-    },
-    {
-      id: 2,
-      username: "sarah.johnson",
-      role: "sales_rep",
-      email: "sarah.johnson@traffikboosters.com",
-      phone: "(312) 555-0198",
-      firstName: "Sarah",
-      lastName: "Johnson",
-      extension: "201",
-      compensationType: "commission",
-      commissionRate: 10.0,
-      bonusCommissionRate: 2.6,
-      commissionTier: "gold",
-      department: "sales",
-      isActive: true,
-      createdAt: "2025-02-01T09:00:00Z",
-    },
-    {
-      id: 3,
-      username: "david.chen",
-      role: "sales_rep",
-      email: "david.chen@traffikboosters.com",
-      phone: "(415) 555-0167",
-      firstName: "David",
-      lastName: "Chen",
-      extension: "202",
-      compensationType: "commission",
-      commissionRate: 10.0,
-      bonusCommissionRate: 1.2,
-      commissionTier: "silver",
-      department: "sales",
-      isActive: true,
-      createdAt: "2025-02-15T09:00:00Z",
-    },
-    {
-      id: 4,
-      username: "jennifer.martinez",
-      role: "hr_staff",
-      email: "jennifer.martinez@traffikboosters.com",
-      phone: "(213) 555-0143",
-      firstName: "Jennifer",
-      lastName: "Martinez",
-      extension: "301",
-      compensationType: "salary",
-      baseSalary: 65000,
-      department: "hr",
-      isActive: true,
-      createdAt: "2025-01-20T09:00:00Z",
-    },
-    {
-      id: 5,
-      username: "robert.williams",
-      role: "hr_staff",
-      email: "robert.williams@traffikboosters.com",
-      phone: "(404) 555-0189",
-      firstName: "Robert",
-      lastName: "Williams",
-      extension: "302",
-      compensationType: "salary",
-      baseSalary: 58000,
-      department: "hr",
-      isActive: true,
-      createdAt: "2025-03-01T09:00:00Z",
-    },
-  ];
+  // Use only real database employees (no mock data)
 
-  const filteredEmployees = employees.filter((emp: User) => {
-    const departmentMatch = selectedDepartment === 'all' || emp.department === selectedDepartment;
-    const compensationMatch = selectedCompensationType === 'all' || emp.compensationType === selectedCompensationType;
+  const filteredEmployees = employees
+    .filter((emp: User) => emp.role !== 'admin') // Remove admin users from HR Portal display
+    .filter((emp: User) => {
+      const departmentMatch = selectedDepartment === 'all' || emp.department === selectedDepartment;
+      const compensationMatch = selectedCompensationType === 'all' || emp.compensationType === selectedCompensationType;
     return departmentMatch && compensationMatch;
   });
 
