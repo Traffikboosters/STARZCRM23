@@ -96,7 +96,7 @@
             align-items: center;
             gap: 12px;
           ">
-            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" alt="Traffik Boosters" style="width: 24px; height: 24px; border-radius: 4px;">
+            <img src="https://your-domain.replit.app/assets/traffik-boosters-logo.png" alt="Traffik Boosters" style="width: 24px; height: 24px; border-radius: 4px; object-fit: contain;" onerror="this.style.display='none'">
             <div>
               <div style="font-weight: 600; font-size: 14px;">Traffik Boosters</div>
               <div style="font-size: 12px; opacity: 0.9;">More Traffik! More Sales!</div>
