@@ -50,6 +50,46 @@ const formatPhoneNumber = (phone: string | null | undefined): string => {
   return phone;
 };
 
+// Lead age calculation and styling utility
+const getLeadAgeStatus = (createdAt: string | Date) => {
+  const now = new Date();
+  const leadDate = new Date(createdAt);
+  const ageInHours = (now.getTime() - leadDate.getTime()) / (1000 * 60 * 60);
+  const ageInDays = ageInHours / 24;
+
+  if (ageInHours <= 24) {
+    return {
+      status: 'new',
+      color: 'green',
+      animation: 'animate-pulse',
+      bgColor: 'bg-green-50 border-green-200',
+      textColor: 'text-green-800',
+      badgeColor: 'bg-green-500',
+      description: 'New Lead'
+    };
+  } else if (ageInDays <= 3) {
+    return {
+      status: 'medium',
+      color: 'yellow',
+      animation: 'animate-bounce',
+      bgColor: 'bg-yellow-50 border-yellow-200',
+      textColor: 'text-yellow-800',
+      badgeColor: 'bg-yellow-500',
+      description: 'Follow Up'
+    };
+  } else {
+    return {
+      status: 'urgent',
+      color: 'red',
+      animation: 'animate-ping',
+      bgColor: 'bg-red-50 border-red-200',
+      textColor: 'text-red-800',
+      badgeColor: 'bg-red-500',
+      description: 'Urgent'
+    };
+  }
+};
+
 // Email notification component
 const EmailNotificationPopup = ({ isOpen, onClose, contact }: { isOpen: boolean; onClose: () => void; contact: Contact | null }) => {
   const [emailType, setEmailType] = useState("compose");
@@ -653,19 +693,27 @@ export default function CRMView() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredContacts.map((contact) => {
+            const ageStatus = getLeadAgeStatus(contact.createdAt);
             return (
               <Card 
                 key={contact.id} 
-                className="hover:shadow-md transition-shadow border-l-4 border-l-orange-500"
+                className={`hover:shadow-md transition-all duration-300 border-l-4 border-l-orange-500 ${ageStatus.bgColor} ${ageStatus.animation}`}
               >
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-lg flex items-center justify-between">
-                    <span className="truncate">
-                      {contact.company || `${contact.firstName} ${contact.lastName}`}
-                    </span>
+                  <div className="flex items-center justify-between mb-2">
+                    <Badge 
+                      className={`${ageStatus.badgeColor} text-white text-xs px-2 py-1 ${ageStatus.animation}`}
+                    >
+                      {ageStatus.description}
+                    </Badge>
                     <Badge variant="secondary" className="ml-2 text-xs">
                       {contact.leadStatus?.replace('_', ' ').toUpperCase() || 'NEW'}
                     </Badge>
+                  </div>
+                  <CardTitle className="text-lg">
+                    <span className="truncate">
+                      {contact.company || `${contact.firstName} ${contact.lastName}`}
+                    </span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">

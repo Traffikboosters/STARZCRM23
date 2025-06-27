@@ -46,6 +46,23 @@ export default function LeadCountDisplay({ variant = "sidebar", className = "" }
     return hoursDiff <= 24;
   }).length;
 
+  // Calculate age-based lead categories
+  const ageBasedLeads = contacts.reduce((acc, contact) => {
+    const now = new Date();
+    const contactDate = new Date(contact.createdAt);
+    const ageInHours = (now.getTime() - contactDate.getTime()) / (1000 * 60 * 60);
+    const ageInDays = ageInHours / 24;
+
+    if (ageInHours <= 24) {
+      acc.newLeads++;
+    } else if (ageInDays <= 3) {
+      acc.followUpLeads++;
+    } else {
+      acc.urgentLeads++;
+    }
+    return acc;
+  }, { newLeads: 0, followUpLeads: 0, urgentLeads: 0 });
+
   if (variant === "compact") {
     return (
       <div className={`flex items-center gap-2 ${className}`}>
@@ -155,14 +172,45 @@ export default function LeadCountDisplay({ variant = "sidebar", className = "" }
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <div className="bg-red-50 border border-red-200 p-2 rounded text-center">
-          <div className="text-lg font-bold text-red-700">{newLeads}</div>
-          <div className="text-xs text-red-600">New</div>
+      {/* Age-Based Lead Breakdown */}
+      <div className="space-y-2">
+        <div className="bg-green-50 border border-green-200 p-2 rounded animate-pulse">
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-green-600">New (0-24h):</span>
+            <span className="font-bold text-green-700 text-lg">{ageBasedLeads.newLeads}</span>
+          </div>
+          <div className="w-full bg-green-200 rounded-full h-1 mt-1">
+            <div 
+              className="bg-green-500 h-1 rounded-full" 
+              style={{ width: `${totalLeads > 0 ? (ageBasedLeads.newLeads / totalLeads) * 100 : 0}%` }}
+            ></div>
+          </div>
         </div>
-        <div className="bg-green-50 border border-green-200 p-2 rounded text-center">
-          <div className="text-lg font-bold text-green-700">{qualifiedLeads}</div>
-          <div className="text-xs text-green-600">Qualified</div>
+
+        <div className="bg-yellow-50 border border-yellow-200 p-2 rounded animate-bounce">
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-yellow-600">Follow Up (1-3d):</span>
+            <span className="font-bold text-yellow-700 text-lg">{ageBasedLeads.followUpLeads}</span>
+          </div>
+          <div className="w-full bg-yellow-200 rounded-full h-1 mt-1">
+            <div 
+              className="bg-yellow-500 h-1 rounded-full" 
+              style={{ width: `${totalLeads > 0 ? (ageBasedLeads.followUpLeads / totalLeads) * 100 : 0}%` }}
+            ></div>
+          </div>
+        </div>
+
+        <div className="bg-red-50 border border-red-200 p-2 rounded animate-ping">
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-red-600">Urgent (3+ days):</span>
+            <span className="font-bold text-red-700 text-lg">{ageBasedLeads.urgentLeads}</span>
+          </div>
+          <div className="w-full bg-red-200 rounded-full h-1 mt-1">
+            <div 
+              className="bg-red-500 h-1 rounded-full" 
+              style={{ width: `${totalLeads > 0 ? (ageBasedLeads.urgentLeads / totalLeads) * 100 : 0}%` }}
+            ></div>
+          </div>
         </div>
       </div>
 
