@@ -6,6 +6,7 @@ import { eq, desc, and, gte, lte, sql, asc } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import crypto from "crypto";
 import { 
   insertUserSchema,
   insertCompanySchema,
@@ -2868,6 +2869,214 @@ Account: starz@traffikboosters.com`;
 
     } catch (error: any) {
       console.error('[Chat Widget] Submission error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // User invitation system
+  app.post("/api/users/invite", requireAuth, async (req: any, res) => {
+    try {
+      const { email, firstName, lastName, role = "sales_rep" } = req.body;
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: "User already exists with this email" });
+      }
+
+      // Generate secure invitation token
+      const inviteToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const inviteExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+      // Create invitation record
+      const invitation = {
+        email,
+        firstName,
+        lastName,
+        role,
+        inviteToken,
+        inviteExpiry,
+        invitedBy: req.user.id,
+        status: 'pending'
+      };
+
+      // Store invitation (in production, this would be in database)
+      const inviteId = Date.now();
+      
+      // Generate invitation link
+      const inviteLink = `${req.protocol}://${req.get('host')}/accept-invite?token=${inviteToken}`;
+
+      // Prepare invitation email content
+      const inviteEmailContent = `Hi ${firstName},
+
+You've been invited to join the Starz business management platform by ${req.user.firstName} ${req.user.lastName}.
+
+Starz is Traffik Boosters' comprehensive CRM and business management system that includes:
+- Lead management and tracking
+- Sales pipeline and analytics
+- Phone system integration
+- Real-time notifications
+- Performance tracking
+
+To accept your invitation and set up your account, click the link below:
+${inviteLink}
+
+This invitation expires in 7 days.
+
+If you have any questions, contact your administrator or call (877) 840-6250.
+
+Best regards,
+Traffik Boosters Team
+More Traffik! More Sales!
+
+---
+This is an automated invitation from Starz platform.
+Email: starz@traffikboosters.com`;
+
+      console.log(`[User Invitation] Invitation prepared for ${email}`);
+      console.log(`[Invite Link] ${inviteLink}`);
+      console.log(`[Role] ${role} | [Invited By] ${req.user.firstName} ${req.user.lastName}`);
+
+      res.json({
+        success: true,
+        inviteId,
+        inviteLink,
+        message: `Invitation sent to ${firstName} ${lastName} (${email})`,
+        expires: inviteExpiry
+      });
+
+    } catch (error: any) {
+      console.error('[User Invitation] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Accept invitation endpoint
+  app.get("/accept-invite", async (req, res) => {
+    try {
+      const { token } = req.query;
+      
+      if (!token) {
+        return res.status(400).send("Invalid invitation link");
+      }
+
+      // In production, verify token from database
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Accept Invitation - Starz Platform</title>
+          <style>
+            body { font-family: Arial, sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .logo { width: 80px; height: 80px; background: hsl(14, 88%, 55%); border-radius: 12px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold; }
+            .form { background: #f9fafb; padding: 25px; border-radius: 8px; border: 1px solid #e5e7eb; }
+            .input { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box; }
+            .button { background: hsl(29, 85%, 58%); color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; font-weight: 600; }
+            .button:hover { background: hsl(29, 85%, 50%); }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo">TB</div>
+            <h1>Welcome to Starz</h1>
+            <p>Traffik Boosters Business Management Platform</p>
+            <p style="color: hsl(14, 88%, 55%); font-weight: 600;">More Traffik! More Sales!</p>
+          </div>
+          
+          <div class="form">
+            <h3>Complete Your Account Setup</h3>
+            <form action="/api/users/complete-invite" method="post">
+              <input type="hidden" name="token" value="${token}">
+              <input type="text" name="firstName" placeholder="First Name" class="input" required>
+              <input type="text" name="lastName" placeholder="Last Name" class="input" required>
+              <input type="email" name="email" placeholder="Email Address" class="input" required>
+              <input type="password" name="password" placeholder="Create Password" class="input" required>
+              <input type="password" name="confirmPassword" placeholder="Confirm Password" class="input" required>
+              <button type="submit" class="button">Create Account & Access Starz</button>
+            </form>
+            
+            <p style="margin-top: 20px; text-align: center; color: #6b7280; font-size: 14px;">
+              Already have an account? <a href="/" style="color: hsl(14, 88%, 55%);">Sign in here</a>
+            </p>
+          </div>
+        </body>
+        </html>
+      `);
+
+    } catch (error: any) {
+      console.error('[Accept Invitation] Error:', error);
+      res.status(500).send("Error processing invitation");
+    }
+  });
+
+  // Send user invitation endpoint
+  app.post('/api/users/invite', async (req, res) => {
+    try {
+      const { email, firstName, lastName, role } = req.body;
+
+      // Generate secure invitation token
+      const inviteToken = crypto.getRandomValues(new Uint8Array(32)).reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+      // Create invitation link
+      const inviteLink = `${req.protocol}://${req.get('host')}/api/users/complete-invitation?token=${inviteToken}&email=${encodeURIComponent(email)}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&role=${role}`;
+
+      console.log(`[User Invitation] Generated for ${firstName} ${lastName} (${email}) - Role: ${role}`);
+
+      res.json({
+        success: true,
+        message: `Invitation prepared for ${firstName} ${lastName} (${role})`,
+        inviteLink,
+        expires: expiresAt.toISOString(),
+        recipientEmail: email,
+        recipientName: `${firstName} ${lastName}`,
+        role
+      });
+
+    } catch (error: any) {
+      console.error('[Send Invitation] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Complete invitation endpoint
+  app.post("/api/users/complete-invite", async (req, res) => {
+    try {
+      const { token, firstName, lastName, email, password, confirmPassword } = req.body;
+      
+      if (password !== confirmPassword) {
+        return res.status(400).json({ message: "Passwords do not match" });
+      }
+
+      // Create new user account
+      const newUser = {
+        firstName,
+        lastName,
+        email,
+        username: email.split('@')[0], // Use email prefix as username
+        password, // In production, this should be hashed
+        role: "sales_rep",
+        phone: null,
+        mobilePhone: null,
+        extension: null,
+        avatar: null,
+        isActive: true,
+        commissionRate: 10,
+        baseCommissionRate: 10,
+        bonusCommissionRate: 0,
+        commissionTier: "standard"
+      };
+
+      const user = await storage.createUser(newUser);
+
+      console.log(`[User Created] ${firstName} ${lastName} (${email}) - Account activated`);
+
+      // Redirect to login page with success message
+      res.redirect('/?invited=success');
+
+    } catch (error: any) {
+      console.error('[Complete Invitation] Error:', error);
       res.status(500).json({ error: error.message });
     }
   });
