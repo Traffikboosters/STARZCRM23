@@ -760,12 +760,12 @@ export default function CRMView() {
             return (
               <Card 
                 key={contact.id} 
-                className={`hover:shadow-md transition-all duration-300 border-l-4 border-l-orange-500 ${ageStatus.bgColor} ${ageStatus.animation}`}
+                className={`hover:shadow-md transition-all duration-300 border-l-4 border-l-orange-500 ${ageStatus.bgColor}`}
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between mb-3">
                     <Badge 
-                      className={`${ageStatus.badgeColor} text-white text-xs px-2 py-1 ${ageStatus.animation}`}
+                      className={`${ageStatus.badgeColor} text-white text-xs px-2 py-1 ${ageStatus.description === '0-24H' ? ageStatus.animation : ''}`}
                     >
                       {ageStatus.description}
                     </Badge>
