@@ -25,6 +25,7 @@ import { UserManagement } from "@/components/user-management";
 import { SalesRepAnalytics } from "@/components/sales-rep-analytics";
 import { DialTrackingDashboard } from "@/components/dial-tracking-dashboard";
 import PricingSheet from "@/pages/pricing-sheet";
+import SalesLeaderboard from "@/components/sales-leaderboard";
 import VideoCallModal from "@/components/video-call-modal";
 import EventModal from "@/components/event-modal";
 import ContactDetailsModal from "@/components/contact-details-modal";
@@ -90,6 +91,8 @@ export default function Dashboard() {
         return <PricingSheet />;
       case "sales-funnels":
         return <SalesFunnelBuilder />;
+      case "leaderboard":
+        return <SalesLeaderboard />;
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
     }

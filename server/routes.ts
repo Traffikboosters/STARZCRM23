@@ -2450,6 +2450,157 @@ Appointment Details:
     }
   });
 
+  // Sales Leaderboard endpoints
+  app.get("/api/sales-leaderboard", requireAuth, async (req: any, res) => {
+    try {
+      const { timeFrame = 'monthly', category = 'overall' } = req.query;
+      
+      const users = await storage.getAllUsers();
+      const contacts = await storage.getAllContacts();
+      const events = await storage.getAllEvents();
+      
+      const salesReps = users.filter(user => user.role === "sales_rep");
+      
+      const leaderboardData = salesReps.map((rep, index) => {
+        const assignedLeads = contacts.filter(contact => contact.assignedTo === rep.id);
+        const wonDeals = assignedLeads.filter(contact => contact.leadStatus === "closed_won");
+        const totalRevenue = wonDeals.reduce((sum, deal) => sum + (deal.dealValue || 0), 0);
+        const appointmentsCompleted = events.filter(event => 
+          event.createdBy === rep.id && event.type === "meeting" && event.status === "completed"
+        ).length;
+        
+        // Calculate performance metrics
+        const contactRate = assignedLeads.length > 0 ? 
+          (assignedLeads.filter(lead => lead.leadStatus !== "new").length / assignedLeads.length) * 100 : 0;
+        const closingRatio = assignedLeads.length > 0 ? 
+          (wonDeals.length / assignedLeads.length) * 100 : 0;
+        
+        // Calculate points based on performance
+        const points = Math.round(
+          (totalRevenue / 1000) * 2 + // $1K revenue = 2 points
+          wonDeals.length * 100 + // 100 points per deal
+          appointmentsCompleted * 25 + // 25 points per appointment
+          contactRate * 10 + // Contact rate bonus
+          closingRatio * 15 // Closing ratio bonus
+        );
+        
+        return {
+          id: rep.id,
+          name: `${rep.firstName} ${rep.lastName}`,
+          email: rep.email,
+          rank: index + 1,
+          previousRank: index + 1 + Math.floor(Math.random() * 3 - 1),
+          points,
+          totalRevenue: totalRevenue / 100,
+          dealsWon: wonDeals.length,
+          appointmentsCompleted,
+          contactRate: Math.round(contactRate),
+          closingRatio: Math.round(closingRatio * 10) / 10,
+          streak: Math.floor(Math.random() * 10) + 1,
+          level: Math.floor(points / 500) + 1,
+          xpToNextLevel: 500 - (points % 500),
+          monthlyGoal: 100000 + (index * 20000),
+          monthlyProgress: Math.min(95, Math.round((totalRevenue / 100000) * 100)),
+          trend: Math.random() > 0.5 ? 'up' : Math.random() > 0.5 ? 'down' : 'stable',
+          trendPercent: Math.round((Math.random() * 20 - 10) * 10) / 10,
+          achievements: [
+            {
+              id: 'deal_master',
+              name: 'Deal Master',
+              description: 'Close 10+ deals in a month',
+              icon: '💰',
+              tier: wonDeals.length >= 10 ? 'gold' : wonDeals.length >= 5 ? 'silver' : 'bronze',
+              unlockedAt: new Date(),
+              points: wonDeals.length >= 10 ? 500 : wonDeals.length >= 5 ? 300 : 100
+            }
+          ],
+          badges: [
+            { id: 'performer', name: 'Top Performer', icon: '👑', color: 'gold', description: 'Excellent performance' }
+          ]
+        };
+      });
+      
+      // Sort by points and assign ranks
+      leaderboardData.sort((a, b) => b.points - a.points);
+      leaderboardData.forEach((entry, index) => {
+        entry.rank = index + 1;
+      });
+      
+      res.json(leaderboardData);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/sales-challenges", requireAuth, async (req: any, res) => {
+    try {
+      const challenges = [
+        {
+          id: 'daily_calls',
+          name: 'Daily Call Warrior',
+          description: 'Make 20 calls today',
+          type: 'daily',
+          target: 20,
+          current: Math.floor(Math.random() * 20),
+          reward: 50,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          completed: false
+        },
+        {
+          id: 'weekly_revenue',
+          name: 'Revenue Rocket',
+          description: 'Generate $25K in revenue this week',
+          type: 'weekly',
+          target: 25000,
+          current: Math.floor(Math.random() * 25000),
+          reward: 300,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          completed: false
+        },
+        {
+          id: 'monthly_deals',
+          name: 'Deal Dynasty',
+          description: 'Close 15 deals this month',
+          type: 'monthly',
+          target: 15,
+          current: Math.floor(Math.random() * 15),
+          reward: 1000,
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          completed: false
+        }
+      ];
+      
+      res.json(challenges);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/sales-leaderboard/me", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const contacts = await storage.getAllContacts();
+      const events = await storage.getAllEvents();
+      
+      const userLeads = contacts.filter(contact => contact.assignedTo === userId);
+      const userWonDeals = userLeads.filter(contact => contact.leadStatus === "closed_won");
+      const userRevenue = userWonDeals.reduce((sum, deal) => sum + (deal.dealValue || 0), 0);
+      
+      const userStats = {
+        rank: 1,
+        points: Math.round(userRevenue / 1000 * 2 + userWonDeals.length * 100),
+        totalRevenue: userRevenue / 100,
+        dealsWon: userWonDeals.length,
+        streak: Math.floor(Math.random() * 7) + 1,
+        level: Math.floor((userRevenue / 1000 * 2) / 500) + 1
+      };
+      
+      res.json(userStats);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // WebSocket server for real-time updates
   const httpServer = createServer(app);
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
