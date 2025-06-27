@@ -108,9 +108,9 @@ export default function EmailMarketing() {
         templateId: selectedTemplate,
         contactId: previewContact,
         senderInfo: {
-          name: "Michael Thompson",
-          email: "michael.thompson@traffikboosters.com",
-          role: "Growth Specialist"
+          name: "Traffik Boosters Marketing",
+          email: "moretraffikmoresales@traffikboosters.com",
+          role: "Marketing Team"
         }
       });
       return response.json();
@@ -123,8 +123,8 @@ export default function EmailMarketing() {
       name: "",
       subject: "",
       content: "",
-      senderName: "Michael Thompson",
-      senderEmail: "michael.thompson@traffikboosters.com",
+      senderName: "Traffik Boosters Marketing",
+      senderEmail: "moretraffikmoresales@traffikboosters.com",
     },
   });
 
@@ -152,14 +152,18 @@ export default function EmailMarketing() {
   });
 
   const sendCampaignMutation = useMutation({
-    mutationFn: async ({ campaignId, templateId }: { campaignId: string; templateId: string }) => {
+    mutationFn: async ({ campaignId, templateId, senderInfo }: { 
+      campaignId: string; 
+      templateId: string;
+      senderInfo?: { name: string; email: string; role: string };
+    }) => {
       const response = await apiRequest("POST", `/api/marketing/campaigns/${campaignId}/send`, {
         templateId,
         contactIds: selectedContacts.length > 0 ? selectedContacts : null,
-        senderInfo: {
-          name: "Michael Thompson",
-          email: "michael.thompson@traffikboosters.com",
-          role: "Growth Specialist"
+        senderInfo: senderInfo || {
+          name: "Traffik Boosters Marketing",
+          email: "moretraffikmoresales@traffikboosters.com",
+          role: "Marketing Team"
         }
       });
       return response.json();
@@ -195,7 +199,15 @@ export default function EmailMarketing() {
       return;
     }
 
-    sendCampaignMutation.mutate({ campaignId, templateId: selectedTemplate });
+    sendCampaignMutation.mutate({ 
+      campaignId, 
+      templateId: selectedTemplate,
+      senderInfo: {
+        name: "Traffik Boosters Marketing",
+        email: "moretraffikmoresales@traffikboosters.com",
+        role: "Marketing Team"
+      }
+    });
   };
 
   const handleContactToggle = (contactId: number) => {

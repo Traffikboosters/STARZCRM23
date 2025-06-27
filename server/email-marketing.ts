@@ -59,7 +59,7 @@ export class EmailMarketingService {
       port: 465,
       secure: true,
       auth: {
-        user: 'starz@traffikboosters.com',
+        user: 'moretraffikmoresales@traffikboosters.com',
         pass: 'Gn954793*'
       }
     });
@@ -340,7 +340,7 @@ Email: {{senderEmail}}
         const personalizedSubject = this.personalizeContent(template.subject, contact, senderInfo);
 
         await this.emailTransporter.sendMail({
-          from: `${senderInfo.name} - Traffik Boosters <${senderInfo.email}>`,
+          from: `${senderInfo.name} <moretraffikmoresales@traffikboosters.com>`,
           to: contact.email,
           subject: personalizedSubject,
           attachments: [{

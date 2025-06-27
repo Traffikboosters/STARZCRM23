@@ -3730,9 +3730,9 @@ Email: support@traffikboosters.com
         marketingContacts,
         templateId,
         senderInfo || {
-          name: 'Michael Thompson',
-          email: 'michael.thompson@traffikboosters.com',
-          role: 'Growth Specialist'
+          name: 'Traffik Boosters Marketing',
+          email: 'moretraffikmoresales@traffikboosters.com',
+          role: 'Marketing Team'
         }
       );
 
@@ -3777,8 +3777,8 @@ Email: support@traffikboosters.com
         .replace(/\{\{firstName\}\}/g, marketingContact.firstName || 'there')
         .replace(/\{\{lastName\}\}/g, marketingContact.lastName || '')
         .replace(/\{\{company\}\}/g, marketingContact.company || 'your business')
-        .replace(/\{\{senderName\}\}/g, senderInfo?.name || 'Michael Thompson')
-        .replace(/\{\{senderEmail\}\}/g, senderInfo?.email || 'michael.thompson@traffikboosters.com');
+        .replace(/\{\{senderName\}\}/g, senderInfo?.name || 'Traffik Boosters Marketing')
+        .replace(/\{\{senderEmail\}\}/g, senderInfo?.email || 'moretraffikmoresales@traffikboosters.com');
 
       const personalizedSubject = template.subject
         .replace(/\{\{firstName\}\}/g, marketingContact.firstName || 'there')
