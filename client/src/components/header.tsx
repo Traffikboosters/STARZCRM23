@@ -111,16 +111,21 @@ export default function Header() {
       <div className="relative flex items-center justify-between gap-6">
         <div className="flex items-center space-x-4 flex-shrink-0">
           {/* Traffik Boosters Logo with Slogan */}
-          <div className="flex flex-col items-center">
+          <div className="flex items-center space-x-3">
             <img 
               src={traffikBoostersLogo} 
               alt="Traffik Boosters" 
-              className="h-24 w-auto object-contain"
+              className="h-20 w-auto object-contain"
               style={{ imageRendering: 'crisp-edges' }}
             />
-            <p className="text-sm font-bold text-black whitespace-nowrap mt-1">
-              More Traffik! More Sales!
-            </p>
+            <div className="flex flex-col justify-center space-y-1">
+              <p className="text-xs font-bold text-black whitespace-nowrap leading-tight">
+                More Traffik!
+              </p>
+              <p className="text-xs font-bold text-black whitespace-nowrap leading-tight">
+                More Sales!
+              </p>
+            </div>
           </div>
         </div>
         

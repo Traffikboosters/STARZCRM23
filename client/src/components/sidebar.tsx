@@ -122,9 +122,9 @@ export default function Sidebar({
               className="w-12 h-auto mx-auto object-contain mb-3"
               style={{ imageRendering: 'crisp-edges' }}
             />
-            <div className="text-[10px] font-bold text-black leading-tight space-y-1">
-              <div>More Traffik!</div>
-              <div>More Sales!</div>
+            <div className="text-[9px] font-bold text-black leading-relaxed space-y-1 tracking-tight">
+              <div className="whitespace-nowrap">More Traffik!</div>
+              <div className="whitespace-nowrap">More Sales!</div>
             </div>
           </div>
         )}
