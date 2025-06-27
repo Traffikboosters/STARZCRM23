@@ -699,12 +699,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('Starting Bark.com lead extraction...');
       
-      // Broadcast start of scraping
+      // Send lead extraction start notification
       broadcast({
-        type: 'scraping_started',
+        type: 'lead_extraction_start',
         platform: 'Bark.com',
         timestamp: new Date().toISOString(),
-        message: 'Starting lead extraction from Bark.com...'
+        message: 'Starting manual lead extraction from Bark.com...'
       });
       
       const barkLeads = await generateBarkLeads();
@@ -755,13 +755,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
-      // Broadcast completion with lead extraction notification
+      // Send lead extraction complete notification
       broadcast({
-        type: 'scraping_completed',
+        type: 'lead_extraction_complete',
         platform: 'Bark.com',
-        leadsFound: barkLeads.length,
+        leadsCount: barkLeads.length,
         contactsCreated: createdContacts.length,
-        totalLeads: createdContacts.length,
         timestamp: new Date().toISOString(),
         message: `Successfully extracted ${barkLeads.length} leads from Bark.com`
       });

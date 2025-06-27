@@ -153,8 +153,9 @@ export class LiveScrapingEngine {
     const startTime = new Date();
     const metrics = this.jobMetrics.get(job.id)!;
     
+    // Send lead extraction start notification
     this.broadcast({
-      type: 'scheduled_scraping_started',
+      type: 'lead_extraction_start',
       jobId: job.id,
       jobName: job.name,
       platform: job.platform,
@@ -186,12 +187,13 @@ export class LiveScrapingEngine {
       metrics.averageLeadsPerRun = metrics.totalLeadsExtracted / metrics.successfulRuns;
       metrics.lastSuccessfulRun = new Date();
 
+      // Send lead extraction complete notification
       this.broadcast({
-        type: 'scheduled_scraping_completed',
+        type: 'lead_extraction_complete',
         jobId: job.id,
         jobName: job.name,
         platform: job.platform,
-        leadsExtracted,
+        leadsCount: leadsExtracted,
         duration: Date.now() - startTime.getTime(),
         timestamp: new Date().toISOString(),
         metrics: metrics,

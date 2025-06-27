@@ -46,7 +46,136 @@ interface JobMetrics {
 
 export default function LiveDataExtractor() {
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
+  const [lastNotificationTime, setLastNotificationTime] = useState<number>(0);
+  const [isMonitoringActive, setIsMonitoringActive] = useState(false);
+  const [extractionInProgress, setExtractionInProgress] = useState(false);
   const queryClient = useQueryClient();
+
+  // Audio notification function
+  const playNotificationSound = () => {
+    const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmMcBzuL0/LSdSYFKHfH7N+QQAoUXrTn66hVFApGn+DymlAGAD+Nz9nqfwIJGHbF8NqEQwYWTKfc8OKfSBEOVqXd7s+FOQUJJ2Y1pJNKEgxGm9jR1rVjGwU7ldP0z5M/CDCa0fDQhEQFGT+m4+7JZyUCjXXh7I1GCBo+jdXqjQsNP4rVvbPKkwgJI2D0dYdDt2EQGmGVdgVPa2xqDw=');
+    audio.volume = 0.3;
+    audio.play().catch(() => {}); // Ignore errors if audio fails
+  };
+
+  // Desktop notification function
+  const showDesktopNotification = (title: string, message: string) => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, {
+        body: message,
+        icon: '/favicon.ico',
+        tag: 'lead-extraction'
+      });
+    }
+  };
+
+  // Request notification permission on component mount
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  // WebSocket connection for real-time monitoring
+  useEffect(() => {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const socket = new WebSocket(wsUrl);
+
+    socket.onopen = () => {
+      console.log('Live monitoring WebSocket connected');
+      setIsMonitoringActive(true);
+      
+      // Show monitoring active notification
+      toast({
+        title: "Live Monitoring Active",
+        description: "Real-time lead extraction monitoring is now active",
+        duration: 3000,
+      });
+      
+      showDesktopNotification(
+        "Starz Live Monitoring", 
+        "Real-time lead extraction monitoring activated"
+      );
+    };
+
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === 'lead_extraction_start') {
+          setExtractionInProgress(true);
+          
+          toast({
+            title: "Lead Extraction Started",
+            description: `Extracting leads from ${data.platform}...`,
+          });
+          
+          playNotificationSound();
+          showDesktopNotification(
+            "Lead Extraction Active", 
+            `Now extracting leads from ${data.platform}`
+          );
+        }
+        
+        if (data.type === 'lead_extraction_complete') {
+          setExtractionInProgress(false);
+          
+          const now = Date.now();
+          // Only show notifications if it's been more than 30 seconds since last one
+          if (now - lastNotificationTime > 30000) {
+            setLastNotificationTime(now);
+            
+            toast({
+              title: "Lead Extraction Complete",
+              description: `Successfully extracted ${data.leadsCount || 0} leads from ${data.platform}`,
+              duration: 5000,
+            });
+            
+            playNotificationSound();
+            showDesktopNotification(
+              "Lead Extraction Complete", 
+              `${data.leadsCount || 0} new leads extracted from ${data.platform}`
+            );
+          }
+          
+          // Refresh contact data
+          queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+        }
+        
+        if (data.type === 'job_status_change') {
+          toast({
+            title: "Job Status Changed",
+            description: `${data.jobName} is now ${data.status}`,
+          });
+        }
+        
+      } catch (error) {
+        console.error('Error parsing WebSocket message:', error);
+      }
+    };
+
+    socket.onclose = () => {
+      console.log('Live monitoring WebSocket disconnected');
+      setIsMonitoringActive(false);
+      
+      toast({
+        title: "Live Monitoring Disconnected",
+        description: "Attempting to reconnect...",
+        variant: "destructive",
+      });
+    };
+
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+      setIsMonitoringActive(false);
+    };
+
+    // Cleanup on component unmount
+    return () => {
+      socket.close();
+    };
+  }, [queryClient, lastNotificationTime]);
 
   // Fetch live scraping status
   const { data: scrapingStatus, isLoading } = useQuery({
@@ -196,6 +325,21 @@ export default function LiveDataExtractor() {
         </div>
         
         <div className="flex items-center gap-4">
+          {/* Live Monitoring Status */}
+          <Card className={`p-4 ${isMonitoringActive ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`}>
+            <div className="flex items-center gap-3">
+              <div className={`w-3 h-3 rounded-full ${isMonitoringActive ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+              <div>
+                <p className="font-semibold text-sm">
+                  {isMonitoringActive ? "Live Monitoring Active" : "Monitoring Disconnected"}
+                </p>
+                <p className="text-xs text-gray-600">
+                  {extractionInProgress ? "Extracting leads..." : "Ready for extraction"}
+                </p>
+              </div>
+            </div>
+          </Card>
+
           <Button
             onClick={() => testBarkMutation.mutate()}
             disabled={testBarkMutation.isPending}
