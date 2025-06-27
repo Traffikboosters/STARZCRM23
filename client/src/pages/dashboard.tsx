@@ -36,6 +36,7 @@ import { LocationTracker } from "@/components/location-tracker";
 import LiveDataExtractor from "@/components/live-data-extractor";
 import EmailNotificationSystem from "@/components/email-notification-system";
 import EmailMarketing from "@/components/email-marketing";
+import { ChatWidgetBackOffice } from "@/components/chat-widget-backoffice";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -90,6 +91,8 @@ export default function Dashboard() {
         return <SecureFileManager />;
       case "chat":
         return <ChatWidget />;
+      case "chat-backoffice":
+        return <ChatWidgetBackOffice />;
       case "documents":
         return <DocumentSigning />;
       case "hr":

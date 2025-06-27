@@ -16,12 +16,17 @@ import {
   insertAutomationSchema,
   insertScrapingJobSchema,
   insertCallLogSchema,
+  chatConversations,
+  chatMessages,
+  contacts,
+  users,
   type User,
   type Contact,
   type Event,
   type File,
   type CallLog
 } from "../shared/schema";
+import { db } from "./db";
 import { storage } from "./storage";
 import { AILeadScoringEngine } from "./ai-lead-scoring";
 import { AIConversationStarterEngine } from "./ai-conversation-starters";
@@ -3879,6 +3884,236 @@ Email: support@traffikboosters.com
 
     } catch (error: any) {
       console.error('[Complete Invitation] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Chat widget back office API routes
+  
+  // Get all chat conversations with contact and assignment details
+  app.get("/api/chat/conversations", async (req, res) => {
+    try {
+      const conversations = await db.select({
+        id: chatConversations.id,
+        contactId: chatConversations.contactId,
+        assignedTo: chatConversations.assignedTo,
+        status: chatConversations.status,
+        priority: chatConversations.priority,
+        lastMessageAt: chatConversations.lastMessageAt,
+        notes: chatConversations.notes,
+        createdAt: chatConversations.createdAt,
+        contact: {
+          firstName: contacts.firstName,
+          lastName: contacts.lastName,
+          email: contacts.email,
+          phone: contacts.phone,
+          company: contacts.company,
+        },
+        assignedRep: {
+          firstName: users.firstName,
+          lastName: users.lastName,
+          workEmail: users.workEmail,
+        }
+      })
+      .from(chatConversations)
+      .leftJoin(contacts, eq(chatConversations.contactId, contacts.id))
+      .leftJoin(users, eq(chatConversations.assignedTo, users.id))
+      .orderBy(desc(chatConversations.lastMessageAt), desc(chatConversations.createdAt));
+
+      // Get message counts and last message for each conversation
+      const conversationsWithDetails = await Promise.all(
+        conversations.map(async (conv) => {
+          const lastMessage = await db.select({ message: chatMessages.message })
+            .from(chatMessages)
+            .where(eq(chatMessages.contactId, conv.contactId))
+            .orderBy(desc(chatMessages.createdAt))
+            .limit(1);
+
+          const messageCount = await db.select({ count: sql`count(*)` })
+            .from(chatMessages)
+            .where(eq(chatMessages.contactId, conv.contactId));
+
+          return {
+            ...conv,
+            lastMessage: lastMessage[0]?.message || null,
+            messageCount: Number(messageCount[0]?.count) || 0,
+          };
+        })
+      );
+
+      res.json(conversationsWithDetails);
+    } catch (error: any) {
+      console.error('[Chat Conversations] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get messages for a specific conversation
+  app.get("/api/chat/messages/:conversationId", async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.conversationId);
+      
+      // Get the conversation to find the contact
+      const conversation = await db.select()
+        .from(chatConversations)
+        .where(eq(chatConversations.id, conversationId))
+        .limit(1);
+
+      if (!conversation[0]) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+
+      const messages = await db.select({
+        id: chatMessages.id,
+        contactId: chatMessages.contactId,
+        senderId: chatMessages.senderId,
+        message: chatMessages.message,
+        type: chatMessages.type,
+        isFromContact: chatMessages.isFromContact,
+        createdAt: chatMessages.createdAt,
+        sender: {
+          firstName: users.firstName,
+          lastName: users.lastName,
+        }
+      })
+      .from(chatMessages)
+      .leftJoin(users, eq(chatMessages.senderId, users.id))
+      .where(eq(chatMessages.contactId, conversation[0].contactId))
+      .orderBy(chatMessages.createdAt);
+
+      res.json(messages);
+    } catch (error: any) {
+      console.error('[Chat Messages] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update conversation (assign, status, priority)
+  app.patch("/api/chat/conversations/:id", async (req, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const updates = req.body;
+
+      const [updatedConversation] = await db.update(chatConversations)
+        .set({
+          ...updates,
+          updatedAt: new Date(),
+        })
+        .where(eq(chatConversations.id, conversationId))
+        .returning();
+
+      if (!updatedConversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+
+      // Broadcast update to connected clients
+      broadcast({
+        type: 'conversation_updated',
+        data: updatedConversation,
+        timestamp: new Date().toISOString(),
+      });
+
+      res.json(updatedConversation);
+    } catch (error: any) {
+      console.error('[Update Conversation] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Send a message in a conversation
+  app.post("/api/chat/messages", async (req, res) => {
+    try {
+      const { contactId, senderId, message, isFromContact = false } = req.body;
+
+      // Insert the new message
+      const [newMessage] = await db.insert(chatMessages)
+        .values({
+          contactId,
+          senderId,
+          message,
+          type: 'text',
+          isFromContact,
+          createdAt: new Date(),
+        })
+        .returning();
+
+      // Update conversation last message time
+      await db.update(chatConversations)
+        .set({
+          lastMessageAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(chatConversations.contactId, contactId));
+
+      // Get sender details for the response
+      const messageWithSender = await db.select({
+        id: chatMessages.id,
+        contactId: chatMessages.contactId,
+        senderId: chatMessages.senderId,
+        message: chatMessages.message,
+        type: chatMessages.type,
+        isFromContact: chatMessages.isFromContact,
+        createdAt: chatMessages.createdAt,
+        sender: {
+          firstName: users.firstName,
+          lastName: users.lastName,
+        }
+      })
+      .from(chatMessages)
+      .leftJoin(users, eq(chatMessages.senderId, users.id))
+      .where(eq(chatMessages.id, newMessage.id))
+      .limit(1);
+
+      // Broadcast new message to connected clients
+      broadcast({
+        type: 'new_message',
+        data: messageWithSender[0],
+        timestamp: new Date().toISOString(),
+      });
+
+      res.json(messageWithSender[0]);
+    } catch (error: any) {
+      console.error('[Send Message] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Create conversation when widget contact is submitted
+  app.post("/api/chat/conversations", async (req, res) => {
+    try {
+      const { contactId, priority = 'normal' } = req.body;
+
+      // Check if conversation already exists for this contact
+      const existingConversation = await db.select()
+        .from(chatConversations)
+        .where(eq(chatConversations.contactId, contactId))
+        .limit(1);
+
+      if (existingConversation[0]) {
+        return res.json(existingConversation[0]);
+      }
+
+      // Create new conversation
+      const [newConversation] = await db.insert(chatConversations)
+        .values({
+          contactId,
+          status: 'active',
+          priority,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .returning();
+
+      // Broadcast new conversation to connected clients
+      broadcast({
+        type: 'new_conversation',
+        data: newConversation,
+        timestamp: new Date().toISOString(),
+      });
+
+      res.json(newConversation);
+    } catch (error: any) {
+      console.error('[Create Conversation] Error:', error);
       res.status(500).json({ error: error.message });
     }
   });
