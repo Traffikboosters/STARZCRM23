@@ -21,6 +21,7 @@ export function LocationTracker() {
   const [selectedState, setSelectedState] = useState("all");
   const [selectedCity, setSelectedCity] = useState("all");
   const [selectedCounty, setSelectedCounty] = useState("all");
+  const [selectedIndustry, setSelectedIndustry] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [targetingMode, setTargetingMode] = useState("view"); // view, target, analyze
 
@@ -35,6 +36,37 @@ export function LocationTracker() {
   const { data: companies = [] } = useQuery<any[]>({
     queryKey: ["/api/companies"]
   });
+
+  // Google Maps industry categories for precise targeting
+  const googleMapsIndustries = [
+    { value: "restaurant", label: "Restaurants & Food Service", keywords: ["restaurant", "cafe", "food", "dining", "kitchen", "bakery", "deli"] },
+    { value: "retail", label: "Retail & Shopping", keywords: ["store", "shop", "retail", "boutique", "market", "mall"] },
+    { value: "automotive", label: "Automotive Services", keywords: ["auto", "car", "mechanic", "repair", "dealership", "garage"] },
+    { value: "healthcare", label: "Healthcare & Medical", keywords: ["medical", "doctor", "clinic", "hospital", "dental", "health"] },
+    { value: "professional", label: "Professional Services", keywords: ["lawyer", "attorney", "accounting", "consulting", "financial"] },
+    { value: "beauty", label: "Beauty & Wellness", keywords: ["salon", "spa", "beauty", "massage", "fitness", "gym"] },
+    { value: "home", label: "Home Services", keywords: ["plumbing", "electrical", "hvac", "cleaning", "landscaping", "construction"] },
+    { value: "real_estate", label: "Real Estate", keywords: ["real estate", "property", "realtor", "mortgage", "appraisal"] },
+    { value: "education", label: "Education & Training", keywords: ["school", "education", "training", "tutoring", "academy"] },
+    { value: "entertainment", label: "Entertainment & Recreation", keywords: ["entertainment", "recreation", "gaming", "sports", "theater"] },
+    { value: "technology", label: "Technology & IT", keywords: ["technology", "software", "computer", "digital", "web", "tech"] },
+    { value: "manufacturing", label: "Manufacturing & Industrial", keywords: ["manufacturing", "industrial", "factory", "production", "warehouse"] }
+  ];
+
+  // Extract industry from contact data using Google Maps categories
+  const extractIndustryFromGoogleMaps = (notes: string = "", company: string = "", position: string = "") => {
+    const text = `${notes} ${company} ${position}`.toLowerCase();
+    
+    for (const industry of googleMapsIndustries) {
+      for (const keyword of industry.keywords) {
+        if (text.includes(keyword)) {
+          return industry.value;
+        }
+      }
+    }
+    
+    return "unknown";
+  };
 
   // Enhanced location extraction with city, state, county parsing
   const extractDetailedLocation = (notes: string, company?: string) => {
@@ -130,32 +162,37 @@ export function LocationTracker() {
     return { city, state, county, fullLocation };
   };
 
-  // Process leads with enhanced location data
+  // Process leads with enhanced location and industry data
   const leadsWithLocations = contacts.map(contact => {
     const locationData = extractDetailedLocation(contact.notes, contact.company);
+    const industry = extractIndustryFromGoogleMaps(contact.notes, contact.company, contact.position);
     
     return {
       ...contact,
       ...locationData,
       location: locationData.fullLocation,
-      region: locationData.state || 'Unknown'
+      region: locationData.state || 'Unknown',
+      industry
     };
   });
 
-  // Get unique states, cities, counties for filtering
+  // Get unique states, cities, counties, and industries for filtering
   const allStates = leadsWithLocations.map(lead => lead.state).filter(Boolean);
   const allCities = leadsWithLocations.map(lead => lead.city).filter(Boolean);
   const allCounties = leadsWithLocations.map(lead => lead.county).filter(Boolean);
+  const allIndustries = leadsWithLocations.map(lead => lead.industry).filter(industry => industry !== "unknown");
   
   const uniqueStates = Array.from(new Set(allStates)).sort();
   const uniqueCities = Array.from(new Set(allCities)).sort();
   const uniqueCounties = Array.from(new Set(allCounties)).sort();
+  const uniqueIndustries = Array.from(new Set(allIndustries)).sort();
 
-  // Apply geographic filters
+  // Apply geographic and industry filters
   const filteredLeads = leadsWithLocations.filter(lead => {
     if (selectedState !== "all" && lead.state !== selectedState) return false;
     if (selectedCity !== "all" && lead.city !== selectedCity) return false;
     if (selectedCounty !== "all" && lead.county !== selectedCounty) return false;
+    if (selectedIndustry !== "all" && lead.industry !== selectedIndustry) return false;
     if (searchQuery && !lead.fullLocation.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     return true;
   });
@@ -183,7 +220,7 @@ export function LocationTracker() {
         </p>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
           <div>
             <Label htmlFor="targeting-mode">Targeting Mode</Label>
             <Select value={targetingMode} onValueChange={setTargetingMode}>
@@ -248,6 +285,23 @@ export function LocationTracker() {
               </SelectContent>
             </Select>
           </div>
+
+          <div>
+            <Label htmlFor="industry-filter">Google Maps Industry</Label>
+            <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Industries" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Industries</SelectItem>
+                {googleMapsIndustries.map((industry) => (
+                  <SelectItem key={industry.value} value={industry.value}>
+                    {industry.label} ({allIndustries.filter(i => i === industry.value).length})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="flex items-center gap-4">
@@ -272,6 +326,7 @@ export function LocationTracker() {
                 setSelectedState("all");
                 setSelectedCity("all");
                 setSelectedCounty("all");
+                setSelectedIndustry("all");
                 setSearchQuery("");
               }}
             >
@@ -286,11 +341,11 @@ export function LocationTracker() {
           </div>
         </div>
 
-        {(selectedState !== "all" || selectedCity !== "all" || selectedCounty !== "all" || searchQuery) && (
+        {(selectedState !== "all" || selectedCity !== "all" || selectedCounty !== "all" || selectedIndustry !== "all" || searchQuery) && (
           <div className="mt-4 p-3 bg-blue-50 rounded-lg">
             <div className="flex items-center gap-2 mb-2">
               <Filter className="w-4 h-4 text-blue-600" />
-              <span className="font-medium text-blue-800">Active Filters:</span>
+              <span className="font-medium text-blue-800">Active Targeting Filters:</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {selectedState !== "all" && (
@@ -308,6 +363,11 @@ export function LocationTracker() {
                   County: {selectedCounty}
                 </Badge>
               )}
+              {selectedIndustry !== "all" && (
+                <Badge variant="default" className="bg-red-600">
+                  Industry: {googleMapsIndustries.find(i => i.value === selectedIndustry)?.label || selectedIndustry}
+                </Badge>
+              )}
               {searchQuery && (
                 <Badge variant="default" className="bg-orange-600">
                   Search: "{searchQuery}"
@@ -315,7 +375,7 @@ export function LocationTracker() {
               )}
             </div>
             <p className="text-sm text-blue-700 mt-2">
-              Showing {filteredLeads.length} of {contacts.length} total leads
+              Showing {filteredLeads.length} of {contacts.length} total leads with Google Maps industry data
             </p>
           </div>
         )}
