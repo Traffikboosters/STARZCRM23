@@ -56,6 +56,7 @@ import ClickToCallButton from "@/components/click-to-call-button";
 import { authService } from "@/lib/auth";
 import { Contact, ContactNote, LeadIntake } from "@shared/schema";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
+import ConversationStarters from "@/components/conversation-starters";
 
 interface ContactDetailsModalProps {
   contact: Contact | null;
@@ -248,12 +249,13 @@ export default function ContactDetailsModal({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger key="overview-tab" value="overview">Overview</TabsTrigger>
             <TabsTrigger key="notes-tab" value="notes">Notes ({notes.length})</TabsTrigger>
             <TabsTrigger key="intake-tab" value="intake">Lead Intake</TabsTrigger>
             <TabsTrigger key="disposition-tab" value="disposition">Disposition</TabsTrigger>
             <TabsTrigger key="timeline-tab" value="timeline">Timeline</TabsTrigger>
+            <TabsTrigger key="conversation-tab" value="conversation">AI Starters</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -900,6 +902,15 @@ export default function ContactDetailsModal({
                 </Card>
               ))}
             </div>
+          </TabsContent>
+
+          <TabsContent value="conversation" className="space-y-6">
+            {contact && (
+              <ConversationStarters 
+                contactId={contact.id} 
+                contactName={`${contact.firstName} ${contact.lastName}`}
+              />
+            )}
           </TabsContent>
         </Tabs>
       </DialogContent>

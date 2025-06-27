@@ -24,6 +24,7 @@ import {
 } from "../shared/schema";
 import { storage } from "./storage";
 import { AILeadScoringEngine } from "./ai-lead-scoring";
+import { AIConversationStarterEngine } from "./ai-conversation-starters";
 import nodemailer from "nodemailer";
 
 // Configure email transporter for Traffik Boosters email server
@@ -3605,6 +3606,25 @@ Email: starz@traffikboosters.com
 
     } catch (error: any) {
       console.error('[Send Invitation] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // AI Conversation Starters endpoint
+  app.get('/api/contacts/:id/conversation-starters', async (req, res) => {
+    try {
+      const contactId = parseInt(req.params.id);
+      const contact = await storage.getContact(contactId);
+      
+      if (!contact) {
+        return res.status(404).json({ error: 'Contact not found' });
+      }
+
+      const conversationStarters = AIConversationStarterEngine.generateConversationStarters(contact);
+      
+      res.json(conversationStarters);
+    } catch (error: any) {
+      console.error('[Conversation Starters] Error:', error);
       res.status(500).json({ error: error.message });
     }
   });
