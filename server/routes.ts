@@ -3437,24 +3437,33 @@ Account: starz@traffikboosters.com`;
       // Create invitation link
       const inviteLink = `${req.protocol}://${req.get('host')}/api/users/complete-invitation?token=${inviteToken}&email=${encodeURIComponent(email)}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&role=${role}`;
 
+      // Generate individual Traffik Boosters email for new employee
+      const workEmail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@traffikboosters.com`;
+      
       // Send invitation email
-      const emailSubject = `Invitation to Join Starz CRM Platform - Traffik Boosters`;
+      const emailSubject = `Welcome to Traffik Boosters - Your Account Setup`;
       const emailBody = `
 Dear ${firstName} ${lastName},
 
-You have been invited to join the Starz CRM platform for Traffik Boosters as a ${role.replace('_', ' ')}.
+Welcome to the Traffik Boosters team! We're excited to have you join our growing organization.
 
-Click the following link to complete your registration:
+You have been invited to join our business management system as a ${role.replace('_', ' ')}.
+
+Your Traffik Boosters email account: ${workEmail}
+
+To complete your account setup and access your dashboard, click the link below:
 ${inviteLink}
 
 This invitation will expire on ${expiresAt.toLocaleDateString()} at ${expiresAt.toLocaleTimeString()}.
 
-If you have any questions, please contact our support team.
+If you have any questions during setup, contact our support team at (877) 840-6250.
+
+Welcome aboard!
 
 Best regards,
 Traffik Boosters Team
 Phone: (877) 840-6250
-Email: starz@traffikboosters.com
+Email: support@traffikboosters.com
 
 "More Traffik! More Sales!"
       `.trim();
@@ -3470,33 +3479,46 @@ Email: starz@traffikboosters.com
           subject: emailSubject,
           text: emailBody,
           html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <div style="text-align: center; margin-bottom: 30px;">
-                <h1 style="color: hsl(14, 88%, 55%); margin-bottom: 10px;">Starz CRM Platform</h1>
-                <p style="color: hsl(29, 85%, 58%); font-weight: bold; margin: 0;">More Traffik! More Sales!</p>
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: white;">
+              <div style="text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, hsl(14, 88%, 55%) 0%, hsl(29, 85%, 58%) 100%); padding: 25px; border-radius: 12px;">
+                <div style="background: white; width: 80px; height: 80px; border-radius: 12px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center;">
+                  <div style="width: 60px; height: 60px; background: linear-gradient(135deg, hsl(14, 88%, 55%) 0%, hsl(29, 85%, 58%) 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 24px;">TB</div>
+                </div>
+                <h1 style="color: white; margin: 0 0 8px 0; font-size: 28px; font-weight: bold;">TRAFFIK BOOSTERS</h1>
+                <p style="color: white; font-weight: bold; margin: 0; font-size: 16px;">"More Traffik! More Sales!"</p>
               </div>
               
-              <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                <h2 style="color: #333;">You're Invited to Join Our Team!</h2>
-                <p>Dear <strong>${firstName} ${lastName}</strong>,</p>
-                <p>You have been invited to join the Starz CRM platform for Traffik Boosters as a <strong>${role.replace('_', ' ')}</strong>.</p>
+              <div style="background: #f9f9f9; padding: 30px; border-radius: 12px; margin: 20px 0; border-left: 4px solid hsl(14, 88%, 55%);">
+                <h2 style="color: hsl(14, 88%, 55%); margin-top: 0;">Welcome to the Team!</h2>
+                <p style="font-size: 16px; line-height: 1.6;">Dear <strong>${firstName} ${lastName}</strong>,</p>
+                <p style="font-size: 16px; line-height: 1.6;">Welcome to Traffik Boosters! We're excited to have you join our growing organization as a <strong>${role.replace('_', ' ')}</strong>.</p>
+                
+                <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px dashed hsl(29, 85%, 58%);">
+                  <p style="margin: 0; font-size: 14px; color: #666;">Your Traffik Boosters Email Account:</p>
+                  <p style="font-size: 18px; font-weight: bold; color: hsl(14, 88%, 55%); margin: 5px 0 0 0;">${workEmail}</p>
+                </div>
                 
                 <div style="text-align: center; margin: 30px 0;">
-                  <a href="${inviteLink}" style="background: hsl(14, 88%, 55%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-                    Complete Registration
+                  <a href="${inviteLink}" style="background: linear-gradient(135deg, hsl(14, 88%, 55%) 0%, hsl(29, 85%, 58%) 100%); color: white; padding: 15px 35px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                    Complete Account Setup
                   </a>
                 </div>
                 
-                <p style="color: #666; font-size: 14px;">
-                  <strong>Important:</strong> This invitation will expire on ${expiresAt.toLocaleDateString()} at ${expiresAt.toLocaleTimeString()}.
+                <p style="color: #666; font-size: 14px; text-align: center; background: #fff3cd; padding: 12px; border-radius: 6px; border-left: 4px solid #ffc107;">
+                  <strong>⏰ Important:</strong> This invitation expires on ${expiresAt.toLocaleDateString()} at ${expiresAt.toLocaleTimeString()}
                 </p>
               </div>
               
-              <div style="text-align: center; color: #666; font-size: 14px; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px;">
-                <p><strong>Traffik Boosters</strong><br>
-                Phone: (877) 840-6250<br>
-                Email: starz@traffikboosters.com</p>
-                <p style="color: hsl(29, 85%, 58%); font-weight: bold;">"More Traffik! More Sales!"</p>
+              <div style="text-align: center; color: #666; font-size: 14px; margin-top: 30px; border-top: 2px solid hsl(14, 88%, 55%); padding-top: 20px;">
+                <div style="margin-bottom: 15px;">
+                  <div style="background: white; width: 50px; height: 50px; border-radius: 8px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; border: 2px solid hsl(14, 88%, 55%);">
+                    <div style="width: 30px; height: 30px; background: linear-gradient(135deg, hsl(14, 88%, 55%) 0%, hsl(29, 85%, 58%) 100%); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">TB</div>
+                  </div>
+                </div>
+                <p style="margin: 5px 0;"><strong>TRAFFIK BOOSTERS</strong></p>
+                <p style="margin: 5px 0;">Phone: <strong>(877) 840-6250</strong></p>
+                <p style="margin: 5px 0;">Email: <strong>support@traffikboosters.com</strong></p>
+                <p style="color: hsl(29, 85%, 58%); font-weight: bold; margin: 15px 0 0 0; font-size: 16px;">"More Traffik! More Sales!"</p>
               </div>
             </div>
           `
@@ -3515,6 +3537,7 @@ Email: starz@traffikboosters.com
           expires: expiresAt.toISOString(),
           recipientEmail: email,
           recipientName: `${firstName} ${lastName}`,
+          workEmail,
           role,
           emailSent: true
         });
@@ -3628,6 +3651,9 @@ Email: starz@traffikboosters.com
         return res.status(400).json({ message: "Passwords do not match" });
       }
 
+      // Generate individual Traffik Boosters work email
+      const workEmail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@traffikboosters.com`;
+      
       // Create new user account
       const newUser = {
         firstName,
@@ -3640,10 +3666,11 @@ Email: starz@traffikboosters.com
         mobilePhone: null,
         extension: null,
         avatar: null,
+        workEmail,
         isActive: true,
-        commissionRate: 10,
-        baseCommissionRate: 10,
-        bonusCommissionRate: 0,
+        commissionRate: "10.0",
+        baseCommissionRate: "10.0",
+        bonusCommissionRate: "0.0",
         commissionTier: "standard"
       };
 
