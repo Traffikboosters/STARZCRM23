@@ -3392,7 +3392,7 @@ Account: starz@traffikboosters.com`;
         </head>
         <body>
           <div class="header">
-            <div class="logo">TB</div>
+            <img src="cid:traffikLogo" alt="Traffik Boosters" style="width: 120px; height: auto; margin: 0 auto 15px; display: block;" />
             <h1>Welcome to Starz</h1>
             <p>Traffik Boosters Business Management Platform</p>
             <p style="color: hsl(14, 88%, 55%); font-weight: 600;">More Traffik! More Sales!</p>
@@ -3478,6 +3478,11 @@ Email: support@traffikboosters.com
           to: email,
           subject: emailSubject,
           text: emailBody,
+          attachments: [{
+            filename: 'traffik-boosters-logo.png',
+            path: './attached_assets/TRAFIC BOOSTERS3 copy_1751060321835.png',
+            cid: 'traffikLogo'
+          }],
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: white;">
               <div style="text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, hsl(14, 88%, 55%) 0%, hsl(29, 85%, 58%) 100%); padding: 25px; border-radius: 12px;">

@@ -760,11 +760,19 @@ export default function CRMView() {
                       {contact.leadStatus?.replace('_', ' ').toUpperCase() || 'NEW'}
                     </Badge>
                   </div>
-                  <CardTitle className="text-base font-semibold leading-tight mb-1">
-                    <div className="truncate">
-                      {contact.company || `${contact.firstName} ${contact.lastName}`}
-                    </div>
-                  </CardTitle>
+                  <div className="flex items-center justify-between mb-2">
+                    <CardTitle className="text-base font-semibold leading-tight flex-1">
+                      <div className="truncate">
+                        {contact.company || `${contact.firstName} ${contact.lastName}`}
+                      </div>
+                    </CardTitle>
+                    <img 
+                      src="@assets/TRAFIC BOOSTERS3 copy_1751060321835.png" 
+                      alt="Traffik Boosters" 
+                      className="h-8 w-auto object-contain ml-2 flex-shrink-0"
+                      style={{ imageRendering: 'crisp-edges' }}
+                    />
+                  </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center text-sm text-gray-600 min-h-[20px]">

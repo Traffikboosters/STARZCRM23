@@ -55,7 +55,7 @@ import { formatPhoneNumber } from "@/lib/utils";
 import ClickToCallButton from "@/components/click-to-call-button";
 import { authService } from "@/lib/auth";
 import { Contact, ContactNote, LeadIntake } from "@shared/schema";
-import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
+import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
 import ConversationStarters from "@/components/conversation-starters";
 import { QuickReplyTemplates } from "@/components/quick-reply-templates";
 
