@@ -310,6 +310,7 @@ The application uses a comprehensive schema including:
 - June 27, 2025. Configured mass email campaigns to send from moretraffikmoresales@traffikboosters.com with "Traffik Boosters Marketing" team signatures and authentic logo integration
 - June 27, 2025. Added Email Marketing navigation tab with campaign tracking, contact selection, email preview functionality, and professional HTML email design with gradient headers
 - June 27, 2025. Increased Traffik Boosters logo size in invitation emails from 60px to 240px (4x larger) for enhanced brand visibility and professional presentation
+- June 27, 2025. Fixed invitation link generation to use proper Replit HTTPS domain instead of localhost, resolving connection refused errors for external email recipients
 
 ## User Preferences
 

@@ -3436,8 +3436,13 @@ Account: starz@traffikboosters.com`;
       const inviteId = Date.now();
       const expiresAt = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000); // 5 days
 
-      // Create invitation link
-      const inviteLink = `${req.protocol}://${req.get('host')}/api/users/complete-invitation?token=${inviteToken}&email=${encodeURIComponent(email)}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&role=${role}`;
+      // Create invitation link with proper domain
+      const replitDomain = process.env.REPLIT_DEV_DOMAIN;
+      const host = replitDomain || req.get('host');
+      const protocol = replitDomain ? 'https' : req.protocol;
+      const inviteLink = `${protocol}://${host}/api/users/complete-invitation?token=${inviteToken}&email=${encodeURIComponent(email)}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&role=${role}`;
+      
+      console.log(`[Invite Link] Generated: ${inviteLink}`);
 
       // Generate individual Traffik Boosters email for new employee
       const workEmail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@traffikboosters.com`;
