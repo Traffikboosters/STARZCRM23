@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Plus, Search, Filter, User, Mail, Phone, Building, MapPin, Calendar, Star, MessageCircle, X, Clock, DollarSign, FileText, ExternalLink, CreditCard, Users, Target, Edit, Send, Video, MoreVertical, CheckCircle, AlertCircle } from "lucide-react";
@@ -770,6 +770,68 @@ export default function CRMView() {
                   <div className="flex items-center text-sm text-gray-600 min-h-[20px]">
                     <Phone className="h-4 w-4 mr-2 flex-shrink-0" />
                     <span className="truncate font-medium">{formatPhoneNumber(contact.phone) || 'No phone'}</span>
+                  </div>
+
+                  {/* Assigned Sales Rep Display */}
+                  <div className="bg-gray-50 p-2 rounded-lg border">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-xs text-gray-700">
+                        <User className="h-3 w-3 mr-1 flex-shrink-0" />
+                        <div className="truncate">
+                          {contact.assignedTo ? (
+                            <div>
+                              <div className="font-medium">
+                                {salesReps.find(rep => rep.id === contact.assignedTo)?.firstName} {salesReps.find(rep => rep.id === contact.assignedTo)?.lastName}
+                              </div>
+                              <div className="text-gray-500 truncate">
+                                {salesReps.find(rep => rep.id === contact.assignedTo)?.firstName?.toLowerCase()}.{salesReps.find(rep => rep.id === contact.assignedTo)?.lastName?.toLowerCase()}@traffikboosters.com
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400">Not assigned</span>
+                          )}
+                        </div>
+                      </div>
+                      {(currentUser?.role === 'admin' || currentUser?.role === 'manager') && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                              <MoreVertical className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Reassign Lead</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {salesReps.filter(rep => rep.role !== 'admin').map((rep) => (
+                              <DropdownMenuItem
+                                key={rep.id}
+                                onClick={async () => {
+                                  try {
+                                    await apiRequest('PATCH', `/api/contacts/${contact.id}`, {
+                                      assignedTo: rep.id
+                                    });
+                                    queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+                                    toast({
+                                      title: "Lead Reassigned",
+                                      description: `Lead assigned to ${rep.firstName} ${rep.lastName}`,
+                                    });
+                                  } catch (error) {
+                                    toast({
+                                      title: "Error",
+                                      description: "Failed to reassign lead",
+                                      variant: "destructive",
+                                    });
+                                  }
+                                }}
+                              >
+                                <User className="h-3 w-3 mr-2" />
+                                {rep.firstName} {rep.lastName}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </div>
                   </div>
 
                   {/* Enhanced Action Buttons */}
