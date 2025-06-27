@@ -187,7 +187,7 @@ export default function LeadCountDisplay({ variant = "sidebar", className = "" }
           </div>
         </div>
 
-        <div className="bg-yellow-50 border border-yellow-200 p-2 rounded animate-bounce">
+        <div className="bg-yellow-50 border border-yellow-200 p-2 rounded">
           <div className="flex justify-between items-center">
             <span className="text-xs text-yellow-600">Follow Up (1-3d):</span>
             <span className="font-bold text-yellow-700 text-lg">{ageBasedLeads.followUpLeads}</span>
@@ -200,7 +200,7 @@ export default function LeadCountDisplay({ variant = "sidebar", className = "" }
           </div>
         </div>
 
-        <div className="bg-red-50 border border-red-200 p-2 rounded animate-ping">
+        <div className="bg-red-50 border border-red-200 p-2 rounded">
           <div className="flex justify-between items-center">
             <span className="text-xs text-red-600">Urgent (3+ days):</span>
             <span className="font-bold text-red-700 text-lg">{ageBasedLeads.urgentLeads}</span>

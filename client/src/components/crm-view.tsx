@@ -65,13 +65,13 @@ const getLeadAgeStatus = (createdAt: string | Date) => {
       bgColor: 'bg-green-50 border-green-200',
       textColor: 'text-green-800',
       badgeColor: 'bg-green-500',
-      description: 'New Lead'
+      description: 'NEW'
     };
   } else if (ageInDays <= 3) {
     return {
       status: 'medium',
       color: 'yellow',
-      animation: 'animate-bounce',
+      animation: '',
       bgColor: 'bg-yellow-50 border-yellow-200',
       textColor: 'text-yellow-800',
       badgeColor: 'bg-yellow-500',
@@ -81,7 +81,7 @@ const getLeadAgeStatus = (createdAt: string | Date) => {
     return {
       status: 'urgent',
       color: 'red',
-      animation: 'animate-ping',
+      animation: '',
       bgColor: 'bg-red-50 border-red-200',
       textColor: 'text-red-800',
       badgeColor: 'bg-red-500',

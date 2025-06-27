@@ -263,6 +263,7 @@ The application uses a comprehensive schema including:
 - June 27, 2025. Implemented comprehensive lead age-based visual alert system with color-coded flashing animations (green for new 0-24h, yellow for follow-up 1-3 days, red for urgent 3+ days)
 - June 27, 2025. Enhanced lead cards with dynamic background colors, animated badges, and age status indicators for immediate visual prioritization
 - June 27, 2025. Updated sidebar lead count display with age-based breakdown showing animated progress bars and real-time lead categorization by urgency level
+- June 27, 2025. Refined visual alert system to only flash "NEW" status badges while keeping Follow Up and Urgent lead indicators static with color coding
 
 ## User Preferences
 
