@@ -760,9 +760,6 @@ export default function CRMView() {
                     >
                       {ageStatus.description}
                     </Badge>
-                    <Badge variant="secondary" className="text-xs px-2 py-1">
-                      {contact.leadStatus?.replace('_', ' ').toUpperCase() || 'NEW'}
-                    </Badge>
                   </div>
                   <div className="flex items-center justify-between mb-2">
                     <CardTitle className="text-base font-semibold leading-tight flex-1">

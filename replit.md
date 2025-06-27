@@ -305,6 +305,7 @@ The application uses a comprehensive schema including:
 - June 27, 2025. Updated ALL outbound email communications to use authentic Traffik Boosters logo (TRAFIC BOOSTERS3 copy_1751060321835.png) as email attachments
 - June 27, 2025. Replaced placeholder "TB" logos with authentic company logo in invitation emails, onboarding packets, test emails, and chat widget auto-reply system
 - June 27, 2025. Enhanced all email templates with professional HTML design displaying authentic Traffik Boosters branding and "More Traffik! More Sales!" messaging
+- June 27, 2025. Removed "NEW" status badge from upper right corner of lead cards in CRM Contact Management to clean up visual interface
 - June 27, 2025. Implemented comprehensive mass email marketing system for marketing department with campaign creation, template management, and lead targeting capabilities
 - June 27, 2025. Created 6 professional email templates (welcome, service intro, follow-up, promotion, newsletter, testimonials) with personalization variables and authentic company branding
 - June 27, 2025. Configured mass email campaigns to send from moretraffikmoresales@traffikboosters.com with "Traffik Boosters Marketing" team signatures and authentic logo integration
