@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, TrendingUp, Clock, Target } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, TrendingUp, Clock, Target, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import type { Contact } from "@shared/schema";
 
@@ -13,12 +14,21 @@ interface LeadCountDisplayProps {
 
 export default function LeadCountDisplay({ variant = "sidebar", className = "" }: LeadCountDisplayProps) {
   const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const queryClient = useQueryClient();
+
+  // Manual refresh function
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+    setLastUpdate(new Date());
+    setTimeout(() => setIsRefreshing(false), 1000);
+  };
 
   // Fetch contacts with auto-refresh
   const { data: contacts = [], isLoading } = useQuery<Contact[]>({
     queryKey: ["/api/contacts"],
-    refetchInterval: 30000, // Auto-refresh every 30 seconds
+    refetchInterval: 5000, // Auto-refresh every 5 seconds for faster updates
   });
 
   // WebSocket connection for real-time updates
@@ -185,7 +195,18 @@ export default function LeadCountDisplay({ variant = "sidebar", className = "" }
       <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-3 rounded-lg">
         <div className="flex items-center justify-between mb-2">
           <h3 className="font-semibold text-sm">Lead Overview</h3>
-          <Users className="h-4 w-4" />
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              className="h-6 w-6 p-0 text-white hover:bg-white/20"
+            >
+              <RefreshCw className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </Button>
+            <Users className="h-4 w-4" />
+          </div>
         </div>
         <div className="space-y-2">
           <div className="flex justify-between items-center">

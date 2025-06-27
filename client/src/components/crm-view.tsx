@@ -470,7 +470,7 @@ export default function CRMView() {
   // Data fetching
   const { data: contacts = [], isLoading } = useQuery<Contact[]>({
     queryKey: ["/api/contacts"],
-    refetchInterval: 30000, // Auto-refresh every 30 seconds
+    refetchInterval: 5000, // Auto-refresh every 5 seconds for faster updates
   });
 
   const { data: currentUser } = useQuery<UserType>({
