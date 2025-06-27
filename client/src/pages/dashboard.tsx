@@ -34,6 +34,7 @@ import LiveMonitoring from "@/components/live-monitoring";
 import { AILeadScoring } from "@/components/ai-lead-scoring";
 import { LocationTracker } from "@/components/location-tracker";
 import LiveDataExtractor from "@/components/live-data-extractor";
+import EmailNotificationSystem from "@/components/email-notification-system";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -153,6 +154,9 @@ export default function Dashboard() {
         isOpen={!!selectedContact}
         onClose={() => setSelectedContact(null)}
       />
+
+      {/* Email Notification System */}
+      <EmailNotificationSystem />
     </div>
   );
 }

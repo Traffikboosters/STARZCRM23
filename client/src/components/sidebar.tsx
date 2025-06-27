@@ -31,6 +31,7 @@ import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import LeadCountDisplay from "@/components/lead-count-display";
 
 interface SidebarProps {
   activeTab: string;
@@ -245,6 +246,13 @@ export default function Sidebar({
                 Start Call
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Lead Count Display */}
+        {!isCollapsed && (
+          <div className="mt-6">
+            <LeadCountDisplay variant="sidebar" />
           </div>
         )}
       </div>

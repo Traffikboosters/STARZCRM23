@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,9 +13,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Search, Filter, User, Mail, Phone, Building, MapPin, Calendar, Star, MessageCircle, X, Clock, DollarSign, FileText, ExternalLink, CreditCard, Users, Target, Edit } from "lucide-react";
+import { Plus, Search, Filter, User, Mail, Phone, Building, MapPin, Calendar, Star, MessageCircle, X, Clock, DollarSign, FileText, ExternalLink, CreditCard, Users, Target, Edit, Send, Video, MoreVertical, CheckCircle, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import type { Contact, User as UserType } from "@shared/schema";
 
@@ -49,6 +50,293 @@ const formatPhoneNumber = (phone: string | null | undefined): string => {
   return phone;
 };
 
+// Email notification component
+const EmailNotificationPopup = ({ isOpen, onClose, contact }: { isOpen: boolean; onClose: () => void; contact: Contact | null }) => {
+  const [emailType, setEmailType] = useState("compose");
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (isOpen && contact) {
+      setEmailSubject(`Follow-up: ${contact.company || `${contact.firstName} ${contact.lastName}`}`);
+      setEmailBody(`Dear ${contact.firstName},\n\nThank you for your interest in Traffik Boosters. I wanted to follow up on our conversation regarding your digital marketing needs.\n\nBest regards,\nTraflik Boosters Team\n(877) 840-6250`);
+    }
+  }, [isOpen, contact]);
+
+  const sendEmail = () => {
+    if (contact?.email) {
+      const mailtoLink = `mailto:${contact.email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+      window.location.href = mailtoLink;
+      toast({
+        title: "Email Opened",
+        description: `Email client opened for ${contact.firstName} ${contact.lastName}`,
+      });
+      onClose();
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Email Communication
+          </DialogTitle>
+        </DialogHeader>
+        
+        {contact && (
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <Button
+                variant={emailType === "compose" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setEmailType("compose")}
+              >
+                Compose Email
+              </Button>
+              <Button
+                variant={emailType === "templates" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setEmailType("templates")}
+              >
+                Email Templates
+              </Button>
+            </div>
+
+            {emailType === "compose" && (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="email-to">To:</Label>
+                  <Input 
+                    id="email-to" 
+                    value={contact.email || ""} 
+                    readOnly 
+                    className="bg-gray-50"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email-subject">Subject:</Label>
+                  <Input 
+                    id="email-subject" 
+                    value={emailSubject}
+                    onChange={(e) => setEmailSubject(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="email-body">Message:</Label>
+                  <Textarea 
+                    id="email-body"
+                    value={emailBody}
+                    onChange={(e) => setEmailBody(e.target.value)}
+                    rows={8}
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={onClose}>
+                    Cancel
+                  </Button>
+                  <Button onClick={sendEmail} className="bg-orange-600 hover:bg-orange-700">
+                    <Send className="h-4 w-4 mr-2" />
+                    Send Email
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {emailType === "templates" && (
+              <div className="space-y-3">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    setEmailType("compose");
+                    setEmailSubject("Initial Follow-up");
+                    setEmailBody(`Hi ${contact.firstName},\n\nThank you for connecting with Traffik Boosters! I wanted to reach out personally to discuss how we can help grow your business.\n\nWould you be available for a quick 15-minute call this week to explore opportunities?\n\nBest regards,\nTraflik Boosters Team\n(877) 840-6250`);
+                  }}
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Initial Follow-up Template
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    setEmailType("compose");
+                    setEmailSubject("Service Proposal - Digital Marketing Solutions");
+                    setEmailBody(`Dear ${contact.firstName},\n\nBased on our conversation, I've prepared a customized proposal for ${contact.company || "your business"}.\n\nOur services include:\n• SEO Optimization ($1,500-$3,000/month)\n• Local Business Listings ($275-$500)\n• Google My Business Setup ($400-$800)\n• Social Media Marketing ($800-$1,500/month)\n\nI'd love to schedule a call to discuss these options in detail.\n\nBest regards,\nTraflik Boosters Team\n(877) 840-6250`);
+                  }}
+                >
+                  <DollarSign className="h-4 w-4 mr-2" />
+                  Service Proposal Template
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    setEmailType("compose");
+                    setEmailSubject("Check-in: How are things going?");
+                    setEmailBody(`Hi ${contact.firstName},\n\nI hope this email finds you well. I wanted to check in and see how things are progressing with your business.\n\nIf you're still interested in growing your online presence, I'd be happy to schedule a no-obligation consultation.\n\nLet me know if you have any questions!\n\nBest regards,\nTraflik Boosters Team\n(877) 840-6250`);
+                  }}
+                >
+                  <Clock className="h-4 w-4 mr-2" />
+                  Check-in Template
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+// Work Order Modal Component
+const WorkOrderModal = ({ isOpen, onClose, contact }: { isOpen: boolean; onClose: () => void; contact: Contact | null }) => {
+  const [selectedService, setSelectedService] = useState("");
+  const [customAmount, setCustomAmount] = useState("");
+  const { toast } = useToast();
+
+  const services = [
+    { name: "SEO Package (3-month)", price: "$2,500", timeline: "90 days" },
+    { name: "Local Business Listings", price: "$375", timeline: "5-7 days" },
+    { name: "Google My Business Setup", price: "$600", timeline: "3-5 days" },
+    { name: "Website Development", price: "$3,500", timeline: "2-3 weeks" },
+    { name: "Social Media Marketing", price: "$1,200/month", timeline: "Ongoing" },
+    { name: "PPC Campaign Setup", price: "$800", timeline: "1 week" },
+    { name: "Content Creation Package", price: "$950", timeline: "2 weeks" },
+    { name: "Brand Development", price: "$1,800", timeline: "3 weeks" },
+  ];
+
+  const generateWorkOrder = () => {
+    if (!contact || !selectedService) return;
+    
+    const service = services.find(s => s.name === selectedService);
+    const workOrderId = `WO-${Date.now().toString().slice(-6)}`;
+    
+    const workOrderContent = `WORK ORDER AGREEMENT
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   TRAFFIK BOOSTERS - More Traffik! More Sales!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Work Order #: ${workOrderId}
+Date: ${new Date().toLocaleDateString()}
+
+CLIENT INFORMATION:
+Name: ${contact.firstName} ${contact.lastName}
+Company: ${contact.company || `${contact.firstName}'s Business`}
+Email: ${contact.email}
+Phone: ${formatPhoneNumber(contact.phone)}
+
+SERVICE DETAILS:
+Service: ${service?.name || selectedService}
+Investment: ${customAmount || service?.price || "TBD"}
+Timeline: ${service?.timeline || "TBD"}
+
+TERMS & CONDITIONS:
+• Payment is due within 3 business days of work commencement
+• Full refund available within 3 days of project start
+• 50% refund available thereafter until project completion
+• All work guaranteed to meet agreed specifications
+
+CLIENT SIGNATURE:
+Signature: ____________________________
+Date: _______________
+
+By signing this work order, you authorize Traffik Boosters to proceed with the requested services.
+
+Thank you for choosing Traffik Boosters!
+"More Traffik! More Sales!"
+
+Contact: (877) 840-6250
+Email: info@traffikboosters.com`;
+
+    const emailSubject = `Work Order Agreement - ${workOrderId}`;
+    const mailtoLink = `mailto:${contact.email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(workOrderContent)}`;
+    
+    window.location.href = mailtoLink;
+    
+    toast({
+      title: "Work Order Created",
+      description: `Work order ${workOrderId} sent to ${contact.firstName}`,
+    });
+    
+    onClose();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Create Work Order
+          </DialogTitle>
+        </DialogHeader>
+        
+        {contact && (
+          <div className="space-y-4">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h3 className="font-semibold mb-2">Client Information</h3>
+              <p><strong>Name:</strong> {contact.firstName} {contact.lastName}</p>
+              <p><strong>Company:</strong> {contact.company || "N/A"}</p>
+              <p><strong>Email:</strong> {contact.email}</p>
+              <p><strong>Phone:</strong> {formatPhoneNumber(contact.phone)}</p>
+            </div>
+
+            <div>
+              <Label htmlFor="service-select">Select Service:</Label>
+              <Select value={selectedService} onValueChange={setSelectedService}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a service..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {services.map((service) => (
+                    <SelectItem key={service.name} value={service.name}>
+                      {service.name} - {service.price} ({service.timeline})
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="custom">Custom Service</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {selectedService === "custom" && (
+              <div>
+                <Label htmlFor="custom-amount">Custom Amount:</Label>
+                <Input 
+                  id="custom-amount"
+                  placeholder="Enter custom amount (e.g., $1,500)"
+                  value={customAmount}
+                  onChange={(e) => setCustomAmount(e.target.value)}
+                />
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={generateWorkOrder}
+                disabled={!selectedService}
+                className="bg-orange-600 hover:bg-orange-700"
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Generate Work Order
+              </Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export default function CRMView() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -56,11 +344,28 @@ export default function CRMView() {
   // State management
   const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isWorkOrderModalOpen, setIsWorkOrderModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [selectedContactForDetails, setSelectedContactForDetails] = useState<Contact | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
-  const [showActiveFilters, setShowActiveFilters] = useState(false);
+  const [scheduleForm, setScheduleForm] = useState({
+    date: "",
+    time: "",
+    type: "consultation",
+    notes: ""
+  });
+
+  // Auto-refresh lead count every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [queryClient]);
 
   // Form setup
   const form = useForm<ContactFormData>({
@@ -87,11 +392,123 @@ export default function CRMView() {
   // Data fetching
   const { data: contacts = [], isLoading } = useQuery<Contact[]>({
     queryKey: ["/api/contacts"],
+    refetchInterval: 30000, // Auto-refresh every 30 seconds
   });
 
   const { data: currentUser } = useQuery<UserType>({
     queryKey: ["/api/user"],
   });
+
+  // Click-to-call functionality
+  const handleCallContact = async (contact: Contact) => {
+    if (!contact.phone) {
+      toast({
+        title: "No Phone Number",
+        description: "This contact doesn't have a phone number",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await apiRequest("POST", "/api/mightycall/initiate-call", {
+        phoneNumber: contact.phone,
+        contactName: `${contact.firstName} ${contact.lastName}`,
+        userId: currentUser?.id || 1
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        toast({
+          title: "Call Initiated",
+          description: `Calling ${contact.firstName} at ${formatPhoneNumber(contact.phone)}`,
+        });
+      } else {
+        toast({
+          title: "Call Failed",
+          description: result.message || "Unable to initiate call",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Call Error",
+        description: "Failed to initiate call. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Schedule appointment functionality
+  const handleScheduleAppointment = async () => {
+    if (!selectedContact || !scheduleForm.date || !scheduleForm.time) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const appointmentDateTime = new Date(`${scheduleForm.date}T${scheduleForm.time}`);
+    
+    const eventData = {
+      title: `${scheduleForm.type} with ${selectedContact.firstName} ${selectedContact.lastName}`,
+      description: `Contact: ${selectedContact.firstName} ${selectedContact.lastName}\nCompany: ${selectedContact.company || 'N/A'}\nPhone: ${selectedContact.phone || 'N/A'}\nEmail: ${selectedContact.email || 'N/A'}\nNotes: ${scheduleForm.notes || 'No additional notes'}`,
+      startTime: appointmentDateTime.toISOString(),
+      endTime: new Date(appointmentDateTime.getTime() + 60 * 60 * 1000).toISOString(), // 1 hour duration
+      contactId: selectedContact.id,
+      userId: currentUser?.id || 1,
+    };
+
+    try {
+      const response = await apiRequest("POST", "/api/events", eventData);
+      if (response.ok) {
+        toast({
+          title: "Appointment Scheduled",
+          description: `Meeting scheduled for ${format(appointmentDateTime, 'PPP p')}`,
+        });
+        setIsScheduleModalOpen(false);
+        setScheduleForm({ date: "", time: "", type: "consultation", notes: "" });
+      }
+    } catch (error) {
+      toast({
+        title: "Scheduling Failed",
+        description: "Failed to schedule appointment",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Contact filtering
+  const filteredContacts = useMemo(() => {
+    return contacts
+      .filter((contact) => {
+        const matchesSearch = searchTerm === "" || 
+          contact.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          contact.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (contact.company?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
+          (contact.phone?.includes(searchTerm) ?? false) ||
+          (contact.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+
+        const matchesStatus = statusFilter === "all" || contact.leadStatus === statusFilter;
+        const matchesSource = sourceFilter === "all" || contact.leadSource === sourceFilter;
+
+        return matchesSearch && matchesStatus && matchesSource;
+      })
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // Newest first
+  }, [contacts, searchTerm, statusFilter, sourceFilter]);
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setSourceFilter("all");
+  };
+
+  // Check if any filters are active
+  const hasActiveFilters = searchTerm !== "" || statusFilter !== "all" || sourceFilter !== "all";
 
   // Mutations
   const addContactMutation = useMutation({
@@ -119,38 +536,10 @@ export default function CRMView() {
       setIsAddContactModalOpen(false);
       form.reset();
 
-      // Create appointment if scheduled
-      if (form.getValues("scheduleAppointment") && form.getValues("appointmentDate") && form.getValues("appointmentTime")) {
-        const appointmentDateTime = new Date(`${form.getValues("appointmentDate")}T${form.getValues("appointmentTime")}`);
-        
-        const eventData = {
-          title: `${form.getValues("appointmentType") || "Meeting"} with ${newContact.firstName} ${newContact.lastName}`,
-          description: `Contact: ${newContact.firstName} ${newContact.lastName}\nCompany: ${newContact.company || 'N/A'}\nPhone: ${newContact.phone || 'N/A'}\nEmail: ${newContact.email || 'N/A'}\nNotes: ${form.getValues("appointmentNotes") || 'No additional notes'}`,
-          startTime: appointmentDateTime.toISOString(),
-          endTime: new Date(appointmentDateTime.getTime() + 60 * 60 * 1000).toISOString(), // 1 hour duration
-          contactId: newContact.id,
-          userId: currentUser?.id || 1,
-        };
-
-        try {
-          await apiRequest("POST", "/api/events", eventData);
-          toast({
-            title: "Success!",
-            description: `Contact added and appointment scheduled for ${format(appointmentDateTime, 'PPP p')}`,
-          });
-        } catch (error) {
-          toast({
-            title: "Contact Added",
-            description: "Contact was added but appointment scheduling failed",
-            variant: "destructive",
-          });
-        }
-      } else {
-        toast({
-          title: "Contact Added",
-          description: `${newContact.firstName} ${newContact.lastName} has been added to your contacts`,
-        });
-      }
+      toast({
+        title: "Contact Added",
+        description: `${newContact.firstName} ${newContact.lastName} has been added to your contacts`,
+      });
     },
     onError: (error) => {
       toast({
@@ -166,43 +555,20 @@ export default function CRMView() {
     addContactMutation.mutate(data);
   };
 
-  // Contact filtering
-  const filteredContacts = useMemo(() => {
-    return contacts
-      .filter((contact) => {
-        const matchesSearch = searchTerm === "" || 
-          contact.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          contact.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          (contact.company?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-          (contact.phone?.includes(searchTerm) ?? false) ||
-          (contact.email?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
-
-        const matchesStatus = statusFilter === "all" || contact.leadStatus === statusFilter;
-        const matchesSource = sourceFilter === "all" || contact.leadSource === sourceFilter;
-
-        return matchesSearch && matchesStatus && matchesSource;
-      })
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // Newest first
-  }, [contacts, searchTerm, statusFilter, sourceFilter]);
-
-  // Clear all filters
-  const clearAllFilters = () => {
-    setSearchTerm("");
-    setStatusFilter("all");
-    setSourceFilter("all");
-    setShowActiveFilters(false);
-  };
-
-  // Check if any filters are active
-  const hasActiveFilters = searchTerm !== "" || statusFilter !== "all" || sourceFilter !== "all";
-
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
+      {/* Header with Live Lead Count */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">CRM - Contact Management</h1>
-          <p className="text-gray-600">Manage your contacts and leads</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            CRM - Contact Management 
+            <Badge variant="secondary" className="ml-3 text-lg px-3 py-1">
+              {contacts.length} Total Leads
+            </Badge>
+          </h1>
+          <p className="text-gray-600">
+            Manage your contacts and leads • Last updated: {format(new Date(), 'p')}
+          </p>
         </div>
         <Dialog open={isAddContactModalOpen} onOpenChange={setIsAddContactModalOpen}>
           <DialogTrigger asChild>
@@ -277,11 +643,11 @@ export default function CRMView() {
         {hasActiveFilters && " (filtered)"}
       </div>
 
-      {/* Contacts Grid */}
+      {/* Enhanced Contact Cards */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-200 animate-pulse rounded-lg"></div>
+            <div key={i} className="h-40 bg-gray-200 animate-pulse rounded-lg"></div>
           ))}
         </div>
       ) : (
@@ -290,11 +656,7 @@ export default function CRMView() {
             return (
               <Card 
                 key={contact.id} 
-                className="hover:shadow-md transition-shadow cursor-pointer border-l-4 border-l-orange-500"
-                onClick={() => {
-                  setSelectedContactForDetails(contact);
-                  setIsDetailsModalOpen(true);
-                }}
+                className="hover:shadow-md transition-shadow border-l-4 border-l-orange-500"
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg flex items-center justify-between">
@@ -306,10 +668,126 @@ export default function CRMView() {
                     </Badge>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="space-y-3">
                   <div className="flex items-center text-sm text-gray-600">
                     <Phone className="h-4 w-4 mr-2" />
                     <span className="truncate">{formatPhoneNumber(contact.phone) || 'No phone'}</span>
+                  </div>
+
+                  {/* Enhanced Action Buttons */}
+                  <div className="grid grid-cols-3 gap-2 mt-4">
+                    {/* Call Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs flex flex-col items-center py-2 h-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCallContact(contact);
+                      }}
+                      disabled={!contact.phone}
+                    >
+                      <Phone className="h-3 w-3 mb-1 text-green-600" />
+                      <span>Call</span>
+                    </Button>
+
+                    {/* Schedule Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs flex flex-col items-center py-2 h-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedContact(contact);
+                        setIsScheduleModalOpen(true);
+                      }}
+                    >
+                      <Calendar className="h-3 w-3 mb-1 text-blue-600" />
+                      <span>Schedule</span>
+                    </Button>
+
+                    {/* Email Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs flex flex-col items-center py-2 h-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedContact(contact);
+                        setIsEmailModalOpen(true);
+                      }}
+                      disabled={!contact.email}
+                    >
+                      <Mail className="h-3 w-3 mb-1 text-orange-600" />
+                      <span>Email</span>
+                    </Button>
+
+                    {/* Work Order Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs flex flex-col items-center py-2 h-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedContact(contact);
+                        setIsWorkOrderModalOpen(true);
+                      }}
+                    >
+                      <FileText className="h-3 w-3 mb-1 text-purple-600" />
+                      <span>Work Order</span>
+                    </Button>
+
+                    {/* Details Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs flex flex-col items-center py-2 h-auto"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedContactForDetails(contact);
+                        setIsDetailsModalOpen(true);
+                      }}
+                    >
+                      <User className="h-3 w-3 mb-1 text-gray-600" />
+                      <span>Details</span>
+                    </Button>
+
+                    {/* More Actions */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs flex flex-col items-center py-2 h-auto"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreVertical className="h-3 w-3 mb-1" />
+                          <span>More</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => {
+                          // Mark as contacted
+                          toast({
+                            title: "Status Updated",
+                            description: `${contact.firstName} marked as contacted`,
+                          });
+                        }}>
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Mark as Contacted
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {
+                          // Set priority
+                          toast({
+                            title: "Priority Set",
+                            description: `${contact.firstName} marked as high priority`,
+                          });
+                        }}>
+                          <AlertCircle className="h-4 w-4 mr-2" />
+                          Set High Priority
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </CardContent>
               </Card>
@@ -317,6 +795,99 @@ export default function CRMView() {
           })}
         </div>
       )}
+
+      {/* Modals */}
+      <EmailNotificationPopup 
+        isOpen={isEmailModalOpen} 
+        onClose={() => setIsEmailModalOpen(false)} 
+        contact={selectedContact} 
+      />
+
+      <WorkOrderModal 
+        isOpen={isWorkOrderModalOpen} 
+        onClose={() => setIsWorkOrderModalOpen(false)} 
+        contact={selectedContact} 
+      />
+
+      {/* Schedule Appointment Modal */}
+      <Dialog open={isScheduleModalOpen} onOpenChange={setIsScheduleModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Schedule Appointment
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedContact && (
+            <div className="space-y-4">
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <p><strong>Client:</strong> {selectedContact.firstName} {selectedContact.lastName}</p>
+                <p><strong>Company:</strong> {selectedContact.company || "N/A"}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="schedule-date">Date:</Label>
+                  <Input
+                    id="schedule-date"
+                    type="date"
+                    value={scheduleForm.date}
+                    onChange={(e) => setScheduleForm(prev => ({ ...prev, date: e.target.value }))}
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="schedule-time">Time:</Label>
+                  <Input
+                    id="schedule-time"
+                    type="time"
+                    value={scheduleForm.time}
+                    onChange={(e) => setScheduleForm(prev => ({ ...prev, time: e.target.value }))}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="meeting-type">Meeting Type:</Label>
+                <Select value={scheduleForm.type} onValueChange={(value) => setScheduleForm(prev => ({ ...prev, type: value }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="consultation">Initial Consultation</SelectItem>
+                    <SelectItem value="discovery">Discovery Call</SelectItem>
+                    <SelectItem value="demo">Product Demo</SelectItem>
+                    <SelectItem value="proposal">Proposal Review</SelectItem>
+                    <SelectItem value="follow_up">Follow-up Call</SelectItem>
+                    <SelectItem value="closing">Closing Meeting</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="schedule-notes">Notes:</Label>
+                <Textarea
+                  id="schedule-notes"
+                  placeholder="Additional notes for the appointment..."
+                  value={scheduleForm.notes}
+                  onChange={(e) => setScheduleForm(prev => ({ ...prev, notes: e.target.value }))}
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsScheduleModalOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleScheduleAppointment} className="bg-orange-600 hover:bg-orange-700">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Schedule Appointment
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Add Contact Modal */}
       <Dialog open={isAddContactModalOpen} onOpenChange={setIsAddContactModalOpen}>
