@@ -25,17 +25,19 @@ export function LocationTracker() {
   const [searchQuery, setSearchQuery] = useState("");
   const [targetingMode, setTargetingMode] = useState("view"); // view, target, analyze
 
-  const { data: contacts = [] } = useQuery<any[]>({
+  const { data: contacts = [], isLoading: contactsLoading } = useQuery<any[]>({
     queryKey: ["/api/contacts"]
   });
 
-  const { data: users = [] } = useQuery<any[]>({
+  const { data: users = [], isLoading: usersLoading } = useQuery<any[]>({
     queryKey: ["/api/users"]
   });
 
-  const { data: companies = [] } = useQuery<any[]>({
+  const { data: companies = [], isLoading: companiesLoading } = useQuery<any[]>({
     queryKey: ["/api/companies"]
   });
+
+  const isLoading = contactsLoading || usersLoading || companiesLoading;
 
   // Google Maps industry categories for precise targeting
   const googleMapsIndustries = [
@@ -686,13 +688,33 @@ export function LocationTracker() {
     </div>
   );
 
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Location Intelligence</h1>
+            <p className="text-muted-foreground">
+              Loading geographic insights for leads, team members, and business operations...
+            </p>
+          </div>
+        </div>
+        <Card>
+          <CardContent className="flex items-center justify-center py-12">
+            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Location Intelligence</h1>
           <p className="text-muted-foreground">
-            Geographic insights for leads, team members, and business operations
+            Geographic insights for {contacts.length} leads, {salesReps.length} team members, and business operations
           </p>
         </div>
       </div>
