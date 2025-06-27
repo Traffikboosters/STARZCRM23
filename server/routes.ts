@@ -3498,7 +3498,7 @@ Email: support@traffikboosters.com
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: white;">
               <div style="text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, hsl(14, 88%, 55%) 0%, hsl(29, 85%, 58%) 100%); padding: 40px; border-radius: 12px;">
-                <img src="cid:traffikLogo" alt="Traffik Boosters" style="width: 300px; height: auto; margin: 0 auto 20px; display: block;" />
+                <img src="cid:traffikLogo" alt="Traffik Boosters" style="width: 500px; height: auto; margin: 0 auto 20px; display: block;" />
                 <p style="color: white; font-weight: bold; margin: 0; font-size: 18px;">"More Traffik! More Sales!"</p>
               </div>
               
@@ -3634,7 +3634,7 @@ Email: support@traffikboosters.com
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, hsl(14, 88%, 55%) 0%, hsl(29, 85%, 58%) 100%); padding: 20px; border-radius: 12px;">
-              <img src="cid:traffikLogo" alt="Traffik Boosters" style="width: 60px; height: auto; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;" />
+              <img src="cid:traffikLogo" alt="Traffik Boosters" style="width: 400px; height: auto; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;" />
               <h1 style="color: white; margin-bottom: 10px;">TRAFFIK BOOSTERS</h1>
               <p style="color: white; font-weight: bold; margin: 0;">More Traffik! More Sales!</p>
             </div>

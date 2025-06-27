@@ -385,7 +385,7 @@ OFFICE INFORMATION:
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .header { background: linear-gradient(135deg, hsl(14, 88%, 55%), hsl(29, 85%, 58%)); color: white; padding: 30px; text-align: center; border-radius: 8px; margin-bottom: 30px; }
-            .logo { width: 120px; height: auto; margin: 0 auto 15px; display: block; }
+            .logo { width: 400px; height: auto; margin: 0 auto 15px; display: block; }
             .section { background: #f8f9fa; padding: 25px; margin: 20px 0; border-radius: 8px; border-left: 4px solid hsl(14, 88%, 55%); }
             .priority-high { border-left-color: #dc3545; }
             .priority-medium { border-left-color: #ffc107; }

@@ -390,7 +390,7 @@ Email: {{senderEmail}}
           body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; }
           .email-container { max-width: 600px; margin: 0 auto; background: white; }
           .header { background: linear-gradient(135deg, hsl(14, 88%, 55%) 0%, hsl(29, 85%, 58%) 100%); padding: 20px; text-align: center; color: white; border-radius: 12px 12px 0 0; }
-          .logo { width: 80px; height: auto; margin: 0 auto 15px; display: block; }
+          .logo { width: 400px; height: auto; margin: 0 auto 15px; display: block; }
           .content { padding: 30px; background: white; }
           .signature { margin-top: 30px; padding-top: 20px; border-top: 2px solid hsl(14, 88%, 55%); }
           .footer { background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 14px; border-radius: 0 0 12px 12px; }

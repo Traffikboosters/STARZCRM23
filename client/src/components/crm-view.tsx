@@ -642,16 +642,25 @@ export default function CRMView() {
     <div className="p-6 space-y-6">
       {/* Header with Live Lead Count */}
       <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            CRM - Contact Management 
-            <Badge variant="secondary" className="ml-3 text-lg px-3 py-1">
-              {contacts.length} Total Leads
-            </Badge>
-          </h1>
-          <p className="text-gray-600">
-            Manage your contacts and leads • Last updated: {format(new Date(), 'p')}
-          </p>
+        <div className="flex items-center gap-4">
+          <img 
+            src={traffikBoostersLogo} 
+            alt="Traffik Boosters" 
+            className="h-20 w-auto object-contain"
+            style={{ imageRendering: 'crisp-edges' }}
+          />
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              CRM - Contact Management 
+              <Badge variant="secondary" className="ml-3 text-lg px-3 py-1">
+                {contacts.length} Total Leads
+              </Badge>
+            </h1>
+            <p className="text-gray-600">
+              Manage your contacts and leads • Last updated: {format(new Date(), 'p')}
+            </p>
+            <p className="text-sm font-bold text-black">More Traffik! More Sales!</p>
+          </div>
         </div>
         <div className="flex gap-3">
           <Dialog open={isLeadAllocationModalOpen} onOpenChange={setIsLeadAllocationModalOpen}>
@@ -770,7 +779,7 @@ export default function CRMView() {
                     <img 
                       src={traffikBoostersLogo} 
                       alt="Traffik Boosters" 
-                      className="h-10 w-auto object-contain ml-2 flex-shrink-0"
+                      className="h-16 w-auto object-contain ml-2 flex-shrink-0"
                       style={{ imageRendering: 'crisp-edges' }}
                     />
                   </div>
