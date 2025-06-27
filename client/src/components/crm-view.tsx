@@ -442,9 +442,12 @@ export default function CRMView() {
     queryKey: ["/api/user"],
   });
 
-  const { data: salesReps = [] } = useQuery<UserType[]>({
+  const { data: allUsers = [] } = useQuery<UserType[]>({
     queryKey: ["/api/users"],
   });
+
+  // Filter to get only actual employees (users with sales_rep or admin role)
+  const salesReps = allUsers.filter(user => user.role === 'sales_rep' || user.role === 'admin');
 
   // Click-to-call functionality
   const handleCallContact = async (contact: Contact) => {
