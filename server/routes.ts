@@ -3476,10 +3476,9 @@ Account: starz@traffikboosters.com`;
       const inviteId = Date.now();
       const expiresAt = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000); // 5 days
 
-      // Create invitation link with proper domain
-      const replitDomain = process.env.REPLIT_DEV_DOMAIN;
-      const host = replitDomain || req.get('host');
-      const protocol = replitDomain ? 'https' : req.protocol;
+      // Create invitation link with proper domain - use deployed Replit app domain
+      const host = req.get('host');
+      const protocol = 'https';
       const inviteLink = `${protocol}://${host}/api/users/complete-invitation?token=${inviteToken}&email=${encodeURIComponent(email)}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&role=${role}`;
       
       console.log(`[Invite Link] Generated: ${inviteLink}`);
@@ -3607,6 +3606,133 @@ Email: support@traffikboosters.com
 
     } catch (error: any) {
       console.error('[Send Invitation] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Send direct platform access credentials
+  app.post('/api/users/send-direct-access', async (req, res) => {
+    try {
+      const { email, firstName, lastName, username, password, workEmail, platformUrl } = req.body;
+
+      const emailSubject = `Your Starz Platform Access - Direct Login`;
+      const emailBody = `
+Dear ${firstName} ${lastName},
+
+Your Starz platform account is ready for immediate access!
+
+DIRECT LOGIN CREDENTIALS:
+Username: ${username}
+Password: ${password}
+Work Email: ${workEmail}
+
+PLATFORM ACCESS:
+You can log in directly at: ${platformUrl}
+
+Simply use your username and password to access the platform immediately. No invitation link required.
+
+Once logged in, you'll have access to:
+- CRM Contact Management
+- Lead Generation Tools
+- Sales Pipeline
+- Phone System Integration
+- Analytics Dashboard
+- And much more!
+
+If you need any assistance getting started, contact support at (877) 840-6250.
+
+Welcome to the team!
+
+Best regards,
+Traffik Boosters Team
+Phone: (877) 840-6250
+Email: support@traffikboosters.com
+
+"More Traffik! More Sales!"
+      `.trim();
+
+      // Send the direct access email
+      try {
+        console.log(`[Direct Access] Sending login credentials to: ${email}`);
+        
+        const emailResult = await emailTransporter.sendMail({
+          from: 'starz@traffikboosters.com',
+          to: email,
+          subject: emailSubject,
+          text: emailBody,
+          attachments: [{
+            filename: 'traffik-boosters-logo.png',
+            path: './attached_assets/TRAFIC BOOSTERS3 copy_1751060321835.png',
+            cid: 'traffikLogo'
+          }],
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: white;">
+              <div style="text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, hsl(14, 88%, 55%) 0%, hsl(29, 85%, 58%) 100%); padding: 40px; border-radius: 12px;">
+                <img src="cid:traffikLogo" alt="Company Logo" style="width: 400px; height: auto; margin: 0 auto 20px; display: block;" />
+                <p style="color: white; font-weight: bold; margin: 0; font-size: 18px;">"More Traffik! More Sales!"</p>
+              </div>
+              
+              <div style="background: #f9f9f9; padding: 30px; border-radius: 12px; margin: 20px 0; border-left: 4px solid hsl(14, 88%, 55%);">
+                <h2 style="color: hsl(14, 88%, 55%); margin-top: 0;">Platform Access Ready!</h2>
+                <p style="font-size: 16px; line-height: 1.6;">Dear <strong>${firstName} ${lastName}</strong>,</p>
+                <p style="font-size: 16px; line-height: 1.6;">Your Starz platform account is ready for immediate access!</p>
+                
+                <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid hsl(29, 85%, 58%);">
+                  <h3 style="margin-top: 0; color: hsl(14, 88%, 55%);">Direct Login Credentials:</h3>
+                  <p style="margin: 10px 0; font-size: 16px;"><strong>Username:</strong> ${username}</p>
+                  <p style="margin: 10px 0; font-size: 16px;"><strong>Password:</strong> ${password}</p>
+                  <p style="margin: 10px 0; font-size: 16px;"><strong>Work Email:</strong> ${workEmail}</p>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${platformUrl}" style="display: inline-block; background: hsl(14, 88%, 55%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">Access Platform Now</a>
+                </div>
+                
+                <div style="background: #e8f4ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                  <h4 style="margin-top: 0; color: hsl(14, 88%, 55%);">Platform Features Available:</h4>
+                  <ul style="margin: 0; padding-left: 20px;">
+                    <li>CRM Contact Management</li>
+                    <li>Lead Generation Tools</li>
+                    <li>Sales Pipeline</li>
+                    <li>Phone System Integration</li>
+                    <li>Analytics Dashboard</li>
+                    <li>And much more!</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div style="text-align: center; margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                <p style="margin: 0; color: #666; font-size: 14px;">
+                  Need assistance? Contact support at <strong>(877) 840-6250</strong><br>
+                  Email: <a href="mailto:support@traffikboosters.com" style="color: hsl(14, 88%, 55%);">support@traffikboosters.com</a>
+                </p>
+              </div>
+            </div>
+          `
+        });
+
+        console.log(`[Direct Access] Email sent successfully. Message ID: ${emailResult.messageId}`);
+        console.log(`[Direct Access] SMTP Response: ${emailResult.response}`);
+
+        res.json({
+          success: true,
+          message: `Direct access credentials sent to ${firstName} ${lastName}`,
+          recipient: email,
+          username: username,
+          emailSent: true
+        });
+
+      } catch (emailError: any) {
+        console.error('[Direct Access] Email sending failed:', emailError);
+        res.status(500).json({
+          error: 'Failed to send direct access email',
+          details: emailError.message,
+          emailSent: false
+        });
+      }
+
+    } catch (error: any) {
+      console.error('[Direct Access] Error:', error);
       res.status(500).json({ error: error.message });
     }
   });
