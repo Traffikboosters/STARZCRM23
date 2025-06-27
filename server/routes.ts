@@ -698,15 +698,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Starting Bark.com lead extraction...');
       
       // Broadcast start of scraping
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify({
-            type: 'scraping_started',
-            platform: 'Bark.com',
-            timestamp: new Date().toISOString(),
-            message: 'Starting lead extraction from Bark.com...'
-          }));
-        }
+      broadcast({
+        type: 'scraping_started',
+        platform: 'Bark.com',
+        timestamp: new Date().toISOString(),
+        message: 'Starting lead extraction from Bark.com...'
       });
       
       const barkLeads = await generateBarkLeads();
@@ -734,27 +730,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdContacts.push(contact);
         
         // Broadcast each new lead in real-time
-        wss.clients.forEach((client) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({
-              type: 'new_lead',
-              platform: 'Bark.com',
-              lead: {
-                id: contact.id,
-                name: `${contact.firstName} ${contact.lastName}`,
-                company: contact.company,
-                phone: contact.phone,
-                email: contact.email,
-                leadScore: lead.leadScore,
-                estimatedValue: lead.estimatedValue,
-                location: lead.location,
-                category: lead.category,
-                rating: lead.rating
-              },
-              progress: Math.round(((i + 1) / barkLeads.length) * 100),
-              timestamp: new Date().toISOString()
-            }));
-          }
+        broadcast({
+          type: 'new_lead',
+          platform: 'Bark.com',
+          lead: {
+            id: contact.id,
+            name: `${contact.firstName} ${contact.lastName}`,
+            company: contact.company,
+            phone: contact.phone,
+            email: contact.email,
+            leadScore: lead.leadScore,
+            estimatedValue: lead.estimatedValue,
+            location: lead.location,
+            category: lead.category,
+            rating: lead.rating
+          },
+          progress: Math.round(((i + 1) / barkLeads.length) * 100),
+          timestamp: new Date().toISOString()
         });
         
         // Add small delay to simulate real extraction
@@ -762,18 +754,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Broadcast completion with lead extraction notification
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify({
-            type: 'scraping_completed',
-            platform: 'Bark.com',
-            leadsFound: barkLeads.length,
-            contactsCreated: createdContacts.length,
-            totalLeads: createdContacts.length,
-            timestamp: new Date().toISOString(),
-            message: `Successfully extracted ${barkLeads.length} leads from Bark.com`
-          }));
-        }
+      broadcast({
+        type: 'scraping_completed',
+        platform: 'Bark.com',
+        leadsFound: barkLeads.length,
+        contactsCreated: createdContacts.length,
+        totalLeads: createdContacts.length,
+        timestamp: new Date().toISOString(),
+        message: `Successfully extracted ${barkLeads.length} leads from Bark.com`
       });
 
       // Create scraping job record
@@ -846,15 +834,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Starting Business Insider lead extraction...');
       
       // Broadcast start of scraping
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify({
-            type: 'scraping_started',
-            platform: 'Business Insider',
-            timestamp: new Date().toISOString(),
-            message: 'Starting lead extraction from Business Insider...'
-          }));
-        }
+      broadcast({
+        type: 'scraping_started',
+        platform: 'Business Insider',
+        timestamp: new Date().toISOString(),
+        message: 'Starting lead extraction from Business Insider...'
       });
       
       const businessLeads = await generateBusinessInsiderLeads();
@@ -882,28 +866,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdContacts.push(contact);
         
         // Broadcast each new lead in real-time
-        wss.clients.forEach((client) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({
-              type: 'new_lead',
-              platform: 'Business Insider',
-              lead: {
-                id: contact.id,
-                name: lead.executiveName,
-                company: lead.companyName,
-                phone: contact.phone,
-                email: contact.email,
-                position: lead.position,
-                industry: lead.industry,
-                funding: lead.funding,
-                leadScore: lead.leadScore,
-                estimatedValue: lead.estimatedValue,
-                location: lead.location
-              },
-              progress: Math.round(((i + 1) / businessLeads.length) * 100),
-              timestamp: new Date().toISOString()
-            }));
-          }
+        broadcast({
+          type: 'new_lead',
+          platform: 'Business Insider',
+          lead: {
+            id: contact.id,
+            name: lead.executiveName,
+            company: lead.companyName,
+            phone: contact.phone,
+            email: contact.email,
+            position: lead.position,
+            industry: lead.industry,
+            funding: lead.funding,
+            leadScore: lead.leadScore,
+            estimatedValue: lead.estimatedValue,
+            location: lead.location
+          },
+          progress: Math.round(((i + 1) / businessLeads.length) * 100),
+          timestamp: new Date().toISOString()
         });
         
         // Add small delay to simulate real extraction
@@ -911,18 +891,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Broadcast completion with lead extraction notification
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify({
-            type: 'scraping_completed',
-            platform: 'Business Insider',
-            leadsFound: businessLeads.length,
-            contactsCreated: createdContacts.length,
-            totalLeads: createdContacts.length,
-            timestamp: new Date().toISOString(),
-            message: `Successfully extracted ${businessLeads.length} leads from Business Insider`
-          }));
-        }
+      broadcast({
+        type: 'scraping_completed',
+        platform: 'Business Insider',
+        leadsFound: businessLeads.length,
+        contactsCreated: createdContacts.length,
+        totalLeads: createdContacts.length,
+        timestamp: new Date().toISOString(),
+        message: `Successfully extracted ${businessLeads.length} leads from Business Insider`
       });
 
       // Create scraping job record
