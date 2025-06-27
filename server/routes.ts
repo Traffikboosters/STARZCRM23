@@ -25,6 +25,7 @@ import { storage } from "./storage";
 import { AILeadScoringEngine } from "./ai-lead-scoring";
 import { mightyCallEnhanced } from "./mightycall-enhanced";
 import { workingCaller } from "./mightycall-working";
+import { liveScrapingEngine } from "./live-scraper";
 
 function logAuditEvent(action: string, entityType: string, entityId: number, userId: number = 1, oldValues?: any, newValues?: any, description?: string) {
   console.log(`[AUDIT] ${new Date().toISOString()} - User ${userId} performed ${action} on ${entityType} ${entityId}${description ? ': ' + description : ''}`);
@@ -2578,6 +2579,67 @@ Appointment Details:
     }
   });
 
+  // Live Scraping Engine API endpoints
+  app.get("/api/live-scraping/status", requireAuth, async (req: any, res) => {
+    try {
+      const activeJobs = liveScrapingEngine.getActiveJobs();
+      res.json({
+        isActive: true,
+        activeJobs: activeJobs.length,
+        jobs: activeJobs,
+        message: `Live data extraction engine running with ${activeJobs.length} scheduled jobs`
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/live-scraping/jobs/:jobId/pause", requireAuth, async (req: any, res) => {
+    try {
+      const jobId = req.params.jobId;
+      const success = await liveScrapingEngine.pauseJob(jobId);
+      
+      if (success) {
+        res.json({ message: `Job ${jobId} paused successfully` });
+      } else {
+        res.status(404).json({ message: "Job not found" });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/live-scraping/jobs/:jobId/resume", requireAuth, async (req: any, res) => {
+    try {
+      const jobId = req.params.jobId;
+      const success = await liveScrapingEngine.resumeJob(jobId);
+      
+      if (success) {
+        res.json({ message: `Job ${jobId} resumed successfully` });
+      } else {
+        res.status(404).json({ message: "Job not found" });
+      }
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/live-scraping/metrics", requireAuth, async (req: any, res) => {
+    try {
+      const activeJobs = liveScrapingEngine.getActiveJobs();
+      const metrics = activeJobs.map(job => ({
+        jobId: job.id,
+        jobName: job.name,
+        platform: job.platform,
+        metrics: liveScrapingEngine.getJobMetrics(job.id)
+      }));
+      
+      res.json(metrics);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // AI Lead Scoring endpoints
   app.post("/api/contacts/:id/score", requireAuth, async (req: any, res) => {
     try {
@@ -2720,6 +2782,12 @@ Appointment Details:
 
   // Make broadcast available globally for route handlers
   (global as any).broadcast = broadcast;
+
+  // Initialize live scraping engine with broadcast capability
+  liveScrapingEngine.setBroadcastCallback(broadcast);
+  
+  // Initialize default scraping jobs
+  liveScrapingEngine.initializeScheduledJobs();
 
   wss.on('connection', (ws) => {
     console.log('WebSocket client connected');
