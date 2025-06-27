@@ -230,6 +230,56 @@ const scrapingTemplates = [
     targetAudience: "Local service providers actively seeking new business and clients"
   },
   {
+    id: 10,
+    name: "Yellow Pages Business Directory",
+    description: "Established businesses from Yellow Pages directory needing digital marketing upgrades",
+    url: "https://www.yellowpages.com",
+    selectors: {
+      business_name: ".business-name, .listing-name",
+      phone: ".phone, .contact-phone",
+      address: ".address, .street-address",
+      category: ".category, .business-type",
+      rating: ".rating-stars, .overall-rating",
+      years_listed: ".years-in-business, .established",
+      website: ".website-link, .business-website"
+    },
+    filters: {
+      categories: ["attorneys", "auto repair", "beauty", "construction", "dentists", "financial", "health", "home improvement", "insurance", "marketing", "real estate", "restaurants", "professional services"],
+      min_years_listed: 3,
+      has_phone: true,
+      verified_listing: true,
+      exclude_chains: false
+    },
+    expectedLeads: "120-180 per scrape",
+    conversionRate: "22%",
+    targetAudience: "Established businesses seeking modern digital marketing and online presence solutions"
+  },
+  {
+    id: 11,
+    name: "White Pages Professional Directory",
+    description: "Professional service providers and practices from White Pages for B2B marketing services",
+    url: "https://www.whitepages.com",
+    selectors: {
+      professional_name: ".professional-name, .person-name",
+      business_name: ".business-name, .company-name",
+      phone: ".contact-phone, .business-phone",
+      address: ".business-address, .office-location",
+      title: ".professional-title, .job-title",
+      years_experience: ".years-in-business, .experience-years",
+      specialties: ".specialties, .practice-areas"
+    },
+    filters: {
+      categories: ["professional services", "medical practice", "legal office", "financial advisor", "insurance agency", "real estate office", "consulting firm", "marketing agency", "accounting firm", "dental practice"],
+      min_years_experience: 5,
+      has_business_phone: true,
+      professional_title_required: true,
+      exclude_individuals: false
+    },
+    expectedLeads: "80-120 per scrape",
+    conversionRate: "25%",
+    targetAudience: "Professional service providers and practices needing advanced digital marketing and client acquisition strategies"
+  },
+  {
     id: 9,
     name: "Angie's List Contractors",
     description: "Verified home improvement and professional service contractors from Angie's List",
@@ -335,6 +385,10 @@ export default function ScrapingConfigurationDemo() {
         endpoint = '/api/scraping-jobs/craigslist';
       } else if (selectedTemplate.name.includes('Angie\'s List')) {
         endpoint = '/api/scraping-jobs/angieslist';
+      } else if (selectedTemplate.name.includes('Yellow Pages')) {
+        endpoint = '/api/scraping-jobs/yellowpages';
+      } else if (selectedTemplate.name.includes('White Pages')) {
+        endpoint = '/api/scraping-jobs/whitepages';
       }
       
       if (endpoint) {
@@ -444,6 +498,10 @@ export default function ScrapingConfigurationDemo() {
         endpoint = '/api/scraping-jobs/craigslist';
       } else if (selectedTemplate.name.includes('Angie\'s List')) {
         endpoint = '/api/scraping-jobs/angieslist';
+      } else if (selectedTemplate.name.includes('Yellow Pages')) {
+        endpoint = '/api/scraping-jobs/yellowpages';
+      } else if (selectedTemplate.name.includes('White Pages')) {
+        endpoint = '/api/scraping-jobs/whitepages';
       }
 
       if (endpoint) {

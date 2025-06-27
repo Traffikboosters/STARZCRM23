@@ -567,7 +567,7 @@ export default function LiveDataExtractor() {
       </Card>
 
       {/* Platform Integration Status */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -638,6 +638,56 @@ export default function LiveDataExtractor() {
               <div className="flex items-center justify-between">
                 <span className="text-sm">Lead Quality</span>
                 <span className="text-sm font-semibold text-blue-600">Good</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5 text-yellow-600" />
+              Yellow Pages
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Business Directory</span>
+                <Badge className="bg-yellow-100 text-yellow-800">Active</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Schedule</span>
+                <span className="text-sm text-gray-600">Every 6 hours</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Lead Quality</span>
+                <span className="text-sm font-semibold text-green-600">High</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-purple-600" />
+              White Pages
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Professional Directory</span>
+                <Badge className="bg-purple-100 text-purple-800">Active</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Schedule</span>
+                <span className="text-sm text-gray-600">Every 8 hours</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Lead Quality</span>
+                <span className="text-sm font-semibold text-green-600">Premium</span>
               </div>
             </div>
           </CardContent>
