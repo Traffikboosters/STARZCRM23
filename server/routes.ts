@@ -3516,7 +3516,7 @@ Email: support@traffikboosters.com
               
               <div style="text-align: center; color: #666; font-size: 14px; margin-top: 30px; border-top: 2px solid hsl(14, 88%, 55%); padding-top: 20px;">
                 <div style="margin-bottom: 15px;">
-                  <img src="cid:traffikLogo" alt="Traffik Boosters" style="width: 60px; height: auto; margin: 0 auto 10px; display: block;" />
+                  <img src="cid:traffikLogo" alt="Traffik Boosters" style="width: 240px; height: auto; margin: 0 auto 10px; display: block;" />
                   </div>
                 </div>
                 <p style="margin: 5px 0;"><strong>TRAFFIK BOOSTERS</strong></p>
