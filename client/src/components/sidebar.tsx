@@ -77,6 +77,7 @@ export default function Sidebar({
     { id: "sales-funnels", label: "Sales Funnels", icon: Filter },
     { id: "locations", label: "Location Intelligence", icon: MapPin },
     { id: "email-marketing", label: "Email Marketing", icon: Mail },
+    { id: "sms-marketing", label: "SMS Marketing", icon: MessageSquare },
     { id: "hr", label: "HR Portal", icon: UserPlus },
   ];
 

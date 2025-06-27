@@ -33,6 +33,7 @@ import { AIConversationStarterEngine } from "./ai-conversation-starters";
 import { quickReplyEngine } from "./ai-quick-replies";
 import { onboardingService } from "./employee-onboarding";
 import { emailMarketingService } from "./email-marketing";
+import { smsMarketingService } from "./sms-marketing";
 import nodemailer from "nodemailer";
 
 // Configure email transporter for Traffik Boosters email server
@@ -4114,6 +4115,132 @@ Email: support@traffikboosters.com
       res.json(newConversation);
     } catch (error: any) {
       console.error('[Create Conversation] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // SMS Marketing - Get all campaigns
+  app.get("/api/sms/campaigns", async (req, res) => {
+    try {
+      const campaigns = smsMarketingService.getCampaigns();
+      res.json(campaigns);
+    } catch (error: any) {
+      console.error('[SMS] Error fetching campaigns:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // SMS Marketing - Create new campaign
+  app.post("/api/sms/campaigns", async (req, res) => {
+    try {
+      const { name, message, senderName, targetAudience } = req.body;
+      
+      const campaign = await smsMarketingService.createCampaign({
+        name,
+        message,
+        senderName,
+        targetAudience: targetAudience || [],
+        status: 'draft',
+        createdBy: req.user?.id || 1
+      });
+
+      res.json(campaign);
+    } catch (error: any) {
+      console.error('[SMS] Error creating campaign:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // SMS Marketing - Get all templates
+  app.get("/api/sms/templates", async (req, res) => {
+    try {
+      const templates = smsMarketingService.getTemplates();
+      res.json(templates);
+    } catch (error: any) {
+      console.error('[SMS] Error fetching templates:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // SMS Marketing - Send mass SMS campaign
+  app.post("/api/sms/send", async (req, res) => {
+    try {
+      const { campaignId, contactIds, templateId, message } = req.body;
+      
+      if (!contactIds || contactIds.length === 0) {
+        return res.status(400).json({ error: 'No contacts selected' });
+      }
+
+      // Get contacts
+      const contacts = await Promise.all(
+        contactIds.map((id: number) => storage.getContact(id))
+      );
+
+      const validContacts = contacts.filter(contact => 
+        contact && contact.phone && contact.firstName && contact.lastName
+      ).map(contact => ({
+        id: contact.id,
+        firstName: contact.firstName,
+        lastName: contact.lastName,
+        phone: contact.phone!,
+        company: contact.company || '',
+        industry: contact.notes?.toLowerCase().includes('restaurant') ? 'Restaurant' :
+                  contact.notes?.toLowerCase().includes('hvac') ? 'HVAC' :
+                  contact.notes?.toLowerCase().includes('plumb') ? 'Plumbing' :
+                  contact.notes?.toLowerCase().includes('electric') ? 'Electrical' :
+                  contact.notes?.toLowerCase().includes('auto') ? 'Automotive' :
+                  contact.notes?.toLowerCase().includes('real estate') ? 'Real Estate' :
+                  contact.notes?.toLowerCase().includes('health') ? 'Healthcare' :
+                  contact.notes?.toLowerCase().includes('retail') ? 'Retail' : 'Business',
+        location: contact.notes?.match(/([A-Z]{2})\b/)?.[1] || 'US',
+        leadSource: contact.leadSource || 'website',
+        tags: [],
+        isSubscribed: true,
+        engagementScore: Math.floor(Math.random() * 100)
+      }));
+
+      if (validContacts.length === 0) {
+        return res.status(400).json({ error: 'No valid contacts with phone numbers found' });
+      }
+
+      // Get template if specified
+      let template = null;
+      if (templateId) {
+        template = smsMarketingService.getTemplate(templateId);
+        if (!template) {
+          return res.status(404).json({ error: 'Template not found' });
+        }
+      }
+
+      // Send SMS messages
+      const result = await smsMarketingService.sendMassSMS(
+        validContacts,
+        template || {
+          id: 'default',
+          name: 'Custom Message',
+          message: message || 'Hi {{firstName}}, this is Traffik Boosters. We have exciting digital marketing opportunities for your business. Call (877) 840-6250 today!',
+          category: 'follow_up' as const,
+          variables: ['firstName'],
+          createdAt: new Date(),
+          isActive: true
+        },
+        {
+          name: 'Traffik Boosters Team',
+          phone: '(877) 840-6250',
+          role: 'Growth Specialist'
+        }
+      );
+
+      res.json({
+        success: true,
+        sent: result.sent,
+        failed: result.failed,
+        optedOut: result.optedOut,
+        totalContacts: validContacts.length
+      });
+
+    } catch (error: any) {
+      console.error('[SMS] Error sending campaign:', error);
       res.status(500).json({ error: error.message });
     }
   });
