@@ -551,6 +551,9 @@ export default function ChatWidget() {
                         Connected to Traffik Boosters email server
                       </p>
                       <p className="text-xs text-green-600 mt-1">
+                        Server: emailmg.ipage.com | Account: starz@traffikboosters.com
+                      </p>
+                      <p className="text-xs text-green-600">
                         Last sync: {new Date().toLocaleString()}
                       </p>
                     </div>
@@ -625,7 +628,15 @@ export default function ChatWidget() {
                   
                   <Button 
                     variant="outline"
-                    onClick={() => window.open(emailConfig.server, '_blank')}
+                    onClick={() => {
+                      const emailUrl = "https://emailmg.ipage.com/sqmail/src/webmail.php";
+                      navigator.clipboard.writeText(emailUrl);
+                      window.open(emailUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+                      toast({
+                        title: "Email Client Opening",
+                        description: "Email URL copied to clipboard. Login with: starz@traffikboosters.com",
+                      });
+                    }}
                   >
                     <Monitor className="w-4 h-4 mr-2" />
                     Open Email Client
