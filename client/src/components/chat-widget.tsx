@@ -551,7 +551,7 @@ export default function ChatWidget() {
                         Connected to Traffik Boosters email server
                       </p>
                       <p className="text-xs text-green-600 mt-1">
-                        Server: emailmg.ipage.com | Account: starz@traffikboosters.com
+                        IMAP: imap.ipage.com | SMTP: smtp.ipage.com | Account: starz@traffikboosters.com
                       </p>
                       <p className="text-xs text-green-600">
                         Last sync: {new Date().toLocaleString()}
