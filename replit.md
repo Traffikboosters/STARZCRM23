@@ -317,6 +317,7 @@ The application uses a comprehensive schema including:
 - June 27, 2025. Fixed lead card animation targeting to only flash "NEW" text badges on 0-24H status leads instead of entire cards, improving visual focus while maintaining color-coded status indicators
 - June 27, 2025. Sent fresh HR portal invitation to Steve Williams (dnarcisse48@gmail.com) with enhanced Traffik Boosters branding, steve.williams@traffikboosters.com work email, and 10% commission structure
 - June 27, 2025. Implemented comprehensive mass text campaign system with SMS marketing dashboard, 6 professional templates, contact selection, personalization variables, delivery tracking, and complete API backend integration
+- June 27, 2025. Added real-time email lead count updates with WebSocket integration for instant notification when new leads are received via chat widget or email submissions
 
 ## User Preferences
 

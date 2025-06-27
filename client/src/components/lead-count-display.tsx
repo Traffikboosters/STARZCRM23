@@ -21,6 +21,32 @@ export default function LeadCountDisplay({ variant = "sidebar", className = "" }
     refetchInterval: 30000, // Auto-refresh every 30 seconds
   });
 
+  // WebSocket connection for real-time updates
+  useEffect(() => {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const socket = new WebSocket(wsUrl);
+
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        // Handle lead count updates from email submissions
+        if (data.type === 'lead_count_update' || data.type === 'new_lead') {
+          // Invalidate and refetch contacts immediately
+          queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+          setLastUpdate(new Date());
+        }
+      } catch (error) {
+        console.error('WebSocket message parse error:', error);
+      }
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, [queryClient]);
+
   // Update timestamp when data changes
   useEffect(() => {
     if (contacts.length > 0) {

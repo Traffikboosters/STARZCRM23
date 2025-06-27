@@ -403,7 +403,41 @@ export default function CRMView() {
     notes: ""
   });
 
-  // Auto-refresh lead count every 30 seconds
+  // WebSocket connection for real-time email lead updates
+  useEffect(() => {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const socket = new WebSocket(wsUrl);
+
+    socket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        // Handle lead count updates from email submissions
+        if (data.type === 'lead_count_update' || data.type === 'new_lead' || data.type === 'chat_widget_submission') {
+          // Invalidate and refetch contacts immediately
+          queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+          
+          // Show toast notification for new email leads
+          if (data.type === 'chat_widget_submission' && data.newLead) {
+            toast({
+              title: "New Email Lead Received!",
+              description: `${data.newLead.name} from ${data.newLead.company} via ${data.newLead.source}`,
+              duration: 5000,
+            });
+          }
+        }
+      } catch (error) {
+        console.error('WebSocket message parse error:', error);
+      }
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, [queryClient, toast]);
+
+  // Auto-refresh lead count every 30 seconds (backup)
   useEffect(() => {
     const interval = setInterval(() => {
       queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });

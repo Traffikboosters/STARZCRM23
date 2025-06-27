@@ -3348,12 +3348,46 @@ Account: starz@traffikboosters.com`;
       console.log(`[From] starz@traffikboosters.com`);
       console.log(`[Subject] Thank you for contacting Traffik Boosters`);
 
-      // Broadcast to live monitoring
+      // Broadcast to live monitoring with lead count update
       if ((global as any).broadcast) {
+        // Get updated contact count for real-time display
+        const allContacts = await storage.getAllContacts();
+        
         (global as any).broadcast({
           type: 'chat_widget_submission',
           contact: contact,
           autoReplyStatus: 'sent',
+          timestamp: new Date().toISOString()
+        });
+
+        // Broadcast lead count update immediately
+        (global as any).broadcast({
+          type: 'lead_count_update',
+          totalLeads: allContacts.length,
+          newLead: {
+            id: contact.id,
+            name: `${contact.firstName} ${contact.lastName}`,
+            company: contact.company,
+            email: contact.email,
+            phone: contact.phone,
+            source: 'Email/Chat Widget'
+          },
+          timestamp: new Date().toISOString()
+        });
+
+        // Broadcast new lead notification
+        (global as any).broadcast({
+          type: 'new_lead',
+          platform: 'Email/Chat Widget',
+          lead: {
+            id: contact.id,
+            name: `${contact.firstName} ${contact.lastName}`,
+            company: contact.company,
+            phone: contact.phone,
+            email: contact.email,
+            leadSource: 'chat_widget',
+            priority: contact.priority
+          },
           timestamp: new Date().toISOString()
         });
       }
