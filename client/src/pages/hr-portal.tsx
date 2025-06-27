@@ -48,7 +48,7 @@ export default function HRPortal() {
     phone: '',
     role: 'sales_rep',
     compensationType: 'commission',
-    baseSalary: 0,
+    baseSalary: 50000,
     commissionRate: 10,
     bonusCommissionRate: 0,
     commissionTier: 'standard',
@@ -65,7 +65,13 @@ export default function HRPortal() {
 
   // Add employee mutation
   const addEmployeeMutation = useMutation({
-    mutationFn: (employeeData: any) => apiRequest('POST', '/api/users', employeeData),
+    mutationFn: () => apiRequest('POST', '/api/users', {
+      ...newEmployee,
+      password: 'TempPassword123!', // Temporary password - should be changed on first login
+      commissionRate: newEmployee.commissionRate?.toString() || '10',
+      baseCommissionRate: newEmployee.commissionRate?.toString() || '10',
+      bonusCommissionRate: (newEmployee.bonusCommissionRate || 0).toString(),
+    }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
       setIsAddEmployeeModalOpen(false);
@@ -138,15 +144,15 @@ export default function HRPortal() {
   });
 
   // Filter employees (exclude admin users from HR Portal display)
-  const nonAdminEmployees = employees.filter((emp: User) => emp.role !== 'admin');
+  const nonAdminEmployees = Array.isArray(employees) 
+    ? employees.filter((emp: any) => emp.role !== 'admin')
+    : [];
   
-  const filteredEmployees = nonAdminEmployees
-    .filter((emp: User) => emp.role !== 'admin') // Remove admin users from HR Portal display
-    .filter((emp: User) => {
-      const departmentMatch = selectedDepartment === 'all' || emp.department === selectedDepartment;
-      const compensationMatch = selectedCompensationType === 'all' || emp.compensationType === selectedCompensationType;
-      return departmentMatch && compensationMatch;
-    });
+  const filteredEmployees = nonAdminEmployees.filter((emp: any) => {
+    const departmentMatch = selectedDepartment === 'all' || emp.department === selectedDepartment;
+    const compensationMatch = selectedCompensationType === 'all' || emp.compensationType === selectedCompensationType;
+    return departmentMatch && compensationMatch;
+  });
 
   // HR Data calculations
   const hrData = {
@@ -281,7 +287,7 @@ export default function HRPortal() {
         {/* Filters */}
         <Card>
           <CardContent className="p-6">
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4 items-end">
               <div className="flex-1 min-w-[200px]">
                 <Label htmlFor="department">Department</Label>
                 <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
@@ -310,6 +316,14 @@ export default function HRPortal() {
                   </SelectContent>
                 </Select>
               </div>
+              
+              <Button 
+                onClick={() => setIsAddEmployeeModalOpen(true)}
+                className="bg-[#e45c2b] hover:bg-[#d14a1f] text-white"
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add Employee
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -430,6 +444,200 @@ export default function HRPortal() {
             <UserInvitation />
           </TabsContent>
         </Tabs>
+
+        {/* Add Employee Modal */}
+        <Dialog open={isAddEmployeeModalOpen} onOpenChange={setIsAddEmployeeModalOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add New Employee</DialogTitle>
+              <DialogDescription>
+                Add a new employee to the HR system.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    value={newEmployee.firstName}
+                    onChange={(e) => setNewEmployee({...newEmployee, firstName: e.target.value})}
+                    placeholder="First name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    value={newEmployee.lastName}
+                    onChange={(e) => setNewEmployee({...newEmployee, lastName: e.target.value})}
+                    placeholder="Last name"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={newEmployee.email}
+                  onChange={(e) => setNewEmployee({...newEmployee, email: e.target.value})}
+                  placeholder="email@traffikboosters.com"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  value={newEmployee.username}
+                  onChange={(e) => setNewEmployee({...newEmployee, username: e.target.value})}
+                  placeholder="username"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="phone">Phone</Label>
+                <Input
+                  id="phone"
+                  value={newEmployee.phone}
+                  onChange={(e) => setNewEmployee({...newEmployee, phone: e.target.value})}
+                  placeholder="(877) 840-6250"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="role">Role</Label>
+                <Select value={newEmployee.role} onValueChange={(value) => setNewEmployee({...newEmployee, role: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sales_rep">Sales Representative</SelectItem>
+                    <SelectItem value="hr_staff">HR Staff</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="compensationType">Compensation Type</Label>
+                <Select value={newEmployee.compensationType} onValueChange={(value) => setNewEmployee({...newEmployee, compensationType: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select compensation type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="commission">Commission</SelectItem>
+                    <SelectItem value="salary">Salary</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {newEmployee.compensationType === 'commission' && (
+                <>
+                  <div>
+                    <Label htmlFor="commissionRate">Commission Rate (%)</Label>
+                    <Input
+                      id="commissionRate"
+                      type="number"
+                      value={newEmployee.commissionRate}
+                      onChange={(e) => setNewEmployee({...newEmployee, commissionRate: parseInt(e.target.value)})}
+                      placeholder="10"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="bonusCommissionRate">Bonus Commission Rate (%)</Label>
+                    <Input
+                      id="bonusCommissionRate"
+                      type="number"
+                      value={newEmployee.bonusCommissionRate}
+                      onChange={(e) => setNewEmployee({...newEmployee, bonusCommissionRate: parseInt(e.target.value)})}
+                      placeholder="0"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="commissionTier">Commission Tier</Label>
+                    <Select value={newEmployee.commissionTier} onValueChange={(value) => setNewEmployee({...newEmployee, commissionTier: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select tier" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="standard">Standard</SelectItem>
+                        <SelectItem value="bronze">Bronze</SelectItem>
+                        <SelectItem value="silver">Silver</SelectItem>
+                        <SelectItem value="gold">Gold</SelectItem>
+                        <SelectItem value="platinum">Platinum</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+              
+              {newEmployee.compensationType === 'salary' && (
+                <div>
+                  <Label htmlFor="baseSalary">Base Salary</Label>
+                  <Input
+                    id="baseSalary"
+                    type="number"
+                    value={newEmployee.baseSalary}
+                    onChange={(e) => setNewEmployee({...newEmployee, baseSalary: parseInt(e.target.value)})}
+                    placeholder="50000"
+                  />
+                </div>
+              )}
+              
+              <div>
+                <Label htmlFor="department">Department</Label>
+                <Select value={newEmployee.department} onValueChange={(value) => setNewEmployee({...newEmployee, department: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sales">Sales</SelectItem>
+                    <SelectItem value="hr">HR</SelectItem>
+                    <SelectItem value="marketing">Marketing</SelectItem>
+                    <SelectItem value="operations">Operations</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex justify-end space-x-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsAddEmployeeModalOpen(false);
+                    setNewEmployee({
+                      username: '',
+                      email: '',
+                      firstName: '',
+                      lastName: '',
+                      phone: '',
+                      role: 'sales_rep',
+                      compensationType: 'commission',
+                      commissionRate: 10,
+                      bonusCommissionRate: 0,
+                      commissionTier: 'standard',
+                      baseSalary: 50000,
+                      department: 'sales'
+                    });
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    addEmployeeMutation.mutate();
+                  }}
+                  disabled={addEmployeeMutation.isPending}
+                  className="bg-[#e45c2b] hover:bg-[#d14a1f] text-white"
+                >
+                  {addEmployeeMutation.isPending ? 'Adding...' : 'Add Employee'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
