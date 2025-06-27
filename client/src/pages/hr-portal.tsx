@@ -160,12 +160,10 @@ export default function HRPortal() {
     }
   });
 
-  // Filter employees (exclude admin users from HR Portal display)
-  const nonAdminEmployees = Array.isArray(employees) 
-    ? employees.filter((emp: any) => emp.role !== 'admin')
-    : [];
+  // Show all employees including admins
+  const allEmployees = Array.isArray(employees) ? employees : [];
   
-  const filteredEmployees = nonAdminEmployees.filter((emp: any) => {
+  const filteredEmployees = allEmployees.filter((emp: any) => {
     const departmentMatch = selectedDepartment === 'all' || emp.department === selectedDepartment;
     const compensationMatch = selectedCompensationType === 'all' || emp.compensationType === selectedCompensationType;
     return departmentMatch && compensationMatch;
@@ -173,15 +171,15 @@ export default function HRPortal() {
 
   // HR Data calculations
   const hrData = {
-    totalEmployees: nonAdminEmployees.length,
-    salesReps: nonAdminEmployees.filter((emp: User) => emp.role === 'sales_rep').length,
-    hrStaff: nonAdminEmployees.filter((emp: User) => emp.role === 'hr_staff').length,
-    totalPayroll: nonAdminEmployees.reduce((sum: number, emp: User) => {
+    totalEmployees: allEmployees.length,
+    salesReps: allEmployees.filter((emp: User) => emp.role === 'sales_rep').length,
+    hrStaff: allEmployees.filter((emp: User) => emp.role === 'hr_staff').length,
+    totalPayroll: allEmployees.reduce((sum: number, emp: User) => {
       return sum + (emp.compensationType === 'salary' ? (emp.baseSalary || 0) : 0);
     }, 0),
-    avgSalary: nonAdminEmployees.length > 0 ? nonAdminEmployees.reduce((sum: number, emp: User) => 
-      sum + (emp.compensationType === 'salary' ? (emp.baseSalary || 0) : 50000), 0) / nonAdminEmployees.length : 0,
-    commissionPaid: nonAdminEmployees.filter((emp: User) => emp.compensationType === 'commission')
+    avgSalary: allEmployees.length > 0 ? allEmployees.reduce((sum: number, emp: User) => 
+      sum + (emp.compensationType === 'salary' ? (emp.baseSalary || 0) : 50000), 0) / allEmployees.length : 0,
+    commissionPaid: allEmployees.filter((emp: User) => emp.compensationType === 'commission')
       .reduce((sum: number, emp: User) => {
         return sum + ((emp.commissionRate || 10) * 1000); // Estimated commission earnings
       }, 0)
