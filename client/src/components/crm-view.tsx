@@ -825,7 +825,7 @@ export default function CRMView() {
                     setIsDetailsModalOpen(true);
                   }}
                 >
-                <CardHeader className="pb-2 p-3 md:pb-3 md:p-6">
+                <CardHeader className="pb-3 p-4 relative">
                   {/* Age Alert Badge */}
                   {ageAlert && (
                     <div className="absolute top-2 right-2 z-10">
@@ -834,25 +834,25 @@ export default function CRMView() {
                       </Badge>
                     </div>
                   )}
-                  <div className="flex flex-col space-y-2 md:flex-row md:items-start md:justify-between md:space-y-0">
-                    <div className="flex items-center space-x-2 md:space-x-3">
-                      <Avatar className="w-8 h-8 md:w-12 md:h-12 flex-shrink-0">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <Avatar className="w-10 h-10 flex-shrink-0">
                         <AvatarImage src={contact.avatar || ""} />
-                        <AvatarFallback className="bg-brand-primary text-white font-medium text-xs md:text-sm">
+                        <AvatarFallback className="bg-brand-primary text-white font-medium text-sm">
                           {getContactInitials(contact)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex-1">
-                        <CardTitle className="text-sm md:text-lg text-neutral-dark truncate">
+                        <CardTitle className="text-base text-neutral-dark truncate leading-tight mb-1">
                           {contact.firstName} {contact.lastName}
                         </CardTitle>
-                        <p className="text-xs md:text-sm text-neutral-medium truncate">{contact.position}</p>
-                        <p className="text-xs md:text-sm text-neutral-light truncate">{contact.company}</p>
+                        <p className="text-sm text-neutral-medium truncate leading-tight">{contact.position}</p>
+                        <p className="text-sm text-neutral-light truncate leading-tight">{contact.company}</p>
                       </div>
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
+                        <Button variant="ghost" size="sm" className="flex-shrink-0">
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -865,45 +865,45 @@ export default function CRMView() {
                     </DropdownMenu>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-4 pt-0">
                   <div className="space-y-3">
                     {/* Contact Information */}
                     <div className="space-y-2">
                       {contact.email && (
-                        <p className="text-sm text-neutral-medium flex items-center gap-2">
-                          <Mail className="h-3 w-3" />
-                          {contact.email}
+                        <p className="text-sm text-neutral-medium flex items-center gap-2 truncate">
+                          <Mail className="h-3 w-3 flex-shrink-0" />
+                          <span className="truncate">{contact.email}</span>
                         </p>
                       )}
                       {contact.phone && (
                         <p className="text-sm text-neutral-medium flex items-center gap-2">
-                          <Phone className="h-3 w-3" />
-                          {formatPhoneNumber(contact.phone)}
+                          <Phone className="h-3 w-3 flex-shrink-0" />
+                          <span>{formatPhoneNumber(contact.phone)}</span>
                         </p>
                       )}
                     </div>
                     
                     {/* Lead Status */}
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <Badge className={getStatusColor(contact.leadStatus || "new")}>
                         {contact.leadStatus?.replace("_", " ") || "new"}
                       </Badge>
-                      <div className="text-xs text-neutral-light">
+                      <div className="text-xs text-neutral-light flex-shrink-0">
                         {new Date(contact.createdAt).toLocaleDateString()}
                       </div>
                     </div>
                     
                     {/* Assigned Sales Rep */}
-                    <div className="bg-blue-50 p-2 rounded border border-blue-200">
-                      <div className="flex items-center gap-2">
-                        <User className="h-3 w-3 text-blue-600" />
-                        <div className="flex-1">
+                    <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                      <div className="flex items-start gap-2">
+                        <User className="h-3 w-3 text-blue-600 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
                           {(contact as any).assignedUser ? (
-                            <>
-                              <p className="text-xs font-medium text-blue-900">
+                            <div className="space-y-1">
+                              <p className="text-xs font-medium text-blue-900 truncate">
                                 {(contact as any).assignedUser.firstName} {(contact as any).assignedUser.lastName}
                               </p>
-                              <p className="text-xs text-blue-700">
+                              <p className="text-xs text-blue-700 truncate">
                                 {(contact as any).assignedUser.email}
                               </p>
                               {(contact as any).assignedUser.phone && (
@@ -911,7 +911,7 @@ export default function CRMView() {
                                   {formatPhoneNumber((contact as any).assignedUser.phone)}
                                 </p>
                               )}
-                            </>
+                            </div>
                           ) : (
                             <p className="text-xs text-blue-600">Unassigned</p>
                           )}
@@ -927,7 +927,7 @@ export default function CRMView() {
                               });
                             }}
                           >
-                            <SelectTrigger className="h-6 w-16 text-xs">
+                            <SelectTrigger className="h-6 w-16 text-xs flex-shrink-0">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -951,13 +951,13 @@ export default function CRMView() {
                     )}
                     
                     {/* Action Buttons */}
-                    <div className="grid grid-cols-6 gap-1 pt-2 border-t bg-gray-50 p-2 rounded-b-lg">
+                    <div className="grid grid-cols-6 gap-1.5 pt-3 border-t bg-gray-50 p-2.5 rounded-b-lg -mx-4 mt-3">
                       {/* Phone Button */}
                       {contact.phone ? (
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-blue-600 hover:text-blue-800"
+                          className="h-10 w-full text-xs flex flex-col items-center justify-center p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
                           onClick={async (e) => {
                             e.stopPropagation();
                             if (!contact.phone) return;
@@ -983,18 +983,18 @@ export default function CRMView() {
                             }
                           }}
                         >
-                          <Phone className="h-3 w-3 mb-1" />
-                          <span className="text-[10px]">Call</span>
+                          <Phone className="h-3.5 w-3.5 mb-1" />
+                          <span className="text-[9px] leading-tight">Call</span>
                         </Button>
                       ) : (
                         <Button 
                           variant="ghost" 
                           size="sm" 
                           disabled
-                          className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 opacity-50"
+                          className="h-10 w-full text-xs flex flex-col items-center justify-center p-1.5 opacity-50"
                         >
-                          <Phone className="h-3 w-3 mb-1" />
-                          <span className="text-[10px]">Call</span>
+                          <Phone className="h-3.5 w-3.5 mb-1" />
+                          <span className="text-[9px] leading-tight">Call</span>
                         </Button>
                       )}
                       
@@ -1002,18 +1002,17 @@ export default function CRMView() {
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-blue-600 hover:text-blue-800"
+                        className="h-10 w-full text-xs flex flex-col items-center justify-center p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
                         onClick={(e) => {
                           e.stopPropagation();
-                          // Open scheduling modal - we'll implement this
                           toast({
                             title: "Schedule Meeting",
                             description: `Opening scheduler for ${contact.firstName} ${contact.lastName}`,
                           });
                         }}
                       >
-                        <CalendarPlus className="h-3 w-3 mb-1" />
-                        <span className="text-[10px]">Schedule</span>
+                        <CalendarPlus className="h-3.5 w-3.5 mb-1" />
+                        <span className="text-[9px] leading-tight">Schedule</span>
                       </Button>
                       
                       {/* Email Button */}
@@ -1021,7 +1020,7 @@ export default function CRMView() {
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-green-600 hover:text-green-800 bg-green-50 border-green-200"
+                          className="h-10 w-full text-xs flex flex-col items-center justify-center p-1.5 text-green-600 hover:text-green-800 bg-green-50 border-green-200 hover:bg-green-100"
                           onClick={(e) => {
                             e.stopPropagation();
                             window.location.href = `mailto:${contact.email}?subject=Follow up from Traffik Boosters&body=Hi ${contact.firstName},%0D%0A%0D%0AThank you for your interest in our digital marketing services. I wanted to follow up and see if you have any questions about how we can help grow your business.%0D%0A%0D%0ABest regards,%0D%0A${currentUser?.firstName} ${currentUser?.lastName}%0D%0A${currentUser?.email}%0D%0ATraflik Boosters%0D%0A(877) 840-6250`;
@@ -1031,18 +1030,18 @@ export default function CRMView() {
                             });
                           }}
                         >
-                          <Mail className="h-3 w-3 mb-1" />
-                          <span className="text-[10px]">Email</span>
+                          <Mail className="h-3.5 w-3.5 mb-1" />
+                          <span className="text-[9px] leading-tight">Email</span>
                         </Button>
                       ) : (
                         <Button 
                           variant="ghost" 
                           size="sm" 
                           disabled
-                          className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 opacity-50"
+                          className="h-10 w-full text-xs flex flex-col items-center justify-center p-1.5 opacity-50"
                         >
-                          <Mail className="h-3 w-3 mb-1" />
-                          <span className="text-[10px]">Email</span>
+                          <Mail className="h-3.5 w-3.5 mb-1" />
+                          <span className="text-[9px] leading-tight">Email</span>
                         </Button>
                       )}
                       
@@ -1050,15 +1049,15 @@ export default function CRMView() {
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-purple-600 hover:text-purple-800"
+                        className="h-10 w-full text-xs flex flex-col items-center justify-center p-1.5 text-purple-600 hover:text-purple-800 hover:bg-purple-50"
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedContactForDetails(contact);
                           setIsDetailsModalOpen(true);
                         }}
                       >
-                        <FileText className="h-3 w-3 mb-1" />
-                        <span className="text-[10px]">Notes</span>
+                        <FileText className="h-3.5 w-3.5 mb-1" />
+                        <span className="text-[9px] leading-tight">Notes</span>
                       </Button>
                       
                       {/* Disposition Button */}
@@ -1067,11 +1066,11 @@ export default function CRMView() {
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-orange-600 hover:text-orange-800"
+                            className="h-10 w-full text-xs flex flex-col items-center justify-center p-1.5 text-orange-600 hover:text-orange-800 hover:bg-orange-50"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <User className="h-3 w-3 mb-1" />
-                            <span className="text-[10px]">Status</span>
+                            <User className="h-3.5 w-3.5 mb-1" />
+                            <span className="text-[9px] leading-tight">Status</span>
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
@@ -1240,11 +1239,11 @@ export default function CRMView() {
                           <Button 
                             variant="ghost" 
                             size="sm" 
-                            className="h-8 w-full text-xs flex flex-col items-center justify-center p-1 text-blue-600 hover:text-blue-800"
+                            className="h-10 w-full text-xs flex flex-col items-center justify-center p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <DollarSign className="h-3 w-3 mb-1" />
-                            <span className="text-[10px]">Payment</span>
+                            <DollarSign className="h-3.5 w-3.5 mb-1" />
+                            <span className="text-[9px] leading-tight">Payment</span>
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-96 max-h-96 overflow-y-auto">
