@@ -56,7 +56,7 @@ export async function initializeDatabase() {
           leadStatus: "qualified",
           leadSource: "google_ads",
           priority: "high",
-          assignedTo: 2, // Sarah Johnson
+          assignedTo: 1, // Michael Thompson (admin)
           pipelineStage: "demo",
           dealValue: 750000, // $7,500 in cents
           createdBy: 1,
@@ -72,7 +72,7 @@ export async function initializeDatabase() {
           leadStatus: "new",
           leadSource: "yelp",
           priority: "medium",
-          assignedTo: 3, // David Chen
+          assignedTo: 1, // Michael Thompson (admin)
           pipelineStage: "prospect",
           dealValue: 350000, // $3,500 in cents
           createdBy: 1,
@@ -88,7 +88,7 @@ export async function initializeDatabase() {
           leadStatus: "contacted",
           leadSource: "linkedin",
           priority: "high",
-          assignedTo: 4, // Amanda Davis
+          assignedTo: 1, // Michael Thompson (admin)
           pipelineStage: "proposal",
           dealValue: 1200000, // $12,000 in cents
           createdBy: 1,
