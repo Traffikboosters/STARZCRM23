@@ -78,6 +78,7 @@ export default function Sidebar({
     { id: "locations", label: "Location Intelligence", icon: MapPin },
     { id: "email-marketing", label: "Email Marketing", icon: Mail },
     { id: "sms-marketing", label: "SMS Marketing", icon: MessageSquare },
+    { id: "sales-engagement", label: "Sales Rep Engagement", icon: Activity },
     { id: "hr", label: "HR Portal", icon: UserPlus },
   ];
 

@@ -45,6 +45,44 @@ export const userInvitations = pgTable("user_invitations", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const userSessions = pgTable("user_sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  sessionId: text("session_id").notNull().unique(),
+  loginTime: timestamp("login_time").defaultNow().notNull(),
+  lastActivity: timestamp("last_activity").defaultNow().notNull(),
+  logoutTime: timestamp("logout_time"),
+  isActive: boolean("is_active").notNull().default(true),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  platform: text("platform"), // web, mobile, tablet
+  location: text("location"), // city, state from IP
+  duration: integer("duration"), // session duration in minutes
+  activityCount: integer("activity_count").default(0), // number of actions taken
+  pagesVisited: json("pages_visited").$type<string[]>().default([]), // array of page routes visited
+  featuresUsed: json("features_used").$type<string[]>().default([]), // array of features/actions used
+  leadsInteracted: json("leads_interacted").$type<number[]>().default([]), // contact IDs interacted with
+  callsMade: integer("calls_made").default(0), // number of calls made during session
+  emailsSent: integer("emails_sent").default(0), // number of emails sent during session
+  appointmentsScheduled: integer("appointments_scheduled").default(0), // appointments booked during session
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const userActivity = pgTable("user_activity", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  sessionId: text("session_id").references(() => userSessions.sessionId),
+  activityType: text("activity_type").notNull(), // login, logout, page_view, contact_view, call_made, email_sent, etc.
+  activityDetails: json("activity_details").$type<any>().default({}), // specific details about the activity
+  targetId: integer("target_id"), // ID of contact, event, etc. being acted upon
+  targetType: text("target_type"), // contact, event, campaign, etc.
+  page: text("page"), // current page/route
+  feature: text("feature"), // specific feature being used
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+});
+
 export const companies = pgTable("companies", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -790,6 +828,18 @@ export const insertChatConversationSchema = createInsertSchema(chatConversations
   lastMessageAt: true,
 });
 
+export const insertUserSessionSchema = createInsertSchema(userSessions).omit({
+  id: true,
+  createdAt: true,
+  loginTime: true,
+  lastActivity: true,
+});
+
+export const insertUserActivitySchema = createInsertSchema(userActivity).omit({
+  id: true,
+  timestamp: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -825,6 +875,10 @@ export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type ChatConversation = typeof chatConversations.$inferSelect;
 export type InsertChatConversation = z.infer<typeof insertChatConversationSchema>;
+export type UserSession = typeof userSessions.$inferSelect;
+export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
+export type UserActivity = typeof userActivity.$inferSelect;
+export type InsertUserActivity = z.infer<typeof insertUserActivitySchema>;
 
 export type CallLog = typeof callLogs.$inferSelect;
 export type InsertCallLog = z.infer<typeof insertCallLogSchema>;

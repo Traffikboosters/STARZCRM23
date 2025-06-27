@@ -3737,6 +3737,84 @@ Email: support@traffikboosters.com
     }
   });
 
+  // User session tracking endpoints
+  app.get('/api/user-sessions/active', async (req, res) => {
+    try {
+      const activeSessions = await storage.getActiveSessions();
+      res.json(activeSessions);
+    } catch (error: any) {
+      console.error('[Active Sessions] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get('/api/user-activity/recent/:timeframe?', async (req, res) => {
+    try {
+      const timeframe = req.params.timeframe || 'today';
+      const recentActivity = await storage.getRecentActivity(timeframe);
+      res.json(recentActivity);
+    } catch (error: any) {
+      console.error('[Recent Activity] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get('/api/engagement/stats/:timeframe?', async (req, res) => {
+    try {
+      const timeframe = req.params.timeframe || 'today';
+      const stats = await storage.getEngagementStats(timeframe);
+      res.json(stats);
+    } catch (error: any) {
+      console.error('[Engagement Stats] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/user-activity/track', async (req, res) => {
+    try {
+      const activityData = req.body;
+      const activity = await storage.trackUserActivity(activityData);
+      res.json(activity);
+    } catch (error: any) {
+      console.error('[Track Activity] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/user-sessions/start', async (req, res) => {
+    try {
+      const sessionData = req.body;
+      const session = await storage.startUserSession(sessionData);
+      res.json(session);
+    } catch (error: any) {
+      console.error('[Start Session] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch('/api/user-sessions/:sessionId/update', async (req, res) => {
+    try {
+      const sessionId = req.params.sessionId;
+      const updateData = req.body;
+      const session = await storage.updateUserSession(sessionId, updateData);
+      res.json(session);
+    } catch (error: any) {
+      console.error('[Update Session] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post('/api/user-sessions/:sessionId/end', async (req, res) => {
+    try {
+      const sessionId = req.params.sessionId;
+      const session = await storage.endUserSession(sessionId);
+      res.json(session);
+    } catch (error: any) {
+      console.error('[End Session] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // AI Conversation Starters endpoint
   app.get('/api/contacts/:id/conversation-starters', async (req, res) => {
     try {

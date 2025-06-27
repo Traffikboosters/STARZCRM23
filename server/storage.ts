@@ -1,6 +1,7 @@
 import { 
   users, contacts, events, files, automations, scrapingJobs, companies, chatMessages, chatConversations,
   callLogs, campaigns, leadAllocations, documentTemplates, signingRequests, servicePackages, costStructure, profitabilityAnalysis, userInvitations,
+  userSessions, userActivity,
   type User, type InsertUser, type UserInvitation, type InsertUserInvitation, type Contact, type InsertContact,
   type Event, type InsertEvent, type File, type InsertFile,
   type Automation, type InsertAutomation, type ScrapingJob, type InsertScrapingJob,
@@ -9,7 +10,8 @@ import {
   type Campaign, type InsertCampaign, type LeadAllocation, type InsertLeadAllocation,
   type DocumentTemplate, type InsertDocumentTemplate, type SigningRequest, type InsertSigningRequest,
   type ServicePackage, type InsertServicePackage, type CostStructure, type InsertCostStructure,
-  type ProfitabilityAnalysis, type InsertProfitabilityAnalysis
+  type ProfitabilityAnalysis, type InsertProfitabilityAnalysis, type UserSession, type InsertUserSession,
+  type UserActivity, type InsertUserActivity
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, like, and, between, desc } from "drizzle-orm";
@@ -156,6 +158,18 @@ export interface IStorage {
 
   // Additional methods needed by routes
   getLeadsByRep(repId: number): Promise<Contact[]>;
+  
+  // User Sessions
+  getActiveSessions(): Promise<any[]>;
+  getUserSession(sessionId: string): Promise<UserSession | undefined>;
+  startUserSession(sessionData: InsertUserSession): Promise<UserSession>;
+  updateUserSession(sessionId: string, updates: Partial<InsertUserSession>): Promise<UserSession | undefined>;
+  endUserSession(sessionId: string): Promise<UserSession | undefined>;
+  
+  // User Activity
+  getRecentActivity(timeframe: string): Promise<any[]>;
+  trackUserActivity(activityData: InsertUserActivity): Promise<UserActivity>;
+  getEngagementStats(timeframe: string): Promise<any>;
   getPricingProposals(): Promise<any[]>;
   createPricingProposal(proposal: any): Promise<any>;
 }
@@ -2133,6 +2147,226 @@ Client Approval:
   async createPricingProposal(proposal: any): Promise<any> {
     // For now return the proposal with an ID - would need proper pricing proposal table
     return { id: Date.now(), ...proposal, createdAt: new Date() };
+  }
+
+  // User Sessions
+  async getActiveSessions(): Promise<any[]> {
+    const sessions = await db
+      .select({
+        id: userSessions.id,
+        userId: userSessions.userId,
+        sessionId: userSessions.sessionId,
+        loginTime: userSessions.loginTime,
+        lastActivity: userSessions.lastActivity,
+        logoutTime: userSessions.logoutTime,
+        isActive: userSessions.isActive,
+        duration: userSessions.duration,
+        activityCount: userSessions.activityCount,
+        pagesVisited: userSessions.pagesVisited,
+        featuresUsed: userSessions.featuresUsed,
+        leadsInteracted: userSessions.leadsInteracted,
+        callsMade: userSessions.callsMade,
+        emailsSent: userSessions.emailsSent,
+        appointmentsScheduled: userSessions.appointmentsScheduled,
+        user: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+          role: users.role,
+          department: users.department,
+        }
+      })
+      .from(userSessions)
+      .innerJoin(users, eq(userSessions.userId, users.id))
+      .where(eq(userSessions.isActive, true));
+    
+    return sessions;
+  }
+
+  async getUserSession(sessionId: string): Promise<UserSession | undefined> {
+    const [session] = await db
+      .select()
+      .from(userSessions)
+      .where(eq(userSessions.sessionId, sessionId));
+    return session || undefined;
+  }
+
+  async startUserSession(sessionData: InsertUserSession): Promise<UserSession> {
+    const [session] = await db
+      .insert(userSessions)
+      .values(sessionData)
+      .returning();
+    return session;
+  }
+
+  async updateUserSession(sessionId: string, updates: Partial<InsertUserSession>): Promise<UserSession | undefined> {
+    const [session] = await db
+      .update(userSessions)
+      .set(updates)
+      .where(eq(userSessions.sessionId, sessionId))
+      .returning();
+    return session || undefined;
+  }
+
+  async endUserSession(sessionId: string): Promise<UserSession | undefined> {
+    const now = new Date();
+    const [session] = await db
+      .update(userSessions)
+      .set({
+        logoutTime: now,
+        isActive: false
+      })
+      .where(eq(userSessions.sessionId, sessionId))
+      .returning();
+    return session || undefined;
+  }
+
+  // User Activity
+  async getRecentActivity(timeframe: string): Promise<any[]> {
+    let startDate = new Date();
+    
+    switch (timeframe) {
+      case 'today':
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      case 'week':
+        startDate.setDate(startDate.getDate() - 7);
+        break;
+      case 'month':
+        startDate.setMonth(startDate.getMonth() - 1);
+        break;
+      default:
+        startDate.setHours(0, 0, 0, 0);
+    }
+
+    const activities = await db
+      .select({
+        id: userActivity.id,
+        userId: userActivity.userId,
+        activityType: userActivity.activityType,
+        activityDetails: userActivity.activityDetails,
+        targetId: userActivity.targetId,
+        targetType: userActivity.targetType,
+        page: userActivity.page,
+        feature: userActivity.feature,
+        timestamp: userActivity.timestamp,
+        user: {
+          firstName: users.firstName,
+          lastName: users.lastName,
+        }
+      })
+      .from(userActivity)
+      .innerJoin(users, eq(userActivity.userId, users.id))
+      .where(
+        and(
+          between(userActivity.timestamp, startDate, new Date()),
+          eq(users.role, 'sales_rep')
+        )
+      )
+      .orderBy(desc(userActivity.timestamp));
+
+    return activities;
+  }
+
+  async trackUserActivity(activityData: InsertUserActivity): Promise<UserActivity> {
+    const [activity] = await db
+      .insert(userActivity)
+      .values(activityData)
+      .returning();
+    return activity;
+  }
+
+  async getEngagementStats(timeframe: string): Promise<any> {
+    let startDate = new Date();
+    
+    switch (timeframe) {
+      case 'today':
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      case 'week':
+        startDate.setDate(startDate.getDate() - 7);
+        break;
+      case 'month':
+        startDate.setMonth(startDate.getMonth() - 1);
+        break;
+      default:
+        startDate.setHours(0, 0, 0, 0);
+    }
+
+    // Get total sales reps
+    const totalSalesReps = await db
+      .select()
+      .from(users)
+      .where(eq(users.role, 'sales_rep'));
+
+    // Get currently active sessions
+    const activeSessions = await db
+      .select()
+      .from(userSessions)
+      .innerJoin(users, eq(userSessions.userId, users.id))
+      .where(
+        and(
+          eq(userSessions.isActive, true),
+          eq(users.role, 'sales_rep')
+        )
+      );
+
+    // Get today's activities
+    const todayActivities = await db
+      .select()
+      .from(userActivity)
+      .innerJoin(users, eq(userActivity.userId, users.id))
+      .where(
+        and(
+          between(userActivity.timestamp, startDate, new Date()),
+          eq(users.role, 'sales_rep')
+        )
+      );
+
+    // Calculate average session duration
+    const completedSessions = await db
+      .select()
+      .from(userSessions)
+      .innerJoin(users, eq(userSessions.userId, users.id))
+      .where(
+        and(
+          between(userSessions.loginTime, startDate, new Date()),
+          eq(users.role, 'sales_rep'),
+          eq(userSessions.isActive, false)
+        )
+      );
+
+    const avgSessionDuration = completedSessions.length > 0 
+      ? Math.round(completedSessions.reduce((sum, session) => {
+          const duration = session.user_sessions.duration || 0;
+          return sum + duration;
+        }, 0) / completedSessions.length)
+      : 0;
+
+    // Get top performer
+    const userActivityCounts = todayActivities.reduce((acc, activity) => {
+      const userId = activity.user_activity.userId;
+      const userName = `${activity.users.firstName} ${activity.users.lastName}`;
+      acc[userId] = {
+        name: userName,
+        count: (acc[userId]?.count || 0) + 1
+      };
+      return acc;
+    }, {} as Record<number, { name: string; count: number }>);
+
+    const topPerformer = Object.values(userActivityCounts).reduce(
+      (top, current) => current.count > top.activityCount ? { name: current.name, activityCount: current.count } : top,
+      { name: 'N/A', activityCount: 0 }
+    );
+
+    return {
+      totalSalesReps: totalSalesReps.length,
+      currentlyActive: activeSessions.length,
+      avgSessionDuration,
+      totalActivitiesToday: todayActivities.length,
+      topPerformer
+    };
   }
 }
 

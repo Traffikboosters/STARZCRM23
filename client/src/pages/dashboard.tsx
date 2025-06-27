@@ -38,6 +38,7 @@ import EmailNotificationSystem from "@/components/email-notification-system";
 import EmailMarketing from "@/components/email-marketing";
 import SMSMarketing from "@/components/sms-marketing";
 import { ChatWidgetBackOffice } from "@/components/chat-widget-backoffice";
+import SalesRepEngagement from "@/components/sales-rep-engagement";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -118,6 +119,8 @@ export default function Dashboard() {
         return <EmailMarketing />;
       case "sms-marketing":
         return <SMSMarketing />;
+      case "sales-engagement":
+        return <SalesRepEngagement />;
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
     }
