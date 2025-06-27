@@ -19,6 +19,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Plus, Search, Filter, User, Mail, Phone, Building, MapPin, Calendar, Star, MessageCircle, X, Clock, DollarSign, FileText, ExternalLink, CreditCard, Users, Target, Edit, Send, Video, MoreVertical, CheckCircle, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import type { Contact, User as UserType } from "@shared/schema";
+import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
 
 const contactFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -770,9 +771,9 @@ export default function CRMView() {
                       </div>
                     </CardTitle>
                     <img 
-                      src="@assets/TRAFIC BOOSTERS3 copy_1751060321835.png" 
+                      src={traffikBoostersLogo} 
                       alt="Traffik Boosters" 
-                      className="h-8 w-auto object-contain ml-2 flex-shrink-0"
+                      className="h-10 w-auto object-contain ml-2 flex-shrink-0"
                       style={{ imageRendering: 'crisp-edges' }}
                     />
                   </div>
