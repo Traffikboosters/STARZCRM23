@@ -57,6 +57,7 @@ import { authService } from "@/lib/auth";
 import { Contact, ContactNote, LeadIntake } from "@shared/schema";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import ConversationStarters from "@/components/conversation-starters";
+import { QuickReplyTemplates } from "@/components/quick-reply-templates";
 
 interface ContactDetailsModalProps {
   contact: Contact | null;
@@ -249,13 +250,14 @@ export default function ContactDetailsModal({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger key="overview-tab" value="overview">Overview</TabsTrigger>
             <TabsTrigger key="notes-tab" value="notes">Notes ({notes.length})</TabsTrigger>
             <TabsTrigger key="intake-tab" value="intake">Lead Intake</TabsTrigger>
             <TabsTrigger key="disposition-tab" value="disposition">Disposition</TabsTrigger>
             <TabsTrigger key="timeline-tab" value="timeline">Timeline</TabsTrigger>
             <TabsTrigger key="conversation-tab" value="conversation">AI Starters</TabsTrigger>
+            <TabsTrigger key="quick-replies-tab" value="quick-replies">Quick Replies</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -910,6 +912,12 @@ export default function ContactDetailsModal({
                 contactId={contact.id} 
                 contactName={`${contact.firstName} ${contact.lastName}`}
               />
+            )}
+          </TabsContent>
+
+          <TabsContent value="quick-replies" className="space-y-6">
+            {contact && (
+              <QuickReplyTemplates contact={contact} />
             )}
           </TabsContent>
         </Tabs>

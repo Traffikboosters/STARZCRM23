@@ -25,6 +25,7 @@ import {
 import { storage } from "./storage";
 import { AILeadScoringEngine } from "./ai-lead-scoring";
 import { AIConversationStarterEngine } from "./ai-conversation-starters";
+import { quickReplyEngine } from "./ai-quick-replies";
 import nodemailer from "nodemailer";
 
 // Configure email transporter for Traffik Boosters email server
@@ -3625,6 +3626,27 @@ Email: starz@traffikboosters.com
       res.json(conversationStarters);
     } catch (error: any) {
       console.error('[Conversation Starters] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // AI Quick Reply Templates endpoint
+  app.get('/api/contacts/:id/quick-replies', async (req, res) => {
+    try {
+      const contactId = parseInt(req.params.id);
+      const replyType = req.query.type as string || 'follow_up';
+      
+      const contact = await storage.getContact(contactId);
+      
+      if (!contact) {
+        return res.status(404).json({ error: 'Contact not found' });
+      }
+
+      const quickReplies = quickReplyEngine.generateQuickReplies(contact, replyType);
+      
+      res.json(quickReplies);
+    } catch (error: any) {
+      console.error('[Quick Replies] Error:', error);
       res.status(500).json({ error: error.message });
     }
   });
