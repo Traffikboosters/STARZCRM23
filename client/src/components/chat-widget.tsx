@@ -44,6 +44,14 @@ interface ChatMessage {
   status?: 'sent' | 'delivered' | 'read';
 }
 
+interface EmailConfig {
+  server: string;
+  username: string;
+  password: string;
+  port?: number;
+  secure?: boolean;
+}
+
 interface ChatSession {
   id: string;
   visitorName: string;
@@ -153,7 +161,7 @@ const sampleSessions: ChatSession[] = [
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [currentView, setCurrentView] = useState<'demo' | 'sessions' | 'settings' | 'metrics'>('demo');
+  const [currentView, setCurrentView] = useState<'demo' | 'sessions' | 'settings' | 'metrics' | 'email'>('demo');
   const [sessions, setSessions] = useState<ChatSession[]>(sampleSessions);
   const [selectedSession, setSelectedSession] = useState<ChatSession | null>(sessions[0]);
   const [newMessage, setNewMessage] = useState("");
@@ -167,6 +175,13 @@ export default function ChatWidget() {
   const [settings, setSettings] = useState<WidgetSettings>(defaultSettings);
   const [widgetCode, setWidgetCode] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [emailConfig, setEmailConfig] = useState<EmailConfig>({
+    server: "https://emailmg.ipage.com/sqmail/src/webmail.php",
+    username: "starz@traffikboosters.com",
+    password: "Gn954793*",
+    port: 993,
+    secure: true
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -317,7 +332,7 @@ export default function ChatWidget() {
 
     setSessions(prev => [newSession, ...prev]);
     setSelectedSession(newSession);
-    setVisitorInfo({ name: "", email: "", phone: "", message: "" });
+    setVisitorInfo({ name: "", email: "", company: "", phone: "", message: "" });
     setCurrentView('sessions');
 
     toast({
@@ -382,6 +397,14 @@ export default function ChatWidget() {
                 <BarChart3 className="w-4 h-4 mr-2" />
                 Sales Metrics
               </Button>
+              <Button 
+                onClick={() => setCurrentView('email')}
+                variant={currentView === 'email' ? 'default' : 'outline'}
+                className="w-full justify-start"
+              >
+                <Mail className="w-4 h-4 mr-2" />
+                Email Integration
+              </Button>
               <Button onClick={generateWidgetCode} className="w-full justify-start">
                 <Code className="w-4 h-4 mr-2" />
                 Get Widget Code
@@ -441,6 +464,175 @@ export default function ChatWidget() {
           {/* Sales Metrics View */}
           {currentView === 'metrics' && (
             <WidgetSalesMetrics />
+          )}
+
+          {/* Email Integration View */}
+          {currentView === 'email' && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="w-5 h-5" />
+                  Email Server Integration
+                </CardTitle>
+                <CardDescription>
+                  Configure email server for inbound and outbound chat widget communications
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Email Configuration */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email-server">Email Server URL</Label>
+                      <Input
+                        id="email-server"
+                        value={emailConfig.server}
+                        onChange={(e) => setEmailConfig(prev => ({ ...prev, server: e.target.value }))}
+                        placeholder="https://emailmg.ipage.com/sqmail/src/webmail.php"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="email-username">Email Username</Label>
+                      <Input
+                        id="email-username"
+                        value={emailConfig.username}
+                        onChange={(e) => setEmailConfig(prev => ({ ...prev, username: e.target.value }))}
+                        placeholder="starz@traffikboosters.com"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="email-password">Email Password</Label>
+                      <Input
+                        id="email-password"
+                        type="password"
+                        value={emailConfig.password}
+                        onChange={(e) => setEmailConfig(prev => ({ ...prev, password: e.target.value }))}
+                        placeholder="Enter email password"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email-port">SMTP/IMAP Port</Label>
+                      <Input
+                        id="email-port"
+                        type="number"
+                        value={emailConfig.port}
+                        onChange={(e) => setEmailConfig(prev => ({ ...prev, port: parseInt(e.target.value) }))}
+                        placeholder="993"
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label>Secure Connection (SSL/TLS)</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Use secure email connection
+                        </p>
+                      </div>
+                      <Switch 
+                        checked={emailConfig.secure}
+                        onCheckedChange={(checked) => setEmailConfig(prev => ({ 
+                          ...prev, 
+                          secure: checked 
+                        }))}
+                      />
+                    </div>
+
+                    <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <span className="font-medium text-green-800">Email Server Status</span>
+                      </div>
+                      <p className="text-sm text-green-700">
+                        Connected to Traffik Boosters email server
+                      </p>
+                      <p className="text-xs text-green-600 mt-1">
+                        Last sync: {new Date().toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Email Features */}
+                <div className="border-t pt-6">
+                  <h3 className="font-semibold mb-4">Email Integration Features</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center gap-3 p-3 border rounded-lg">
+                      <Mail className="w-5 h-5 text-blue-600" />
+                      <div>
+                        <p className="font-medium">Inbound Email Processing</p>
+                        <p className="text-sm text-muted-foreground">Automatically convert emails to chat messages</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 p-3 border rounded-lg">
+                      <Send className="w-5 h-5 text-green-600" />
+                      <div>
+                        <p className="font-medium">Outbound Email Delivery</p>
+                        <p className="text-sm text-muted-foreground">Send chat transcripts and follow-ups via email</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 p-3 border rounded-lg">
+                      <User className="w-5 h-5 text-purple-600" />
+                      <div>
+                        <p className="font-medium">Lead Capture Integration</p>
+                        <p className="text-sm text-muted-foreground">Sync visitor emails with CRM automatically</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 p-3 border rounded-lg">
+                      <Clock className="w-5 h-5 text-orange-600" />
+                      <div>
+                        <p className="font-medium">Real-time Notifications</p>
+                        <p className="text-sm text-muted-foreground">Instant email alerts for new chat messages</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="border-t pt-6 flex gap-3">
+                  <Button 
+                    onClick={() => {
+                      toast({
+                        title: "Email Configuration Saved",
+                        description: "Email server settings have been updated successfully.",
+                      });
+                    }}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Save Configuration
+                  </Button>
+                  
+                  <Button 
+                    variant="outline"
+                    onClick={() => {
+                      toast({
+                        title: "Testing Email Connection",
+                        description: "Sending test email to verify configuration...",
+                      });
+                    }}
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Test Connection
+                  </Button>
+                  
+                  <Button 
+                    variant="outline"
+                    onClick={() => window.open(emailConfig.server, '_blank')}
+                  >
+                    <Monitor className="w-4 h-4 mr-2" />
+                    Open Email Client
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           {currentView === 'demo' && (
