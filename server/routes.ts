@@ -2640,6 +2640,43 @@ Appointment Details:
     }
   });
 
+  app.post("/api/live-scraping/test-bark", requireAuth, async (req: any, res) => {
+    try {
+      console.log('[API] Testing Bark.com scraping manually...');
+      
+      // Create a test job for Bark.com scraping
+      const testJob = {
+        id: 'test-bark-' + Date.now(),
+        name: 'Test Bark Extraction',
+        platform: 'bark',
+        url: 'https://www.bark.com/en/gb/services/digital-marketing/',
+        isActive: true,
+        maxLeads: 5,
+        schedule: 'manual',
+        filters: {}
+      };
+      
+      // Use the live scraping engine to extract leads
+      const extractedCount = await liveScrapingEngine['executeBarkScraping'](testJob);
+      
+      res.json({
+        success: true,
+        message: `Bark.com test extraction completed`,
+        leadsExtracted: extractedCount,
+        jobId: testJob.id,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error: any) {
+      console.error('[API] Bark test extraction failed:', error);
+      res.status(500).json({ 
+        success: false,
+        message: `Bark extraction test failed: ${error.message}`,
+        error: error.toString()
+      });
+    }
+  });
+
   // AI Lead Scoring endpoints
   app.post("/api/contacts/:id/score", requireAuth, async (req: any, res) => {
     try {

@@ -104,6 +104,29 @@ export default function LiveDataExtractor() {
     },
   });
 
+  // Test Bark scraping mutation
+  const testBarkMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/live-scraping/test-bark");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/live-scraping/status"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+      toast({
+        title: "Bark.com Test Successful",
+        description: `Extracted ${data.leadsExtracted} leads from Bark.com`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Bark.com Test Failed",
+        description: error.message || "Failed to extract data from Bark.com",
+        variant: "destructive",
+      });
+    },
+  });
+
   const getJobMetrics = (jobId: string): JobMetrics | null => {
     if (!jobMetrics) return null;
     const jobMetric = jobMetrics.find((m: any) => m.jobId === jobId);
@@ -173,6 +196,19 @@ export default function LiveDataExtractor() {
         </div>
         
         <div className="flex items-center gap-4">
+          <Button
+            onClick={() => testBarkMutation.mutate()}
+            disabled={testBarkMutation.isPending}
+            className="bg-orange-600 hover:bg-orange-700 text-white"
+          >
+            {testBarkMutation.isPending ? (
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Target className="h-4 w-4 mr-2" />
+            )}
+            Test Bark.com
+          </Button>
+          
           <div className="text-right">
             <div className="flex items-center gap-2">
               <Activity className="h-5 w-5 text-green-500" />
