@@ -257,6 +257,14 @@ export class DatabaseStorage implements IStorage {
         updatedAt: contacts.updatedAt,
         createdBy: contacts.createdBy,
         updatedBy: contacts.updatedBy,
+        // Add missing fields required by Contact interface
+        aiScore: contacts.aiScore,
+        scoreFactors: contacts.scoreFactors,
+        industryScore: contacts.industryScore,
+        companySize: contacts.companySize,
+        urgencyLevel: contacts.urgencyLevel,
+        qualificationScore: contacts.qualificationScore,
+        lastScoreUpdate: contacts.lastScoreUpdate,
         assignedUser: {
           id: users.id,
           firstName: users.firstName,
