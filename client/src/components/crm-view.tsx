@@ -614,7 +614,7 @@ export default function CRMView() {
           <DialogTrigger asChild>
             <Button className="bg-orange-600 hover:bg-orange-700">
               <Plus className="h-4 w-4 mr-2" />
-              Add Contact
+              Add New Leads
             </Button>
           </DialogTrigger>
         </Dialog>

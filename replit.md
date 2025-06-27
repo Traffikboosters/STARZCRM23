@@ -265,6 +265,7 @@ The application uses a comprehensive schema including:
 - June 27, 2025. Updated sidebar lead count display with age-based breakdown showing animated progress bars and real-time lead categorization by urgency level
 - June 27, 2025. Refined visual alert system to only flash "NEW" status badges while keeping Follow Up and Urgent lead indicators static with color coding
 - June 27, 2025. Integrated Traffik Boosters email server (emailmg.ipage.com/sqmail/src/webmail.php) into chat widget with full inbound/outbound email functionality using starz@traffikboosters.com credentials
+- June 27, 2025. Updated CRM Contact Management button from "Add Contact" to "Add New Leads" to better reflect lead generation focus and automated prospect collection
 
 ## User Preferences
 
