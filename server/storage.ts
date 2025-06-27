@@ -1329,7 +1329,8 @@ Client Approval:
   }
 
   async deleteUser(id: number): Promise<boolean> {
-    return this.users.delete(id);
+    const [result] = await db.delete(users).where(eq(users.id, id)).returning();
+    return !!result;
   }
 
   // Companies

@@ -1624,51 +1624,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const users = await storage.getAllUsers();
       let sarahId, davidId, amandaId;
 
-      // Ensure sales reps exist
+      // Use existing sales reps only - no automatic creation
       const existingSalesReps = users.filter(user => user.role === "sales_rep");
-      if (existingSalesReps.length < 3) {
-        // Create sales reps
-        const sarah = await storage.createUser({
-          username: "sarah.johnson",
-          password: "temp123",
-          email: "sarah.johnson@traffikboosters.com",
-          firstName: "Sarah",
-          lastName: "Johnson",
-          role: "sales_rep",
-          phone: "+1-877-840-6251",
-          extension: "101"
-        });
-        
-        const david = await storage.createUser({
-          username: "david.chen",
-          password: "temp123", 
-          email: "david.chen@traffikboosters.com",
-          firstName: "David",
-          lastName: "Chen",
-          role: "sales_rep",
-          phone: "+1-877-840-6252",
-          extension: "102"
-        });
-        
-        const amanda = await storage.createUser({
-          username: "amanda.davis",
-          password: "temp123",
-          email: "amanda.davis@traffikboosters.com", 
-          firstName: "Amanda",
-          lastName: "Davis",
-          role: "sales_rep",
-          phone: "+1-877-840-6253",
-          extension: "103"
-        });
-
-        sarahId = sarah.id;
-        davidId = david.id;
-        amandaId = amanda.id;
-      } else {
-        sarahId = existingSalesReps[0]?.id;
-        davidId = existingSalesReps[1]?.id;
-        amandaId = existingSalesReps[2]?.id;
-      }
+      sarahId = existingSalesReps[0]?.id || 1; // Default to admin if no sales reps
+      davidId = existingSalesReps[1]?.id || 1;
+      amandaId = existingSalesReps[2]?.id || 1;
 
       // Create comprehensive lead data showing different performance levels
       const analyticsLeads = [

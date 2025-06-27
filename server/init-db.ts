@@ -42,64 +42,7 @@ export async function initializeDatabase() {
         isActive: true
       }).returning();
 
-      // Create sample sales representatives
-      const salesReps = [
-        {
-          username: "sarah.johnson",
-          password: "password123",
-          email: "sarah.johnson@traffikboosters.com",
-          role: "sales_rep",
-          firstName: "Sarah",
-          lastName: "Johnson",
-          phone: "(877) 840-6250",
-          mobilePhone: "(312) 555-0147",
-          extension: "102",
-          avatar: null,
-          commissionRate: "12.0",
-          baseCommissionRate: "10.0",
-          bonusCommissionRate: "2.0",
-          commissionTier: "bronze",
-          isActive: true
-        },
-        {
-          username: "david.chen",
-          password: "password123",
-          email: "david.chen@traffikboosters.com",
-          role: "sales_rep",
-          firstName: "David",
-          lastName: "Chen",
-          phone: "(877) 840-6250",
-          mobilePhone: "(415) 555-0182",
-          extension: "103",
-          avatar: null,
-          commissionRate: "15.0",
-          baseCommissionRate: "10.0",
-          bonusCommissionRate: "5.0",
-          commissionTier: "silver",
-          isActive: true
-        },
-        {
-          username: "amanda.davis",
-          password: "password123",
-          email: "amanda.davis@traffikboosters.com",
-          role: "sales_rep",
-          firstName: "Amanda",
-          lastName: "Davis",
-          phone: "(877) 840-6250",
-          mobilePhone: "(713) 555-0129",
-          extension: "104",
-          avatar: null,
-          commissionRate: "18.0",
-          baseCommissionRate: "10.0",
-          bonusCommissionRate: "8.0",
-          commissionTier: "gold",
-          isActive: true
-        }
-      ];
-
-      for (const rep of salesReps) {
-        await db.insert(users).values(rep);
-      }
+      // Note: No automatic employee creation - users will add employees manually
 
       // Create sample contacts
       const sampleContacts = [
