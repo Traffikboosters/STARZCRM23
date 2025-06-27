@@ -3363,83 +3363,7 @@ Account: starz@traffikboosters.com`;
     }
   });
 
-  // User invitation system
-  app.post("/api/users/invite", requireAuth, async (req: any, res) => {
-    try {
-      const { email, firstName, lastName, role = "sales_rep" } = req.body;
-      
-      // Check if user already exists
-      const existingUser = await storage.getUserByEmail(email);
-      if (existingUser) {
-        return res.status(400).json({ message: "User already exists with this email" });
-      }
 
-      // Generate secure invitation token
-      const inviteToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-      const inviteExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-
-      // Create invitation record
-      const invitation = {
-        email,
-        firstName,
-        lastName,
-        role,
-        inviteToken,
-        inviteExpiry,
-        invitedBy: req.user.id,
-        status: 'pending'
-      };
-
-      // Store invitation (in production, this would be in database)
-      const inviteId = Date.now();
-      
-      // Generate invitation link
-      const inviteLink = `${req.protocol}://${req.get('host')}/accept-invite?token=${inviteToken}`;
-
-      // Prepare invitation email content
-      const inviteEmailContent = `Hi ${firstName},
-
-You've been invited to join the Starz business management platform by ${req.user.firstName} ${req.user.lastName}.
-
-Starz is Traffik Boosters' comprehensive CRM and business management system that includes:
-- Lead management and tracking
-- Sales pipeline and analytics
-- Phone system integration
-- Real-time notifications
-- Performance tracking
-
-To accept your invitation and set up your account, click the link below:
-${inviteLink}
-
-This invitation expires in 7 days.
-
-If you have any questions, contact your administrator or call (877) 840-6250.
-
-Best regards,
-Traffik Boosters Team
-More Traffik! More Sales!
-
----
-This is an automated invitation from Starz platform.
-Email: starz@traffikboosters.com`;
-
-      console.log(`[User Invitation] Invitation prepared for ${email}`);
-      console.log(`[Invite Link] ${inviteLink}`);
-      console.log(`[Role] ${role} | [Invited By] ${req.user.firstName} ${req.user.lastName}`);
-
-      res.json({
-        success: true,
-        inviteId,
-        inviteLink,
-        message: `Invitation sent to ${firstName} ${lastName} (${email})`,
-        expires: inviteExpiry
-      });
-
-    } catch (error: any) {
-      console.error('[User Invitation] Error:', error);
-      res.status(500).json({ error: error.message });
-    }
-  });
 
   // Accept invitation endpoint
   app.get("/accept-invite", async (req, res) => {
@@ -3505,8 +3429,9 @@ Email: starz@traffikboosters.com`;
     try {
       const { email, firstName, lastName, role } = req.body;
 
-      // Generate secure invitation token
+      // Generate secure invitation token and ID
       const inviteToken = crypto.getRandomValues(new Uint8Array(32)).reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
+      const inviteId = Date.now();
       const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
       // Create invitation link
@@ -3536,7 +3461,10 @@ Email: starz@traffikboosters.com
 
       // Send the actual email
       try {
-        await emailTransporter.sendMail({
+        console.log(`[Email Invitation] Attempting to send invitation to: ${email}`);
+        console.log(`[Email Config] Using SMTP: ${emailTransporter.options.host}:${emailTransporter.options.port}`);
+        
+        const emailResult = await emailTransporter.sendMail({
           from: 'starz@traffikboosters.com',
           to: email,
           subject: emailSubject,
@@ -3575,10 +3503,13 @@ Email: starz@traffikboosters.com
         });
 
         console.log(`[Email Invitation] Successfully sent to: ${email}`);
+        console.log(`[Email Result] Message ID: ${emailResult.messageId}`);
+        console.log(`[Email Result] Response: ${emailResult.response}`);
         console.log(`[User Invitation] Generated for ${firstName} ${lastName} (${email}) - Role: ${role}`);
 
         res.json({
           success: true,
+          inviteId,
           message: `Invitation email sent to ${firstName} ${lastName} (${role}) at ${email}`,
           inviteLink,
           expires: expiresAt.toISOString(),
