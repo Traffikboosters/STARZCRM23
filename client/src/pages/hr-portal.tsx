@@ -65,12 +65,13 @@ export default function HRPortal() {
 
   // Add employee mutation
   const addEmployeeMutation = useMutation({
-    mutationFn: () => apiRequest('POST', '/api/users', {
-      ...newEmployee,
+    mutationFn: (employeeData: any) => apiRequest('POST', '/api/users', {
+      ...employeeData,
       password: 'TempPassword123!', // Temporary password - should be changed on first login
-      commissionRate: newEmployee.commissionRate?.toString() || '10',
-      baseCommissionRate: newEmployee.commissionRate?.toString() || '10',
-      bonusCommissionRate: (newEmployee.bonusCommissionRate || 0).toString(),
+      commissionRate: employeeData.commissionRate?.toString() || '10',
+      baseCommissionRate: employeeData.commissionRate?.toString() || '10',
+      bonusCommissionRate: (employeeData.bonusCommissionRate || 0).toString(),
+      isActive: true
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
@@ -627,7 +628,7 @@ export default function HRPortal() {
                 </Button>
                 <Button
                   onClick={() => {
-                    addEmployeeMutation.mutate();
+                    addEmployeeMutation.mutate(newEmployee);
                   }}
                   disabled={addEmployeeMutation.isPending}
                   className="bg-[#e45c2b] hover:bg-[#d14a1f] text-white"
