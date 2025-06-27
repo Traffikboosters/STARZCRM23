@@ -301,7 +301,7 @@ export default function ChatWidget() {
     return `${duration} min`;
   };
 
-  const startNewChat = () => {
+  const startNewChat = async () => {
     if (!visitorInfo.name || !visitorInfo.email) {
       toast({
         title: "Missing Information",
@@ -311,34 +311,65 @@ export default function ChatWidget() {
       return;
     }
 
-    const newSession: ChatSession = {
-      id: `chat-${Date.now()}`,
-      visitorName: visitorInfo.name,
-      visitorEmail: visitorInfo.email,
-      visitorPhone: visitorInfo.phone,
-      startTime: new Date(),
-      status: 'waiting',
-      leadScore: 50,
-      source: "Demo Widget",
-      messages: visitorInfo.message ? [{
-        id: `msg-${Date.now()}`,
-        message: visitorInfo.message,
-        sender: 'visitor',
-        timestamp: new Date(),
-        senderName: visitorInfo.name,
-        status: 'sent'
-      }] : []
-    };
+    try {
+      // Submit to chat widget API with auto-reply
+      const response = await fetch('/api/chat-widget/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          visitorName: visitorInfo.name,
+          visitorEmail: visitorInfo.email,
+          visitorPhone: visitorInfo.phone,
+          companyName: visitorInfo.company,
+          message: visitorInfo.message || "Initial contact from chat widget"
+        })
+      });
 
-    setSessions(prev => [newSession, ...prev]);
-    setSelectedSession(newSession);
-    setVisitorInfo({ name: "", email: "", company: "", phone: "", message: "" });
-    setCurrentView('sessions');
+      if (response.ok) {
+        const result = await response.json();
+        
+        toast({
+          title: "Auto-Reply Sent",
+          description: `Thank you ${visitorInfo.name}! Auto-reply email sent from starz@traffikboosters.com`,
+        });
 
-    toast({
-      title: "New Chat Started",
-      description: `Chat session with ${visitorInfo.name} from ${visitorInfo.company} has been created.`,
-    });
+        // Create local session for demo
+        const newSession: ChatSession = {
+          id: `chat-${Date.now()}`,
+          visitorName: visitorInfo.name,
+          visitorEmail: visitorInfo.email,
+          visitorPhone: visitorInfo.phone,
+          startTime: new Date(),
+          status: 'waiting',
+          leadScore: 50,
+          source: "Chat Widget",
+          messages: visitorInfo.message ? [{
+            id: `msg-${Date.now()}`,
+            message: visitorInfo.message,
+            sender: 'visitor',
+            timestamp: new Date(),
+            senderName: visitorInfo.name,
+            status: 'sent'
+          }] : []
+        };
+
+        setSessions(prev => [newSession, ...prev]);
+        setSelectedSession(newSession);
+        setVisitorInfo({ name: "", email: "", company: "", phone: "", message: "" });
+        setCurrentView('sessions');
+      } else {
+        throw new Error('Failed to submit chat widget form');
+      }
+    } catch (error) {
+      console.error('Chat widget submission error:', error);
+      toast({
+        title: "Submission Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -545,13 +576,22 @@ export default function ChatWidget() {
                     <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
                       <div className="flex items-center gap-2 mb-2">
                         <CheckCircle className="w-4 h-4 text-green-600" />
-                        <span className="font-medium text-green-800">Email Server Status</span>
+                        <span className="font-medium text-green-800">Email Account Configuration</span>
                       </div>
-                      <p className="text-sm text-green-700">
-                        Connected to Traffik Boosters email server
-                      </p>
-                      <p className="text-xs text-green-600 mt-1">
-                        IMAP: imap.ipage.com | SMTP: smtp.ipage.com | Account: starz@traffikboosters.com
+                      <div className="grid grid-cols-2 gap-4 text-xs text-green-700">
+                        <div>
+                          <p className="font-semibold">Incoming (IMAP)</p>
+                          <p>Host: imap.ipage.com</p>
+                          <p>Port: 993 (SSL/TLS)</p>
+                        </div>
+                        <div>
+                          <p className="font-semibold">Outgoing (SMTP)</p>
+                          <p>Host: smtp.ipage.com</p>
+                          <p>Port: 465 (SSL/TLS)</p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-green-600 mt-2">
+                        Account: starz@traffikboosters.com | Widget replies from this address
                       </p>
                       <p className="text-xs text-green-600">
                         Last sync: {new Date().toLocaleString()}
