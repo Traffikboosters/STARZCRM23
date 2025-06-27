@@ -24,6 +24,18 @@ import {
 } from "../shared/schema";
 import { storage } from "./storage";
 import { AILeadScoringEngine } from "./ai-lead-scoring";
+import nodemailer from "nodemailer";
+
+// Configure email transporter for Traffik Boosters email server
+const emailTransporter = nodemailer.createTransport({
+  host: 'smtp.ipage.com',
+  port: 465,
+  secure: true, // true for 465, false for other ports
+  auth: {
+    user: 'starz@traffikboosters.com',
+    pass: 'Gn954793*'
+  }
+});
 import { mightyCallEnhanced } from "./mightycall-enhanced";
 import { workingCaller } from "./mightycall-working";
 import { liveScrapingEngine } from "./live-scraper";
@@ -3498,21 +3510,139 @@ Email: starz@traffikboosters.com`;
       // Create invitation link
       const inviteLink = `${req.protocol}://${req.get('host')}/api/users/complete-invitation?token=${inviteToken}&email=${encodeURIComponent(email)}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&role=${role}`;
 
-      console.log(`[User Invitation] Generated for ${firstName} ${lastName} (${email}) - Role: ${role}`);
+      // Send invitation email
+      const emailSubject = `Invitation to Join Starz CRM Platform - Traffik Boosters`;
+      const emailBody = `
+Dear ${firstName} ${lastName},
 
-      res.json({
-        success: true,
-        message: `Invitation prepared for ${firstName} ${lastName} (${role})`,
-        inviteLink,
-        expires: expiresAt.toISOString(),
-        recipientEmail: email,
-        recipientName: `${firstName} ${lastName}`,
-        role
-      });
+You have been invited to join the Starz CRM platform for Traffik Boosters as a ${role.replace('_', ' ')}.
+
+Click the following link to complete your registration:
+${inviteLink}
+
+This invitation will expire on ${expiresAt.toLocaleDateString()} at ${expiresAt.toLocaleTimeString()}.
+
+If you have any questions, please contact our support team.
+
+Best regards,
+Traffik Boosters Team
+Phone: (877) 840-6250
+Email: starz@traffikboosters.com
+
+"More Traffik! More Sales!"
+      `.trim();
+
+      // Send the actual email
+      try {
+        await emailTransporter.sendMail({
+          from: 'starz@traffikboosters.com',
+          to: email,
+          subject: emailSubject,
+          text: emailBody,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: hsl(14, 88%, 55%); margin-bottom: 10px;">Starz CRM Platform</h1>
+                <p style="color: hsl(29, 85%, 58%); font-weight: bold; margin: 0;">More Traffik! More Sales!</p>
+              </div>
+              
+              <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h2 style="color: #333;">You're Invited to Join Our Team!</h2>
+                <p>Dear <strong>${firstName} ${lastName}</strong>,</p>
+                <p>You have been invited to join the Starz CRM platform for Traffik Boosters as a <strong>${role.replace('_', ' ')}</strong>.</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${inviteLink}" style="background: hsl(14, 88%, 55%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                    Complete Registration
+                  </a>
+                </div>
+                
+                <p style="color: #666; font-size: 14px;">
+                  <strong>Important:</strong> This invitation will expire on ${expiresAt.toLocaleDateString()} at ${expiresAt.toLocaleTimeString()}.
+                </p>
+              </div>
+              
+              <div style="text-align: center; color: #666; font-size: 14px; margin-top: 30px; border-top: 1px solid #ddd; padding-top: 20px;">
+                <p><strong>Traffik Boosters</strong><br>
+                Phone: (877) 840-6250<br>
+                Email: starz@traffikboosters.com</p>
+                <p style="color: hsl(29, 85%, 58%); font-weight: bold;">"More Traffik! More Sales!"</p>
+              </div>
+            </div>
+          `
+        });
+
+        console.log(`[Email Invitation] Successfully sent to: ${email}`);
+        console.log(`[User Invitation] Generated for ${firstName} ${lastName} (${email}) - Role: ${role}`);
+
+        res.json({
+          success: true,
+          message: `Invitation email sent to ${firstName} ${lastName} (${role}) at ${email}`,
+          inviteLink,
+          expires: expiresAt.toISOString(),
+          recipientEmail: email,
+          recipientName: `${firstName} ${lastName}`,
+          role,
+          emailSent: true
+        });
+
+      } catch (emailError: any) {
+        console.error(`[Email Invitation] Failed to send email to ${email}:`, emailError);
+        
+        // Still return success for the invitation creation, but note email failure
+        res.json({
+          success: true,
+          message: `Invitation created for ${firstName} ${lastName} (${role}). Email delivery failed, but invitation link is available.`,
+          inviteLink,
+          expires: expiresAt.toISOString(),
+          recipientEmail: email,
+          recipientName: `${firstName} ${lastName}`,
+          role,
+          emailSent: false,
+          emailError: emailError.message
+        });
+      }
 
     } catch (error: any) {
       console.error('[Send Invitation] Error:', error);
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Test email endpoint for debugging
+  app.post('/api/test-email', async (req, res) => {
+    try {
+      const { to, subject, message } = req.body;
+      
+      await emailTransporter.sendMail({
+        from: 'starz@traffikboosters.com',
+        to: to,
+        subject: subject,
+        text: message,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: hsl(14, 88%, 55%); margin-bottom: 10px;">Starz CRM Platform</h1>
+              <p style="color: hsl(29, 85%, 58%); font-weight: bold; margin: 0;">More Traffik! More Sales!</p>
+            </div>
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 8px;">
+              <p>${message}</p>
+            </div>
+            <div style="text-align: center; color: #666; font-size: 14px; margin-top: 30px;">
+              <p><strong>Traffik Boosters</strong><br>
+              Phone: (877) 840-6250<br>
+              Email: starz@traffikboosters.com</p>
+            </div>
+          </div>
+        `
+      });
+
+      console.log(`[Test Email] Successfully sent to: ${to}`);
+      res.json({ success: true, message: `Test email sent to ${to}` });
+
+    } catch (error: any) {
+      console.error('[Test Email] Error:', error);
+      res.status(500).json({ success: false, error: error.message });
     }
   });
 
