@@ -653,6 +653,189 @@ export default function HRPortal() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Edit Employee Modal */}
+        <Dialog open={isEditEmployeeModalOpen} onOpenChange={setIsEditEmployeeModalOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Employee</DialogTitle>
+              <DialogDescription>
+                Update employee information and compensation details
+              </DialogDescription>
+            </DialogHeader>
+            
+            {editingEmployee && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="editFirstName">First Name</Label>
+                    <Input
+                      id="editFirstName"
+                      value={editingEmployee.firstName}
+                      onChange={(e) => setEditingEmployee({...editingEmployee, firstName: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editLastName">Last Name</Label>
+                    <Input
+                      id="editLastName"
+                      value={editingEmployee.lastName}
+                      onChange={(e) => setEditingEmployee({...editingEmployee, lastName: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="editEmail">Email</Label>
+                  <Input
+                    id="editEmail"
+                    type="email"
+                    value={editingEmployee.email}
+                    onChange={(e) => setEditingEmployee({...editingEmployee, email: e.target.value})}
+                    placeholder="email@traffikboosters.com"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="editUsername">Username</Label>
+                  <Input
+                    id="editUsername"
+                    value={editingEmployee.username}
+                    onChange={(e) => setEditingEmployee({...editingEmployee, username: e.target.value})}
+                    placeholder="username"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="editPhone">Phone</Label>
+                  <Input
+                    id="editPhone"
+                    value={editingEmployee.phone || ''}
+                    onChange={(e) => setEditingEmployee({...editingEmployee, phone: e.target.value})}
+                    placeholder="(877) 840-6250"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="editRole">Role</Label>
+                  <Select value={editingEmployee.role} onValueChange={(value) => setEditingEmployee({...editingEmployee, role: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sales_rep">Sales Representative</SelectItem>
+                      <SelectItem value="hr_staff">HR Staff</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <Label htmlFor="editCompensationType">Compensation Type</Label>
+                  <Select value={editingEmployee.compensationType} onValueChange={(value) => setEditingEmployee({...editingEmployee, compensationType: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select compensation type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="commission">Commission</SelectItem>
+                      <SelectItem value="salary">Salary</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {editingEmployee.compensationType === 'commission' && (
+                  <>
+                    <div>
+                      <Label htmlFor="editCommissionRate">Commission Rate (%)</Label>
+                      <Input
+                        id="editCommissionRate"
+                        type="number"
+                        value={editingEmployee.commissionRate}
+                        onChange={(e) => setEditingEmployee({...editingEmployee, commissionRate: parseInt(e.target.value)})}
+                        placeholder="10"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="editBonusCommissionRate">Bonus Commission Rate (%)</Label>
+                      <Input
+                        id="editBonusCommissionRate"
+                        type="number"
+                        value={editingEmployee.bonusCommissionRate}
+                        onChange={(e) => setEditingEmployee({...editingEmployee, bonusCommissionRate: parseInt(e.target.value)})}
+                        placeholder="0"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="editCommissionTier">Commission Tier</Label>
+                      <Select value={editingEmployee.commissionTier} onValueChange={(value) => setEditingEmployee({...editingEmployee, commissionTier: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select tier" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="standard">Standard</SelectItem>
+                          <SelectItem value="bronze">Bronze</SelectItem>
+                          <SelectItem value="silver">Silver</SelectItem>
+                          <SelectItem value="gold">Gold</SelectItem>
+                          <SelectItem value="platinum">Platinum</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
+                
+                {editingEmployee.compensationType === 'salary' && (
+                  <div>
+                    <Label htmlFor="editBaseSalary">Base Salary</Label>
+                    <Input
+                      id="editBaseSalary"
+                      type="number"
+                      value={editingEmployee.baseSalary}
+                      onChange={(e) => setEditingEmployee({...editingEmployee, baseSalary: parseInt(e.target.value)})}
+                      placeholder="50000"
+                    />
+                  </div>
+                )}
+                
+                <div>
+                  <Label htmlFor="editDepartment">Department</Label>
+                  <Select value={editingEmployee.department} onValueChange={(value) => setEditingEmployee({...editingEmployee, department: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sales">Sales</SelectItem>
+                      <SelectItem value="hr">HR</SelectItem>
+                      <SelectItem value="marketing">Marketing</SelectItem>
+                      <SelectItem value="operations">Operations</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditEmployeeModalOpen(false);
+                      setEditingEmployee(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      editEmployeeMutation.mutate(editingEmployee);
+                    }}
+                    disabled={editEmployeeMutation.isPending}
+                    className="bg-[#e45c2b] hover:bg-[#d14a1f] text-white"
+                  >
+                    {editEmployeeMutation.isPending ? 'Updating...' : 'Update Employee'}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
