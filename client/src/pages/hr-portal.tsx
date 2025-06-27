@@ -37,6 +37,8 @@ export default function HRPortal() {
   const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
   const [selectedCompensationType, setSelectedCompensationType] = useState<string>('all');
   const [isAddEmployeeModalOpen, setIsAddEmployeeModalOpen] = useState(false);
+  const [isEditEmployeeModalOpen, setIsEditEmployeeModalOpen] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<User | null>(null);
   const [newEmployee, setNewEmployee] = useState({
     username: '',
     email: '',
@@ -92,6 +94,23 @@ export default function HRPortal() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+    }
+  });
+
+  // Edit employee mutation
+  const editEmployeeMutation = useMutation({
+    mutationFn: async ({ id, ...updates }: { id: number } & Partial<User>) => {
+      const response = await apiRequest('PUT', `/api/users/${id}`, updates);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/users'] });
+      setIsEditEmployeeModalOpen(false);
+      setEditingEmployee(null);
+      toast({
+        title: "Employee Updated",
+        description: "Employee information has been successfully updated",
+      });
     }
   });
 
@@ -338,11 +357,8 @@ export default function HRPortal() {
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            // Edit employee functionality can be added later
-                            toast({
-                              title: "Edit Employee",
-                              description: "Edit functionality coming soon",
-                            });
+                            setEditingEmployee(employee);
+                            setIsEditEmployeeModalOpen(true);
                           }}
                           className="text-gray-600 hover:text-gray-900"
                         >
@@ -552,6 +568,146 @@ export default function HRPortal() {
                 </Button>
               </div>
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Employee Modal */}
+        <Dialog open={isEditEmployeeModalOpen} onOpenChange={setIsEditEmployeeModalOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit Employee</DialogTitle>
+              <DialogDescription>
+                Update employee information and status
+              </DialogDescription>
+            </DialogHeader>
+            
+            {editingEmployee && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="editFirstName">First Name</Label>
+                    <Input
+                      id="editFirstName"
+                      value={editingEmployee.firstName}
+                      onChange={(e) => setEditingEmployee({...editingEmployee, firstName: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editLastName">Last Name</Label>
+                    <Input
+                      id="editLastName"
+                      value={editingEmployee.lastName}
+                      onChange={(e) => setEditingEmployee({...editingEmployee, lastName: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="editEmail">Email</Label>
+                  <Input
+                    id="editEmail"
+                    type="email"
+                    value={editingEmployee.email}
+                    onChange={(e) => setEditingEmployee({...editingEmployee, email: e.target.value})}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="editPhone">Phone</Label>
+                    <Input
+                      id="editPhone"
+                      value={editingEmployee.phone || ''}
+                      onChange={(e) => setEditingEmployee({...editingEmployee, phone: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="editExtension">Extension</Label>
+                    <Input
+                      id="editExtension"
+                      value={editingEmployee.extension || ''}
+                      onChange={(e) => setEditingEmployee({...editingEmployee, extension: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="editRole">Role</Label>
+                    <Select value={editingEmployee.role} onValueChange={(value) => setEditingEmployee({...editingEmployee, role: value})}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sales_rep">Sales Representative</SelectItem>
+                        <SelectItem value="hr_staff">HR Staff</SelectItem>
+                        <SelectItem value="manager">Manager</SelectItem>
+                        <SelectItem value="viewer">Viewer</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="editStatus">Status</Label>
+                    <Select value={editingEmployee.isActive ? 'active' : 'inactive'} onValueChange={(value) => setEditingEmployee({...editingEmployee, isActive: value === 'active'})}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="inactive">Inactive</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="editCommissionRate">Commission Rate (%)</Label>
+                  <Input
+                    id="editCommissionRate"
+                    type="number"
+                    value={typeof editingEmployee.commissionRate === 'string' ? 
+                      parseFloat(editingEmployee.commissionRate) || 0 : 
+                      editingEmployee.commissionRate || 0}
+                    onChange={(e) => setEditingEmployee({...editingEmployee, commissionRate: e.target.value})}
+                    step="0.1"
+                  />
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button 
+                    onClick={() => {
+                      setIsEditEmployeeModalOpen(false);
+                      setEditingEmployee(null);
+                    }}
+                    variant="outline" 
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      if (editingEmployee) {
+                        editEmployeeMutation.mutate({
+                          id: editingEmployee.id,
+                          firstName: editingEmployee.firstName,
+                          lastName: editingEmployee.lastName,
+                          email: editingEmployee.email,
+                          phone: editingEmployee.phone,
+                          extension: editingEmployee.extension,
+                          role: editingEmployee.role,
+                          isActive: editingEmployee.isActive,
+                          commissionRate: editingEmployee.commissionRate
+                        });
+                      }
+                    }}
+                    disabled={editEmployeeMutation.isPending}
+                    className="flex-1 bg-[#e45c2b] hover:bg-[#d14a1f] text-white"
+                  >
+                    {editEmployeeMutation.isPending ? 'Updating...' : 'Update Employee'}
+                  </Button>
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
