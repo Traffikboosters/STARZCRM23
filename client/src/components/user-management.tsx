@@ -45,6 +45,12 @@ type User = {
   avatar?: string | null;
   isActive: boolean;
   createdAt: Date;
+  commissionRate?: string | number | null;
+  bonusCommissionRate?: string | number | null;
+  commissionTier?: string | null;
+  compensationType?: 'commission' | 'salary';
+  baseSalary?: number | null;
+  department?: string;
 };
 
 const userFormSchema = z.object({
@@ -74,6 +80,9 @@ export function UserManagement({ currentUser }: UserManagementProps) {
   const { data: users = [] } = useQuery<User[]>({
     queryKey: ["/api/users"],
   });
+
+  // Filter out admin users for consistent employee management view
+  const employees = users.filter(user => user.role !== 'admin');
 
   const addUserMutation = useMutation({
     mutationFn: async (data: UserFormData) => {
@@ -231,12 +240,45 @@ export function UserManagement({ currentUser }: UserManagementProps) {
     );
   }
 
+  // Calculate employee statistics
+  const activeEmployees = employees.filter(emp => emp.isActive).length;
+  const salesReps = employees.filter(emp => emp.role === 'sales_rep').length;
+  const hrStaff = employees.filter(emp => emp.role === 'hr_staff').length;
+  const managers = employees.filter(emp => emp.role === 'manager').length;
+
   return (
     <div className="space-y-6">
+      {/* HR Portal Integration Summary */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Users className="h-5 w-5 text-blue-600" />
+          <h3 className="font-semibold text-blue-900">HR Portal Integration</h3>
+        </div>
+        <div className="grid grid-cols-4 gap-4 text-sm">
+          <div>
+            <span className="text-blue-600 font-medium">{employees.length}</span>
+            <span className="text-blue-800 ml-1">Total Employees</span>
+          </div>
+          <div>
+            <span className="text-green-600 font-medium">{activeEmployees}</span>
+            <span className="text-blue-800 ml-1">Active</span>
+          </div>
+          <div>
+            <span className="text-orange-600 font-medium">{salesReps}</span>
+            <span className="text-blue-800 ml-1">Sales Reps</span>
+          </div>
+          <div>
+            <span className="text-purple-600 font-medium">{managers}</span>
+            <span className="text-blue-800 ml-1">Managers</span>
+          </div>
+        </div>
+        <p className="text-xs text-blue-700 mt-2">Employee data synchronized from HR Portal database</p>
+      </div>
+
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">User Management</h2>
-          <p className="text-gray-600">Add and manage team members and their roles</p>
+          <p className="text-gray-600">Manage system users and access permissions</p>
         </div>
         
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
@@ -399,7 +441,7 @@ export function UserManagement({ currentUser }: UserManagementProps) {
       </div>
 
       <div className="grid gap-4">
-        {users.map((user) => (
+        {employees.map((user) => (
           <Card key={user.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -408,9 +450,15 @@ export function UserManagement({ currentUser }: UserManagementProps) {
                     {user.firstName.charAt(0)}{user.lastName.charAt(0)}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">
-                      {user.firstName} {user.lastName}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-gray-900">
+                        {user.firstName} {user.lastName}
+                      </h3>
+                      <div className={`w-2 h-2 rounded-full ${user.isActive ? 'bg-green-500' : 'bg-red-500'}`} />
+                      <span className={`text-xs px-2 py-1 rounded-full ${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {user.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
                     <p className="text-sm text-gray-600">@{user.username}</p>
                     <div className="flex items-center gap-4 mt-2">
                       {user.email && (
@@ -426,6 +474,19 @@ export function UserManagement({ currentUser }: UserManagementProps) {
                           {user.extension && ` ext. ${user.extension}`}
                         </div>
                       )}
+                    </div>
+                    {/* HR Compensation Info */}
+                    <div className="mt-2 text-sm text-gray-600">
+                      {user.commissionRate && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 mr-2">
+                          {typeof user.commissionRate === 'string' ? parseFloat(user.commissionRate) : user.commissionRate}% Commission
+                        </span>
+                      )}
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800">
+                        {user.role === 'sales_rep' ? 'Sales Rep' : 
+                         user.role === 'hr_staff' ? 'HR Staff' : 
+                         user.role === 'manager' ? 'Manager' : 'Viewer'}
+                      </span>
                     </div>
                   </div>
                 </div>
