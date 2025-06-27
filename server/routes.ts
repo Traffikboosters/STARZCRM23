@@ -26,6 +26,7 @@ import { storage } from "./storage";
 import { AILeadScoringEngine } from "./ai-lead-scoring";
 import { AIConversationStarterEngine } from "./ai-conversation-starters";
 import { quickReplyEngine } from "./ai-quick-replies";
+import { onboardingService } from "./employee-onboarding";
 import nodemailer from "nodemailer";
 
 // Configure email transporter for Traffik Boosters email server
@@ -3432,7 +3433,7 @@ Account: starz@traffikboosters.com`;
       // Generate secure invitation token and ID
       const inviteToken = crypto.getRandomValues(new Uint8Array(32)).reduce((str, byte) => str + byte.toString(16).padStart(2, '0'), '');
       const inviteId = Date.now();
-      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+      const expiresAt = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000); // 5 days
 
       // Create invitation link
       const inviteLink = `${req.protocol}://${req.get('host')}/api/users/complete-invitation?token=${inviteToken}&email=${encodeURIComponent(email)}&firstName=${encodeURIComponent(firstName)}&lastName=${encodeURIComponent(lastName)}&role=${role}`;
@@ -3644,6 +3645,46 @@ Email: support@traffikboosters.com
     } catch (error: any) {
       console.error('[Test Email] Error:', error);
       res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // Send onboarding packet endpoint
+  app.post("/api/users/send-onboarding", async (req, res) => {
+    try {
+      const { firstName, lastName, email, role, startDate } = req.body;
+      
+      if (!firstName || !lastName || !email || !role) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const workEmail = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@traffikboosters.com`;
+      const department = role === 'sales_rep' ? 'Sales' : role === 'admin' ? 'Management' : 'Operations';
+      
+      const onboardingData = {
+        firstName,
+        lastName,
+        email,
+        workEmail,
+        role,
+        startDate: startDate || new Date().toLocaleDateString(),
+        department
+      };
+
+      const success = await onboardingService.sendOnboardingPacket(onboardingData);
+      
+      if (success) {
+        res.json({ 
+          success: true, 
+          message: `Onboarding packet sent to ${firstName} ${lastName}`,
+          workEmail,
+          department
+        });
+      } else {
+        res.status(500).json({ error: "Failed to send onboarding packet" });
+      }
+    } catch (error: any) {
+      console.error('[Onboarding] Error:', error);
+      res.status(500).json({ error: error.message });
     }
   });
 

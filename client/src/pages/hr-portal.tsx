@@ -11,8 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Users, DollarSign, Calendar, TrendingUp, Award, Building2, Phone, Mail, UserPlus, Trash2, Edit, Send } from 'lucide-react';
+import { Users, DollarSign, Calendar, TrendingUp, Award, Building2, Phone, Mail, UserPlus, Trash2, Edit, Send, Package } from 'lucide-react';
 import UserInvitation from '@/components/user-invitation';
+import EmployeeOnboarding from '@/components/employee-onboarding';
 
 interface User {
   id: number;
@@ -350,9 +351,10 @@ export default function HRPortal() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="employees" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="employees">Employee Management</TabsTrigger>
             <TabsTrigger value="invitations">Send Invitations</TabsTrigger>
+            <TabsTrigger value="onboarding">Employee Onboarding</TabsTrigger>
           </TabsList>
 
           <TabsContent value="employees" className="space-y-4">
@@ -462,6 +464,10 @@ export default function HRPortal() {
 
           <TabsContent value="invitations" className="space-y-6">
             <UserInvitation />
+          </TabsContent>
+
+          <TabsContent value="onboarding" className="space-y-6">
+            <EmployeeOnboarding />
           </TabsContent>
         </Tabs>
 
