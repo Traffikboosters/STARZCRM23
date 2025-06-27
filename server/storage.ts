@@ -849,8 +849,8 @@ export class MemStorage implements IStorage {
       password: "admin123", // In production, this would be hashed
       email: "traffikboosters@gmail.com",
       role: "admin",
-      firstName: "Michael",
-      lastName: "Thompson",
+      firstName: "Steve",
+      lastName: "Williams",
       phone: "+1-877-840-6250",
       mobilePhone: "+1-877-840-6250",
       extension: "100",
