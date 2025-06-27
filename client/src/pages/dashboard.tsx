@@ -64,6 +64,10 @@ export default function Dashboard() {
       case "pipeline":
         return <SalesPipeline />;
       case "analytics":
+        return <CRMAnalyticsDashboard />;
+      case "live-monitoring":
+        return <LiveMonitoring />;
+      case "sales-analytics":
         return <SalesRepAnalytics />;
       case "scraping-analytics":
         return <ScrapingAnalytics />;

@@ -24,7 +24,8 @@ import {
   Calculator,
   Trophy,
   Brain,
-  MapPin
+  MapPin,
+  Activity
 } from "lucide-react";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ export default function Sidebar({
     { id: "campaigns", label: "Campaigns", icon: Target },
     { id: "video", label: "Video Calls", icon: Video },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
+    { id: "live-monitoring", label: "Live Monitoring", icon: BarChart3 },
     { id: "dial-tracking", label: "Dial Tracking", icon: Timer },
     { id: "pricing", label: "Pricing & Profit", icon: DollarSign },
     { id: "competitive-pricing", label: "Competitive Pricing", icon: Calculator },
