@@ -51,119 +51,161 @@ interface Contact {
   leadSource: string;
 }
 
+const defaultTemplates: SMSTemplate[] = [
+  {
+    id: "1",
+    name: "Welcome Message",
+    message: "Hi {firstName}, welcome to Traffik Boosters! We're excited to help grow your business. Reply STOP to opt out.",
+    category: "welcome",
+    variables: ["firstName"],
+    createdAt: new Date(),
+    isActive: true
+  },
+  {
+    id: "2", 
+    name: "Service Follow-up",
+    message: "Hi {firstName}, this is {senderName} from Traffik Boosters. How did our {serviceName} work for you? We'd love your feedback!",
+    category: "follow_up",
+    variables: ["firstName", "senderName", "serviceName"],
+    createdAt: new Date(),
+    isActive: true
+  },
+  {
+    id: "3",
+    name: "Special Promotion",
+    message: "🚀 {firstName}, limited time offer! Get 30% off our {serviceName} package. Call (877) 840-6250 today!",
+    category: "promotion", 
+    variables: ["firstName", "serviceName"],
+    createdAt: new Date(),
+    isActive: true
+  },
+  {
+    id: "4",
+    name: "Appointment Reminder",
+    message: "Hi {firstName}, this is {senderName} from Traffik Boosters. Just confirming our call tomorrow at {appointmentTime}. See you then!",
+    category: "appointment",
+    variables: ["firstName", "senderName", "appointmentTime"],
+    createdAt: new Date(),
+    isActive: true
+  },
+  {
+    id: "5",
+    name: "Payment Reminder",
+    message: "Hi {firstName}, friendly reminder that your {serviceName} payment is due. Please call (877) 840-6250 to complete payment.",
+    category: "reminder",
+    variables: ["firstName", "serviceName"],
+    createdAt: new Date(),
+    isActive: true
+  },
+  {
+    id: "6",
+    name: "Urgent Update",
+    message: "URGENT: {firstName}, we need to discuss your {serviceName} project immediately. Please call {senderName} at (877) 840-6250.",
+    category: "urgent",
+    variables: ["firstName", "serviceName", "senderName"],
+    createdAt: new Date(),
+    isActive: true
+  }
+];
+
 export default function SMSMarketing() {
-  const [activeTab, setActiveTab] = useState("campaigns");
+  const [campaigns, setCampaigns] = useState<SMSCampaign[]>([]);
+  const [templates] = useState<SMSTemplate[]>(defaultTemplates);
+  const [selectedTemplate, setSelectedTemplate] = useState("");
+  const [selectedContacts, setSelectedContacts] = useState<number[]>([]);
+  const [customMessage, setCustomMessage] = useState("");
   const [newCampaign, setNewCampaign] = useState({
     name: "",
     message: "",
     senderName: "Traffik Boosters Team"
   });
-  const [selectedContacts, setSelectedContacts] = useState<number[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [previewMessage, setPreviewMessage] = useState("");
-  
+  const [showPreview, setShowPreview] = useState(false);
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch SMS campaigns
-  const { data: campaigns = [], isLoading: campaignsLoading } = useQuery({
-    queryKey: ["/api/sms/campaigns"],
-    queryFn: () => apiRequest("GET", "/api/sms/campaigns").then(res => res.json())
-  });
-
-  // Fetch SMS templates
-  const { data: templates = [], isLoading: templatesLoading } = useQuery({
-    queryKey: ["/api/sms/templates"],
-    queryFn: () => apiRequest("GET", "/api/sms/templates").then(res => res.json())
-  });
-
   // Fetch contacts
-  const { data: contacts = [], isLoading: contactsLoading } = useQuery({
+  const { data: contacts = [] } = useQuery({
     queryKey: ["/api/contacts"],
-    queryFn: () => apiRequest("GET", "/api/contacts").then(res => res.json())
   });
 
-  // Create campaign mutation
   const createCampaignMutation = useMutation({
-    mutationFn: (campaignData: any) => 
-      apiRequest("POST", "/api/sms/campaigns", campaignData).then(res => res.json()),
+    mutationFn: async (campaignData: any) => {
+      const response = await apiRequest("POST", "/api/sms-campaigns", campaignData);
+      if (!response.ok) throw new Error("Failed to create campaign");
+      return response.json();
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/sms/campaigns"] });
       toast({
-        title: "SMS Campaign Created",
-        description: "Your SMS campaign has been created successfully.",
+        title: "Campaign Created",
+        description: "SMS campaign has been created successfully"
       });
       setNewCampaign({ name: "", message: "", senderName: "Traffik Boosters Team" });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: "Failed to create SMS campaign",
-        variant: "destructive",
-      });
     }
   });
 
-  // Send SMS mutation
   const sendSMSMutation = useMutation({
-    mutationFn: (data: any) => 
-      apiRequest("POST", "/api/sms/send", data).then(res => res.json()),
+    mutationFn: async (smsData: any) => {
+      const response = await apiRequest("POST", "/api/send-sms", smsData);
+      if (!response.ok) throw new Error("Failed to send SMS");
+      return response.json();
+    },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/sms/campaigns"] });
       toast({
-        title: "SMS Campaign Sent",
-        description: `Successfully sent to ${data.sent} contacts. ${data.failed} failed, ${data.optedOut} opted out.`,
+        title: "SMS Sent",
+        description: `Successfully sent ${data.sent} messages`
       });
       setSelectedContacts([]);
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: "Failed to send SMS campaign",
-        variant: "destructive",
-      });
+      setCustomMessage("");
+      setSelectedTemplate("");
     }
   });
 
   const handleCreateCampaign = () => {
     if (!newCampaign.name || !newCampaign.message) {
       toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
+        title: "Missing Information",
+        description: "Please fill in campaign name and message",
+        variant: "destructive"
       });
       return;
     }
 
-    createCampaignMutation.mutate(newCampaign);
+    createCampaignMutation.mutate({
+      ...newCampaign,
+      targetAudience: selectedContacts,
+      status: 'draft'
+    });
   };
 
   const handleSendSMS = () => {
     if (selectedContacts.length === 0) {
       toast({
-        title: "Error",
-        description: "Please select at least one contact",
-        variant: "destructive",
+        title: "No Recipients",
+        description: "Please select contacts to send SMS to",
+        variant: "destructive"
       });
       return;
     }
 
-    const sendData = {
+    const message = selectedTemplate ? 
+      templates.find(t => t.id === selectedTemplate)?.message || customMessage :
+      customMessage;
+
+    if (!message) {
+      toast({
+        title: "No Message",
+        description: "Please select a template or write a custom message",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    sendSMSMutation.mutate({
+      message,
       contactIds: selectedContacts,
-      templateId: selectedTemplate || undefined,
-      message: selectedTemplate ? undefined : newCampaign.message
-    };
-
-    sendSMSMutation.mutate(sendData);
-  };
-
-  const handleContactToggle = (contactId: number) => {
-    setSelectedContacts(prev => 
-      prev.includes(contactId) 
-        ? prev.filter(id => id !== contactId)
-        : [...prev, contactId]
-    );
+      senderName: "Traffik Boosters Team"
+    });
   };
 
   const handleSelectAll = () => {
@@ -175,163 +217,99 @@ export default function SMSMarketing() {
     }
   };
 
-  const handlePreview = () => {
-    const template = templates.find((t: SMSTemplate) => t.id === selectedTemplate);
+  const getPreviewMessage = () => {
+    const template = templates.find(t => t.id === selectedTemplate);
     const sampleContact = contacts.find((c: Contact) => c.phone) || { firstName: "John", lastName: "Doe", company: "Sample Business" };
     
-    let message = template ? template.message : newCampaign.message;
-    message = message
-      .replace(/\{\{firstName\}\}/g, sampleContact.firstName || "John")
-      .replace(/\{\{lastName\}\}/g, sampleContact.lastName || "Doe")
-      .replace(/\{\{companyName\}\}/g, sampleContact.company || "Sample Business")
-      .replace(/\{\{senderName\}\}/g, newCampaign.senderName);
-    
-    setPreviewMessage(message);
-    setIsPreviewOpen(true);
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'sending': return <Clock className="h-4 w-4 text-blue-600" />;
-      case 'paused': return <XCircle className="h-4 w-4 text-red-600" />;
-      default: return <Clock className="h-4 w-4 text-gray-600" />;
+    if (template) {
+      return template.message
+        .replace(/{firstName}/g, sampleContact.firstName)
+        .replace(/{lastName}/g, sampleContact.lastName)
+        .replace(/{senderName}/g, "Traffik Boosters Team")
+        .replace(/{serviceName}/g, "SEO Optimization")
+        .replace(/{appointmentTime}/g, "2:00 PM");
     }
+    
+    return customMessage;
   };
 
   const validContacts = contacts.filter((contact: Contact) => contact.phone);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <img 
-            src={traffikBoostersLogo} 
-            alt="Traffik Boosters" 
-            className="h-20 w-auto object-contain"
-            style={{ imageRendering: 'crisp-edges' }}
-          />
+        <div className="flex items-center gap-3">
+          <img src={traffikBoostersLogo} alt="Traffik Boosters" className="h-12 w-12" />
           <div>
-            <h1 className="text-3xl font-bold text-black">SMS Marketing</h1>
-            <p className="text-gray-600">Mass text campaign management for lead outreach</p>
+            <h1 className="text-2xl font-bold text-gray-900">SMS Marketing</h1>
+            <p className="text-gray-600">Reach customers instantly with targeted text campaigns</p>
           </div>
         </div>
-        <Badge variant="secondary" className="text-sm">
-          <MessageSquare className="h-4 w-4 mr-1" />
-          {validContacts.length} Contacts with Phone Numbers
-        </Badge>
+        <div className="text-sm text-gray-500">
+          More Traffik! More Sales!
+        </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      {/* Campaign Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Campaigns</p>
+                <p className="text-2xl font-bold text-gray-900">{campaigns.length}</p>
+              </div>
+              <MessageSquare className="h-8 w-8 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Messages Sent</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {campaigns.reduce((total, campaign) => total + campaign.sentCount, 0)}
+                </p>
+              </div>
+              <Send className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Response Rate</p>
+                <p className="text-2xl font-bold text-gray-900">24.5%</p>
+              </div>
+              <Users className="h-8 w-8 text-orange-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Opt-out Rate</p>
+                <p className="text-2xl font-bold text-gray-900">2.1%</p>
+              </div>
+              <XCircle className="h-8 w-8 text-red-600" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="send" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
-          <TabsTrigger value="create">Create Campaign</TabsTrigger>
           <TabsTrigger value="send">Send SMS</TabsTrigger>
+          <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
           <TabsTrigger value="templates">Templates</TabsTrigger>
         </TabsList>
-
-        {/* Campaigns Tab */}
-        <TabsContent value="campaigns">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {campaignsLoading ? (
-              [...Array(3)].map((_, i) => (
-                <div key={i} className="h-48 bg-gray-200 animate-pulse rounded-lg"></div>
-              ))
-            ) : campaigns.length === 0 ? (
-              <Card className="col-span-full">
-                <CardContent className="text-center py-12">
-                  <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">No SMS campaigns yet. Create your first campaign to get started.</p>
-                </CardContent>
-              </Card>
-            ) : (
-              campaigns.map((campaign: SMSCampaign) => (
-                <Card key={campaign.id}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{campaign.name}</CardTitle>
-                      {getStatusIcon(campaign.status)}
-                    </div>
-                    <Badge variant="outline" className="w-fit">
-                      {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
-                    </Badge>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 text-sm">
-                      <p className="text-gray-600 line-clamp-2">{campaign.message}</p>
-                      <div className="flex justify-between">
-                        <span>Sent:</span>
-                        <span className="font-medium">{campaign.sentCount}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Delivery Rate:</span>
-                        <span className="font-medium">{campaign.deliveryRate}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Response Rate:</span>
-                        <span className="font-medium">{campaign.responseRate}%</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
-        </TabsContent>
-
-        {/* Create Campaign Tab */}
-        <TabsContent value="create">
-          <Card>
-            <CardHeader>
-              <CardTitle>Create New SMS Campaign</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="campaignName">Campaign Name</Label>
-                <Input
-                  id="campaignName"
-                  value={newCampaign.name}
-                  onChange={(e) => setNewCampaign(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Enter campaign name"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="senderName">Sender Name</Label>
-                <Input
-                  id="senderName"
-                  value={newCampaign.senderName}
-                  onChange={(e) => setNewCampaign(prev => ({ ...prev, senderName: e.target.value }))}
-                  placeholder="Traffik Boosters Team"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="message">Message</Label>
-                <Textarea
-                  id="message"
-                  value={newCampaign.message}
-                  onChange={(e) => setNewCampaign(prev => ({ ...prev, message: e.target.value }))}
-                  placeholder="Hi {{firstName}}, this is {{senderName}} from Traffik Boosters..."
-                  rows={4}
-                />
-                <p className="text-sm text-gray-500 mt-1">
-                  Use {{firstName}}, {{lastName}}, {{companyName}}, {{senderName}} for personalization
-                </p>
-                <p className="text-sm text-gray-500">Character count: {newCampaign.message.length}/160</p>
-              </div>
-
-              <Button 
-                onClick={handleCreateCampaign} 
-                disabled={createCampaignMutation.isPending}
-                className="w-full"
-              >
-                {createCampaignMutation.isPending ? "Creating..." : "Create Campaign"}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
 
         {/* Send SMS Tab */}
         <TabsContent value="send">
@@ -349,46 +327,61 @@ export default function SMSMarketing() {
                       <SelectValue placeholder="Choose template or write custom message" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Custom Message</SelectItem>
                       {templates.map((template: SMSTemplate) => (
                         <SelectItem key={template.id} value={template.id}>
-                          {template.name} ({template.category})
+                          {template.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
 
-                {!selectedTemplate && (
-                  <div>
-                    <Label htmlFor="customMessage">Custom Message</Label>
-                    <Textarea
-                      id="customMessage"
-                      value={newCampaign.message}
-                      onChange={(e) => setNewCampaign(prev => ({ ...prev, message: e.target.value }))}
-                      placeholder="Hi {{firstName}}, this is Traffik Boosters..."
-                      rows={4}
-                    />
-                    <p className="text-sm text-gray-500 mt-1">Character count: {newCampaign.message.length}/160</p>
-                  </div>
-                )}
+                <div>
+                  <Label htmlFor="customMessage">Custom Message</Label>
+                  <Textarea
+                    id="customMessage"
+                    value={customMessage}
+                    onChange={(e) => setCustomMessage(e.target.value)}
+                    placeholder="Write your custom SMS message here..."
+                    rows={4}
+                    disabled={!!selectedTemplate}
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    Use variables: firstName, lastName, company, senderName
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Character count: {(selectedTemplate ? 
+                      templates.find(t => t.id === selectedTemplate)?.message.length || 0 : 
+                      customMessage.length)}/160
+                  </p>
+                </div>
 
-                <div className="flex space-x-2">
-                  <Button 
-                    variant="outline" 
-                    onClick={handlePreview}
-                    disabled={!selectedTemplate && !newCampaign.message}
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Preview
-                  </Button>
+                <div className="flex gap-2">
+                  <Dialog open={showPreview} onOpenChange={setShowPreview}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="flex-1">
+                        <Eye className="h-4 w-4 mr-2" />
+                        Preview
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>SMS Preview</DialogTitle>
+                      </DialogHeader>
+                      <div className="bg-gray-100 p-4 rounded-lg">
+                        <p className="text-sm font-medium text-gray-600 mb-2">Preview:</p>
+                        <p className="text-gray-900">{getPreviewMessage()}</p>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
                   <Button 
                     onClick={handleSendSMS}
                     disabled={sendSMSMutation.isPending || selectedContacts.length === 0}
                     className="flex-1"
                   >
                     <Send className="h-4 w-4 mr-2" />
-                    {sendSMSMutation.isPending ? "Sending..." : `Send to ${selectedContacts.length} contacts`}
+                    {sendSMSMutation.isPending ? "Sending..." : "Send SMS"}
                   </Button>
                 </div>
               </CardContent>
@@ -398,28 +391,33 @@ export default function SMSMarketing() {
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Select Contacts ({selectedContacts.length}/{validContacts.length})</CardTitle>
+                  <CardTitle>Select Recipients ({selectedContacts.length})</CardTitle>
                   <Button variant="outline" size="sm" onClick={handleSelectAll}>
                     {selectedContacts.length === validContacts.length ? "Deselect All" : "Select All"}
                   </Button>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="max-h-96 overflow-y-auto space-y-2">
+                <div className="space-y-2 max-h-96 overflow-y-auto">
                   {validContacts.map((contact: Contact) => (
-                    <div key={contact.id} className="flex items-center space-x-3 p-2 border rounded">
+                    <div key={contact.id} className="flex items-center space-x-2 p-2 border rounded">
                       <Checkbox
                         checked={selectedContacts.includes(contact.id)}
-                        onCheckedChange={() => handleContactToggle(contact.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedContacts(prev => [...prev, contact.id]);
+                          } else {
+                            setSelectedContacts(prev => prev.filter(id => id !== contact.id));
+                          }
+                        }}
                       />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">
-                          {contact.company || `${contact.firstName} ${contact.lastName}`}
-                        </p>
-                        <div className="flex items-center text-sm text-gray-500">
+                      <div className="flex-1">
+                        <p className="font-medium">{contact.firstName} {contact.lastName}</p>
+                        <p className="text-sm text-gray-600">{contact.company}</p>
+                        <p className="text-sm text-gray-500 flex items-center">
                           <Phone className="h-3 w-3 mr-1" />
                           {contact.phone}
-                        </div>
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -429,58 +427,114 @@ export default function SMSMarketing() {
           </div>
         </TabsContent>
 
+        {/* Campaigns Tab */}
+        <TabsContent value="campaigns">
+          <Card>
+            <CardHeader>
+              <CardTitle>Create New Campaign</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="campaignName">Campaign Name</Label>
+                <Input
+                  id="campaignName"
+                  value={newCampaign.name}
+                  onChange={(e) => setNewCampaign(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Q1 Promotion Campaign"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="senderName">Sender Name</Label>
+                <Input
+                  id="senderName"
+                  value={newCampaign.senderName}
+                  onChange={(e) => setNewCampaign(prev => ({ ...prev, senderName: e.target.value }))}
+                  placeholder="Traffik Boosters Team"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="message">Message</Label>
+                <Textarea
+                  id="message"
+                  value={newCampaign.message}
+                  onChange={(e) => setNewCampaign(prev => ({ ...prev, message: e.target.value }))}
+                  placeholder="Hi there, this is the Traffik Boosters team..."
+                  rows={4}
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Use variables for personalization: firstName, lastName, company, senderName
+                </p>
+                <p className="text-sm text-gray-500">Character count: {newCampaign.message.length}/160</p>
+              </div>
+
+              <Button 
+                onClick={handleCreateCampaign} 
+                disabled={createCampaignMutation.isPending}
+                className="w-full"
+              >
+                {createCampaignMutation.isPending ? "Creating..." : "Create Campaign"}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Campaign List */}
+          <div className="space-y-4 mt-6">
+            {campaigns.map((campaign: SMSCampaign) => (
+              <Card key={campaign.id}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold">{campaign.name}</h3>
+                      <p className="text-sm text-gray-600">{campaign.message.substring(0, 50)}...</p>
+                      <div className="flex items-center gap-4 mt-2">
+                        <Badge variant={campaign.status === 'completed' ? 'default' : 'secondary'}>
+                          {campaign.status}
+                        </Badge>
+                        <span className="text-sm text-gray-500">Sent: {campaign.sentCount}</span>
+                        <span className="text-sm text-gray-500">Response: {campaign.responseRate}%</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm">Edit</Button>
+                      <Button variant="outline" size="sm">View Stats</Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
         {/* Templates Tab */}
         <TabsContent value="templates">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {templatesLoading ? (
-              [...Array(3)].map((_, i) => (
-                <div key={i} className="h-48 bg-gray-200 animate-pulse rounded-lg"></div>
-              ))
-            ) : (
-              templates.map((template: SMSTemplate) => (
-                <Card key={template.id}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{template.name}</CardTitle>
-                      <Badge variant="outline">
-                        {template.category}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-3">{template.message}</p>
-                    <div className="text-xs text-gray-500">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {templates.map((template: SMSTemplate) => (
+              <Card key={template.id}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg">{template.name}</CardTitle>
+                    <Badge variant="outline">{template.category}</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700 mb-4">{template.message}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-500">
                       Variables: {template.variables.join(", ")}
                     </div>
-                  </CardContent>
-                </Card>
-              ))
-            )}
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm">Edit</Button>
+                      <Button variant="outline" size="sm">Use</Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* Preview Dialog */}
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>SMS Preview</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="bg-gray-50 p-4 rounded-lg border">
-              <div className="bg-blue-500 text-white p-3 rounded-lg max-w-xs ml-auto">
-                {previewMessage}
-              </div>
-              <div className="text-xs text-gray-500 mt-2 text-right">
-                From: (877) 840-6250
-              </div>
-            </div>
-            <p className="text-sm text-gray-500">
-              This is how your message will appear to recipients.
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
