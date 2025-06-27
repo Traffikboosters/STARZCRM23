@@ -311,6 +311,7 @@ The application uses a comprehensive schema including:
 - June 27, 2025. Added Email Marketing navigation tab with campaign tracking, contact selection, email preview functionality, and professional HTML email design with gradient headers
 - June 27, 2025. Increased Traffik Boosters logo size in invitation emails from 60px to 240px (4x larger) for enhanced brand visibility and professional presentation
 - June 27, 2025. Fixed invitation link generation to use proper Replit HTTPS domain instead of localhost, resolving connection refused errors for external email recipients
+- June 27, 2025. Removed "TRAFFIK BOOSTERS" text from invitation emails to create maximum space for logo display, increasing header logo to 300px and footer logo to 280px
 
 ## User Preferences
 

@@ -3492,10 +3492,9 @@ Email: support@traffikboosters.com
           }],
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: white;">
-              <div style="text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, hsl(14, 88%, 55%) 0%, hsl(29, 85%, 58%) 100%); padding: 25px; border-radius: 12px;">
-                <img src="cid:traffikLogo" alt="Traffik Boosters" style="width: 80px; height: auto; margin: 0 auto 15px; display: block;" />
-                <h1 style="color: white; margin: 0 0 8px 0; font-size: 28px; font-weight: bold;">TRAFFIK BOOSTERS</h1>
-                <p style="color: white; font-weight: bold; margin: 0; font-size: 16px;">"More Traffik! More Sales!"</p>
+              <div style="text-align: center; margin-bottom: 30px; background: linear-gradient(135deg, hsl(14, 88%, 55%) 0%, hsl(29, 85%, 58%) 100%); padding: 40px; border-radius: 12px;">
+                <img src="cid:traffikLogo" alt="Traffik Boosters" style="width: 300px; height: auto; margin: 0 auto 20px; display: block;" />
+                <p style="color: white; font-weight: bold; margin: 0; font-size: 18px;">"More Traffik! More Sales!"</p>
               </div>
               
               <div style="background: #f9f9f9; padding: 30px; border-radius: 12px; margin: 20px 0; border-left: 4px solid hsl(14, 88%, 55%);">
@@ -3520,11 +3519,9 @@ Email: support@traffikboosters.com
               </div>
               
               <div style="text-align: center; color: #666; font-size: 14px; margin-top: 30px; border-top: 2px solid hsl(14, 88%, 55%); padding-top: 20px;">
-                <div style="margin-bottom: 15px;">
-                  <img src="cid:traffikLogo" alt="Traffik Boosters" style="width: 240px; height: auto; margin: 0 auto 10px; display: block;" />
-                  </div>
+                <div style="margin-bottom: 20px;">
+                  <img src="cid:traffikLogo" alt="Traffik Boosters" style="width: 280px; height: auto; margin: 0 auto 15px; display: block;" />
                 </div>
-                <p style="margin: 5px 0;"><strong>TRAFFIK BOOSTERS</strong></p>
                 <p style="margin: 5px 0;">Phone: <strong>(877) 840-6250</strong></p>
                 <p style="margin: 5px 0;">Email: <strong>support@traffikboosters.com</strong></p>
                 <p style="color: hsl(29, 85%, 58%); font-weight: bold; margin: 15px 0 0 0; font-size: 16px;">"More Traffik! More Sales!"</p>
