@@ -89,6 +89,8 @@ export default function Dashboard() {
         return <DialTrackingDashboard />;
       case "pricing":
         return <PricingSheet />;
+      case "competitive-pricing":
+        return <PricingSheet />;
       case "sales-funnels":
         return <SalesFunnelBuilder />;
       case "leaderboard":
