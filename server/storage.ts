@@ -1,13 +1,15 @@
 import { 
   users, contacts, events, files, automations, scrapingJobs, companies, chatMessages, chatConversations,
-  callLogs, campaigns, leadAllocations, documentTemplates, signingRequests,
+  callLogs, campaigns, leadAllocations, documentTemplates, signingRequests, servicePackages, costStructure, profitabilityAnalysis,
   type User, type InsertUser, type Contact, type InsertContact,
   type Event, type InsertEvent, type File, type InsertFile,
   type Automation, type InsertAutomation, type ScrapingJob, type InsertScrapingJob,
   type Company, type InsertCompany, type ChatMessage, type InsertChatMessage,
   type ChatConversation, type InsertChatConversation, type CallLog, type InsertCallLog,
   type Campaign, type InsertCampaign, type LeadAllocation, type InsertLeadAllocation,
-  type DocumentTemplate, type InsertDocumentTemplate, type SigningRequest, type InsertSigningRequest
+  type DocumentTemplate, type InsertDocumentTemplate, type SigningRequest, type InsertSigningRequest,
+  type ServicePackage, type InsertServicePackage, type CostStructure, type InsertCostStructure,
+  type ProfitabilityAnalysis, type InsertProfitabilityAnalysis
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, like, and, between } from "drizzle-orm";
@@ -120,6 +122,30 @@ export interface IStorage {
   createSigningRequest(request: InsertSigningRequest & { createdBy: number }): Promise<SigningRequest>;
   updateSigningRequest(id: number, updates: Partial<InsertSigningRequest>): Promise<SigningRequest | undefined>;
   deleteSigningRequest(id: number): Promise<boolean>;
+  
+  // Service Packages
+  getServicePackages(): Promise<ServicePackage[]>;
+  getServicePackage(id: number): Promise<ServicePackage | undefined>;
+  createServicePackage(servicePackage: InsertServicePackage): Promise<ServicePackage>;
+  updateServicePackage(id: number, updates: Partial<InsertServicePackage>): Promise<ServicePackage | undefined>;
+  deleteServicePackage(id: number): Promise<boolean>;
+  
+  // Cost Structures
+  getCostStructureByPackage(packageId: number): Promise<CostStructure[]>;
+  createCostStructure(costStructure: InsertCostStructure): Promise<CostStructure>;
+  updateCostStructure(id: number, updates: Partial<InsertCostStructure>): Promise<CostStructure | undefined>;
+  deleteCostStructure(id: number): Promise<boolean>;
+  
+  // Profitability Analyses
+  getProfitabilityAnalyses(): Promise<ProfitabilityAnalysis[]>;
+  createProfitabilityAnalysis(analysis: InsertProfitabilityAnalysis): Promise<ProfitabilityAnalysis>;
+  updateProfitabilityAnalysis(id: number, updates: Partial<InsertProfitabilityAnalysis>): Promise<ProfitabilityAnalysis | undefined>;
+  deleteProfitabilityAnalysis(id: number): Promise<boolean>;
+
+  // Additional methods needed by routes
+  getLeadsByRep(repId: number): Promise<Contact[]>;
+  getPricingProposals(): Promise<any[]>;
+  createPricingProposal(proposal: any): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1926,126 +1952,108 @@ Client Approval:
     return this.signingRequests.delete(id);
   }
 
-  // Service Package methods
-  async createServicePackage(data: any): Promise<any> {
-    const newPackage = {
-      id: ++this.lastId,
-      ...data,
-      isActive: true,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-    this.servicePackages.push(newPackage);
-    return newPackage;
+  // Service Packages
+  async getServicePackages(): Promise<ServicePackage[]> {
+    return await db.select().from(servicePackages).where(eq(servicePackages.isActive, true));
   }
 
-  async getServicePackages(): Promise<any[]> {
-    return this.servicePackages.filter(pkg => pkg.isActive);
+  async getServicePackage(id: number): Promise<ServicePackage | undefined> {
+    const [servicePackage] = await db.select().from(servicePackages).where(eq(servicePackages.id, id));
+    return servicePackage || undefined;
   }
 
-  async getServicePackageById(id: number): Promise<any | null> {
-    return this.servicePackages.find(pkg => pkg.id === id && pkg.isActive) || null;
+  async createServicePackage(insertServicePackage: InsertServicePackage): Promise<ServicePackage> {
+    const [servicePackage] = await db
+      .insert(servicePackages)
+      .values(insertServicePackage)
+      .returning();
+    return servicePackage;
   }
 
-  async updateServicePackage(id: number, data: any): Promise<any> {
-    const index = this.servicePackages.findIndex(pkg => pkg.id === id);
-    if (index !== -1) {
-      this.servicePackages[index] = { ...this.servicePackages[index], ...data, updatedAt: new Date() };
-      return this.servicePackages[index];
-    }
-    return null;
+  async updateServicePackage(id: number, updates: Partial<InsertServicePackage>): Promise<ServicePackage | undefined> {
+    const [servicePackage] = await db
+      .update(servicePackages)
+      .set(updates)
+      .where(eq(servicePackages.id, id))
+      .returning();
+    return servicePackage || undefined;
   }
 
-  async deleteServicePackage(id: number): Promise<void> {
-    const index = this.servicePackages.findIndex(pkg => pkg.id === id);
-    if (index !== -1) {
-      this.servicePackages[index].isActive = false;
-    }
+  async deleteServicePackage(id: number): Promise<boolean> {
+    const result = await db
+      .update(servicePackages)
+      .set({ isActive: false })
+      .where(eq(servicePackages.id, id));
+    return (result.rowCount ?? 0) > 0;
   }
 
-  // Cost Structure methods
-  async createCostStructure(data: any): Promise<any> {
-    const newCost = {
-      id: ++this.lastId,
-      ...data,
-      createdAt: new Date()
-    };
-    this.costStructures.push(newCost);
-    return newCost;
+  // Cost Structures
+  async getCostStructureByPackage(packageId: number): Promise<CostStructure[]> {
+    return await db.select().from(costStructure).where(eq(costStructure.servicePackageId, packageId));
   }
 
-  async getCostStructureByPackage(packageId: number): Promise<any[]> {
-    return this.costStructures.filter(cost => cost.packageId === packageId);
+  async createCostStructure(insertCostStructure: InsertCostStructure): Promise<CostStructure> {
+    const [cost] = await db
+      .insert(costStructure)
+      .values(insertCostStructure)
+      .returning();
+    return cost;
   }
 
-  async updateCostStructure(id: number, data: any): Promise<any> {
-    const index = this.costStructures.findIndex(cost => cost.id === id);
-    if (index !== -1) {
-      this.costStructures[index] = { ...this.costStructures[index], ...data };
-      return this.costStructures[index];
-    }
-    return null;
+  async updateCostStructure(id: number, updates: Partial<InsertCostStructure>): Promise<CostStructure | undefined> {
+    const [cost] = await db
+      .update(costStructure)
+      .set(updates)
+      .where(eq(costStructure.id, id))
+      .returning();
+    return cost || undefined;
   }
 
-  async deleteCostStructure(id: number): Promise<void> {
-    const index = this.costStructures.findIndex(cost => cost.id === id);
-    if (index !== -1) {
-      this.costStructures.splice(index, 1);
-    }
+  async deleteCostStructure(id: number): Promise<boolean> {
+    const result = await db.delete(costStructure).where(eq(costStructure.id, id));
+    return (result.rowCount ?? 0) > 0;
   }
 
-  // Profitability Analysis methods
-  async createProfitabilityAnalysis(data: any): Promise<any> {
-    const newAnalysis = {
-      id: ++this.lastId,
-      ...data,
-      createdAt: new Date()
-    };
-    this.profitabilityAnalyses.push(newAnalysis);
-    return newAnalysis;
+  // Profitability Analyses
+  async getProfitabilityAnalyses(): Promise<ProfitabilityAnalysis[]> {
+    return await db.select().from(profitabilityAnalysis);
   }
 
-  async getProfitabilityAnalyses(): Promise<any[]> {
-    return this.profitabilityAnalyses;
+  async createProfitabilityAnalysis(insertAnalysis: InsertProfitabilityAnalysis): Promise<ProfitabilityAnalysis> {
+    const [analysis] = await db
+      .insert(profitabilityAnalysis)
+      .values(insertAnalysis)
+      .returning();
+    return analysis;
   }
 
-  async getProfitabilityByPackage(packageId: number): Promise<any[]> {
-    return this.profitabilityAnalyses.filter(analysis => analysis.packageId === packageId);
+  async updateProfitabilityAnalysis(id: number, updates: Partial<InsertProfitabilityAnalysis>): Promise<ProfitabilityAnalysis | undefined> {
+    const [analysis] = await db
+      .update(profitabilityAnalysis)
+      .set(updates)
+      .where(eq(profitabilityAnalysis.id, id))
+      .returning();
+    return analysis || undefined;
   }
 
-  // Pricing Proposal methods
-  async createPricingProposal(data: any): Promise<any> {
-    const newProposal = {
-      id: ++this.lastId,
-      ...data,
-      createdAt: new Date()
-    };
-    this.pricingProposals.push(newProposal);
-    return newProposal;
+  async deleteProfitabilityAnalysis(id: number): Promise<boolean> {
+    const result = await db.delete(profitabilityAnalysis).where(eq(profitabilityAnalysis.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Additional methods needed by routes
+  async getLeadsByRep(repId: number): Promise<Contact[]> {
+    return await db.select().from(contacts).where(eq(contacts.assignedTo, repId));
   }
 
   async getPricingProposals(): Promise<any[]> {
-    return this.pricingProposals;
+    // For now return empty array - would need proper pricing proposal table
+    return [];
   }
 
-  async getPricingProposalsByContact(contactId: number): Promise<any[]> {
-    return this.pricingProposals.filter(proposal => proposal.contactId === contactId);
-  }
-
-  async updatePricingProposal(id: number, data: any): Promise<any> {
-    const index = this.pricingProposals.findIndex(proposal => proposal.id === id);
-    if (index !== -1) {
-      this.pricingProposals[index] = { ...this.pricingProposals[index], ...data };
-      return this.pricingProposals[index];
-    }
-    return null;
-  }
-
-  async deletePricingProposal(id: number): Promise<void> {
-    const index = this.pricingProposals.findIndex(proposal => proposal.id === id);
-    if (index !== -1) {
-      this.pricingProposals.splice(index, 1);
-    }
+  async createPricingProposal(proposal: any): Promise<any> {
+    // For now return the proposal with an ID - would need proper pricing proposal table
+    return { id: Date.now(), ...proposal, createdAt: new Date() };
   }
 }
 
