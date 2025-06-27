@@ -829,56 +829,7 @@ export class MemStorage implements IStorage {
     };
     this.users.set(adminUser.id, adminUser);
 
-    // Add sample sales representatives
-    const salesReps = [
-      {
-        username: "sarah.johnson",
-        email: "sarah.johnson@traffikboosters.com",
-        firstName: "Sarah",
-        lastName: "Johnson",
-        phone: "+1-877-840-6251",
-        extension: "101"
-      },
-      {
-        username: "david.chen",
-        email: "david.chen@traffikboosters.com", 
-        firstName: "David",
-        lastName: "Chen",
-        phone: "+1-877-840-6252",
-        extension: "102"
-      },
-      {
-        username: "amanda.davis",
-        email: "amanda.davis@traffikboosters.com",
-        firstName: "Amanda", 
-        lastName: "Davis",
-        phone: "+1-877-840-6253",
-        extension: "103"
-      }
-    ];
-
-    salesReps.forEach(rep => {
-      const salesRep: User = {
-        id: this.currentUserId++,
-        username: rep.username,
-        password: "salesrep123",
-        email: rep.email,
-        role: "sales_rep",
-        firstName: rep.firstName,
-        lastName: rep.lastName,
-        phone: rep.phone,
-        mobilePhone: rep.phone,
-        extension: rep.extension,
-        avatar: null,
-        commissionRate: "12.0",
-        baseCommissionRate: "10.0",
-        bonusCommissionRate: "2.0",
-        commissionTier: "bronze",
-        isActive: true,
-        createdAt: new Date(),
-      };
-      this.users.set(salesRep.id, salesRep);
-    });
+    // No automatic sales rep creation - users will add employees manually
 
     // Initialize sample contacts with diverse lead sources
     this.initializeSampleContacts();
