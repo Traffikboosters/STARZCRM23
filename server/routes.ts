@@ -1413,6 +1413,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/users/:id", requireAuth, async (req: any, res) => {
+    try {
+      // Only admins can delete users
+      if (req.user.role !== 'admin') {
+        return res.status(403).json({ error: "Insufficient permissions to delete users" });
+      }
+      
+      const userId = parseInt(req.params.id);
+      
+      // Prevent admin from deleting themselves
+      if (userId === req.user.id) {
+        return res.status(400).json({ error: "Cannot delete your own account" });
+      }
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      await storage.deleteUser(userId);
+      
+      logAuditEvent("DELETE", "user", userId, req.user.id, user, null, `User deleted: ${user.firstName} ${user.lastName}`);
+      
+      res.json({ success: true, message: "User deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
   app.put("/api/users/:id", requireAuth, async (req: any, res) => {
     try {
       // Only admins can update users
