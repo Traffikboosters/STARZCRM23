@@ -27,6 +27,7 @@ import { AILeadScoringEngine } from "./ai-lead-scoring";
 import { AIConversationStarterEngine } from "./ai-conversation-starters";
 import { quickReplyEngine } from "./ai-quick-replies";
 import { onboardingService } from "./employee-onboarding";
+import { emailMarketingService } from "./email-marketing";
 import nodemailer from "nodemailer";
 
 // Configure email transporter for Traffik Boosters email server
@@ -3648,6 +3649,150 @@ Email: support@traffikboosters.com
     } catch (error: any) {
       console.error('[Test Email] Error:', error);
       res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // Email Marketing - Get all campaigns
+  app.get("/api/marketing/campaigns", async (req, res) => {
+    try {
+      const campaigns = emailMarketingService.getCampaigns();
+      res.json(campaigns);
+    } catch (error: any) {
+      console.error('[Marketing] Error fetching campaigns:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Email Marketing - Create new campaign
+  app.post("/api/marketing/campaigns", async (req, res) => {
+    try {
+      const { name, subject, content, senderName, senderEmail, targetAudience } = req.body;
+      
+      const campaign = await emailMarketingService.createCampaign({
+        name,
+        subject,
+        content,
+        senderName,
+        senderEmail,
+        targetAudience: targetAudience || [],
+        status: 'draft',
+        createdBy: req.user?.id || 1
+      });
+
+      res.json(campaign);
+    } catch (error: any) {
+      console.error('[Marketing] Error creating campaign:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Email Marketing - Get all templates
+  app.get("/api/marketing/templates", async (req, res) => {
+    try {
+      const templates = emailMarketingService.getTemplates();
+      res.json(templates);
+    } catch (error: any) {
+      console.error('[Marketing] Error fetching templates:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Email Marketing - Send mass email campaign
+  app.post("/api/marketing/campaigns/:campaignId/send", async (req, res) => {
+    try {
+      const { campaignId } = req.params;
+      const { templateId, contactIds, senderInfo } = req.body;
+
+      // Get contacts from database
+      const allContacts = await storage.getAllContacts();
+      const targetContacts = contactIds 
+        ? allContacts.filter(c => contactIds.includes(c.id))
+        : allContacts.filter(c => c.email && c.leadStatus !== 'unsubscribed');
+
+      // Convert to marketing contact format
+      const marketingContacts = targetContacts.map(contact => ({
+        id: contact.id,
+        firstName: contact.firstName || '',
+        lastName: contact.lastName || '',
+        email: contact.email || '',
+        company: contact.company || '',
+        industry: contact.notes?.includes('industry:') ? 
+          contact.notes.split('industry:')[1]?.split(' ')[0] || 'General' : 'General',
+        location: contact.location || '',
+        leadSource: contact.leadSource || 'unknown',
+        tags: contact.tags || [],
+        isSubscribed: contact.leadStatus !== 'unsubscribed',
+        engagementScore: Math.floor(Math.random() * 100) + 1
+      }));
+
+      const result = await emailMarketingService.sendMassEmail(
+        campaignId,
+        marketingContacts,
+        templateId,
+        senderInfo || {
+          name: 'Michael Thompson',
+          email: 'michael.thompson@traffikboosters.com',
+          role: 'Growth Specialist'
+        }
+      );
+
+      res.json(result);
+    } catch (error: any) {
+      console.error('[Marketing] Error sending campaign:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Email Marketing - Preview email with personalization
+  app.post("/api/marketing/preview", async (req, res) => {
+    try {
+      const { templateId, contactId, senderInfo } = req.body;
+      
+      const template = emailMarketingService.getTemplate(templateId);
+      if (!template) {
+        return res.status(404).json({ error: 'Template not found' });
+      }
+
+      const contact = await storage.getContact(contactId);
+      if (!contact) {
+        return res.status(404).json({ error: 'Contact not found' });
+      }
+
+      const marketingContact = {
+        id: contact.id,
+        firstName: contact.firstName || '',
+        lastName: contact.lastName || '',
+        email: contact.email || '',
+        company: contact.company || '',
+        industry: 'General',
+        location: contact.location || '',
+        leadSource: contact.leadSource || 'unknown',
+        tags: contact.tags || [],
+        isSubscribed: true,
+        engagementScore: 75
+      };
+
+      // Generate preview content
+      const personalizedContent = template.content
+        .replace(/\{\{firstName\}\}/g, marketingContact.firstName || 'there')
+        .replace(/\{\{lastName\}\}/g, marketingContact.lastName || '')
+        .replace(/\{\{company\}\}/g, marketingContact.company || 'your business')
+        .replace(/\{\{senderName\}\}/g, senderInfo?.name || 'Michael Thompson')
+        .replace(/\{\{senderEmail\}\}/g, senderInfo?.email || 'michael.thompson@traffikboosters.com');
+
+      const personalizedSubject = template.subject
+        .replace(/\{\{firstName\}\}/g, marketingContact.firstName || 'there')
+        .replace(/\{\{lastName\}\}/g, marketingContact.lastName || '')
+        .replace(/\{\{company\}\}/g, marketingContact.company || 'your business');
+
+      res.json({
+        subject: personalizedSubject,
+        content: personalizedContent,
+        contact: marketingContact
+      });
+    } catch (error: any) {
+      console.error('[Marketing] Error generating preview:', error);
+      res.status(500).json({ error: error.message });
     }
   });
 

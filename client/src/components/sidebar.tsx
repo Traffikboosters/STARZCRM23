@@ -25,7 +25,8 @@ import {
   Trophy,
   Brain,
   MapPin,
-  Activity
+  Activity,
+  Mail
 } from "lucide-react";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { Button } from "@/components/ui/button";
@@ -73,6 +74,7 @@ export default function Sidebar({
     { id: "documents", label: "Document Signing", icon: FileText },
     { id: "sales-funnels", label: "Sales Funnels", icon: Filter },
     { id: "locations", label: "Location Intelligence", icon: MapPin },
+    { id: "email-marketing", label: "Email Marketing", icon: Mail },
     { id: "hr", label: "HR Portal", icon: UserPlus },
   ];
 

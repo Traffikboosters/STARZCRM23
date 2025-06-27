@@ -35,6 +35,7 @@ import { AILeadScoring } from "@/components/ai-lead-scoring";
 import { LocationTracker } from "@/components/location-tracker";
 import LiveDataExtractor from "@/components/live-data-extractor";
 import EmailNotificationSystem from "@/components/email-notification-system";
+import EmailMarketing from "@/components/email-marketing";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -109,6 +110,8 @@ export default function Dashboard() {
         return <LocationTracker />;
       case "live-extraction":
         return <LiveDataExtractor />;
+      case "email-marketing":
+        return <EmailMarketing />;
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
     }
