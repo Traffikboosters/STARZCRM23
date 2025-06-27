@@ -103,12 +103,12 @@ export default function Sidebar({
           </Button>
         </div>
 
-        {/* Traffik Boosters Branding */}
+        {/* Company Branding */}
         {!isCollapsed && (
           <div className="mb-6 text-center">
             <img 
               src={traffikBoostersLogo} 
-              alt="Traffik Boosters" 
+              alt="Company Logo" 
               className="w-56 h-auto mx-auto mb-3 object-contain"
               style={{ imageRendering: 'crisp-edges' }}
             />
@@ -123,7 +123,7 @@ export default function Sidebar({
           <div className="mb-6 text-center px-1 mt-4 relative z-10">
             <img 
               src={traffikBoostersLogo} 
-              alt="Traffik Boosters" 
+              alt="Company Logo" 
               className="w-12 h-auto mx-auto object-contain mb-3"
               style={{ imageRendering: 'crisp-edges' }}
             />

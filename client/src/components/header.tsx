@@ -110,11 +110,11 @@ export default function Header() {
     <header className="bg-white border-b border-neutral-lighter px-6 py-4">
       <div className="relative flex items-center justify-between gap-6">
         <div className="flex items-center space-x-4 flex-shrink-0">
-          {/* Traffik Boosters Logo with Slogan */}
+          {/* Company Logo with Slogan */}
           <div className="flex items-center space-x-3">
             <img 
               src={traffikBoostersLogo} 
-              alt="Traffik Boosters" 
+              alt="Company Logo" 
               className="h-20 w-auto object-contain"
               style={{ imageRendering: 'crisp-edges' }}
             />
