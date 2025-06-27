@@ -12,7 +12,7 @@ import {
   type ProfitabilityAnalysis, type InsertProfitabilityAnalysis
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, like, and, between } from "drizzle-orm";
+import { eq, like, and, between, desc } from "drizzle-orm";
 
 export interface IStorage {
   // Users
@@ -268,7 +268,8 @@ export class DatabaseStorage implements IStorage {
         }
       })
       .from(contacts)
-      .leftJoin(users, eq(contacts.assignedTo, users.id));
+      .leftJoin(users, eq(contacts.assignedTo, users.id))
+      .orderBy(desc(contacts.createdAt));
     
     return result.map(row => ({
       ...row,

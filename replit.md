@@ -254,6 +254,7 @@ The application uses a comprehensive schema including:
 - June 27, 2025. Built comprehensive industry extraction algorithms using Google Maps keyword matching for precise lead categorization and targeting
 - June 27, 2025. Added intelligent industry filtering to Geographic Targeting Controls with real-time lead counts and category-based campaign targeting
 - June 27, 2025. Enhanced active filter indicators to display both geographic (state/city/county) and industry targeting criteria with color-coded badges
+- June 27, 2025. Fixed contact list sorting to display newest leads at the top of the list for immediate visibility of recently extracted leads
 
 ## User Preferences
 
