@@ -244,6 +244,73 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Demo Video Section */}
+      <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              See Our Results in Action
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              Watch how we've transformed businesses like yours with our proven digital marketing strategies
+            </p>
+          </div>
+          
+          <div className="max-w-4xl mx-auto">
+            <div className="relative bg-gray-900 rounded-2xl overflow-hidden shadow-2xl">
+              <div className="aspect-video bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center">
+                <div className="text-center text-white">
+                  <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold mb-2">Client Success Stories</h3>
+                  <p className="text-lg opacity-90 mb-6">
+                    Real results from real businesses
+                  </p>
+                  <button className="bg-white text-orange-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                    Watch Demo (3:45)
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-6 mt-12">
+              <div className="text-center p-6 bg-white rounded-lg shadow-md">
+                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
+                <h4 className="font-semibold text-gray-900 mb-2">300% Lead Increase</h4>
+                <p className="text-gray-600">Local HVAC company tripled their leads in 90 days</p>
+              </div>
+              
+              <div className="text-center p-6 bg-white rounded-lg shadow-md">
+                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                  </svg>
+                </div>
+                <h4 className="font-semibold text-gray-900 mb-2">$50K Monthly Revenue</h4>
+                <p className="text-gray-600">Plumbing business doubled their monthly income</p>
+              </div>
+              
+              <div className="text-center p-6 bg-white rounded-lg shadow-md">
+                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h4 className="font-semibold text-gray-900 mb-2">24/7 Lead Flow</h4>
+                <p className="text-gray-600">Automated systems that work around the clock</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Stats Section */}
       <section className="py-16 bg-orange-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
