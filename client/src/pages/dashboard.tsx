@@ -44,6 +44,7 @@ import EmailNotificationTest from "@/components/email-notification-test";
 import TechnicalPortal from "@/components/technical-portal";
 import { VoiceToneAnalysis } from "@/components/voice-tone-analysis";
 import SalesRepDashboard from "@/components/sales-rep-dashboard";
+import RealLeadExtractor from "@/components/real-lead-extractor";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -141,6 +142,8 @@ export default function Dashboard() {
         return <DualOnboardingPortal />;
       case "voice-analysis":
         return <VoiceToneAnalysis />;
+      case "real-leads":
+        return <RealLeadExtractor />;
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
     }

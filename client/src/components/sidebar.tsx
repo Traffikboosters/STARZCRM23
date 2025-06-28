@@ -65,6 +65,7 @@ export default function Sidebar({
     { id: "analytics", label: "Analytics", icon: BarChart3 },
     { id: "live-monitoring", label: "Live Monitoring", icon: BarChart3 },
     { id: "live-extraction", label: "Live Data Extractor", icon: Activity },
+    { id: "real-leads", label: "Real Lead Extraction", icon: Search },
     { id: "dial-tracking", label: "Dial Tracking", icon: Timer },
     { id: "pricing", label: "Pricing & Profit", icon: DollarSign },
     { id: "competitive-pricing", label: "Competitive Pricing", icon: Calculator },
