@@ -16,10 +16,343 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Search, Filter, User, Mail, Phone, Building, MapPin, Calendar, Star, MessageCircle, X, Clock, DollarSign, FileText, ExternalLink, CreditCard, Users, Target, Edit, Send, Video, MoreVertical, CheckCircle, AlertCircle, Briefcase, TrendingUp } from "lucide-react";
+import { Plus, Search, Filter, User, Mail, Phone, Building, MapPin, Calendar, Star, MessageCircle, X, Clock, DollarSign, FileText, ExternalLink, CreditCard, Users, Target, Edit, Send, Video, MoreVertical, CheckCircle, AlertCircle, Briefcase, TrendingUp, Bot, Zap, ClipboardList, StickyNote, Copy } from "lucide-react";
 import { format } from "date-fns";
 import type { Contact, User as UserType } from "@shared/schema";
 import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
+
+// AI-powered components for CRM functionality
+const AIConversationStarters = ({ contact }: { contact: Contact | null }) => {
+  const [selectedCategory, setSelectedCategory] = useState('industry_insight');
+  
+  if (!contact) return null;
+
+  const generateStarters = () => {
+    const industry = contact.notes?.toLowerCase().includes('hvac') ? 'hvac' :
+                    contact.notes?.toLowerCase().includes('plumb') ? 'plumbing' :
+                    contact.notes?.toLowerCase().includes('electric') ? 'electrical' :
+                    contact.company?.toLowerCase().includes('restaurant') ? 'restaurant' : 'general';
+
+    const starters = {
+      industry_insight: [
+        `Hi ${contact.firstName}, I noticed ${contact.company || 'your business'} might benefit from our digital marketing solutions. We've helped similar businesses in ${contact.notes?.includes('Texas') ? 'Texas' : 'your area'} increase their online visibility by 300%.`,
+        `${contact.firstName}, businesses like yours typically see a 150% increase in leads within 90 days of implementing our marketing system. Would you be interested in a quick 15-minute call to discuss how this could work for ${contact.company || 'your business'}?`
+      ],
+      pain_point: [
+        `Hi ${contact.firstName}, many business owners tell me they struggle with consistent lead generation. If that sounds familiar, I'd love to show you how we've solved this for other companies in your industry.`,
+        `${contact.firstName}, I imagine finding quality leads for ${contact.company || 'your business'} can be challenging. We specialize in creating automated systems that generate qualified prospects 24/7.`
+      ],
+      success_story: [
+        `Hi ${contact.firstName}, just last month we helped a similar business increase their monthly revenue from $15K to $65K using our proven marketing system. Would you be open to a brief conversation about how this could work for you?`,
+        `${contact.firstName}, I wanted to reach out because we recently helped another business owner go from struggling to find customers to having a 3-month booking backlog. Interested in learning how?`
+      ]
+    };
+
+    return starters[selectedCategory as keyof typeof starters] || starters.industry_insight;
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2 mb-4">
+        {['industry_insight', 'pain_point', 'success_story'].map((category) => (
+          <Button
+            key={category}
+            variant={selectedCategory === category ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedCategory(category)}
+          >
+            {category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          </Button>
+        ))}
+      </div>
+      
+      <div className="space-y-3">
+        {generateStarters().map((starter, index) => (
+          <Card key={index} className="p-4">
+            <div className="flex items-start justify-between">
+              <p className="text-sm leading-relaxed flex-1">{starter}</p>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  navigator.clipboard.writeText(starter);
+                  toast({ title: "Copied to clipboard!" });
+                }}
+              >
+                <Copy className="h-3 w-3" />
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
+      
+      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+        <h4 className="font-medium text-blue-900 mb-2">Conversation Tips</h4>
+        <ul className="text-sm text-blue-800 space-y-1">
+          <li>• Use their name frequently to build rapport</li>
+          <li>• Reference their specific business/industry when possible</li>
+          <li>• Lead with value and results, not features</li>
+          <li>• Ask for a small time commitment (15 minutes)</li>
+        </ul>
+      </div>
+    </div>
+  );
+};
+
+const QuickReplyTemplates = ({ contact }: { contact: Contact | null }) => {
+  const [selectedCategory, setSelectedCategory] = useState('follow_up');
+  
+  if (!contact) return null;
+
+  const templates = {
+    follow_up: [
+      {
+        subject: `Following up - ${contact.company || contact.firstName}`,
+        body: `Hi ${contact.firstName},\n\nI wanted to follow up on our previous conversation about helping ${contact.company || 'your business'} with digital marketing.\n\nWe've had great success helping businesses like yours increase their online presence and generate more qualified leads.\n\nWould you have 15 minutes this week for a quick call?\n\nBest regards,\nMichael Thompson\nTraffikBoosters.com\n(877) 840-6250`
+      }
+    ],
+    objection_handling: [
+      {
+        subject: `Quick question about your marketing goals`,
+        body: `Hi ${contact.firstName},\n\nI understand you might be hesitant about new marketing approaches. That's completely normal.\n\nWhat if I could show you exactly how we've helped similar businesses increase their revenue by 200% in just 90 days, with no upfront costs?\n\nWould a 10-minute call make sense?\n\nBest,\nMichael Thompson`
+      }
+    ],
+    pricing: [
+      {
+        subject: `Investment information for ${contact.company || contact.firstName}`,
+        body: `Hi ${contact.firstName},\n\nThanks for your interest in our marketing services.\n\nOur packages range from $2,500 to $8,500 depending on your specific needs and goals. Most clients see ROI within 60 days.\n\nI'd be happy to discuss which option would work best for ${contact.company || 'your business'}.\n\nWhen would be a good time for a quick call?\n\nBest regards,\nMichael Thompson`
+      }
+    ]
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2 mb-4">
+        {Object.keys(templates).map((category) => (
+          <Button
+            key={category}
+            variant={selectedCategory === category ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setSelectedCategory(category)}
+          >
+            {category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          </Button>
+        ))}
+      </div>
+      
+      <div className="space-y-4">
+        {templates[selectedCategory as keyof typeof templates]?.map((template, index) => (
+          <Card key={index} className="p-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium">Subject: {template.subject}</h4>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${template.subject}\n\n${template.body}`);
+                    toast({ title: "Template copied to clipboard!" });
+                  }}
+                >
+                  <Copy className="h-3 w-3" />
+                </Button>
+              </div>
+              <div className="p-3 bg-gray-50 rounded text-sm whitespace-pre-line">
+                {template.body}
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const LeadQualificationForm = ({ contact, onSave }: { contact: Contact | null; onSave: () => void }) => {
+  const [qualificationData, setQualificationData] = useState({
+    budget: '',
+    timeline: '',
+    decisionMaker: false,
+    painPoints: [] as string[],
+    currentMarketing: '',
+    qualification: 'unqualified'
+  });
+
+  if (!contact) return null;
+
+  const handleSave = () => {
+    // This would typically save to the database
+    toast({
+      title: "Qualification Updated",
+      description: `${contact.firstName} ${contact.lastName} has been qualified`
+    });
+    onSave();
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="budget">Monthly Marketing Budget</Label>
+          <Select value={qualificationData.budget} onValueChange={(value) => 
+            setQualificationData(prev => ({...prev, budget: value}))
+          }>
+            <SelectTrigger>
+              <SelectValue placeholder="Select budget range" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="under-1k">Under $1,000</SelectItem>
+              <SelectItem value="1k-5k">$1,000 - $5,000</SelectItem>
+              <SelectItem value="5k-10k">$5,000 - $10,000</SelectItem>
+              <SelectItem value="10k-plus">$10,000+</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div>
+          <Label htmlFor="timeline">Implementation Timeline</Label>
+          <Select value={qualificationData.timeline} onValueChange={(value) => 
+            setQualificationData(prev => ({...prev, timeline: value}))
+          }>
+            <SelectTrigger>
+              <SelectValue placeholder="When to start?" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="immediate">Immediately</SelectItem>
+              <SelectItem value="30-days">Within 30 days</SelectItem>
+              <SelectItem value="3-months">Within 3 months</SelectItem>
+              <SelectItem value="future">Future consideration</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <Checkbox 
+          id="decisionMaker"
+          checked={qualificationData.decisionMaker}
+          onCheckedChange={(checked) => 
+            setQualificationData(prev => ({...prev, decisionMaker: checked as boolean}))
+          }
+        />
+        <Label htmlFor="decisionMaker">Primary decision maker for marketing</Label>
+      </div>
+
+      <div>
+        <Label htmlFor="currentMarketing">Current Marketing Efforts</Label>
+        <Textarea
+          value={qualificationData.currentMarketing}
+          onChange={(e) => setQualificationData(prev => ({...prev, currentMarketing: e.target.value}))}
+          placeholder="What marketing are they currently doing?"
+          className="mt-1"
+        />
+      </div>
+
+      <div>
+        <Label>Qualification Status</Label>
+        <Select value={qualificationData.qualification} onValueChange={(value) => 
+          setQualificationData(prev => ({...prev, qualification: value}))
+        }>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="unqualified">Unqualified</SelectItem>
+            <SelectItem value="qualified">Qualified</SelectItem>
+            <SelectItem value="hot">Hot Lead</SelectItem>
+            <SelectItem value="proposal">Ready for Proposal</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Button onClick={handleSave} className="w-full">
+        Save Qualification
+      </Button>
+    </div>
+  );
+};
+
+const ContactNotes = ({ contact, onSave }: { contact: Contact | null; onSave: () => void }) => {
+  const [notes, setNotes] = useState(contact?.notes || '');
+  const [isPrivate, setIsPrivate] = useState(false);
+
+  if (!contact) return null;
+
+  const handleSave = () => {
+    // This would typically save to the database
+    toast({
+      title: "Notes Saved",
+      description: `Notes for ${contact.firstName} ${contact.lastName} have been updated`
+    });
+    onSave();
+  };
+
+  const quickNotes = [
+    "Interested in SEO services",
+    "Budget: $5,000/month",
+    "Decision maker: Yes",
+    "Follow up in 1 week",
+    "Competitor research needed",
+    "Ready to schedule demo"
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="notes">Contact Notes</Label>
+        <Textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Add notes about this contact..."
+          className="mt-1 min-h-[200px]"
+        />
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <Checkbox 
+          id="private"
+          checked={isPrivate}
+          onCheckedChange={setIsPrivate}
+        />
+        <Label htmlFor="private">Private notes (only visible to you)</Label>
+      </div>
+
+      <div>
+        <Label>Quick Notes</Label>
+        <div className="grid grid-cols-2 gap-2 mt-2">
+          {quickNotes.map((note, index) => (
+            <Button
+              key={index}
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const newNotes = notes ? `${notes}\n• ${note}` : `• ${note}`;
+                setNotes(newNotes);
+              }}
+            >
+              {note}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        <Button onClick={handleSave} className="flex-1">
+          Save Notes
+        </Button>
+        <Button 
+          variant="outline"
+          onClick={() => {
+            navigator.clipboard.writeText(notes);
+            toast({ title: "Notes copied to clipboard!" });
+          }}
+        >
+          <Copy className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+};
 
 const contactFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -388,6 +721,10 @@ export default function CRMView() {
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isWorkOrderModalOpen, setIsWorkOrderModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [isAIStartersModalOpen, setIsAIStartersModalOpen] = useState(false);
+  const [isQuickRepliesModalOpen, setIsQuickRepliesModalOpen] = useState(false);
+  const [isQualificationModalOpen, setIsQualificationModalOpen] = useState(false);
+  const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
   const [isLeadAllocationModalOpen, setIsLeadAllocationModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [selectedContactForDetails, setSelectedContactForDetails] = useState<Contact | null>(null);
@@ -955,7 +1292,7 @@ export default function CRMView() {
                   </div>
 
                   {/* Enhanced Action Buttons */}
-                  <div className="grid grid-cols-3 gap-2 mt-4">
+                  <div className="grid grid-cols-4 gap-2 mt-4">
                     {/* Call Button */}
                     <Button
                       variant="outline"
@@ -1002,7 +1339,7 @@ export default function CRMView() {
                       <span className="leading-tight">Email</span>
                     </Button>
 
-                    {/* Work Order Button */}
+                    {/* AI Starters Button */}
                     <Button
                       variant="outline"
                       size="sm"
@@ -1010,26 +1347,56 @@ export default function CRMView() {
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedContact(contact);
-                        setIsWorkOrderModalOpen(true);
+                        setIsAIStartersModalOpen(true);
                       }}
                     >
-                      <FileText className="h-3 w-3 mb-2 text-purple-600 flex-shrink-0" />
-                      <span className="leading-tight">Work Order</span>
+                      <Bot className="h-3 w-3 mb-2 text-indigo-600 flex-shrink-0" />
+                      <span className="leading-tight">AI Starters</span>
                     </Button>
 
-                    {/* Details Button */}
+                    {/* Quick Replies Button */}
                     <Button
                       variant="outline"
                       size="sm"
                       className="text-xs flex flex-col items-center py-3 h-auto min-h-[60px]"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedContactForDetails(contact);
-                        setIsDetailsModalOpen(true);
+                        setSelectedContact(contact);
+                        setIsQuickRepliesModalOpen(true);
                       }}
                     >
-                      <User className="h-3 w-3 mb-2 text-gray-600 flex-shrink-0" />
-                      <span className="leading-tight">Details</span>
+                      <Zap className="h-3 w-3 mb-2 text-yellow-600 flex-shrink-0" />
+                      <span className="leading-tight">Quick Reply</span>
+                    </Button>
+
+                    {/* Notes Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs flex flex-col items-center py-3 h-auto min-h-[60px]"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedContact(contact);
+                        setIsNotesModalOpen(true);
+                      }}
+                    >
+                      <StickyNote className="h-3 w-3 mb-2 text-amber-600 flex-shrink-0" />
+                      <span className="leading-tight">Notes</span>
+                    </Button>
+
+                    {/* Qualification Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs flex flex-col items-center py-3 h-auto min-h-[60px]"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedContact(contact);
+                        setIsQualificationModalOpen(true);
+                      }}
+                    >
+                      <ClipboardList className="h-3 w-3 mb-2 text-teal-600 flex-shrink-0" />
+                      <span className="leading-tight">Qualify</span>
                     </Button>
 
                     {/* More Actions */}
@@ -1047,7 +1414,20 @@ export default function CRMView() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => {
-                          // Mark as contacted
+                          setSelectedContact(contact);
+                          setIsWorkOrderModalOpen(true);
+                        }}>
+                          <FileText className="h-4 w-4 mr-2" />
+                          Create Work Order
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {
+                          setSelectedContactForDetails(contact);
+                          setIsDetailsModalOpen(true);
+                        }}>
+                          <User className="h-4 w-4 mr-2" />
+                          View Details
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => {
                           toast({
                             title: "Status Updated",
                             description: `${contact.firstName} marked as contacted`,
@@ -1057,7 +1437,6 @@ export default function CRMView() {
                           Mark as Contacted
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => {
-                          // Set priority
                           toast({
                             title: "Priority Set",
                             description: `${contact.firstName} marked as high priority`,
@@ -1088,6 +1467,63 @@ export default function CRMView() {
         onClose={() => setIsWorkOrderModalOpen(false)} 
         contact={selectedContact} 
       />
+
+      {/* AI Conversation Starters Modal */}
+      <Dialog open={isAIStartersModalOpen} onOpenChange={setIsAIStartersModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bot className="h-5 w-5 text-indigo-600" />
+              AI Conversation Starters - {selectedContact?.firstName} {selectedContact?.lastName}
+            </DialogTitle>
+          </DialogHeader>
+          <AIConversationStarters contact={selectedContact} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Quick Reply Templates Modal */}
+      <Dialog open={isQuickRepliesModalOpen} onOpenChange={setIsQuickRepliesModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-yellow-600" />
+              Quick Reply Templates - {selectedContact?.firstName} {selectedContact?.lastName}
+            </DialogTitle>
+          </DialogHeader>
+          <QuickReplyTemplates contact={selectedContact} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Lead Qualification Form Modal */}
+      <Dialog open={isQualificationModalOpen} onOpenChange={setIsQualificationModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardList className="h-5 w-5 text-teal-600" />
+              Lead Qualification - {selectedContact?.firstName} {selectedContact?.lastName}
+            </DialogTitle>
+          </DialogHeader>
+          <LeadQualificationForm contact={selectedContact} onSave={() => {
+            setIsQualificationModalOpen(false);
+            queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+          }} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Notes Modal */}
+      <Dialog open={isNotesModalOpen} onOpenChange={setIsNotesModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <StickyNote className="h-5 w-5 text-amber-600" />
+              Contact Notes - {selectedContact?.firstName} {selectedContact?.lastName}
+            </DialogTitle>
+          </DialogHeader>
+          <ContactNotes contact={selectedContact} onSave={() => {
+            queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+          }} />
+        </DialogContent>
+      </Dialog>
 
       {/* Schedule Appointment Modal */}
       <Dialog open={isScheduleModalOpen} onOpenChange={setIsScheduleModalOpen}>
