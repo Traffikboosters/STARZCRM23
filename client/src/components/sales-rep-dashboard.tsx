@@ -234,10 +234,11 @@ export default function SalesRepDashboard({ currentUser }: SalesRepDashboardProp
       </div>
 
       <Tabs defaultValue="today" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="today">Today's Activity</TabsTrigger>
           <TabsTrigger value="leads">My Leads</TabsTrigger>
           <TabsTrigger value="tasks">Upcoming Tasks</TabsTrigger>
+          <TabsTrigger value="email">Corporate Email</TabsTrigger>
           <TabsTrigger value="performance">Performance</TabsTrigger>
         </TabsList>
 
@@ -372,8 +373,187 @@ export default function SalesRepDashboard({ currentUser }: SalesRepDashboardProp
           </div>
         </TabsContent>
 
+        <TabsContent value="email" className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Email Access Panel */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Mail className="h-5 w-5 mr-2" />
+                  Corporate Email Access
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-gray-50 p-4 rounded-lg space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-600">Work Email:</span>
+                    <span className="text-sm font-bold text-blue-600">
+                      {currentUser?.firstName?.toLowerCase() || 'michael'}.{currentUser?.lastName?.toLowerCase() || 'thompson'}@traffikboosters.com
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-600">Email Server:</span>
+                    <span className="text-sm">emailmg.ipage.com</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-600">Status:</span>
+                    <Badge className="bg-green-500 text-white">Active</Badge>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <Button 
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
+                    onClick={() => window.open('https://emailmg.ipage.com/sqmail/src/webmail.php', '_blank')}
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Open Traffik Boosters Webmail
+                  </Button>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        const email = `${currentUser?.firstName?.toLowerCase() || 'michael'}.${currentUser?.lastName?.toLowerCase() || 'thompson'}@traffikboosters.com`;
+                        navigator.clipboard.writeText(email);
+                      }}
+                    >
+                      Copy Email
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        const settings = `IMAP: imap.ipage.com:993 (SSL)\nSMTP: smtp.ipage.com:465 (SSL)\nUsername: ${currentUser?.firstName?.toLowerCase() || 'michael'}.${currentUser?.lastName?.toLowerCase() || 'thompson'}@traffikboosters.com`;
+                        navigator.clipboard.writeText(settings);
+                      }}
+                    >
+                      Copy Settings
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Email Templates */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <FileText className="h-5 w-5 mr-2" />
+                  Email Templates
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={() => {
+                      const template = `Subject: Follow-up on Your Digital Marketing Needs
+
+Hi [Client Name],
+
+Thank you for your interest in Traffik Boosters' digital marketing services. I wanted to follow up on our conversation about boosting your online presence.
+
+Our team specializes in:
+• SEO Optimization & Local Search Rankings
+• Google Ads & PPC Management  
+• Website Design & Development
+• Social Media Marketing
+
+I'd love to schedule a brief 15-minute call to discuss how we can help drive more traffic and sales to your business.
+
+Best regards,
+${currentUser?.firstName || 'Michael'} ${currentUser?.lastName || 'Thompson'}
+${currentUser?.firstName?.toLowerCase() || 'michael'}.${currentUser?.lastName?.toLowerCase() || 'thompson'}@traffikboosters.com
+(877) 840-6250`;
+                      navigator.clipboard.writeText(template);
+                    }}
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Follow-up Template
+                  </Button>
+                  
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={() => {
+                      const template = `Subject: Service Proposal - Digital Marketing Solutions
+
+Dear [Client Name],
+
+Thank you for your interest in our services. Based on our discussion, I've prepared a customized proposal for your business needs.
+
+Recommended Services:
+• [Service Package] - $[Price]
+• Estimated ROI: [Percentage]%
+• Timeline: [Duration]
+
+This proposal includes:
+✓ Complete service implementation
+✓ Monthly reporting & analytics
+✓ Dedicated account management
+✓ 3-day full refund guarantee
+
+I'm available for a call at your convenience to discuss the details.
+
+Best regards,
+${currentUser?.firstName || 'Michael'} ${currentUser?.lastName || 'Thompson'}
+Traffik Boosters Sales Team`;
+                      navigator.clipboard.writeText(template);
+                    }}
+                  >
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Proposal Template
+                  </Button>
+                  
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={() => {
+                      const template = `Subject: Appointment Confirmation - Digital Marketing Consultation
+
+Hi [Client Name],
+
+This confirms our appointment scheduled for:
+Date: [Date]
+Time: [Time]
+Duration: 30 minutes
+Meeting Link: [Video Call Link]
+
+What to expect:
+• Business needs assessment
+• Custom strategy recommendations
+• Pricing & timeline discussion
+• Q&A session
+
+Please let me know if you need to reschedule.
+
+Looking forward to speaking with you!
+
+${currentUser?.firstName || 'Michael'} ${currentUser?.lastName || 'Thompson'}
+${currentUser?.firstName?.toLowerCase() || 'michael'}.${currentUser?.lastName?.toLowerCase() || 'thompson'}@traffikboosters.com`;
+                      navigator.clipboard.writeText(template);
+                    }}
+                  >
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Appointment Confirmation
+                  </Button>
+                </div>
+                
+                <div className="pt-2 border-t">
+                  <p className="text-xs text-gray-500">
+                    Click any template to copy to clipboard, then paste into your email client.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
         <TabsContent value="performance" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -425,6 +605,67 @@ export default function SalesRepDashboard({ currentUser }: SalesRepDashboardProp
                   <Calendar className="h-4 w-4 mr-2" />
                   Schedule Follow-up
                 </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Mail className="h-5 w-5 mr-2" />
+                  Corporate Email Access
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="text-sm space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Work Email:</span>
+                    <span className="font-medium">{currentUser?.firstName?.toLowerCase() || 'sales'}.{currentUser?.lastName?.toLowerCase() || 'rep'}@traffikboosters.com</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Server:</span>
+                    <span className="font-medium">emailmg.ipage.com</span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Button 
+                    className="w-full justify-start bg-blue-600 hover:bg-blue-700 text-white" 
+                    onClick={() => window.open('https://emailmg.ipage.com/sqmail/src/webmail.php', '_blank')}
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Open Webmail
+                  </Button>
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={() => {
+                      const email = `${currentUser?.firstName?.toLowerCase() || 'sales'}.${currentUser?.lastName?.toLowerCase() || 'rep'}@traffikboosters.com`;
+                      navigator.clipboard.writeText(email);
+                    }}
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Copy Email Address
+                  </Button>
+                  <Button 
+                    className="w-full justify-start" 
+                    variant="outline"
+                    onClick={() => {
+                      const settings = `
+IMAP Settings:
+Server: imap.ipage.com
+Port: 993 (SSL/TLS)
+Username: ${currentUser?.firstName?.toLowerCase() || 'sales'}.${currentUser?.lastName?.toLowerCase() || 'rep'}@traffikboosters.com
+
+SMTP Settings:
+Server: smtp.ipage.com
+Port: 465 (SSL/TLS)
+Username: ${currentUser?.firstName?.toLowerCase() || 'sales'}.${currentUser?.lastName?.toLowerCase() || 'rep'}@traffikboosters.com`;
+                      navigator.clipboard.writeText(settings);
+                    }}
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Copy IMAP/SMTP Settings
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
