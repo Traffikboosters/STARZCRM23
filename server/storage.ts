@@ -204,6 +204,18 @@ export interface IStorage {
   createTimeEntry(entry: InsertTimeEntry): Promise<TimeEntry>;
   updateTimeEntry(id: number, updates: Partial<InsertTimeEntry>): Promise<TimeEntry | undefined>;
   deleteTimeEntry(id: number): Promise<boolean>;
+
+  // Voice Tone Analysis
+  getAllCallRecordings(): Promise<any[]>;
+  getCallRecording(id: number): Promise<any | undefined>;
+  createCallRecording(recording: any): Promise<any>;
+  updateCallRecording(id: number, updates: any): Promise<any | undefined>;
+  deleteCallRecording(id: number): Promise<boolean>;
+  getVoiceToneAnalyses(): Promise<any[]>;
+  getVoiceToneAnalysis(id: number): Promise<any | undefined>;
+  createVoiceToneAnalysis(analysis: any): Promise<any>;
+  updateVoiceToneAnalysis(id: number, updates: any): Promise<any | undefined>;
+  deleteVoiceToneAnalysis(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -951,6 +963,105 @@ export class DatabaseStorage implements IStorage {
   async deleteTimeEntry(id: number): Promise<boolean> {
     const result = await db.delete(timeEntries).where(eq(timeEntries.id, id));
     return (result.rowCount ?? 0) > 0;
+  }
+
+  // Voice Tone Analysis implementation
+  async getAllCallRecordings(): Promise<any[]> {
+    try {
+      return await db.select().from(callRecordings).orderBy(desc(callRecordings.createdAt));
+    } catch (error) {
+      console.error('Error fetching call recordings:', error);
+      return [];
+    }
+  }
+
+  async getCallRecording(id: number): Promise<any | undefined> {
+    try {
+      const [recording] = await db.select().from(callRecordings).where(eq(callRecordings.id, id));
+      return recording;
+    } catch (error) {
+      console.error('Error fetching call recording:', error);
+      return undefined;
+    }
+  }
+
+  async createCallRecording(recording: any): Promise<any> {
+    try {
+      const [result] = await db.insert(callRecordings).values(recording).returning();
+      return result;
+    } catch (error) {
+      console.error('Error creating call recording:', error);
+      throw error;
+    }
+  }
+
+  async updateCallRecording(id: number, updates: any): Promise<any | undefined> {
+    try {
+      const [result] = await db.update(callRecordings).set(updates).where(eq(callRecordings.id, id)).returning();
+      return result;
+    } catch (error) {
+      console.error('Error updating call recording:', error);
+      return undefined;
+    }
+  }
+
+  async deleteCallRecording(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(callRecordings).where(eq(callRecordings.id, id));
+      return result.rowCount ? result.rowCount > 0 : false;
+    } catch (error) {
+      console.error('Error deleting call recording:', error);
+      return false;
+    }
+  }
+
+  async getVoiceToneAnalyses(): Promise<any[]> {
+    try {
+      return await db.select().from(voiceToneAnalysis).orderBy(desc(voiceToneAnalysis.createdAt));
+    } catch (error) {
+      console.error('Error fetching voice tone analyses:', error);
+      return [];
+    }
+  }
+
+  async getVoiceToneAnalysis(id: number): Promise<any | undefined> {
+    try {
+      const [analysis] = await db.select().from(voiceToneAnalysis).where(eq(voiceToneAnalysis.id, id));
+      return analysis;
+    } catch (error) {
+      console.error('Error fetching voice tone analysis:', error);
+      return undefined;
+    }
+  }
+
+  async createVoiceToneAnalysis(analysis: any): Promise<any> {
+    try {
+      const [result] = await db.insert(voiceToneAnalysis).values(analysis).returning();
+      return result;
+    } catch (error) {
+      console.error('Error creating voice tone analysis:', error);
+      throw error;
+    }
+  }
+
+  async updateVoiceToneAnalysis(id: number, updates: any): Promise<any | undefined> {
+    try {
+      const [result] = await db.update(voiceToneAnalysis).set(updates).where(eq(voiceToneAnalysis.id, id)).returning();
+      return result;
+    } catch (error) {
+      console.error('Error updating voice tone analysis:', error);
+      return undefined;
+    }
+  }
+
+  async deleteVoiceToneAnalysis(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(voiceToneAnalysis).where(eq(voiceToneAnalysis.id, id));
+      return result.rowCount ? result.rowCount > 0 : false;
+    } catch (error) {
+      console.error('Error deleting voice tone analysis:', error);
+      return false;
+    }
   }
 }
 
