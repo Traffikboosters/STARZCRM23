@@ -24,6 +24,7 @@ import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png
 // AI-powered components for CRM functionality
 const AIConversationStarters = ({ contact }: { contact: Contact | null }) => {
   const [selectedCategory, setSelectedCategory] = useState('industry_insight');
+  const { toast } = useToast();
   
   if (!contact) return null;
 
@@ -137,6 +138,7 @@ const AIConversationStarters = ({ contact }: { contact: Contact | null }) => {
 
 const QuickReplyTemplates = ({ contact }: { contact: Contact | null }) => {
   const [selectedCategory, setSelectedCategory] = useState('follow_up');
+  const { toast } = useToast();
   
   if (!contact) return null;
 
@@ -205,6 +207,7 @@ const QuickReplyTemplates = ({ contact }: { contact: Contact | null }) => {
 };
 
 const LeadQualificationForm = ({ contact, onSave }: { contact: Contact | null; onSave: () => void }) => {
+  const { toast } = useToast();
   const [qualificationData, setQualificationData] = useState({
     budget: '',
     timeline: '',
@@ -309,6 +312,7 @@ const LeadQualificationForm = ({ contact, onSave }: { contact: Contact | null; o
 };
 
 const ContactNotes = ({ contact, onSave }: { contact: Contact | null; onSave: () => void }) => {
+  const { toast } = useToast();
   const [notes, setNotes] = useState(contact?.notes || '');
   const [isPrivate, setIsPrivate] = useState(false);
 
