@@ -299,19 +299,26 @@ export default function SalesRepDashboard({ currentUser }: SalesRepDashboardProp
               <Card 
                 key={lead.id} 
                 className="hover:shadow-md transition-all cursor-pointer"
-                onClick={() => setSelectedContact({
-                  id: lead.id,
-                  firstName: lead.name.split(' ')[0],
-                  lastName: lead.name.split(' ').slice(1).join(' '),
-                  email: lead.email,
-                  phone: lead.phone,
-                  company: lead.company,
-                  status: lead.status,
-                  dealValue: lead.value,
-                  notes: `${lead.source} lead - ${lead.age} old`,
-                  leadSource: lead.source,
-                  priority: lead.status === 'New' ? 'high' : 'medium'
-                })}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('Lead card clicked:', lead);
+                  const contactData = {
+                    id: lead.id,
+                    firstName: lead.name.split(' ')[0],
+                    lastName: lead.name.split(' ').slice(1).join(' '),
+                    email: lead.email,
+                    phone: lead.phone,
+                    company: lead.company,
+                    status: lead.status,
+                    dealValue: lead.value,
+                    notes: `${lead.source} lead - ${lead.age} old`,
+                    leadSource: lead.source,
+                    priority: lead.status === 'New' ? 'high' : 'medium'
+                  };
+                  console.log('Setting contact data:', contactData);
+                  setSelectedContact(contactData);
+                }}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -695,8 +702,18 @@ Username: ${currentUser?.firstName?.toLowerCase() || 'sales'}.${currentUser?.las
         <ContactDetailsModal
           contact={selectedContact}
           isOpen={!!selectedContact}
-          onClose={() => setSelectedContact(null)}
+          onClose={() => {
+            console.log('Closing modal');
+            setSelectedContact(null);
+          }}
         />
+      )}
+      
+      {/* Debug Info */}
+      {selectedContact && (
+        <div className="fixed top-4 right-4 bg-red-100 p-2 text-xs z-50">
+          Modal should be open for: {selectedContact.firstName} {selectedContact.lastName}
+        </div>
       )}
     </div>
   );
