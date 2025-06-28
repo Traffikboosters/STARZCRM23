@@ -2009,11 +2009,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('[Bark Dashboard] Starting comprehensive dashboard scraping');
       
-      const { barkDashboardScraper } = await import('./bark-dashboard-scraper');
+      const { barkDashboardScraperFixed } = await import('./bark-dashboard-scraper-fixed');
       const { sessionCookies } = req.body;
       
       // Scrape the Bark dashboard
-      const dashboardData = await barkDashboardScraper.scrapeDashboardLeads(sessionCookies);
+      const dashboardData = await barkDashboardScraperFixed.scrapeDashboardLeads(sessionCookies);
       
       console.log(`[Bark Dashboard] Successfully extracted ${dashboardData.totalLeads} leads`);
       
