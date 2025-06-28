@@ -256,6 +256,40 @@ export default function LiveDataExtractor() {
     },
   });
 
+  // Bark Dashboard scraping mutation
+  const testBarkDashboardMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/scraping-jobs/bark-dashboard", {
+        sessionCookies: ""
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+      
+      // Play notification sound
+      playNotificationSound();
+      
+      // Show desktop notification
+      showDesktopNotification(
+        "Bark Dashboard Extraction Complete",
+        `Successfully extracted ${data.data.leadsExtracted} leads with ${data.data.dashboardMetrics.membershipLevel} membership`
+      );
+      
+      toast({
+        title: "Bark Dashboard Extraction Complete",
+        description: `Successfully extracted ${data.data.leadsExtracted} leads from Bark sellers dashboard`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Bark Dashboard Extraction Failed",
+        description: error.message || "Failed to extract data from Bark Dashboard",
+        variant: "destructive",
+      });
+    },
+  });
+
   const getJobMetrics = (jobId: string): JobMetrics | null => {
     if (!jobMetrics) return null;
     const jobMetric = jobMetrics.find((m: any) => m.jobId === jobId);
@@ -351,6 +385,19 @@ export default function LiveDataExtractor() {
               <Target className="h-4 w-4 mr-2" />
             )}
             Test Bark.com
+          </Button>
+
+          <Button
+            onClick={() => testBarkDashboardMutation.mutate()}
+            disabled={testBarkDashboardMutation.isPending}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            {testBarkDashboardMutation.isPending ? (
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Database className="h-4 w-4 mr-2" />
+            )}
+            Extract Dashboard
           </Button>
           
           <div className="text-right">

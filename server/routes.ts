@@ -2004,6 +2004,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
+  // Bark Dashboard Scraping endpoint
+  app.post("/api/scraping-jobs/bark-dashboard", async (req, res) => {
+    try {
+      console.log('[Bark Dashboard] Starting comprehensive dashboard scraping');
+      
+      const { barkDashboardScraper } = await import('./bark-dashboard-scraper');
+      const { sessionCookies } = req.body;
+      
+      // Scrape the Bark dashboard
+      const dashboardData = await barkDashboardScraper.scrapeDashboardLeads(sessionCookies);
+      
+      console.log(`[Bark Dashboard] Successfully extracted ${dashboardData.totalLeads} leads`);
+      
+      // Process and save leads to database
+      const savedLeads = [];
+      for (const lead of dashboardData.leads) {
+        try {
+          const contact = await storage.createContact({
+            firstName: lead.customerName.split(' ')[0] || 'Customer',
+            lastName: lead.customerName.split(' ').slice(1).join(' ') || 'Lead',
+            email: lead.customerEmail || null,
+            phone: lead.customerPhone || null,
+            company: `${lead.category} Client`,
+            position: 'Service Requester',
+            source: 'Bark Dashboard',
+            leadStatus: 'new',
+            notes: `${lead.title}\n\nDescription: ${lead.description}\n\nBudget: ${lead.budget}\nLocation: ${lead.location}\nUrgency: ${lead.urgency}\nLead Score: ${lead.leadScore}%\nTags: ${lead.tags.join(', ')}`,
+            tags: ['bark-dashboard', lead.category.toLowerCase(), lead.urgency, ...lead.tags],
+            leadScore: lead.leadScore,
+            budget: lead.budget,
+            urgency: lead.urgency,
+            assignedTo: 1,
+            createdBy: 1
+          });
+          
+          savedLeads.push(contact);
+          console.log(`[Bark Dashboard] Saved lead: ${lead.title}`);
+        } catch (error: any) {
+          console.error(`[Bark Dashboard] Error saving lead ${lead.title}:`, error.message);
+        }
+      }
+      
+      // Broadcast real-time notification
+      if ((global as any).broadcast) {
+        (global as any).broadcast({
+          type: 'lead_extraction',
+          platform: 'Bark Dashboard',
+          count: savedLeads.length,
+          timestamp: new Date().toISOString(),
+          message: `Successfully extracted ${savedLeads.length} leads from Bark Dashboard`,
+          data: {
+            totalLeads: dashboardData.totalLeads,
+            newLeads: dashboardData.newLeads,
+            respondedLeads: dashboardData.respondedLeads,
+            activeJobs: dashboardData.activeJobs,
+            membershipLevel: dashboardData.membershipLevel,
+            profileViews: dashboardData.profileViews,
+            responseRate: dashboardData.responseRate,
+            availableCredits: dashboardData.availableCredits
+          }
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: `Successfully extracted ${savedLeads.length} leads from Bark Dashboard`,
+        data: {
+          leadsExtracted: savedLeads.length,
+          dashboardMetrics: {
+            totalLeads: dashboardData.totalLeads,
+            newLeads: dashboardData.newLeads,
+            respondedLeads: dashboardData.respondedLeads,
+            activeJobs: dashboardData.activeJobs,
+            membershipLevel: dashboardData.membershipLevel,
+            profileViews: dashboardData.profileViews,
+            responseRate: dashboardData.responseRate,
+            totalCredits: dashboardData.totalCredits,
+            availableCredits: dashboardData.availableCredits
+          },
+          leads: savedLeads.map(lead => ({
+            id: lead.id,
+            name: `${lead.firstName} ${lead.lastName}`,
+            company: lead.company,
+            source: lead.source,
+            leadScore: lead.leadScore,
+            budget: lead.budget,
+            urgency: lead.urgency
+          }))
+        }
+      });
+      
+    } catch (error: any) {
+      console.error('[Bark Dashboard] Scraping failed:', error.message);
+      res.status(500).json({
+        success: false,
+        error: error.message,
+        message: 'Failed to scrape Bark Dashboard'
+      });
+    }
+  });
+
   // User invitation endpoints
   app.post("/api/invitations", requireAuth, async (req: any, res) => {
     try {
