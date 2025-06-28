@@ -5055,6 +5055,166 @@ Email: support@traffikboosters.com
     }
   });
 
+  // Voice Tone Analysis API endpoints
+  app.get('/api/voice-analysis/recordings', async (req, res) => {
+    try {
+      const recordings = await storage.getAllCallRecordings();
+      res.json(recordings);
+    } catch (error) {
+      console.error('Error fetching recordings:', error);
+      res.status(500).json({ error: 'Failed to fetch recordings' });
+    }
+  });
+
+  app.get('/api/voice-analysis/analyses', async (req, res) => {
+    try {
+      const analyses = await storage.getVoiceToneAnalyses();
+      res.json(analyses);
+    } catch (error) {
+      console.error('Error fetching analyses:', error);
+      res.status(500).json({ error: 'Failed to fetch analyses' });
+    }
+  });
+
+  app.post('/api/voice-analysis/upload', upload.single('recording'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
+
+      const { callType, participantName, contactId } = req.body;
+      
+      // Create call recording entry
+      const recording = await storage.createCallRecording({
+        callId: `call_${Date.now()}`,
+        participantName,
+        duration: 0, // Will be updated after processing
+        fileUrl: `/uploads/${req.file.filename}`,
+        fileSize: req.file.size,
+        recordingDate: new Date().toISOString(),
+        callType,
+        contactId: contactId ? parseInt(contactId) : undefined,
+        salesRepId: 1, // Current user
+        analysisStatus: 'pending',
+      });
+
+      res.json(recording);
+    } catch (error) {
+      console.error('Error uploading recording:', error);
+      res.status(500).json({ error: 'Failed to upload recording' });
+    }
+  });
+
+  app.post('/api/voice-analysis/:id/analyze', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const recordingId = parseInt(id);
+
+      // Update recording status to processing
+      await storage.updateCallRecording(recordingId, {
+        analysisStatus: 'processing'
+      });
+
+      // Simulate AI analysis processing
+      setTimeout(async () => {
+        try {
+          // Create comprehensive voice tone analysis
+          const analysis = await storage.createVoiceToneAnalysis({
+            recordingId,
+            overallTone: 'professional',
+            confidence: 87,
+            emotionalMetrics: JSON.stringify({
+              enthusiasm: 78,
+              empathy: 82,
+              assertiveness: 74,
+              nervousness: 25,
+              professionalism: 89
+            }),
+            speakingPatterns: JSON.stringify({
+              averagePace: 145,
+              pauseFrequency: 12,
+              volumeVariation: 35,
+              tonalRange: 68
+            }),
+            keyMoments: JSON.stringify([
+              {
+                timestamp: 45,
+                moment: "Strong opening statement",
+                tone: "confident",
+                importance: "high"
+              },
+              {
+                timestamp: 120,
+                moment: "Handled objection well",
+                tone: "empathetic",
+                importance: "high"
+              },
+              {
+                timestamp: 200,
+                moment: "Closed with clear next steps",
+                tone: "assertive",
+                importance: "medium"
+              }
+            ]),
+            recommendations: JSON.stringify([
+              "Maintain your professional tone throughout the call",
+              "Consider varying your pace during key points for emphasis",
+              "Excellent empathy when addressing concerns",
+              "Continue using clear, confident language in closings"
+            ]),
+            salesScore: 78,
+            analysisProcessedAt: new Date().toISOString(),
+          });
+
+          // Update recording status to completed
+          await storage.updateCallRecording(recordingId, {
+            analysisStatus: 'completed',
+            duration: 300 // 5 minute call
+          });
+
+          console.log('Voice analysis completed for recording:', recordingId);
+        } catch (error) {
+          console.error('Error in analysis processing:', error);
+          await storage.updateCallRecording(recordingId, {
+            analysisStatus: 'failed'
+          });
+        }
+      }, 3000); // 3 second processing simulation
+
+      res.json({ message: 'Analysis started', recordingId });
+    } catch (error) {
+      console.error('Error starting analysis:', error);
+      res.status(500).json({ error: 'Failed to start analysis' });
+    }
+  });
+
+  app.get('/api/voice-analysis/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const recording = await storage.getCallRecording(parseInt(id));
+      
+      if (!recording) {
+        return res.status(404).json({ error: 'Recording not found' });
+      }
+
+      res.json(recording);
+    } catch (error) {
+      console.error('Error fetching recording:', error);
+      res.status(500).json({ error: 'Failed to fetch recording' });
+    }
+  });
+
+  app.delete('/api/voice-analysis/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const success = await storage.deleteCallRecording(parseInt(id));
+      res.json({ success });
+    } catch (error) {
+      console.error('Error deleting recording:', error);
+      res.status(500).json({ error: 'Failed to delete recording' });
+    }
+  });
+
   // WebSocket server for real-time updates
   const httpServer = createServer(app);
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
