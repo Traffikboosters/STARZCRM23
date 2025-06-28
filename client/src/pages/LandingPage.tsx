@@ -1,0 +1,430 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Phone, Mail, MapPin, Star, TrendingUp, Users, Target, CheckCircle, ArrowRight, Play } from "lucide-react";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
+
+export default function LandingPage() {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    company: '',
+    email: '',
+    phone: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      await apiRequest("POST", "/api/chat-widget/submit", {
+        name: `${formData.firstName} ${formData.lastName}`,
+        company: formData.company,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message || `Interested in digital marketing services for ${formData.company}`
+      });
+      
+      toast({
+        title: "Thank you for your interest!",
+        description: "A growth expert will call you within 24 business hours.",
+      });
+      
+      setFormData({
+        firstName: '',
+        lastName: '',
+        company: '',
+        email: '',
+        phone: '',
+        message: ''
+      });
+    } catch (error) {
+      toast({
+        title: "Submission Failed",
+        description: "Please try again or call us directly at (877) 840-6250.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const services = [
+    {
+      title: "Search Engine Optimization",
+      description: "Dominate Google rankings and drive organic traffic",
+      price: "Starting at $1,500/month",
+      features: ["Keyword Research", "On-Page Optimization", "Link Building", "Monthly Reporting"],
+      badge: "Most Popular"
+    },
+    {
+      title: "Pay-Per-Click Advertising",
+      description: "Instant visibility with targeted Google & Facebook ads",
+      price: "Starting at $2,000/month",
+      features: ["Google Ads Management", "Facebook & Instagram Ads", "Landing Page Creation", "Conversion Tracking"],
+      badge: "Best ROI"
+    },
+    {
+      title: "Website Development",
+      description: "Modern, mobile-responsive websites that convert",
+      price: "Starting at $3,500",
+      features: ["Custom Design", "Mobile Responsive", "SEO Optimized", "Speed Optimized"],
+      badge: "Premium"
+    },
+    {
+      title: "Social Media Marketing",
+      description: "Build your brand and engage customers on social platforms",
+      price: "Starting at $1,200/month",
+      features: ["Content Creation", "Community Management", "Paid Social Campaigns", "Analytics & Reporting"],
+      badge: "Growth"
+    }
+  ];
+
+  const testimonials = [
+    {
+      name: "Sarah Williams",
+      company: "Austin Home Renovation",
+      rating: 5,
+      text: "Traffik Boosters increased our leads by 300% in just 3 months. Their SEO work is incredible!"
+    },
+    {
+      name: "Michael Chen",
+      company: "Denver Plumbing Pro",
+      rating: 5,
+      text: "Best investment we've made. Our phone rings constantly with qualified leads now."
+    },
+    {
+      name: "Emma Rodriguez",
+      company: "SF Wedding Photography",
+      rating: 5,
+      text: "Professional service and amazing results. Our website traffic doubled!"
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+      {/* Header */}
+      <header className="bg-white shadow-sm sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-3">
+              <img 
+                src={traffikBoostersLogo} 
+                alt="Traffik Boosters" 
+                className="h-12 w-auto object-contain"
+              />
+              <div className="hidden sm:block">
+                <h1 className="text-xl font-bold text-gray-900">Traffik Boosters</h1>
+                <p className="text-sm text-orange-600 font-medium">More Traffik! More Sales!</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <a href="tel:8778406250" className="flex items-center text-orange-600 hover:text-orange-700">
+                <Phone className="h-4 w-4 mr-2" />
+                <span className="font-semibold">(877) 840-6250</span>
+              </a>
+              <Button className="bg-orange-600 hover:bg-orange-700">
+                Get Free Quote
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <Badge className="mb-4 bg-orange-100 text-orange-800">
+                #1 Digital Marketing Agency
+              </Badge>
+              <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
+                Drive More Traffic,
+                <span className="text-orange-600"> Generate More Sales</span>
+              </h1>
+              <p className="text-xl text-gray-600 mb-8">
+                We help service businesses dominate their local market with proven SEO, PPC, and web development strategies that deliver real results.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                <Button size="lg" className="bg-orange-600 hover:bg-orange-700">
+                  <Phone className="h-5 w-5 mr-2" />
+                  Call (877) 840-6250
+                </Button>
+                <Button size="lg" variant="outline" className="border-orange-600 text-orange-600 hover:bg-orange-50">
+                  <Play className="h-5 w-5 mr-2" />
+                  Watch Demo
+                </Button>
+              </div>
+              <div className="flex items-center space-x-8 text-sm text-gray-600">
+                <div className="flex items-center">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                  Free Consultation
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                  No Long-Term Contracts
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                  Results Guaranteed
+                </div>
+              </div>
+            </div>
+            <div className="relative">
+              <div className="bg-white p-8 rounded-2xl shadow-xl">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">Get Your Free Marketing Audit</h3>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input
+                      placeholder="First Name"
+                      value={formData.firstName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                      required
+                    />
+                    <Input
+                      placeholder="Last Name"
+                      value={formData.lastName}
+                      onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                      required
+                    />
+                  </div>
+                  <Input
+                    placeholder="Company Name"
+                    value={formData.company}
+                    onChange={(e) => setFormData(prev => ({ ...prev, company: e.target.value }))}
+                    required
+                  />
+                  <Input
+                    type="email"
+                    placeholder="Business Email"
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                    required
+                  />
+                  <Input
+                    type="tel"
+                    placeholder="Phone Number"
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    required
+                  />
+                  <Textarea
+                    placeholder="Tell us about your business goals..."
+                    value={formData.message}
+                    onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+                    rows={3}
+                  />
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-orange-600 hover:bg-orange-700" 
+                    size="lg"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? "Submitting..." : "Get Free Audit"}
+                    <ArrowRight className="h-5 w-5 ml-2" />
+                  </Button>
+                </form>
+                <p className="text-xs text-gray-500 mt-4 text-center">
+                  We'll call you within 24 hours with your custom marketing strategy
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="py-16 bg-orange-600">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center text-white">
+            <div>
+              <div className="text-4xl font-bold mb-2">500+</div>
+              <div className="text-orange-100">Happy Clients</div>
+            </div>
+            <div>
+              <div className="text-4xl font-bold mb-2">300%</div>
+              <div className="text-orange-100">Average Lead Increase</div>
+            </div>
+            <div>
+              <div className="text-4xl font-bold mb-2">24hrs</div>
+              <div className="text-orange-100">Response Time</div>
+            </div>
+            <div>
+              <div className="text-4xl font-bold mb-2">98%</div>
+              <div className="text-orange-100">Client Satisfaction</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Services Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Our Digital Marketing Services
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              We specialize in helping service businesses grow with proven digital marketing strategies
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {services.map((service, index) => (
+              <Card key={index} className="relative hover:shadow-lg transition-shadow">
+                {service.badge && (
+                  <Badge className="absolute -top-2 left-4 bg-orange-600 text-white">
+                    {service.badge}
+                  </Badge>
+                )}
+                <CardHeader>
+                  <CardTitle className="text-xl">{service.title}</CardTitle>
+                  <CardDescription>{service.description}</CardDescription>
+                  <div className="text-2xl font-bold text-orange-600">{service.price}</div>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 mb-6">
+                    {service.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-center text-sm text-gray-600">
+                        <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button className="w-full" variant="outline">
+                    Learn More
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 bg-gray-50 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              What Our Clients Say
+            </h2>
+            <p className="text-xl text-gray-600">
+              Real results from real businesses
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="hover:shadow-lg transition-shadow">
+                <CardContent className="pt-6">
+                  <div className="flex mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                    ))}
+                  </div>
+                  <p className="text-gray-600 mb-4">"{testimonial.text}"</p>
+                  <div>
+                    <div className="font-semibold text-gray-900">{testimonial.name}</div>
+                    <div className="text-sm text-gray-500">{testimonial.company}</div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-orange-600 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
+            Ready to Grow Your Business?
+          </h2>
+          <p className="text-xl text-orange-100 mb-8">
+            Get a free marketing audit and discover how we can help you dominate your market
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" className="bg-white text-orange-600 hover:bg-gray-100">
+              <Phone className="h-5 w-5 mr-2" />
+              Call (877) 840-6250
+            </Button>
+            <Button size="lg" variant="outline" className="border-white text-white hover:bg-orange-700">
+              <Mail className="h-5 w-5 mr-2" />
+              Get Free Quote
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center space-x-3 mb-4">
+                <img 
+                  src={traffikBoostersLogo} 
+                  alt="Traffik Boosters" 
+                  className="h-10 w-auto object-contain"
+                />
+                <div>
+                  <h3 className="text-lg font-bold">Traffik Boosters</h3>
+                  <p className="text-sm text-orange-400">More Traffik! More Sales!</p>
+                </div>
+              </div>
+              <p className="text-gray-400 text-sm">
+                Your trusted partner for digital marketing success
+              </p>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Services</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>Search Engine Optimization</li>
+                <li>Pay-Per-Click Advertising</li>
+                <li>Website Development</li>
+                <li>Social Media Marketing</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Company</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li>About Us</li>
+                <li>Case Studies</li>
+                <li>Blog</li>
+                <li>Contact</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Contact Info</h4>
+              <div className="space-y-3 text-sm text-gray-400">
+                <div className="flex items-center">
+                  <Phone className="h-4 w-4 mr-2" />
+                  <span>(877) 840-6250</span>
+                </div>
+                <div className="flex items-center">
+                  <Mail className="h-4 w-4 mr-2" />
+                  <span>hello@traffikboosters.com</span>
+                </div>
+                <div className="flex items-center">
+                  <MapPin className="h-4 w-4 mr-2" />
+                  <span>Nationwide Service</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+            <p>&copy; 2025 Traffik Boosters. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

@@ -16,11 +16,13 @@ import TimeZoneManager from "@/components/timezone-manager";
 import SalesFunnelsPage from "@/pages/sales-funnels";
 import CompetitivePricingPage from "@/pages/competitive-pricing";
 import AcceptInvitation from "@/pages/accept-invitation";
+import LandingPage from "@/pages/LandingPage";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/landing" component={LandingPage} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/analytics" component={AnalyticsPage} />
       <Route path="/mightycall" component={MightyCallPage} />
