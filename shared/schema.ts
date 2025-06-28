@@ -501,6 +501,88 @@ export type InsertProfitabilityAnalysis = z.infer<typeof insertProfitabilityAnal
 export type PricingProposal = typeof pricingProposals.$inferSelect;
 export type InsertPricingProposal = z.infer<typeof insertPricingProposalSchema>;
 
+// Technical Projects for SEO & Web Development
+export const technicalProjects = pgTable("technical_projects", {
+  id: serial("id").primaryKey(),
+  clientName: text("client_name").notNull(),
+  projectTitle: text("project_title").notNull(),
+  projectType: text("project_type").notNull(), // SEO, Web Development, Both
+  status: text("status").notNull().default("Not Started"), // Not Started, In Progress, Review, Completed
+  priority: text("priority").notNull().default("Medium"), // Low, Medium, High, Urgent
+  assignedTo: integer("assigned_to").references(() => users.id).notNull(),
+  description: text("description"),
+  budget: integer("budget"), // project budget in dollars
+  estimatedHours: integer("estimated_hours"),
+  actualHours: integer("actual_hours").default(0),
+  startDate: timestamp("start_date"),
+  dueDate: timestamp("due_date"),
+  completedDate: timestamp("completed_date"),
+  createdBy: integer("created_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Technical Tasks within projects
+export const technicalTasks = pgTable("technical_tasks", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => technicalProjects.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  type: text("type").notNull(), // SEO, Development, Design, Content, Analysis
+  status: text("status").notNull().default("Pending"), // Pending, In Progress, Completed, Blocked
+  priority: text("priority").notNull().default("Medium"), // Low, Medium, High, Urgent
+  assignedTo: integer("assigned_to").references(() => users.id).notNull(),
+  estimatedHours: integer("estimated_hours"),
+  actualHours: integer("actual_hours").default(0),
+  hourlyRate: integer("hourly_rate"), // rate in dollars
+  startDate: timestamp("start_date"),
+  dueDate: timestamp("due_date"),
+  completedDate: timestamp("completed_date"),
+  notes: text("notes"),
+  tags: json("tags"), // array of tag strings
+  createdBy: integer("created_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Time tracking entries for tasks
+export const timeEntries = pgTable("time_entries", {
+  id: serial("id").primaryKey(),
+  taskId: integer("task_id").references(() => technicalTasks.id).notNull(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  date: timestamp("date").notNull(),
+  hours: integer("hours").notNull(), // hours worked (in minutes for precision)
+  description: text("description"),
+  billable: boolean("billable").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Insert schemas for technical projects
+export const insertTechnicalProjectSchema = createInsertSchema(technicalProjects).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTechnicalTaskSchema = createInsertSchema(technicalTasks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTimeEntrySchema = createInsertSchema(timeEntries).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Types for technical projects
+export type TechnicalProject = typeof technicalProjects.$inferSelect;
+export type InsertTechnicalProject = z.infer<typeof insertTechnicalProjectSchema>;
+export type TechnicalTask = typeof technicalTasks.$inferSelect;
+export type InsertTechnicalTask = z.infer<typeof insertTechnicalTaskSchema>;
+export type TimeEntry = typeof timeEntries.$inferSelect;
+export type InsertTimeEntry = z.infer<typeof insertTimeEntrySchema>;
+
 export const callLogs = pgTable("call_logs", {
   id: serial("id").primaryKey(),
   contactId: integer("contact_id").references(() => contacts.id),

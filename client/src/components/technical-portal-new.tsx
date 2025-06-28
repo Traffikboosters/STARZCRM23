@@ -37,7 +37,7 @@ import {
   Minus,
   Play,
   Pause,
-  Square
+  Stop
 } from "lucide-react";
 
 interface Project {
@@ -555,7 +555,7 @@ export function TechnicalPortal() {
                         <div className="flex items-center justify-between">
                           <span>Timer Active</span>
                           <Button size="sm" variant="outline" onClick={stopTimer}>
-                            <Square className="h-3 w-3" />
+                            <Stop className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
@@ -627,7 +627,7 @@ export function TechnicalPortal() {
                       <span>Efficiency</span>
                       <span className="font-medium text-green-600">{member.efficiency}%</span>
                     </div>
-                    <Progress value={member.efficiency} />
+                    <Progress value={member.efficiency} className="h-2" />
                   </div>
 
                   <Button variant="outline" size="sm" className="w-full mt-4">

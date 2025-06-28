@@ -4782,5 +4782,141 @@ Email: support@traffikboosters.com
     });
   });
 
+  // Technical Projects API endpoints
+  app.get("/api/technical-projects", async (req, res) => {
+    try {
+      const projects = await storage.getAllTechnicalProjects();
+      res.json(projects);
+    } catch (error: any) {
+      console.error("Error fetching technical projects:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/technical-projects/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const project = await storage.getTechnicalProject(id);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      res.json(project);
+    } catch (error: any) {
+      console.error("Error fetching technical project:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/technical-projects", async (req, res) => {
+    try {
+      const project = await storage.createTechnicalProject({
+        ...req.body,
+        createdBy: 1 // Default admin user
+      });
+      res.json(project);
+    } catch (error: any) {
+      console.error("Error creating technical project:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.put("/api/technical-projects/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const project = await storage.updateTechnicalProject(id, req.body);
+      if (!project) {
+        return res.status(404).json({ error: "Project not found" });
+      }
+      res.json(project);
+    } catch (error: any) {
+      console.error("Error updating technical project:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Technical Tasks API endpoints
+  app.get("/api/technical-tasks", async (req, res) => {
+    try {
+      const tasks = await storage.getAllTechnicalTasks();
+      res.json(tasks);
+    } catch (error: any) {
+      console.error("Error fetching technical tasks:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/technical-tasks/project/:projectId", async (req, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const tasks = await storage.getTechnicalTasksByProject(projectId);
+      res.json(tasks);
+    } catch (error: any) {
+      console.error("Error fetching tasks for project:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/technical-tasks", async (req, res) => {
+    try {
+      const task = await storage.createTechnicalTask({
+        ...req.body,
+        createdBy: 1 // Default admin user
+      });
+      res.json(task);
+    } catch (error: any) {
+      console.error("Error creating technical task:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.put("/api/technical-tasks/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const task = await storage.updateTechnicalTask(id, req.body);
+      if (!task) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+      res.json(task);
+    } catch (error: any) {
+      console.error("Error updating technical task:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Time Entries API endpoints
+  app.get("/api/time-entries", async (req, res) => {
+    try {
+      const entries = await storage.getAllTimeEntries();
+      res.json(entries);
+    } catch (error: any) {
+      console.error("Error fetching time entries:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/time-entries/task/:taskId", async (req, res) => {
+    try {
+      const taskId = parseInt(req.params.taskId);
+      const entries = await storage.getTimeEntriesByTask(taskId);
+      res.json(entries);
+    } catch (error: any) {
+      console.error("Error fetching time entries for task:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/time-entries", async (req, res) => {
+    try {
+      const entry = await storage.createTimeEntry({
+        ...req.body,
+        userId: 1 // Default admin user
+      });
+      res.json(entry);
+    } catch (error: any) {
+      console.error("Error creating time entry:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }

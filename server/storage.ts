@@ -1,7 +1,7 @@
 import { 
   users, contacts, events, files, automations, scrapingJobs, companies, chatMessages, chatConversations,
   callLogs, campaigns, leadAllocations, documentTemplates, signingRequests, servicePackages, costStructure, profitabilityAnalysis, userInvitations,
-  userSessions, userActivity,
+  userSessions, userActivity, technicalProjects, technicalTasks, timeEntries,
   type User, type InsertUser, type UserInvitation, type InsertUserInvitation, type Contact, type InsertContact,
   type Event, type InsertEvent, type File, type InsertFile,
   type Automation, type InsertAutomation, type ScrapingJob, type InsertScrapingJob,
@@ -11,7 +11,8 @@ import {
   type DocumentTemplate, type InsertDocumentTemplate, type SigningRequest, type InsertSigningRequest,
   type ServicePackage, type InsertServicePackage, type CostStructure, type InsertCostStructure,
   type ProfitabilityAnalysis, type InsertProfitabilityAnalysis, type UserSession, type InsertUserSession,
-  type UserActivity, type InsertUserActivity
+  type UserActivity, type InsertUserActivity, type TechnicalProject, type InsertTechnicalProject,
+  type TechnicalTask, type InsertTechnicalTask, type TimeEntry, type InsertTimeEntry
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, like, and, between, desc } from "drizzle-orm";
@@ -172,6 +173,32 @@ export interface IStorage {
   getEngagementStats(timeframe: string): Promise<any>;
   getPricingProposals(): Promise<any[]>;
   createPricingProposal(proposal: any): Promise<any>;
+  
+  // Technical Projects
+  getAllTechnicalProjects(): Promise<TechnicalProject[]>;
+  getTechnicalProject(id: number): Promise<TechnicalProject | undefined>;
+  getTechnicalProjectsByAssignee(assignedTo: number): Promise<TechnicalProject[]>;
+  createTechnicalProject(project: InsertTechnicalProject): Promise<TechnicalProject>;
+  updateTechnicalProject(id: number, updates: Partial<InsertTechnicalProject>): Promise<TechnicalProject | undefined>;
+  deleteTechnicalProject(id: number): Promise<boolean>;
+  
+  // Technical Tasks
+  getAllTechnicalTasks(): Promise<TechnicalTask[]>;
+  getTechnicalTask(id: number): Promise<TechnicalTask | undefined>;
+  getTechnicalTasksByProject(projectId: number): Promise<TechnicalTask[]>;
+  getTechnicalTasksByAssignee(assignedTo: number): Promise<TechnicalTask[]>;
+  createTechnicalTask(task: InsertTechnicalTask): Promise<TechnicalTask>;
+  updateTechnicalTask(id: number, updates: Partial<InsertTechnicalTask>): Promise<TechnicalTask | undefined>;
+  deleteTechnicalTask(id: number): Promise<boolean>;
+  
+  // Time Entries
+  getAllTimeEntries(): Promise<TimeEntry[]>;
+  getTimeEntry(id: number): Promise<TimeEntry | undefined>;
+  getTimeEntriesByTask(taskId: number): Promise<TimeEntry[]>;
+  getTimeEntriesByUser(userId: number): Promise<TimeEntry[]>;
+  createTimeEntry(entry: InsertTimeEntry): Promise<TimeEntry>;
+  updateTimeEntry(id: number, updates: Partial<InsertTimeEntry>): Promise<TimeEntry | undefined>;
+  deleteTimeEntry(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -836,6 +863,88 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSigningRequest(id: number): Promise<boolean> {
     const result = await db.delete(signingRequests).where(eq(signingRequests.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Technical Portal methods
+  async getAllTechnicalProjects(): Promise<TechnicalProject[]> {
+    return await db.select().from(technicalProjects);
+  }
+
+  async getTechnicalProject(id: number): Promise<TechnicalProject | undefined> {
+    const [project] = await db.select().from(technicalProjects).where(eq(technicalProjects.id, id));
+    return project || undefined;
+  }
+
+  async createTechnicalProject(project: InsertTechnicalProject): Promise<TechnicalProject> {
+    const [newProject] = await db
+      .insert(technicalProjects)
+      .values(project)
+      .returning();
+    return newProject;
+  }
+
+  async updateTechnicalProject(id: number, updates: Partial<InsertTechnicalProject>): Promise<TechnicalProject | undefined> {
+    const [project] = await db
+      .update(technicalProjects)
+      .set(updates)
+      .where(eq(technicalProjects.id, id))
+      .returning();
+    return project || undefined;
+  }
+
+  async getAllTechnicalTasks(): Promise<TechnicalTask[]> {
+    return await db.select().from(technicalTasks);
+  }
+
+  async getTechnicalTasksByProject(projectId: number): Promise<TechnicalTask[]> {
+    return await db.select().from(technicalTasks).where(eq(technicalTasks.projectId, projectId));
+  }
+
+  async createTechnicalTask(task: InsertTechnicalTask): Promise<TechnicalTask> {
+    const [newTask] = await db
+      .insert(technicalTasks)
+      .values(task)
+      .returning();
+    return newTask;
+  }
+
+  async updateTechnicalTask(id: number, updates: Partial<InsertTechnicalTask>): Promise<TechnicalTask | undefined> {
+    const [task] = await db
+      .update(technicalTasks)
+      .set(updates)
+      .where(eq(technicalTasks.id, id))
+      .returning();
+    return task || undefined;
+  }
+
+  async getAllTimeEntries(): Promise<TimeEntry[]> {
+    return await db.select().from(timeEntries);
+  }
+
+  async getTimeEntriesByTask(taskId: number): Promise<TimeEntry[]> {
+    return await db.select().from(timeEntries).where(eq(timeEntries.taskId, taskId));
+  }
+
+  async createTimeEntry(entry: InsertTimeEntry): Promise<TimeEntry> {
+    const [newEntry] = await db
+      .insert(timeEntries)
+      .values(entry)
+      .returning();
+    return newEntry;
+  }
+
+  async updateTimeEntry(id: number, updates: Partial<InsertTimeEntry>): Promise<TimeEntry | undefined> {
+    const [entry] = await db
+      .update(timeEntries)
+      .set(updates)
+      .where(eq(timeEntries.id, id))
+      .returning();
+    return entry || undefined;
+  }
+
+  async deleteTimeEntry(id: number): Promise<boolean> {
+    const result = await db.delete(timeEntries).where(eq(timeEntries.id, id));
     return (result.rowCount ?? 0) > 0;
   }
 }
@@ -2220,6 +2329,121 @@ Client Approval:
       .where(eq(userSessions.sessionId, sessionId))
       .returning();
     return session || undefined;
+  }
+
+  // Technical Projects Implementation
+  async getAllTechnicalProjects(): Promise<TechnicalProject[]> {
+    const projects = await db.select().from(technicalProjects).orderBy(desc(technicalProjects.createdAt));
+    return projects;
+  }
+
+  async getTechnicalProject(id: number): Promise<TechnicalProject | undefined> {
+    const [project] = await db.select().from(technicalProjects).where(eq(technicalProjects.id, id));
+    return project || undefined;
+  }
+
+  async getTechnicalProjectsByAssignee(assignedTo: number): Promise<TechnicalProject[]> {
+    const projects = await db.select().from(technicalProjects).where(eq(technicalProjects.assignedTo, assignedTo));
+    return projects;
+  }
+
+  async createTechnicalProject(project: InsertTechnicalProject): Promise<TechnicalProject> {
+    const [newProject] = await db.insert(technicalProjects).values(project).returning();
+    return newProject;
+  }
+
+  async updateTechnicalProject(id: number, updates: Partial<InsertTechnicalProject>): Promise<TechnicalProject | undefined> {
+    const [project] = await db
+      .update(technicalProjects)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(technicalProjects.id, id))
+      .returning();
+    return project || undefined;
+  }
+
+  async deleteTechnicalProject(id: number): Promise<boolean> {
+    const result = await db.delete(technicalProjects).where(eq(technicalProjects.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Technical Tasks Implementation
+  async getAllTechnicalTasks(): Promise<TechnicalTask[]> {
+    const tasks = await db.select().from(technicalTasks).orderBy(desc(technicalTasks.createdAt));
+    return tasks;
+  }
+
+  async getTechnicalTask(id: number): Promise<TechnicalTask | undefined> {
+    const [task] = await db.select().from(technicalTasks).where(eq(technicalTasks.id, id));
+    return task || undefined;
+  }
+
+  async getTechnicalTasksByProject(projectId: number): Promise<TechnicalTask[]> {
+    const tasks = await db.select().from(technicalTasks).where(eq(technicalTasks.projectId, projectId));
+    return tasks;
+  }
+
+  async getTechnicalTasksByAssignee(assignedTo: number): Promise<TechnicalTask[]> {
+    const tasks = await db.select().from(technicalTasks).where(eq(technicalTasks.assignedTo, assignedTo));
+    return tasks;
+  }
+
+  async createTechnicalTask(task: InsertTechnicalTask): Promise<TechnicalTask> {
+    const [newTask] = await db.insert(technicalTasks).values(task).returning();
+    return newTask;
+  }
+
+  async updateTechnicalTask(id: number, updates: Partial<InsertTechnicalTask>): Promise<TechnicalTask | undefined> {
+    const [task] = await db
+      .update(technicalTasks)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(technicalTasks.id, id))
+      .returning();
+    return task || undefined;
+  }
+
+  async deleteTechnicalTask(id: number): Promise<boolean> {
+    const result = await db.delete(technicalTasks).where(eq(technicalTasks.id, id));
+    return result.rowCount > 0;
+  }
+
+  // Time Entries Implementation
+  async getAllTimeEntries(): Promise<TimeEntry[]> {
+    const entries = await db.select().from(timeEntries).orderBy(desc(timeEntries.createdAt));
+    return entries;
+  }
+
+  async getTimeEntry(id: number): Promise<TimeEntry | undefined> {
+    const [entry] = await db.select().from(timeEntries).where(eq(timeEntries.id, id));
+    return entry || undefined;
+  }
+
+  async getTimeEntriesByTask(taskId: number): Promise<TimeEntry[]> {
+    const entries = await db.select().from(timeEntries).where(eq(timeEntries.taskId, taskId));
+    return entries;
+  }
+
+  async getTimeEntriesByUser(userId: number): Promise<TimeEntry[]> {
+    const entries = await db.select().from(timeEntries).where(eq(timeEntries.userId, userId));
+    return entries;
+  }
+
+  async createTimeEntry(entry: InsertTimeEntry): Promise<TimeEntry> {
+    const [newEntry] = await db.insert(timeEntries).values(entry).returning();
+    return newEntry;
+  }
+
+  async updateTimeEntry(id: number, updates: Partial<InsertTimeEntry>): Promise<TimeEntry | undefined> {
+    const [entry] = await db
+      .update(timeEntries)
+      .set(updates)
+      .where(eq(timeEntries.id, id))
+      .returning();
+    return entry || undefined;
+  }
+
+  async deleteTimeEntry(id: number): Promise<boolean> {
+    const result = await db.delete(timeEntries).where(eq(timeEntries.id, id));
+    return result.rowCount > 0;
   }
 
   // User Activity
