@@ -31,7 +31,7 @@ import { storage } from "./storage";
 import { AILeadScoringEngine } from "./ai-lead-scoring";
 import { AIConversationStarterEngine } from "./ai-conversation-starters";
 import { quickReplyEngine } from "./ai-quick-replies";
-import { onboardingService } from "./employee-onboarding";
+import { onboardingService } from "./employee-onboarding-complete";
 import { emailMarketingService } from "./email-marketing";
 import { smsMarketingService } from "./sms-marketing";
 import nodemailer from "nodemailer";
@@ -4061,7 +4061,11 @@ Email: support@traffikboosters.com
         workEmail,
         role,
         startDate: startDate || new Date().toLocaleDateString(),
-        department
+        department,
+        workLocation: 'remote' as const, // Default to remote for most Traffik Boosters employees
+        timeZone: 'EST',
+        homeAddress: undefined,
+        officeLocation: undefined
       };
 
       const success = await onboardingService.sendOnboardingPacket(onboardingData);
@@ -4385,6 +4389,54 @@ Email: support@traffikboosters.com
       res.json(campaign);
     } catch (error: any) {
       console.error('[SMS] Error creating campaign:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Dual Onboarding System - Create onboarding packet
+  app.post("/api/hr/onboarding", async (req, res) => {
+    try {
+      const {
+        firstName,
+        lastName,
+        email,
+        role,
+        department,
+        workLocation,
+        startDate,
+        timeZone,
+        homeAddress,
+        officeLocation
+      } = req.body;
+
+      const onboardingData = {
+        firstName,
+        lastName,
+        email,
+        workEmail: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@traffikboosters.com`,
+        role,
+        startDate,
+        department,
+        workLocation,
+        timeZone,
+        homeAddress,
+        officeLocation
+      };
+
+      // Generate onboarding packet
+      const packet = onboardingService.generateOnboardingPacket(onboardingData);
+      
+      // Send onboarding email
+      const emailSent = await onboardingService.sendOnboardingPacket(onboardingData);
+
+      res.json({
+        success: true,
+        message: `${workLocation === 'remote' ? 'Remote' : 'On-site'} onboarding packet created and sent`,
+        packet,
+        emailSent
+      });
+    } catch (error: any) {
+      console.error('[Onboarding] Error creating packet:', error);
       res.status(500).json({ error: error.message });
     }
   });
