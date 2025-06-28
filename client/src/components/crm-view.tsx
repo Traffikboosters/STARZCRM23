@@ -1022,13 +1022,13 @@ export default function CRMView() {
           />
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              CRM - Contact Management 
+              CRM - Lead Card Management 
               <Badge variant="secondary" className="ml-3 text-lg px-3 py-1">
-                {contacts.length} Total Leads
+                {contacts.length} Lead Cards
               </Badge>
             </h1>
             <p className="text-gray-600">
-              Manage your contacts and leads • Last updated: {format(new Date(), 'p')}
+              Manage your lead cards and prospects • Last updated: {format(new Date(), 'p')}
             </p>
             <p className="text-sm font-bold text-black">More Traffik! More Sales!</p>
           </div>
@@ -1059,7 +1059,7 @@ export default function CRMView() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Search contacts..."
+            placeholder="Search lead cards..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"

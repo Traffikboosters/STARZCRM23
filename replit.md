@@ -375,6 +375,8 @@ The application uses a comprehensive schema including:
 - June 28, 2025. Built comprehensive Quick Reply Templates system with follow-up, objection handling, and pricing categories featuring professional email templates with Traffik Boosters branding and contact information
 - June 28, 2025. Implemented Lead Qualification Form with budget ranges ($1K-$10K+), implementation timelines, decision-maker tracking, current marketing assessment, and qualification status management
 - June 28, 2025. Enhanced Contact Notes functionality with quick note buttons, private notes option, copy-to-clipboard feature, and pre-built note templates for common sales scenarios
+- June 28, 2025. Updated CRM interface terminology from "Contact Management" to "Lead Card Management" throughout the platform for consistent lead-focused messaging
+- June 28, 2025. Renamed contact interface elements to "lead cards" including search placeholder, badge counts, and page headers for unified lead terminology
 
 ## User Preferences
 
