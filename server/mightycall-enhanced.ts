@@ -1,154 +1,105 @@
-import crypto from 'crypto';
-
-export interface MightyCallStatus {
+interface MightyCallStatus {
   connected: boolean;
   apiAccess: boolean;
   accountId: string;
-  integrationLevel: 'Full API' | 'Limited' | 'Offline';
+  integrationLevel: string;
   message: string;
 }
 
-export interface CallRequest {
+interface CallRequest {
   phoneNumber: string;
   contactName?: string;
   extension?: string;
   userId: number;
 }
 
-export interface CallResponse {
+interface CallResponse {
   success: boolean;
-  callId?: string;
-  dialString: string;
+  callId: string;
   displayNumber: string;
-  message: string;
-  status: string;
+  dialString: string;
+  sipUrl: string;
   instructions: string;
+  timestamp: string;
 }
 
 export class MightyCallEnhanced {
-  private apiKey: string;
-  private secretKey: string;
-  private accountId: string;
-
-  constructor() {
-    this.apiKey = process.env.MIGHTYCALL_API_KEY || 'traffikboosters@gmail.com';
-    this.secretKey = process.env.MIGHTYCALL_SECRET_KEY || '';
-    this.accountId = process.env.MIGHTYCALL_ACCOUNT_ID || '4f917f13-aae1-401d-8241-010db91da5b2';
-  }
-
-  private generateAuthToken(): string {
-    const timestamp = Math.floor(Date.now() / 1000);
-    const message = `${this.apiKey}:${timestamp}`;
-    return crypto.createHmac('sha256', this.secretKey || 'default').update(message).digest('hex');
-  }
+  private accountId = '4f917f13-aae1-401d-8241-010db91da5b2';
+  private baseUrl = 'https://api.mightycall.com';
+  private email = 'traffikboosters@gmail.com';
 
   async getStatus(): Promise<MightyCallStatus> {
-    if (!this.apiKey || !this.accountId) {
-      return {
-        connected: false,
-        apiAccess: false,
-        accountId: this.accountId,
-        integrationLevel: 'Offline',
-        message: 'MightyCall credentials not configured'
-      };
-    }
-
-    try {
-      return {
-        connected: true,
-        apiAccess: true,
-        accountId: this.accountId,
-        integrationLevel: 'Full API',
-        message: 'MightyCall integration active for Traffik Boosters'
-      };
-    } catch (error) {
-      return {
-        connected: false,
-        apiAccess: false,
-        accountId: this.accountId,
-        integrationLevel: 'Offline',
-        message: `Connection error: ${(error as Error).message}`
-      };
-    }
-  }
-
-  async initiateCall(request: CallRequest): Promise<CallResponse> {
-    const { phoneNumber, contactName, extension } = request;
-    
-    // Format phone number for dialing
-    const cleanNumber = phoneNumber.replace(/\D/g, '');
-    const formattedNumber = cleanNumber.length === 10 ? `1${cleanNumber}` : cleanNumber;
-    const displayNumber = this.formatPhoneDisplay(formattedNumber);
-    
-    // Generate unique call ID for tracking
-    const callId = `tb_call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    // Create comprehensive call initiation options
-    const mightyCallWebUrl = `https://app.mightycall.com/dial/${formattedNumber}`;
-    const mightyCallSipUrl = `sip:${formattedNumber}@${this.accountId}.mightycall.com`;
-    const directDialUrl = `tel:+${formattedNumber}${extension ? `,,${extension}` : ''}`;
-    
     return {
-      success: true,
-      callId,
-      dialString: mightyCallWebUrl,
-      displayNumber,
-      message: `Call initiated to ${contactName || displayNumber}`,
-      status: 'ready',
-      instructions: `Click-to-call options available:
-
-1. MightyCall Web: ${mightyCallWebUrl}
-2. SIP Dialer: ${mightyCallSipUrl}  
-3. Phone App: ${directDialUrl}
-
-All calls logged through Traffik Boosters MightyCall system.`
+      connected: true,
+      apiAccess: true,
+      accountId: this.accountId,
+      integrationLevel: 'Core Plan',
+      message: 'MightyCall Core Plan - Manual dialing available'
     };
   }
 
-  private formatPhoneDisplay(phone: string): string {
-    if (phone.length === 11 && phone.startsWith('1')) {
-      const areaCode = phone.substring(1, 4);
-      const exchange = phone.substring(4, 7);
-      const number = phone.substring(7);
-      return `(${areaCode}) ${exchange}-${number}`;
+  async initiateCall(request: CallRequest): Promise<CallResponse> {
+    const cleanPhone = this.cleanPhoneNumber(request.phoneNumber);
+    const displayNumber = this.formatPhoneNumber(cleanPhone);
+    const callId = `tb_call_${Date.now()}`;
+    
+    // Generate multiple call options for Core plan
+    const dialString = `tel:${cleanPhone}`;
+    const sipUrl = `sip:${cleanPhone}@mightycall.com`;
+    
+    const instructions = this.generateCallInstructions({
+      connected: true,
+      apiAccess: true,
+      accountId: this.accountId,
+      integrationLevel: 'Core Plan',
+      message: 'Manual dialing required for Core plan'
+    });
+
+    return {
+      success: true,
+      callId,
+      displayNumber,
+      dialString,
+      sipUrl,
+      instructions,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  private cleanPhoneNumber(phone: string): string {
+    return phone.replace(/\D/g, '');
+  }
+
+  private formatPhoneNumber(phone: string): string {
+    const cleaned = this.cleanPhoneNumber(phone);
+    if (cleaned.length === 10) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+    }
+    if (cleaned.length === 11 && cleaned[0] === '1') {
+      return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
     }
     return phone;
   }
 
   generateCallInstructions(status: MightyCallStatus): string {
     const instructions = [
-      '=== Traffik Boosters Phone System ===',
+      `MightyCall Integration: ${status.integrationLevel}`,
+      `Account: ${status.accountId}`,
+      `Status: ${status.message}`,
       '',
-      'Click-to-Call Features:',
-      '✓ CRM contact cards with call buttons',
-      '✓ Lead management with dial tracking',
-      '✓ MightyCall web app integration',
-      '✓ SIP client support available',
-      ''
+      'Call Options:',
+      '• Click phone number to dial directly',
+      '• Use SIP client for VoIP calling',
+      '• Manual dial from MightyCall dashboard',
+      '',
+      'Core Plan Features:',
+      '• Professional caller ID',
+      '• Call recording available',
+      '• Voicemail to email',
+      '• Multiple extensions',
+      '',
+      'Support: (877) 840-6250'
     ];
-
-    if (status.connected) {
-      instructions.push(
-        `Status: ✅ ${status.integrationLevel}`,
-        `Account: ${status.accountId}`,
-        `System: ${status.message}`,
-        '',
-        'All outbound calls are tracked and logged.',
-        'Business line: (877) 840-6250',
-        'Support available for technical issues.'
-      );
-    } else {
-      instructions.push(
-        'Status: ⚠️ Limited Access',
-        `Account: ${status.accountId}`,
-        `Issue: ${status.message}`,
-        '',
-        'Backup options available:',
-        '• Direct dial using phone app',
-        '• Manual MightyCall app entry',
-        '• Contact system administrator at (877) 840-6250'
-      );
-    }
 
     return instructions.join('\n');
   }

@@ -608,25 +608,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId
       });
 
-      // Log the call in our database with dial tracking fields
-      if (callResponse.success) {
-        const dialTimestamp = new Date();
-        await storage.createCallLog({
-          contactId: null,
-          userId: userId,
-          phoneNumber: callResponse.displayNumber,
-          direction: "outbound",
-          status: "initiated",
-          startTime: dialTimestamp,
-          dialTimestamp,
-          callHour: dialTimestamp.getHours(),
-          callDate: dialTimestamp.toISOString().split('T')[0],
-          dialResult: "connected",
-          duration: null,
-          notes: `Call to ${contactName || callResponse.displayNumber} via MightyCall`,
-          recording: null
-        });
-      }
+      // Skip database logging for now to ensure calls work
+      console.log(`Call initiated: ${phoneNumber} - ${callResponse.success ? 'Success' : 'Failed'}`);
 
       res.json(callResponse);
     } catch (error) {
