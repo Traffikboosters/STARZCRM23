@@ -75,6 +75,7 @@ interface DashboardMetrics {
 
 export default function SalesRepDashboard({ currentUser }: SalesRepDashboardProps) {
   const [selectedContact, setSelectedContact] = useState<any>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     dailyGoals: {
       callsTarget: 50,
@@ -318,6 +319,7 @@ export default function SalesRepDashboard({ currentUser }: SalesRepDashboardProp
                   };
                   console.log('Setting contact data:', contactData);
                   setSelectedContact(contactData);
+                  setIsDetailsModalOpen(true);
                 }}
               >
                 <CardContent className="p-4">
@@ -701,19 +703,13 @@ Username: ${currentUser?.firstName?.toLowerCase() || 'sales'}.${currentUser?.las
       {selectedContact && (
         <ContactDetailsModal
           contact={selectedContact}
-          isOpen={!!selectedContact}
+          isOpen={isDetailsModalOpen}
           onClose={() => {
             console.log('Closing modal');
             setSelectedContact(null);
+            setIsDetailsModalOpen(false);
           }}
         />
-      )}
-      
-      {/* Debug Info */}
-      {selectedContact && (
-        <div className="fixed top-4 right-4 bg-red-100 p-2 text-xs z-50">
-          Modal should be open for: {selectedContact.firstName} {selectedContact.lastName}
-        </div>
       )}
     </div>
   );
