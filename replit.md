@@ -378,6 +378,8 @@ The application uses a comprehensive schema including:
 - June 28, 2025. Updated CRM interface terminology from "Contact Management" to "Lead Card Management" throughout the platform for consistent lead-focused messaging
 - June 28, 2025. Renamed contact interface elements to "lead cards" including search placeholder, badge counts, and page headers for unified lead terminology
 - June 28, 2025. Added centered "Lead Card" title to each individual lead card in CRM interface for clear card identification and improved visual hierarchy
+- June 28, 2025. Enhanced AI Conversation Starter system to differentiate between Bark.com inbound leads (actively seeking services) versus outbound cold calling leads (requiring different approach)
+- June 28, 2025. Updated AI starter categories to reflect appropriate conversation strategies for inbound vs outbound lead types with clear visual indicators
 
 ## User Preferences
 

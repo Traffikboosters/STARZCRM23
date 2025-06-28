@@ -33,7 +33,25 @@ const AIConversationStarters = ({ contact }: { contact: Contact | null }) => {
                     contact.notes?.toLowerCase().includes('electric') ? 'electrical' :
                     contact.company?.toLowerCase().includes('restaurant') ? 'restaurant' : 'general';
 
-    const starters = {
+    // Check if this is a Bark.com lead (inbound) vs outbound cold calling
+    const isBarkLead = contact.leadSource === 'bark' || contact.notes?.toLowerCase().includes('bark');
+    
+    const starters = isBarkLead ? {
+      // INBOUND BARK.COM LEADS - Already seeking services
+      service_follow_up: [
+        `Hi ${contact.firstName}, thank you for your inquiry on Bark.com! I see you're looking for ${industry === 'hvac' ? 'HVAC services' : industry === 'plumbing' ? 'plumbing services' : industry === 'electrical' ? 'electrical services' : 'professional services'}. I'd love to discuss how we can help with your project.`,
+        `${contact.firstName}, I'm following up on your Bark request. We specialize in exactly what you're looking for and have availability this week. When would be a good time for a quick call to discuss your project details?`
+      ],
+      project_details: [
+        `Hi ${contact.firstName}, I reviewed your Bark inquiry and we're definitely the right fit for your project. I have some questions about your timeline and budget to make sure we provide the perfect solution for you.`,
+        `${contact.firstName}, thank you for reaching out on Bark! Based on your request, I can already see a few ways we can exceed your expectations. Would you prefer to discuss this over a quick call or via text?`
+      ],
+      immediate_help: [
+        `Hi ${contact.firstName}, I saw your Bark posting and wanted to respond quickly since you mentioned this is ${contact.priority === 'high' ? 'urgent' : 'time-sensitive'}. We can start on your project immediately. Are you available for a brief call today?`,
+        `${contact.firstName}, perfect timing! We just had a cancellation and can prioritize your Bark request. I'd love to give you a quote and timeline that works perfectly for your needs.`
+      ]
+    } : {
+      // OUTBOUND COLD CALLING LEADS - Need introduction and value proposition
       industry_insight: [
         `Hi ${contact.firstName}, I noticed ${contact.company || 'your business'} might benefit from our digital marketing solutions. We've helped similar businesses in ${contact.notes?.includes('Texas') ? 'Texas' : 'your area'} increase their online visibility by 300%.`,
         `${contact.firstName}, businesses like yours typically see a 150% increase in leads within 90 days of implementing our marketing system. Would you be interested in a quick 15-minute call to discuss how this could work for ${contact.company || 'your business'}?`
@@ -48,22 +66,40 @@ const AIConversationStarters = ({ contact }: { contact: Contact | null }) => {
       ]
     };
 
-    return starters[selectedCategory as keyof typeof starters] || starters.industry_insight;
+    return starters[selectedCategory as keyof typeof starters] || Object.values(starters)[0];
   };
+
+  const isBarkLead = contact.leadSource === 'bark' || contact.notes?.toLowerCase().includes('bark');
+  const categories = isBarkLead 
+    ? ['service_follow_up', 'project_details', 'immediate_help']
+    : ['industry_insight', 'pain_point', 'success_story'];
+
+  // Set appropriate default category for lead type
+  if ((isBarkLead && !categories.includes(selectedCategory)) || 
+      (!isBarkLead && categories.includes(selectedCategory))) {
+    setSelectedCategory(categories[0]);
+  }
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2 mb-4">
-        {['industry_insight', 'pain_point', 'success_story'].map((category) => (
-          <Button
-            key={category}
-            variant={selectedCategory === category ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setSelectedCategory(category)}
-          >
-            {category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-          </Button>
-        ))}
+      <div className="mb-4">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-sm font-medium text-gray-700">
+            {isBarkLead ? '🎯 Inbound Lead (Bark.com)' : '📞 Outbound Lead (Cold Call)'}
+          </span>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          {categories.map((category) => (
+            <Button
+              key={category}
+              variant={selectedCategory === category ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setSelectedCategory(category)}
+            >
+              {category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+            </Button>
+          ))}
+        </div>
       </div>
       
       <div className="space-y-3">
