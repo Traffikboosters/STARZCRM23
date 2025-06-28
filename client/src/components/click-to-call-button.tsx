@@ -43,30 +43,17 @@ export default function ClickToCallButton({
       const result = await response.json();
 
       if (result.success) {
-        // Log the call attempt
-        await apiRequest("POST", "/api/call-logs", {
-          phoneNumber: result.phoneNumber,
-          status: "initiated",
-          userId: 1,
-          direction: "outbound",
-          startTime: new Date().toISOString(),
-          notes: `Core plan call prepared via ${result.method}`,
-          contactName: contactName || ""
-        });
-
-        // Create click-to-call action
+        // Create click-to-call action directly
         const telLink = `tel:${phoneNumber.replace(/\D/g, '')}`;
         
         toast({
-          title: "Call Prepared",
-          description: `Ready to call ${contactName || phoneNumber}. Opening phone dialer...`,
-          duration: 4000,
+          title: "Call Ready",
+          description: `Calling ${contactName || phoneNumber} via MightyCall system`,
+          duration: 3000,
         });
 
-        // Auto-open the phone dialer after a brief delay
-        setTimeout(() => {
-          window.open(telLink, '_self');
-        }, 500);
+        // Open phone dialer immediately
+        window.open(telLink, '_self');
         
       } else {
         throw new Error(result.message || 'Call preparation failed');

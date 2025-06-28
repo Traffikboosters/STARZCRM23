@@ -33,23 +33,12 @@ export default function MightyCallCoreInstructions({
       const result = await response.json();
 
       if (result.success) {
-        // Log the call preparation
-        await apiRequest("POST", "/api/call-logs", {
-          phoneNumber: result.phoneNumber,
-          status: "prepared",
-          userId: 1,
-          direction: "outbound",
-          startTime: new Date().toISOString(),
-          notes: `Core plan call prepared - Manual dial required: ${result.dialString}`,
-          contactName: contactName || ""
-        });
-
         setCallPrepared(true);
         onCallInitiated?.();
 
         toast({
-          title: "Call Prepared",
-          description: `Ready to call ${contactName || phoneNumber}`,
+          title: "Call Ready",
+          description: `Calling ${contactName || phoneNumber} via MightyCall`,
         });
 
         // Open the phone dialer
@@ -61,8 +50,8 @@ export default function MightyCallCoreInstructions({
       }
     } catch (error) {
       toast({
-        title: "Call Setup Failed",
-        description: "Unable to prepare call. Check MightyCall configuration.",
+        title: "Call Error",
+        description: "Unable to connect to MightyCall system.",
         variant: "destructive",
       });
     } finally {
