@@ -31,6 +31,7 @@ import { storage } from "./storage";
 import { AILeadScoringEngine } from "./ai-lead-scoring";
 import { AIConversationStarterEngine } from "./ai-conversation-starters";
 import { quickReplyEngine } from "./ai-quick-replies";
+import { AIQuickReplyEngine } from "./ai-quick-reply-engine";
 import { onboardingService } from "./employee-onboarding-complete";
 import { emailMarketingService } from "./email-marketing";
 import { smsMarketingService } from "./sms-marketing";
@@ -5052,6 +5053,78 @@ Email: support@traffikboosters.com
     } catch (error: any) {
       console.error('[SMS] Error sending campaign:', error);
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Smart Context-Aware Quick Reply Templates API endpoint
+  app.post('/api/ai/quick-reply-templates', async (req, res) => {
+    try {
+      const { contactId, context = {} } = req.body;
+      
+      if (!contactId) {
+        return res.status(400).json({ error: 'Contact ID is required' });
+      }
+
+      // Get contact data
+      const contact = await storage.getContact(contactId);
+      if (!contact) {
+        return res.status(404).json({ error: 'Contact not found' });
+      }
+
+      // Generate context-aware quick reply templates
+      const result = AIQuickReplyEngine.generateContextAwareTemplates(contact, context);
+      
+      res.json({
+        success: true,
+        data: result
+      });
+
+    } catch (error: any) {
+      console.error('Error generating quick reply templates:', error);
+      res.status(500).json({ 
+        error: 'Failed to generate quick reply templates',
+        message: error.message 
+      });
+    }
+  });
+
+  // Personalize template endpoint
+  app.post('/api/ai/personalize-template', async (req, res) => {
+    try {
+      const { templateId, contactId, customData = {} } = req.body;
+      
+      if (!templateId || !contactId) {
+        return res.status(400).json({ error: 'Template ID and Contact ID are required' });
+      }
+
+      // Get contact data
+      const contact = await storage.getContact(contactId);
+      if (!contact) {
+        return res.status(404).json({ error: 'Contact not found' });
+      }
+
+      // Get templates and find the specific one
+      const templates = AIQuickReplyEngine.generateContextAwareTemplates(contact);
+      const template = templates.templates.find((t: any) => t.id === templateId);
+      
+      if (!template) {
+        return res.status(404).json({ error: 'Template not found' });
+      }
+
+      // Personalize the template
+      const personalizedTemplate = AIQuickReplyEngine.personalizeTemplate(template, contact);
+      
+      res.json({
+        success: true,
+        data: personalizedTemplate
+      });
+
+    } catch (error: any) {
+      console.error('Error personalizing template:', error);
+      res.status(500).json({ 
+        error: 'Failed to personalize template',
+        message: error.message 
+      });
     }
   });
 
