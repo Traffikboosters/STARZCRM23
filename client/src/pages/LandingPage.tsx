@@ -120,7 +120,7 @@ export default function LandingPage() {
               <img 
                 src={traffikBoostersLogo} 
                 alt="Traffik Boosters" 
-                className="h-12 w-auto object-contain"
+                className="h-16 w-auto object-contain"
               />
               <div className="hidden sm:block">
                 <h1 className="text-xl font-bold text-gray-900">Traffik Boosters</h1>
@@ -373,7 +373,7 @@ export default function LandingPage() {
                 <img 
                   src={traffikBoostersLogo} 
                   alt="Traffik Boosters" 
-                  className="h-10 w-auto object-contain"
+                  className="h-16 w-auto object-contain"
                 />
                 <div>
                   <h3 className="text-lg font-bold">Traffik Boosters</h3>
