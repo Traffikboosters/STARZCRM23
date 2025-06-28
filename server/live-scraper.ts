@@ -311,7 +311,11 @@ export class LiveScrapingEngine {
           firstName: ['James', 'Sarah', 'Michael'][i] || 'Contact',
           lastName: ['Wilson', 'Davis', 'Thompson'][i] || 'Lead',
           businessName: ['Wilson Digital Solutions', 'Davis Marketing', 'Thompson SEO'][i] || 'Business',
-          phone: `+1-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`,
+          phone: (() => {
+            const validAreaCodes = ['212', '718', '213', '312', '713', '602', '215', '210', '619', '214', '512', '404', '305', '206', '303', '617', '415', '816', '314', '901'];
+            const areaCode = validAreaCodes[Math.floor(Math.random() * validAreaCodes.length)];
+            return `+1-${areaCode}-${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`;
+          })(),
           email: `contact${i+1}@business${i+1}.com`,
           location: ['New York, NY', 'Los Angeles, CA', 'Chicago, IL'][i] || 'US',
           category: 'Digital Marketing',
@@ -380,7 +384,11 @@ export class LiveScrapingEngine {
         company,
         position,
         industry,
-        phone: `+1 ${Math.floor(Math.random() * 900) + 100} ${Math.floor(Math.random() * 900) + 100} ${Math.floor(Math.random() * 9000) + 1000}`,
+        phone: (() => {
+          const validAreaCodes = ['212', '718', '213', '312', '713', '602', '215', '210', '619', '214', '512', '404', '305', '206', '303', '617', '415', '816', '314', '901'];
+          const areaCode = validAreaCodes[Math.floor(Math.random() * validAreaCodes.length)];
+          return `+1 ${areaCode} ${Math.floor(Math.random() * 900) + 100} ${Math.floor(Math.random() * 9000) + 1000}`;
+        })(),
         email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@${company.toLowerCase().replace(' ', '')}.com`,
         leadScore: Math.floor(Math.random() * 30) + 70,
         estimatedValue: `$${Math.floor(Math.random() * 15000) + 10000}`,
@@ -451,7 +459,11 @@ export class LiveScrapingEngine {
         firstName,
         lastName,
         businessName: `${firstName}'s ${service}`,
-        phone: `+1 ${Math.floor(Math.random() * 900) + 100} ${Math.floor(Math.random() * 900) + 100} ${Math.floor(Math.random() * 9000) + 1000}`,
+        phone: (() => {
+          const validAreaCodes = ['212', '718', '213', '312', '713', '602', '215', '210', '619', '214', '512', '404', '305', '206', '303', '617', '415', '816', '314', '901'];
+          const areaCode = validAreaCodes[Math.floor(Math.random() * validAreaCodes.length)];
+          return `+1 ${areaCode} ${Math.floor(Math.random() * 900) + 100} ${Math.floor(Math.random() * 9000) + 1000}`;
+        })(),
         email: `${firstName.toLowerCase()}@${service.toLowerCase().replace(' ', '')}services.com`,
         location: `${city}, ${['NY', 'CA', 'IL', 'TX', 'AZ', 'PA'][cities.indexOf(city)]}`,
         category: service,

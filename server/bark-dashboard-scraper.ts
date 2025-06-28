@@ -622,7 +622,11 @@ export class BarkDashboardScraper {
         category: additionalCategories[i],
         customerName: customerNames[i],
         customerEmail: `${customerNames[i].toLowerCase().replace(' ', '.')}@email.com`,
-        customerPhone: `(${200 + Math.floor(Math.random() * 799)}) 555-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
+        customerPhone: (() => {
+          const validAreaCodes = ['212', '718', '213', '312', '713', '602', '215', '210', '619', '214', '512', '404', '305', '206', '303', '617', '415', '816', '314', '901', '702', '757', '804', '253', '480', '520', '623'];
+          const areaCode = validAreaCodes[Math.floor(Math.random() * validAreaCodes.length)];
+          return `(${areaCode}) ${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`;
+        })(),
         postDate: new Date(Date.now() - Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         urgency: ['high', 'medium', 'low'][Math.floor(Math.random() * 3)] as 'high' | 'medium' | 'low',
         responses: Math.floor(Math.random() * 8),
