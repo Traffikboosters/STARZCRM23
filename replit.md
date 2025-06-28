@@ -382,6 +382,7 @@ The application uses a comprehensive schema including:
 - June 28, 2025. Updated AI starter categories to reflect appropriate conversation strategies for inbound vs outbound lead types with clear visual indicators
 - June 28, 2025. CRITICAL FIX: Resolved AI Conversation Starters functionality by adding missing /api/contacts/:contactId/conversation-starters endpoint to server routes
 - June 28, 2025. Successfully tested AI Starters feature with complete conversation suggestions, context analysis, and personalized openers for lead engagement
+- June 28, 2025. Updated platform branding from "Starz" to "STARZ" (all caps) throughout entire system including header, chat widget, email templates, and documentation files
 
 ## User Preferences
 

@@ -4027,11 +4027,11 @@ Email: support@traffikboosters.com
     try {
       const { email, firstName, lastName, username, password, workEmail, platformUrl } = req.body;
 
-      const emailSubject = `Your Starz Platform Access - Direct Login`;
+      const emailSubject = `Your STARZ Platform Access - Direct Login`;
       const emailBody = `
 Dear ${firstName} ${lastName},
 
-Your Starz platform account is ready for immediate access!
+Your STARZ platform account is ready for immediate access!
 
 DIRECT LOGIN CREDENTIALS:
 Username: ${username}
@@ -4087,7 +4087,7 @@ Email: support@traffikboosters.com
               <div style="background: #f9f9f9; padding: 30px; border-radius: 12px; margin: 20px 0; border-left: 4px solid hsl(14, 88%, 55%);">
                 <h2 style="color: hsl(14, 88%, 55%); margin-top: 0;">Platform Access Ready!</h2>
                 <p style="font-size: 16px; line-height: 1.6;">Dear <strong>${firstName} ${lastName}</strong>,</p>
-                <p style="font-size: 16px; line-height: 1.6;">Your Starz platform account is ready for immediate access!</p>
+                <p style="font-size: 16px; line-height: 1.6;">Your STARZ platform account is ready for immediate access!</p>
                 
                 <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid hsl(29, 85%, 58%);">
                   <h3 style="margin-top: 0; color: hsl(14, 88%, 55%);">Direct Login Credentials:</h3>

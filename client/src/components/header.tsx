@@ -129,10 +129,10 @@ export default function Header() {
           </div>
         </div>
         
-        {/* Centered Starz Title */}
+        {/* Centered STARZ Title */}
         <div className="absolute left-1/2 transform -translate-x-1/2">
           <h1 className="text-3xl font-bold text-black whitespace-nowrap">
-            Starz
+            STARZ
           </h1>
         </div>
         

@@ -1,4 +1,4 @@
-# Traffik Boosters Chat Widget Installation Guide
+# STARZ Chat Widget Installation Guide
 
 ## Quick Installation
 

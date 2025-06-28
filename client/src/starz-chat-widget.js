@@ -1,5 +1,5 @@
 /**
- * Starz Chat Widget with Email Auto-Reply
+ * STARZ Chat Widget with Email Auto-Reply
  * Powered by Traffik Boosters - More Traffik! More Sales!
  * 
  * Email Configuration:

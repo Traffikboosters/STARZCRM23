@@ -67,7 +67,7 @@ If your site uses WordPress, contact us for a custom plugin that integrates seam
 ## Setup Steps
 
 ### 1. Get Your Domain Deployment URL
-- Deploy your Starz application to get a permanent domain
+- Deploy your STARZ application to get a permanent domain
 - Note the URL (e.g., `https://your-app.replit.app`)
 
 ### 2. Add Calendar to Website
@@ -185,11 +185,11 @@ Your calendar offers these booking options:
 ### Updates
 - Widget automatically updates with new features
 - No maintenance required on your website
-- All functionality managed through Starz
+- All functionality managed through STARZ
 
 ## Next Steps
 
-1. **Deploy Starz** to get your permanent domain
+1. **Deploy STARZ** to get your permanent domain
 2. **Copy embed code** from Calendar Integration settings
 3. **Add to website** on desired pages
 4. **Test booking flow** with a test appointment
