@@ -1,73 +1,50 @@
 # Traffik Boosters Video Commercial Script
-**Duration: 60 seconds**
+**Duration: 30 seconds**
 **Theme: "More Traffik! More Sales!"**
 
-## Scene 1: Problem Setup (0-15 seconds)
-**Visual:** Split screen showing struggling small businesses
-- Left side: Empty restaurant with owner looking worried
-- Right side: HVAC technician checking empty appointment book
-- Background: Somber, muted colors
+## Scene 1: Problem + Solution (0-10 seconds)
+**Visual:** Split screen transition
+- Left side: Empty restaurant with worried owner (2 seconds)
+- Dynamic whoosh transition to right side: Busy restaurant with customers (2 seconds)
+- Traffik Boosters logo appears with animated "boost" effect (3 seconds)
+- Quick montage: Google search results showing #1 rankings (3 seconds)
 
-**Voiceover (Professional, empathetic tone):**
-"Is your business struggling to get noticed online? Are you losing customers to competitors who show up first on Google?"
-
-**On-Screen Text:** "73% of local businesses struggle with online visibility"
-
-## Scene 2: Solution Introduction (15-30 seconds)
-**Visual:** Dynamic transition to bright, energetic scenes
-- Traffik Boosters logo appears with animated "boost" effect
-- Quick montage of successful businesses: busy restaurant, HVAC truck with multiple service calls
-- Phone notifications showing new leads coming in
-
-**Voiceover (Confident, upbeat):**
-"Introducing Traffik Boosters - the digital marketing experts who turn your online presence into a lead-generating machine!"
+**Voiceover (Fast-paced, confident):**
+"Struggling to get noticed online? Traffik Boosters delivers results!"
 
 **On-Screen Text:** "More Traffik! More Sales!"
 
-## Scene 3: Services Showcase (30-45 seconds)
+## Scene 2: Services + Results (10-20 seconds)
 **Visual:** Fast-paced montage with dynamic graphics
-- Google search results showing client websites ranking #1
-- Before/after website transformations
-- Social media feeds with high engagement
-- Analytics dashboards showing growth metrics
-- Phone ringing with incoming calls
+- Website transformations (2 seconds)
+- Social media feeds with engagement (2 seconds)
+- Analytics dashboard showing growth (2 seconds)
+- Phone notifications and incoming calls (2 seconds)
+- Client testimonial overlay: "300% more leads!" (2 seconds)
 
 **Voiceover (Energetic, results-focused):**
-"From SEO and web design to social media management and PPC advertising - we deliver results that matter. Our clients see an average 300% increase in leads within 90 days!"
+"From SEO to social media, we turn your online presence into a sales machine. Our clients see 300% more leads in 90 days!"
 
 **On-Screen Graphics:**
-- "SEO Optimization"
-- "Website Development" 
-- "Social Media Management"
-- "PPC Advertising"
+- "SEO • Web Design • Social Media • PPC"
 - "300% Lead Increase"
 
-## Scene 4: Testimonial (45-50 seconds)
-**Visual:** Quick testimonial from satisfied client
-- Local business owner in their thriving establishment
-- Split screen showing before (empty) and after (busy) scenes
-
-**Client Quote:**
-"Traffik Boosters transformed our business. We went from 5 calls a week to 50!"
-
-**On-Screen Text:** "Real Results • Real Clients"
-
-## Scene 5: Call to Action (50-60 seconds)
+## Scene 3: Call to Action (20-30 seconds)
 **Visual:** 
-- Traffik Boosters logo prominently displayed
-- Contact information with animated elements
-- Urgency indicators (limited time offer graphics)
+- Traffik Boosters logo prominently displayed (center screen)
+- Contact information with pulsing animation
+- Urgency indicators ("Call Now" flashing)
+- Split screen: Phone number + website
 
 **Voiceover (Urgent, compelling):**
-"Don't let another day go by losing customers to your competition. Call Traffik Boosters now!"
+"Call now: (877) 840-6250. Free consultation. More Traffik! More Sales!"
 
 **On-Screen Text (Large, Bold):**
 - "CALL NOW: (877) 840-6250"
 - "FREE CONSULTATION"
-- "24-Hour Response Guaranteed"
 - "traffikboosters.com"
 
-**Final Logo Animation:** Traffik Boosters logo with tagline "More Traffik! More Sales!"
+**Final Frame:** Traffik Boosters logo with tagline "More Traffik! More Sales!" (holds for 2 seconds)
 
 ---
 
