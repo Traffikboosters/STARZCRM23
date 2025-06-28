@@ -842,11 +842,6 @@ export default function CRMView() {
                 className={`hover:shadow-md transition-all duration-300 border-l-4 border-l-orange-500 ${ageStatus.bgColor}`}
               >
                 <CardHeader className="pb-3">
-                  {/* Centered Lead Card Title */}
-                  <div className="text-center mb-3">
-                    <h3 className="text-lg font-bold text-gray-900">Lead Card</h3>
-                  </div>
-                  
                   <div className="flex items-center justify-between mb-3">
                     <Badge 
                       className={`${ageStatus.badgeColor} text-white text-xs px-2 py-1 ${ageStatus.description === '0-24H' ? ageStatus.animation : ''}`}
@@ -854,18 +849,24 @@ export default function CRMView() {
                       {ageStatus.description}
                     </Badge>
                   </div>
+                  
+                  {/* Centered Logo */}
+                  <div className="flex justify-center mb-3">
+                    <img 
+                      src={traffikBoostersLogo} 
+                      alt="Traffik Boosters" 
+                      className="h-16 w-auto object-contain"
+                      style={{ imageRendering: 'crisp-edges' }}
+                    />
+                  </div>
+                  
                   <div className="flex items-center justify-between mb-2">
-                    <CardTitle className="text-base font-semibold leading-tight flex-1">
+                    <h3 className="text-lg font-bold text-gray-900">LEAD CARD</h3>
+                    <CardTitle className="text-base font-semibold leading-tight flex-1 text-right">
                       <div className="truncate">
                         {contact.company || `${contact.firstName} ${contact.lastName}`}
                       </div>
                     </CardTitle>
-                    <img 
-                      src={traffikBoostersLogo} 
-                      alt="Traffik Boosters" 
-                      className="h-16 w-auto object-contain ml-2 flex-shrink-0"
-                      style={{ imageRendering: 'crisp-edges' }}
-                    />
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
