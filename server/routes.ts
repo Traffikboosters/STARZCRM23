@@ -5088,6 +5088,35 @@ Email: support@traffikboosters.com
     }
   });
 
+  // AI Conversation Starters endpoint
+  app.get('/api/contacts/:contactId/conversation-starters', async (req, res) => {
+    try {
+      const contactId = parseInt(req.params.contactId);
+      
+      if (!contactId) {
+        return res.status(400).json({ error: 'Contact ID is required' });
+      }
+
+      // Get contact data
+      const contact = await storage.getContact(contactId);
+      if (!contact) {
+        return res.status(404).json({ error: 'Contact not found' });
+      }
+
+      // Generate AI conversation starters
+      const conversationStarters = AIConversationStarterEngine.generateConversationStarters(contact);
+      
+      res.json(conversationStarters);
+
+    } catch (error: any) {
+      console.error('Error generating conversation starters:', error);
+      res.status(500).json({ 
+        error: 'Failed to generate conversation starters',
+        message: error.message 
+      });
+    }
+  });
+
   // Personalize template endpoint
   app.post('/api/ai/personalize-template', async (req, res) => {
     try {
