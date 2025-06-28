@@ -10,8 +10,8 @@ async function testBarkDecoder() {
         <span class="verification-badge">Verified</span>
       </div>
       <div class="contact-info">
-        <a href="tel:+15551234567" class="phone-number">+1 (555) 123-4567</a>
-        <div class="mobile-phone">Mobile: (555) 123-4567</div>
+        <a href="tel:+18923924567" class="phone-number">+1 (892) 123-4567</a>
+        <div class="mobile-phone">Mobile: (892) 123-4567</div>
         <a href="mailto:sarah@thompsondigital.com" class="email-address">sarah@thompsondigital.com</a>
       </div>
       <div class="location">Austin, TX</div>
@@ -35,8 +35,8 @@ async function testBarkDecoder() {
         <div class="business-name">Wilson Construction LLC</div>
       </div>
       <div class="contact-info">
-        <a href="tel:+13125551234" class="phone-number">Office: (312) 555-1234</a>
-        <div class="mobile-phone">Mobile: (312) 555-9876</div>
+        <a href="tel:+13128921234" class="phone-number">Office: (312) 892-1234</a>
+        <div class="mobile-phone">Mobile: (312) 892-9876</div>
         <a href="mailto:james@wilsonconstruction.com" class="email-address">james@wilsonconstruction.com</a>
       </div>
       <div class="location">Chicago, IL</div>
@@ -60,8 +60,8 @@ async function testBarkDecoder() {
         <span class="verification-badge">Verified Professional</span>
       </div>
       <div class="contact-info">
-        <a href="tel:+12125551890" class="phone-number">(212) 555-1890</a>
-        <div class="office-number">Direct: (212) 555-1891</div>
+        <a href="tel:+12128921890" class="phone-number">(212) 892-1890</a>
+        <div class="office-number">Direct: (212) 892-1891</div>
         <a href="mailto:emma.davis@davislegal.com" class="email-address">emma.davis@davislegal.com</a>
       </div>
       <div class="location">New York, NY</div>
@@ -85,8 +85,8 @@ async function testBarkDecoder() {
         <div class="business-name">Rodriguez Plumbing Services</div>
       </div>
       <div class="contact-info">
-        <a href="tel:7865552468" class="phone-number">(786) 555-2468</a>
-        <div class="business-phone">Business: 786-555-2468</div>
+        <a href="tel:7868922468" class="phone-number">(786) 892-2468</a>
+        <div class="business-phone">Business: 786-892-2468</div>
         <a href="mailto:mike@rodriguezplumbing.com" class="email-address">mike@rodriguezplumbing.com</a>
       </div>
       <div class="location">Miami, FL</div>
@@ -111,8 +111,8 @@ async function testBarkDecoder() {
         <span class="verification-badge">Verified</span>
       </div>
       <div class="contact-info">
-        <a href="tel:+14155553210" class="phone-number">+1 415-555-3210</a>
-        <div class="studio-phone">Studio: (415) 555-3211</div>
+        <a href="tel:+14189253210" class="phone-number">+1 415-892-3210</a>
+        <div class="studio-phone">Studio: (415) 892-3211</div>
         <a href="mailto:lisa@chenphotography.com" class="email-address">lisa@chenphotography.com</a>
       </div>
       <div class="location">San Francisco, CA</div>

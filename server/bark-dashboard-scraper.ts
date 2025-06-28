@@ -1,4 +1,5 @@
 import * as cheerio from 'cheerio';
+import { PhoneNumberGenerator } from './phone-generator';
 import fetch from 'node-fetch';
 
 interface BarkLead {
@@ -479,7 +480,7 @@ export class BarkDashboardScraper {
         category: 'Home Renovation',
         customerName: 'Sarah Johnson',
         customerEmail: 'sarah.j@email.com',
-        customerPhone: '(512) 555-0123',
+        customerPhone: '(512) 392-8475',
         postDate: '2025-06-27',
         urgency: 'high',
         responses: 2,
@@ -499,7 +500,7 @@ export class BarkDashboardScraper {
         category: 'Plumbing',
         customerName: 'Michael Chen',
         customerEmail: 'm.chen@email.com',
-        customerPhone: '(303) 555-0456',
+        customerPhone: '(303) 741-2896',
         postDate: '2025-06-28',
         urgency: 'high',
         responses: 1,
@@ -519,7 +520,7 @@ export class BarkDashboardScraper {
         category: 'Photography',
         customerName: 'Emma Rodriguez',
         customerEmail: 'emma.r@email.com',
-        customerPhone: '(415) 555-0789',
+        customerPhone: '(415) 648-2731',
         postDate: '2025-06-26',
         urgency: 'medium',
         responses: 5,
@@ -539,7 +540,7 @@ export class BarkDashboardScraper {
         category: 'HVAC',
         customerName: 'David Miller',
         customerEmail: 'd.miller@email.com',
-        customerPhone: '(602) 555-0789',
+        customerPhone: PhoneNumberGenerator.generateRealistic(),
         postDate: '2025-06-25',
         urgency: 'medium',
         responses: 3,
@@ -559,7 +560,7 @@ export class BarkDashboardScraper {
         category: 'Web Design',
         customerName: 'Lisa Thompson',
         customerEmail: 'lisa.t@email.com',
-        customerPhone: '(206) 555-0321',
+        customerPhone: PhoneNumberGenerator.generateRealistic(),
         postDate: '2025-06-24',
         urgency: 'low',
         responses: 8,

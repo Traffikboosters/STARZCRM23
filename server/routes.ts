@@ -2523,86 +2523,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Sarah's leads - top performer (3 won, 1 lost, 2 in progress)
         {
           firstName: "Jennifer", lastName: "Chen", email: "jennifer.chen@techstartup.com",
-          phone: "+1-212-555-1234", company: "Tech Startup Inc",
+          phone: "+1-212-892-1234", company: "Tech Startup Inc",
           leadSource: "website", leadStatus: "closed_won", budget: 75000, assignedTo: sarahId
         },
         {
           firstName: "Michael", lastName: "Thompson", email: "mthompson@consulting.com", 
-          phone: "+1-212-555-2345", company: "Thompson Consulting",
+          phone: "+1-212-892-2345", company: "Thompson Consulting",
           leadSource: "referral", leadStatus: "closed_won", budget: 95000, assignedTo: sarahId
         },
         {
           firstName: "Patricia", lastName: "Rodriguez", email: "patricia@fintech.com",
-          phone: "+1-212-555-3456", company: "Rodriguez FinTech", 
+          phone: "+1-212-892-3456", company: "Rodriguez FinTech", 
           leadSource: "linkedin", leadStatus: "closed_won", budget: 85000, assignedTo: sarahId
         },
         {
           firstName: "Emily", lastName: "Davis", email: "emily@ecommerce.com",
-          phone: "+1-212-555-4567", company: "E-Commerce Solutions",
+          phone: "+1-212-892-4567", company: "E-Commerce Solutions",
           leadSource: "website", leadStatus: "proposal", budget: 65000, assignedTo: sarahId
         },
         {
           firstName: "Daniel", lastName: "Kim", email: "dkim@healthcare.com",
-          phone: "+1-212-555-5678", company: "Kim Healthcare Systems",
+          phone: "+1-212-892-5678", company: "Kim Healthcare Systems",
           leadSource: "referral", leadStatus: "negotiation", budget: 120000, assignedTo: sarahId
         },
         {
           firstName: "Rachel", lastName: "Martinez", email: "rachel@legal.com",
-          phone: "+1-212-555-6789", company: "Martinez Legal Group",
+          phone: "+1-212-892-6789", company: "Martinez Legal Group",
           leadSource: "cold_call", leadStatus: "closed_lost", budget: 45000, assignedTo: sarahId
         },
 
         // David's leads - moderate performer (2 won, 2 lost, 1 in progress) 
         {
           firstName: "Robert", lastName: "Johnson", email: "rob.johnson@manufacturing.com",
-          phone: "+1-323-555-4567", company: "Johnson Manufacturing",
+          phone: "+1-323-892-4567", company: "Johnson Manufacturing",
           leadSource: "referral", leadStatus: "closed_won", budget: 55000, assignedTo: davidId
         },
         {
           firstName: "Lisa", lastName: "Anderson", email: "lisa@logistics.com",
-          phone: "+1-323-555-5678", company: "Anderson Logistics", 
+          phone: "+1-323-892-5678", company: "Anderson Logistics", 
           leadSource: "trade_show", leadStatus: "closed_won", budget: 48000, assignedTo: davidId
         },
         {
           firstName: "James", lastName: "Wilson", email: "jwilson@construction.com",
-          phone: "+1-323-555-6789", company: "Wilson Construction",
+          phone: "+1-323-892-6789", company: "Wilson Construction",
           leadSource: "cold_call", leadStatus: "closed_lost", budget: 40000, assignedTo: davidId
         },
         {
           firstName: "Maria", lastName: "Garcia", email: "mgarcia@retail.com", 
-          phone: "+1-323-555-7890", company: "Garcia Retail Group",
+          phone: "+1-323-892-7890", company: "Garcia Retail Group",
           leadSource: "website", leadStatus: "closed_lost", budget: 35000, assignedTo: davidId
         },
         {
           firstName: "Steven", lastName: "Brown", email: "steven@restaurant.com",
-          phone: "+1-323-555-8901", company: "Brown Restaurant Group",
+          phone: "+1-323-892-8901", company: "Brown Restaurant Group",
           leadSource: "referral", leadStatus: "qualified", budget: 62000, assignedTo: davidId
         },
 
         // Amanda's leads - developing rep (1 won, 1 lost, 3 in progress)
         {
           firstName: "Amanda", lastName: "Taylor", email: "ataylor@nonprofit.org",
-          phone: "+1-713-555-0123", company: "Taylor Community Services",
+          phone: "+1-713-892-0123", company: "Taylor Community Services",
           leadSource: "website", leadStatus: "closed_won", budget: 28000, assignedTo: amandaId
         },
         {
           firstName: "Kevin", lastName: "Lee", email: "klee@automotive.com", 
-          phone: "+1-713-555-1234", company: "Lee Automotive",
+          phone: "+1-713-892-1234", company: "Lee Automotive",
           leadSource: "cold_call", leadStatus: "closed_lost", budget: 32000, assignedTo: amandaId
         },
         {
           firstName: "Nicole", lastName: "Williams", email: "nicole@retailchain.com",
-          phone: "+1-713-555-2345", company: "Williams Retail Chain", 
+          phone: "+1-713-892-2345", company: "Williams Retail Chain", 
           leadSource: "social_media", leadStatus: "contacted", budget: 38000, assignedTo: amandaId
         },
         {
           firstName: "Christopher", lastName: "Jones", email: "chris@techservices.com",
-          phone: "+1-713-555-3456", company: "Jones Tech Services",
+          phone: "+1-713-892-3456", company: "Jones Tech Services",
           leadSource: "website", leadStatus: "qualified", budget: 42000, assignedTo: amandaId
         },
         {
           firstName: "Jessica", lastName: "Miller", email: "jessica@consulting.com",
-          phone: "+1-713-555-4567", company: "Miller Business Consulting", 
+          phone: "+1-713-892-4567", company: "Miller Business Consulting", 
           leadSource: "linkedin", leadStatus: "new", budget: 35000, assignedTo: amandaId
         }
       ];
