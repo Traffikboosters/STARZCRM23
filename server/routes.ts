@@ -655,10 +655,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // MightyCall Working Call endpoint optimized for Core plan
+  // MightyCall Enhanced Call endpoint for Traffik Boosters
   app.post("/api/mightycall/call", async (req, res) => {
     try {
-      const { phoneNumber, contactName } = req.body;
+      const { phoneNumber, contactName, extension, userId = 1 } = req.body;
       
       if (!phoneNumber) {
         return res.status(400).json({
@@ -667,18 +667,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const result = await workingCaller.initiateWorkingCall(phoneNumber, contactName);
-      
-      res.json({
-        success: result.success,
-        callId: result.callId,
-        phoneNumber: result.phoneNumber,
-        dialString: result.dialString,
-        message: result.message,
-        method: result.method,
-        instructions: result.instructions
+      const callResponse = await mightyCallEnhanced.initiateCall({
+        phoneNumber,
+        contactName,
+        extension,
+        userId
       });
 
+      // Log the call in our database with dial tracking fields
+      if (callResponse.success) {
+        const dialTimestamp = new Date();
+        await storage.createCallLog({
+          contactId: null,
+          userId: userId,
+          phoneNumber: callResponse.displayNumber,
+          direction: "outbound",
+          status: "initiated",
+          startTime: dialTimestamp,
+          dialTimestamp,
+          callHour: dialTimestamp.getHours(),
+          callDate: dialTimestamp.toISOString().split('T')[0],
+          dialResult: "connected",
+          duration: null,
+          notes: `Call to ${contactName || callResponse.displayNumber} via MightyCall`,
+          recording: null
+        });
+      }
+
+      res.json(callResponse);
     } catch (error) {
       res.status(500).json({
         success: false,
@@ -687,14 +703,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // MightyCall Working Status endpoint
-  app.get("/api/mightycall/working-status", async (req, res) => {
+  // MightyCall Enhanced Status endpoint for Traffik Boosters
+  app.get("/api/mightycall/status", async (req, res) => {
     try {
-      const status = await workingCaller.getWorkingStatus();
+      const status = await mightyCallEnhanced.getStatus();
       res.json(status);
     } catch (error) {
       res.status(500).json({
-        error: `Status check failed: ${(error as Error).message}`
+        connected: false,
+        apiAccess: false,
+        accountId: "unknown",
+        integrationLevel: "Offline",
+        message: `MightyCall status check failed: ${(error as Error).message}`
+      });
+    }
+  });
+
+  // MightyCall connection test endpoint
+  app.post("/api/mightycall/test-connection", async (req, res) => {
+    try {
+      const status = await mightyCallEnhanced.getStatus();
+      res.json({
+        success: status.connected,
+        status: status.integrationLevel,
+        message: status.message,
+        instructions: mightyCallEnhanced.generateCallInstructions(status)
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: `Connection test failed: ${(error as Error).message}`
       });
     }
   });
