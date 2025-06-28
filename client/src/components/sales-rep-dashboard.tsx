@@ -303,7 +303,11 @@ export default function SalesRepDashboard({ currentUser }: SalesRepDashboardProp
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log('Lead card clicked:', lead);
+                  console.log('=== LEAD CARD CLICKED ===');
+                  console.log('Lead data:', lead);
+                  console.log('Current modal state:', isDetailsModalOpen);
+                  console.log('Current selected contact:', selectedContactForDetails);
+                  
                   const contactData = {
                     id: lead.id,
                     firstName: lead.name.split(' ')[0],
@@ -317,9 +321,17 @@ export default function SalesRepDashboard({ currentUser }: SalesRepDashboardProp
                     leadSource: lead.source,
                     priority: lead.status === 'New' ? 'high' : 'medium'
                   };
-                  console.log('Setting contact data:', contactData);
+                  
+                  console.log('Setting contact data to:', contactData);
                   setSelectedContactForDetails(contactData);
+                  console.log('Setting modal open to true');
                   setIsDetailsModalOpen(true);
+                  
+                  // Check state after setting
+                  setTimeout(() => {
+                    console.log('Modal state after update:', isDetailsModalOpen);
+                    console.log('Selected contact after update:', selectedContactForDetails);
+                  }, 100);
                 }}
               >
                 <CardContent className="p-4">
