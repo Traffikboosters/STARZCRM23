@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { MapPin, Building, Phone, Mail, Star, DollarSign, Key, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { MapPin, Building, Phone, Mail, Star, DollarSign, Key, CheckCircle, XCircle, AlertCircle, TestTube } from "lucide-react";
 
 interface ExtractionResult {
   success: boolean;
@@ -30,6 +30,8 @@ export default function RealLeadExtractor() {
   const [progress, setProgress] = useState(0);
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractionResults, setExtractionResults] = useState<ExtractionResult | null>(null);
+  const [apiTestResults, setApiTestResults] = useState<any>(null);
+  const [isTesting, setIsTesting] = useState(false);
 
   // Google Maps configuration
   const [googleMapsConfig, setGoogleMapsConfig] = useState({
@@ -203,6 +205,40 @@ export default function RealLeadExtractor() {
       toast({
         title: "Extraction Failed",
         description: error.message || "Failed to extract leads from Yelp",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // API Testing functionality
+  const testGoogleMapsApi = useMutation({
+    mutationFn: async () => {
+      setIsTesting(true);
+      const response = await fetch("/api/test-google-maps-permissions");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setApiTestResults(data);
+      setIsTesting(false);
+      
+      if (data.overallStatus === 'ready') {
+        toast({
+          title: "API Ready",
+          description: "All Google Maps APIs are working correctly",
+        });
+      } else {
+        toast({
+          title: "API Setup Required",
+          description: `${data.workingApis}/${data.totalApis} APIs working. Check setup guide.`,
+          variant: "destructive",
+        });
+      }
+    },
+    onError: (error: any) => {
+      setIsTesting(false);
+      toast({
+        title: "API Test Failed",
+        description: error.message || "Failed to test Google Maps API",
         variant: "destructive",
       });
     },

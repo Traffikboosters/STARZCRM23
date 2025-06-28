@@ -1296,6 +1296,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Comprehensive API permission testing endpoint
+  app.get("/api/test-google-maps-permissions", async (req, res) => {
+    try {
+      const apiKey = process.env.GOOGLE_MAPS_API_KEY || 'AIzaSyAek_29lbVmrNswmCHqsHypfP6-Je0pgh0';
+      
+      // Test 1: Geocoding API
+      const geocodingResponse = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=New+York,NY&key=${apiKey}`
+      );
+      const geocodingData = await geocodingResponse.json();
+      
+      // Test 2: Places API (New) - Text Search
+      const placesResponse = await fetch('https://places.googleapis.com/v1/places:searchText', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': apiKey,
+          'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.rating'
+        },
+        body: JSON.stringify({
+          textQuery: 'restaurants in New York',
+          maxResultCount: 1
+        })
+      });
+      const placesData = await placesResponse.json();
+      
+      // Test 3: Places API (Legacy) - Nearby Search
+      const nearbyResponse = await fetch(
+        `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=40.7128,-74.0060&radius=1000&type=restaurant&key=${apiKey}`
+      );
+      const nearbyData = await nearbyResponse.json();
+      
+      // Analyze test results
+      const testResults = {
+        apiKey: `${apiKey.substring(0, 20)}...`,
+        timestamp: new Date().toISOString(),
+        tests: {
+          geocoding: {
+            status: geocodingData.status,
+            working: geocodingData.status === 'OK',
+            error: geocodingData.error_message || null,
+            apiName: 'Geocoding API'
+          },
+          placesNew: {
+            status: placesData.error?.status || 'OK',
+            working: !placesData.error,
+            error: placesData.error?.message || null,
+            apiName: 'Places API (New)'
+          },
+          placesLegacy: {
+            status: nearbyData.status,
+            working: nearbyData.status === 'OK',
+            error: nearbyData.error_message || null,
+            apiName: 'Places API (Legacy)'
+          }
+        }
+      };
+      
+      // Determine overall status
+      const workingApis = Object.values(testResults.tests).filter(test => test.working).length;
+      const totalApis = Object.keys(testResults.tests).length;
+      
+      let overallStatus: string;
+      let recommendations: string[] = [];
+      
+      if (workingApis === totalApis) {
+        overallStatus = 'ready';
+        recommendations.push('All APIs are working correctly');
+        recommendations.push('You can now extract real business leads');
+      } else if (workingApis === 0) {
+        overallStatus = 'setup_required';
+        recommendations.push('Enable required APIs in Google Cloud Console');
+        recommendations.push('Configure billing account');
+        recommendations.push('Wait 5-10 minutes for API activation');
+      } else {
+        overallStatus = 'partial_setup';
+        recommendations.push('Some APIs are working, others need configuration');
+        recommendations.push('Check individual API status below');
+      }
+      
+      // Add specific error recommendations
+      Object.values(testResults.tests).forEach(test => {
+        if (!test.working && test.error) {
+          if (test.error.includes('API key not valid')) {
+            recommendations.push(`${test.apiName}: Check API key restrictions`);
+          } else if (test.error.includes('not authorized')) {
+            recommendations.push(`${test.apiName}: Enable this API in Cloud Console`);
+          } else if (test.error.includes('billing')) {
+            recommendations.push(`${test.apiName}: Configure billing account`);
+          }
+        }
+      });
+      
+      res.json({
+        success: true,
+        overallStatus,
+        workingApis,
+        totalApis,
+        testResults,
+        recommendations,
+        setupGuide: 'See GOOGLE_MAPS_API_SETUP.md for detailed instructions'
+      });
+      
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        overallStatus: 'error',
+        error: error.message,
+        message: 'Failed to test Google Maps API permissions'
+      });
+    }
+  });
+
   // API key validation endpoints
   app.post("/api/validate-keys/google-maps", requireAuth, async (req: any, res) => {
     try {
