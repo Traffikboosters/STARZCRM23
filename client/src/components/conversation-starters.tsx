@@ -71,7 +71,9 @@ export default function ConversationStarters({ contactId, contactName }: Convers
 
   const { data: conversationData, isLoading, error } = useQuery<ConversationStarterResult>({
     queryKey: [`/api/contacts/${contactId}/conversation-starters`],
-    enabled: !!contactId
+    enabled: !!contactId,
+    retry: 1,
+    staleTime: 30000
   });
 
   const copyToClipboard = (text: string, type: string) => {
@@ -111,6 +113,7 @@ export default function ConversationStarters({ contactId, contactName }: Convers
   }
 
   if (error) {
+    console.error('Conversation starters error:', error);
     return (
       <Card className="w-full">
         <CardHeader>
@@ -118,13 +121,33 @@ export default function ConversationStarters({ contactId, contactName }: Convers
             <AlertCircle className="h-5 w-5" />
             Error Loading Suggestions
           </CardTitle>
-          <CardDescription>Unable to generate conversation starters at this time.</CardDescription>
+          <CardDescription>
+            Unable to generate conversation starters at this time.
+            <br />
+            Error: {error?.message || 'Unknown error'}
+          </CardDescription>
         </CardHeader>
       </Card>
     );
   }
 
-  if (!conversationData) return null;
+  console.log('ConversationStarters data:', conversationData);
+  console.log('ConversationStarters loading:', isLoading);
+  console.log('ConversationStarters contactId:', contactId);
+
+  if (!conversationData) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Brain className="h-5 w-5 text-blue-600" />
+            AI Conversation Starters
+          </CardTitle>
+          <CardDescription>No conversation data available</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
