@@ -2,7 +2,7 @@ import {
   users, contacts, events, files, automations, scrapingJobs, companies, chatMessages, chatConversations,
   callLogs, campaigns, leadAllocations, documentTemplates, signingRequests, servicePackages, costStructure, profitabilityAnalysis, userInvitations,
   userSessions, userActivity, technicalProjects, technicalTasks, timeEntries,
-  callRecordings, voiceToneAnalysis, callInsights, keyCallMoments, callParticipants, voiceTrendAnalysis,
+  callRecordings, voiceToneAnalysis, callInsights, keyCallMoments, callParticipants, voiceTrendAnalysis, customerTestimonials,
   type User, type InsertUser, type UserInvitation, type InsertUserInvitation, type Contact, type InsertContact,
   type Event, type InsertEvent, type File, type InsertFile,
   type Automation, type InsertAutomation, type ScrapingJob, type InsertScrapingJob,
@@ -16,7 +16,8 @@ import {
   type TechnicalTask, type InsertTechnicalTask, type TimeEntry, type InsertTimeEntry,
   type CallRecording, type InsertCallRecording, type VoiceToneAnalysis, type InsertVoiceToneAnalysis,
   type CallInsights, type InsertCallInsights, type KeyCallMoments, type InsertKeyCallMoments,
-  type CallParticipants, type InsertCallParticipants, type VoiceTrendAnalysis, type InsertVoiceTrendAnalysis
+  type CallParticipants, type InsertCallParticipants, type VoiceTrendAnalysis, type InsertVoiceTrendAnalysis,
+  type CustomerTestimonial, type InsertCustomerTestimonial
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, like, and, between, desc } from "drizzle-orm";

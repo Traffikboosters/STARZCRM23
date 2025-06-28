@@ -1143,3 +1143,38 @@ export type CallParticipants = typeof callParticipants.$inferSelect;
 export type InsertCallParticipants = z.infer<typeof insertCallParticipantsSchema>;
 export type VoiceTrendAnalysis = typeof voiceTrendAnalysis.$inferSelect;
 export type InsertVoiceTrendAnalysis = z.infer<typeof insertVoiceTrendAnalysisSchema>;
+
+export const customerTestimonials = pgTable("customer_testimonials", {
+  id: serial("id").primaryKey(),
+  customerName: text("customer_name").notNull(),
+  companyName: text("company_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  rating: integer("rating").notNull(), // 1-5 star rating
+  testimonialText: text("testimonial_text").notNull(),
+  serviceCategory: text("service_category").notNull(), // SEO, Web Development, PPC, etc.
+  resultMetric: text("result_metric"), // "300% lead increase", "$50K revenue", etc.
+  isApproved: boolean("is_approved").default(false),
+  isPublic: boolean("is_public").default(false),
+  isFeatured: boolean("is_featured").default(false),
+  videoUrl: text("video_url"),
+  photoUrl: text("photo_url"),
+  businessLocation: text("business_location"),
+  businessType: text("business_type"), // HVAC, Plumbing, Restaurant, etc.
+  projectDuration: text("project_duration"), // "3 months", "6 months", etc.
+  submittedBy: integer("submitted_by").references(() => users.id),
+  approvedBy: integer("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertCustomerTestimonialSchema = createInsertSchema(customerTestimonials).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  approvedAt: true,
+});
+
+export type CustomerTestimonial = typeof customerTestimonials.$inferSelect;
+export type InsertCustomerTestimonial = z.infer<typeof insertCustomerTestimonialSchema>;
