@@ -24,6 +24,7 @@ import {
   PhoneCall
 } from "lucide-react";
 import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
+import ContactDetailsModal from "./contact-details-modal";
 
 interface SalesRepDashboardProps {
   currentUser: any;
@@ -73,6 +74,7 @@ interface DashboardMetrics {
 }
 
 export default function SalesRepDashboard({ currentUser }: SalesRepDashboardProps) {
+  const [selectedContact, setSelectedContact] = useState<any>(null);
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     dailyGoals: {
       callsTarget: 50,
@@ -294,7 +296,23 @@ export default function SalesRepDashboard({ currentUser }: SalesRepDashboardProp
         <TabsContent value="leads" className="space-y-4">
           <div className="space-y-4">
             {metrics.recentLeads.map((lead) => (
-              <Card key={lead.id} className="hover:shadow-md transition-all">
+              <Card 
+                key={lead.id} 
+                className="hover:shadow-md transition-all cursor-pointer"
+                onClick={() => setSelectedContact({
+                  id: lead.id,
+                  firstName: lead.name.split(' ')[0],
+                  lastName: lead.name.split(' ').slice(1).join(' '),
+                  email: lead.email,
+                  phone: lead.phone,
+                  company: lead.company,
+                  status: lead.status,
+                  dealValue: lead.value,
+                  notes: `${lead.source} lead - ${lead.age} old`,
+                  leadSource: lead.source,
+                  priority: lead.status === 'New' ? 'high' : 'medium'
+                })}
+              >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
@@ -671,6 +689,15 @@ Username: ${currentUser?.firstName?.toLowerCase() || 'sales'}.${currentUser?.las
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Contact Details Modal */}
+      {selectedContact && (
+        <ContactDetailsModal
+          contact={selectedContact}
+          isOpen={!!selectedContact}
+          onClose={() => setSelectedContact(null)}
+        />
+      )}
     </div>
   );
 }
