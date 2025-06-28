@@ -3589,6 +3589,41 @@ Appointment Details:
     }
   });
 
+  // AI Quick Reply Templates endpoint
+  app.post("/api/contacts/:id/quick-replies", requireAuth, async (req: any, res) => {
+    try {
+      const contactId = parseInt(req.params.id);
+      const { replyType } = req.body;
+      
+      const contact = await storage.getContact(contactId);
+      if (!contact) {
+        return res.status(404).json({ message: "Contact not found" });
+      }
+
+      const { aiQuickReplyEngine } = await import("./ai-quick-reply-engine");
+      const quickReplyResult = aiQuickReplyEngine.generateContextAwareTemplates(contact, replyType || 'follow_up');
+      
+      res.json({
+        success: true,
+        data: quickReplyResult,
+        contact: {
+          name: `${contact.firstName} ${contact.lastName}`,
+          company: contact.company,
+          industry: contact.notes?.includes('HVAC') ? 'HVAC' : 
+                   contact.notes?.includes('Restaurant') ? 'Restaurant' :
+                   contact.notes?.includes('Healthcare') ? 'Healthcare' : 'General Business'
+        }
+      });
+    } catch (error: any) {
+      console.error('Quick reply generation error:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to generate quick replies",
+        error: error.message 
+      });
+    }
+  });
+
   // AI Lead Scoring endpoints
   app.post("/api/contacts/:id/score", requireAuth, async (req: any, res) => {
     try {
@@ -3712,31 +3747,77 @@ Appointment Details:
     }
   });
 
-  // Chat widget email auto-reply endpoint
+  // Chat widget email auto-reply endpoint with AI appointment scheduling
   app.post("/api/chat-widget/submit", async (req, res) => {
     try {
-      const { visitorName, visitorEmail, visitorPhone, companyName, message } = req.body;
+      const { name, email, phone, company, message } = req.body;
+      
+      console.log('[Chat Widget] Received submission:', { name, email, phone, company, message });
+      
+      // Validate required fields
+      if (!name || !email || !message) {
+        return res.status(400).json({ error: 'Name, email, and message are required' });
+      }
+      
+      // AI analysis to detect appointment requests
+      const appointmentRequest = analyzeAppointmentRequest(message || '');
+      
+      // Parse name safely
+      const nameParts = (name || '').trim().split(' ');
+      const firstName = nameParts[0] || name;
+      const lastName = nameParts.slice(1).join(' ') || '';
       
       // Create contact in CRM
       const newContact = {
-        firstName: visitorName.split(' ')[0] || visitorName,
-        lastName: visitorName.split(' ').slice(1).join(' ') || '',
-        email: visitorEmail,
-        phone: visitorPhone,
-        company: companyName,
+        firstName,
+        lastName,
+        email: email,
+        phone: phone,
+        company: company,
         leadSource: "chat_widget",
         leadStatus: "new",
-        priority: "medium",
-        notes: `Initial message: ${message}`,
-        tags: ["chat-widget", "website-visitor"],
+        priority: appointmentRequest.detected ? "urgent" : "high",
+        notes: `Initial message: ${message}${appointmentRequest.detected ? ' [APPOINTMENT REQUESTED]' : ''}`,
+        tags: ["chat-widget", "website-visitor"].concat(appointmentRequest.detected ? ["appointment-request"] : []),
         createdBy: 1,
         assignedTo: 1
       };
 
       const contact = await storage.createContact(newContact);
 
+      let scheduledEvent = null;
+
+      // If appointment request detected, schedule it automatically
+      if (appointmentRequest.detected) {
+        try {
+          const appointmentTime = appointmentRequest.suggestedTime || getNextAvailableSlot();
+          
+          scheduledEvent = await storage.createEvent({
+            title: `🤖 AI Scheduled: ${name} - ${appointmentRequest.meetingType}`,
+            description: `Auto-scheduled via AI chat widget analysis\n\nClient Message: "${message}"\n\nContact: ${email}\nCompany: ${company}\nPhone: ${phone}\n\nMeeting Type: ${appointmentRequest.meetingType}\nDetected Intent: ${appointmentRequest.intent}\n\nScheduled automatically based on appointment keywords detected in visitor message.`,
+            startDate: appointmentTime,
+            endDate: new Date(appointmentTime.getTime() + (30 * 60 * 1000)), // 30 minutes
+            attendees: [email],
+            createdBy: 1,
+            type: appointmentRequest.meetingType,
+            status: 'scheduled',
+            isVideoCall: false,
+            videoCallLink: null
+          });
+
+          console.log('[Chat Widget] AI auto-scheduled appointment:', scheduledEvent);
+
+          // Send appointment confirmation email
+          await sendAppointmentConfirmationEmail(email, name, appointmentTime, scheduledEvent, company);
+
+        } catch (scheduleError: any) {
+          console.error('[Chat Widget] Failed to auto-schedule appointment:', scheduleError);
+          // Continue without failing the entire process
+        }
+      }
+
       // Send auto-reply email from starz@traffikboosters.com
-      const autoReplyContent = `Hi ${visitorName},
+      const autoReplyContent = `Hi ${name},
 
 Thank you for contacting Traffik Boosters! We received your message:
 
@@ -3756,7 +3837,7 @@ IMAP: imap.ipage.com:993 | SMTP: smtp.ipage.com:465
 Account: starz@traffikboosters.com`;
 
       // Log the email that would be sent (in production, this would use actual SMTP)
-      console.log(`[Chat Widget] Auto-reply email prepared for ${visitorEmail}`);
+      console.log(`[Chat Widget] Auto-reply email prepared for ${email}`);
       console.log(`[SMTP Config] smtp.ipage.com:465 (SSL/TLS)`);
       console.log(`[From] starz@traffikboosters.com`);
       console.log(`[Subject] Thank you for contacting Traffik Boosters`);
@@ -3788,10 +3869,10 @@ Account: starz@traffikboosters.com`;
           timestamp: new Date().toISOString()
         });
 
-        // Broadcast new lead notification
+        // Broadcast new lead notification with appointment info
         (global as any).broadcast({
           type: 'new_lead',
-          platform: 'Email/Chat Widget',
+          platform: appointmentRequest.detected ? '🎯 Chat Widget - APPOINTMENT SCHEDULED' : 'Chat Widget',
           lead: {
             id: contact.id,
             name: `${contact.firstName} ${contact.lastName}`,
@@ -3801,15 +3882,36 @@ Account: starz@traffikboosters.com`;
             leadSource: 'chat_widget',
             priority: contact.priority
           },
+          appointment: scheduledEvent ? {
+            scheduled: true,
+            time: scheduledEvent.startDate,
+            type: appointmentRequest.meetingType,
+            intent: appointmentRequest.intent,
+            urgency: appointmentRequest.urgency
+          } : null,
+          message: scheduledEvent 
+            ? `🎯 APPOINTMENT AUTO-SCHEDULED: ${name} from ${company} - ${scheduledEvent.startDate.toLocaleString()}`
+            : `New chat lead: ${name} from ${company}`,
           timestamp: new Date().toISOString()
         });
       }
+
+      const responseMessage = scheduledEvent 
+        ? `Thank you! Your consultation has been automatically scheduled for ${scheduledEvent.startDate.toLocaleString()}. You'll receive a confirmation email shortly.`
+        : 'Thank you for your inquiry! A growth expert will call you within 24 business hours.';
 
       res.json({ 
         success: true, 
         contactId: contact.id,
         autoReplyStatus: 'sent',
-        message: 'Contact created and auto-reply email sent'
+        appointmentScheduled: !!scheduledEvent,
+        appointmentDetails: scheduledEvent ? {
+          time: scheduledEvent.startDate.toLocaleString(),
+          type: appointmentRequest.meetingType,
+          intent: appointmentRequest.intent,
+          duration: '30 minutes'
+        } : null,
+        message: responseMessage
       });
 
     } catch (error: any) {
@@ -5077,23 +5179,24 @@ Email: support@traffikboosters.com
     }
   });
 
-  // Smart Context-Aware Quick Reply Templates API endpoint
-  app.post('/api/ai/quick-reply-templates', async (req, res) => {
+  // Smart Context-Aware Quick Reply Templates API endpoint for contact details modal
+  app.post('/api/contacts/:contactId/quick-replies', async (req, res) => {
     try {
-      const { contactId, context = {} } = req.body;
+      const { contactId } = req.params;
+      const { replyType } = req.body;
       
       if (!contactId) {
         return res.status(400).json({ error: 'Contact ID is required' });
       }
 
       // Get contact data
-      const contact = await storage.getContact(contactId);
+      const contact = await storage.getContact(parseInt(contactId));
       if (!contact) {
         return res.status(404).json({ error: 'Contact not found' });
       }
 
-      // Generate context-aware quick reply templates
-      const result = AIQuickReplyEngine.generateContextAwareTemplates(contact, context);
+      // Generate context-aware quick reply templates using the static method
+      const result = aiQuickReplyEngine.generateQuickReplies(contact, replyType);
       
       res.json({
         success: true,
@@ -5537,4 +5640,180 @@ Email: support@traffikboosters.com
   });
 
   return httpServer;
+}
+
+// AI appointment analysis function
+function analyzeAppointmentRequest(message: string) {
+  const appointmentKeywords = [
+    'appointment', 'meeting', 'call', 'schedule', 'consultation', 'demo',
+    'discuss', 'talk', 'chat', 'conference', 'available', 'free time',
+    'calendar', 'book', 'reserve', 'when can', 'availability'
+  ];
+
+  const urgentKeywords = [
+    'urgent', 'asap', 'soon', 'today', 'tomorrow', 'this week',
+    'emergency', 'quickly', 'right away', 'immediately'
+  ];
+
+  const timeKeywords = [
+    'morning', 'afternoon', 'evening', 'monday', 'tuesday', 'wednesday',
+    'thursday', 'friday', 'weekend', 'next week', 'am', 'pm'
+  ];
+
+  const lowercaseMessage = message.toLowerCase();
+  
+  const hasAppointmentRequest = appointmentKeywords.some(keyword => 
+    lowercaseMessage.includes(keyword)
+  );
+
+  const hasUrgency = urgentKeywords.some(keyword => 
+    lowercaseMessage.includes(keyword)
+  );
+
+  const hasTimePreference = timeKeywords.some(keyword => 
+    lowercaseMessage.includes(keyword)
+  );
+
+  let meetingType = 'consultation';
+  if (lowercaseMessage.includes('demo')) meetingType = 'demo';
+  if (lowercaseMessage.includes('proposal')) meetingType = 'proposal';
+  if (lowercaseMessage.includes('discovery')) meetingType = 'discovery';
+
+  let intent = 'general consultation';
+  if (lowercaseMessage.includes('seo')) intent = 'SEO consultation';
+  if (lowercaseMessage.includes('website')) intent = 'website consultation';
+  if (lowercaseMessage.includes('marketing')) intent = 'marketing strategy';
+  if (lowercaseMessage.includes('leads')) intent = 'lead generation';
+
+  return {
+    detected: hasAppointmentRequest,
+    urgency: hasUrgency ? 'high' : 'medium',
+    hasTimePreference,
+    meetingType,
+    intent,
+    suggestedTime: hasUrgency ? getNextAvailableSlot() : getNextBusinessDaySlot()
+  };
+}
+
+// Get next available appointment slot
+function getNextAvailableSlot(): Date {
+  const now = new Date();
+  const nextSlot = new Date(now);
+  
+  // If it's business hours (9 AM - 6 PM EST, Mon-Fri), schedule for 2 hours from now
+  const hour = now.getHours();
+  const day = now.getDay();
+  
+  if (day >= 1 && day <= 5 && hour >= 9 && hour < 16) {
+    // Business hours - schedule 2 hours from now
+    nextSlot.setHours(hour + 2, 0, 0, 0);
+  } else {
+    // After hours - schedule for tomorrow 10 AM
+    nextSlot.setDate(now.getDate() + 1);
+    nextSlot.setHours(10, 0, 0, 0);
+  }
+  
+  return nextSlot;
+}
+
+// Get next business day appointment slot
+function getNextBusinessDaySlot(): Date {
+  const now = new Date();
+  const nextSlot = new Date(now);
+  
+  // Schedule for next business day at 2 PM
+  let daysToAdd = 1;
+  const tomorrow = new Date(now.getTime() + (daysToAdd * 24 * 60 * 60 * 1000));
+  
+  // If tomorrow is weekend, schedule for Monday
+  if (tomorrow.getDay() === 0) daysToAdd = 1; // Sunday -> Monday
+  if (tomorrow.getDay() === 6) daysToAdd = 2; // Saturday -> Monday
+  
+  nextSlot.setDate(now.getDate() + daysToAdd);
+  nextSlot.setHours(14, 0, 0, 0); // 2 PM
+  
+  return nextSlot;
+}
+
+// Send appointment confirmation email
+async function sendAppointmentConfirmationEmail(email: string, name: string, appointmentTime: Date, event: any, company?: string) {
+  // Import nodemailer dynamically for ES modules
+  const nodemailer = await import('nodemailer');
+  
+  try {
+    const transporter = nodemailer.default.createTransport({
+      host: 'smtp.ipage.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'starz@traffikboosters.com',
+        pass: 'Tr@ff1kB00st3rs2024!'
+      }
+    });
+
+    const emailContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%); padding: 20px; text-align: center;">
+          <img src="cid:logo" alt="Traffik Boosters" style="height: 60px; width: auto;">
+          <h1 style="color: white; margin: 10px 0 0 0;">🎯 Appointment Confirmed!</h1>
+        </div>
+        
+        <div style="padding: 30px; background: #f9f9f9;">
+          <h2 style="color: #333;">Hi ${name},</h2>
+          
+          <p style="font-size: 16px; line-height: 1.6; color: #555;">
+            Excellent news! Your consultation appointment has been automatically scheduled by our AI system.
+          </p>
+          
+          <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ff6b35;">
+            <h3 style="margin-top: 0; color: #ff6b35;">📅 Appointment Details</h3>
+            <p><strong>Date & Time:</strong> ${appointmentTime.toLocaleString()}</p>
+            <p><strong>Duration:</strong> 30 minutes</p>
+            <p><strong>Type:</strong> ${event.type}</p>
+            <p><strong>Method:</strong> Phone Call</p>
+            <p><strong>Phone:</strong> (877) 840-6250</p>
+            ${company ? `<p><strong>Company:</strong> ${company}</p>` : ''}
+          </div>
+          
+          <div style="background: #e8f4fd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; color: #0066cc; font-weight: bold;">🤖 AI-Powered Scheduling</p>
+            <p style="margin: 5px 0 0 0; color: #555; font-size: 14px;">
+              This appointment was intelligently scheduled based on your message content and our availability.
+            </p>
+          </div>
+          
+          <p style="font-size: 16px; line-height: 1.6; color: #555;">
+            Our growth expert will call you at the scheduled time to discuss how we can help boost your business traffic and sales.
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <p style="font-size: 18px; font-weight: bold; color: #ff6b35;">More Traffik! More Sales!</p>
+          </div>
+          
+          <p style="font-size: 14px; color: #777; text-align: center;">
+            Questions? Call us at (877) 840-6250 or email starz@traffikboosters.com
+          </p>
+        </div>
+      </div>
+    `;
+
+    const mailOptions = {
+      from: '"Traffik Boosters - AI Scheduling" <starz@traffikboosters.com>',
+      to: email,
+      subject: `🎯 AI Scheduled: Your Consultation - ${appointmentTime.toLocaleDateString()}`,
+      html: emailContent,
+      attachments: [{
+        filename: 'traffik-boosters-logo.png',
+        path: './attached_assets/TRAFIC BOOSTERS3 copy_1751060321835.png',
+        cid: 'logo'
+      }]
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`[Email] AI appointment confirmation sent to ${email}`);
+    
+  } catch (error) {
+    console.error('[Email] Failed to send AI appointment confirmation:', error);
+    throw error;
+  }
 }
