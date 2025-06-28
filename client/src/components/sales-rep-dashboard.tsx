@@ -74,7 +74,7 @@ interface DashboardMetrics {
 }
 
 export default function SalesRepDashboard({ currentUser }: SalesRepDashboardProps) {
-  const [selectedContact, setSelectedContact] = useState<any>(null);
+  const [selectedContactForDetails, setSelectedContactForDetails] = useState<any>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     dailyGoals: {
@@ -318,7 +318,7 @@ export default function SalesRepDashboard({ currentUser }: SalesRepDashboardProp
                     priority: lead.status === 'New' ? 'high' : 'medium'
                   };
                   console.log('Setting contact data:', contactData);
-                  setSelectedContact(contactData);
+                  setSelectedContactForDetails(contactData);
                   setIsDetailsModalOpen(true);
                 }}
               >
@@ -700,17 +700,15 @@ Username: ${currentUser?.firstName?.toLowerCase() || 'sales'}.${currentUser?.las
       </Tabs>
 
       {/* Contact Details Modal */}
-      {selectedContact && (
-        <ContactDetailsModal
-          contact={selectedContact}
-          isOpen={isDetailsModalOpen}
-          onClose={() => {
-            console.log('Closing modal');
-            setSelectedContact(null);
-            setIsDetailsModalOpen(false);
-          }}
-        />
-      )}
+      <ContactDetailsModal
+        contact={selectedContactForDetails}
+        isOpen={isDetailsModalOpen}
+        onClose={() => {
+          console.log('Closing modal');
+          setSelectedContactForDetails(null);
+          setIsDetailsModalOpen(false);
+        }}
+      />
     </div>
   );
 }
