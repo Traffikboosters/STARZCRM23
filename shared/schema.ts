@@ -644,6 +644,116 @@ export const campaigns = pgTable("campaigns", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Voice tone analysis for sales calls
+export const callRecordings = pgTable("call_recordings", {
+  id: serial("id").primaryKey(),
+  callLogId: integer("call_log_id").references(() => callLogs.id),
+  salesRepId: integer("sales_rep_id").references(() => users.id).notNull(),
+  contactId: integer("contact_id").references(() => contacts.id),
+  customerName: text("customer_name").notNull(),
+  callDuration: integer("call_duration").notNull(), // in minutes
+  callDate: timestamp("call_date").notNull(),
+  callOutcome: text("call_outcome").notNull(), // appointment_set, follow_up_scheduled, not_interested, callback_requested, deal_closed, objection_received
+  recordingUrl: text("recording_url"), // URL to call recording file
+  transcript: text("transcript"), // Full call transcript
+  transcriptionStatus: text("transcription_status").default("pending"), // pending, completed, failed
+  analysisStatus: text("analysis_status").default("pending"), // pending, completed, failed
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
+});
+
+export const voiceToneAnalysis = pgTable("voice_tone_analysis", {
+  id: serial("id").primaryKey(),
+  callRecordingId: integer("call_recording_id").references(() => callRecordings.id).notNull(),
+  salesRepId: integer("sales_rep_id").references(() => users.id).notNull(),
+  overallTone: text("overall_tone").notNull(), // professional, friendly, aggressive, passive, confident, uncertain
+  sentimentScore: text("sentiment_score").notNull(), // -1 to 1 scale as text
+  communicationStyle: text("communication_style").notNull(), // consultative, direct, relationship-building, solution-focused, pressure-based
+  emotionalIntelligence: integer("emotional_intelligence").notNull(), // 0-100 scale
+  speakingPace: text("speaking_pace").notNull(), // too_fast, optimal, too_slow
+  wordCount: integer("word_count").notNull(),
+  fillerWords: integer("filler_words").notNull(),
+  interruptionCount: integer("interruption_count").notNull(),
+  // Voice tone metrics (0-100 scale)
+  confidenceScore: integer("confidence_score").notNull(),
+  enthusiasmScore: integer("enthusiasm_score").notNull(),
+  professionalismScore: integer("professionalism_score").notNull(),
+  empathyScore: integer("empathy_score").notNull(),
+  urgencyScore: integer("urgency_score").notNull(),
+  clarityScore: integer("clarity_score").notNull(),
+  persuasivenessScore: integer("persuasiveness_score").notNull(),
+  friendlinessScore: integer("friendliness_score").notNull(),
+  // Analysis metadata
+  analysisTimestamp: timestamp("analysis_timestamp").defaultNow().notNull(),
+  processingTime: integer("processing_time"), // in seconds
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
+export const callInsights = pgTable("call_insights", {
+  id: serial("id").primaryKey(),
+  voiceToneAnalysisId: integer("voice_tone_analysis_id").references(() => voiceToneAnalysis.id).notNull(),
+  salesRepId: integer("sales_rep_id").references(() => users.id).notNull(),
+  performanceScore: integer("performance_score").notNull(), // 0-100 overall performance score
+  improvementAreas: text("improvement_areas").array().notNull(), // array of improvement suggestions
+  strengths: text("strengths").array().notNull(), // array of identified strengths
+  nextCallStrategy: text("next_call_strategy").array().notNull(), // strategic recommendations
+  coachingTips: text("coaching_tips").array().notNull(), // actionable coaching advice
+  recommendations: text("recommendations").array().notNull(), // general recommendations
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
+export const keyCallMoments = pgTable("key_call_moments", {
+  id: serial("id").primaryKey(),
+  voiceToneAnalysisId: integer("voice_tone_analysis_id").references(() => voiceToneAnalysis.id).notNull(),
+  timestamp: text("timestamp").notNull(), // MM:SS format
+  moment: text("moment").notNull(), // description of key moment
+  impact: text("impact").notNull(), // positive, negative, neutral
+  suggestion: text("suggestion"), // optional improvement suggestion
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
+export const callParticipants = pgTable("call_participants", {
+  id: serial("id").primaryKey(),
+  callRecordingId: integer("call_recording_id").references(() => callRecordings.id).notNull(),
+  role: text("role").notNull(), // sales_rep, prospect, customer
+  name: text("name").notNull(),
+  speakingTime: integer("speaking_time").notNull(), // in seconds
+  wordCount: integer("word_count").notNull(),
+  dominanceRatio: text("dominance_ratio").notNull(), // percentage of conversation as text
+  engagementLevel: integer("engagement_level"), // 0-100 for prospects/customers
+  objectionCount: integer("objection_count").default(0),
+  positiveResponses: integer("positive_responses").default(0),
+  questionsAsked: integer("questions_asked").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
+export const voiceTrendAnalysis = pgTable("voice_trend_analysis", {
+  id: serial("id").primaryKey(),
+  salesRepId: integer("sales_rep_id").references(() => users.id).notNull(),
+  timeframe: text("timeframe").notNull(), // week, month, quarter
+  analysisDate: timestamp("analysis_date").notNull(),
+  totalCallsAnalyzed: integer("total_calls_analyzed").notNull(),
+  // Trend indicators
+  confidenceTrend: text("confidence_trend").notNull(), // improving, declining, stable
+  persuasivenessTrend: text("persuasiveness_trend").notNull(),
+  empathyTrend: text("empathy_trend").notNull(),
+  overallPerformanceTrend: text("overall_performance_trend").notNull(),
+  // Average metrics
+  avgConfidence: integer("avg_confidence").notNull(),
+  avgEnthusiasm: integer("avg_enthusiasm").notNull(),
+  avgProfessionalism: integer("avg_professionalism").notNull(),
+  avgEmpathy: integer("avg_empathy").notNull(),
+  avgPersuasiveness: integer("avg_persuasiveness").notNull(),
+  avgClarity: integer("avg_clarity").notNull(),
+  avgFriendliness: integer("avg_friendliness").notNull(),
+  // Performance insights
+  consistencyScore: integer("consistency_score").notNull(), // 0-100
+  topStrengths: text("top_strengths").array().notNull(),
+  persistentWeaknesses: text("persistent_weaknesses").array().notNull(),
+  developmentPlan: text("development_plan").array().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
 export const leadAllocations = pgTable("lead_allocations", {
   id: serial("id").primaryKey(),
   contactId: integer("contact_id").references(() => contacts.id).notNull(),
@@ -838,6 +948,39 @@ export const insertPaymentMethodSchema = createInsertSchema(paymentMethods).omit
   stripePaymentMethodId: true,
 });
 
+// Voice tone analysis insert schemas
+export const insertCallRecordingSchema = createInsertSchema(callRecordings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertVoiceToneAnalysisSchema = createInsertSchema(voiceToneAnalysis).omit({
+  id: true,
+  analysisTimestamp: true,
+  createdAt: true,
+});
+
+export const insertCallInsightsSchema = createInsertSchema(callInsights).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertKeyCallMomentsSchema = createInsertSchema(keyCallMoments).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertCallParticipantsSchema = createInsertSchema(callParticipants).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertVoiceTrendAnalysisSchema = createInsertSchema(voiceTrendAnalysis).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertWorkOrderSchema = createInsertSchema(workOrders).omit({
   id: true,
   createdAt: true,
@@ -986,3 +1129,17 @@ export type DocumentTemplate = typeof documentTemplates.$inferSelect;
 export type InsertDocumentTemplate = z.infer<typeof insertDocumentTemplateSchema>;
 export type SigningRequest = typeof signingRequests.$inferSelect;
 export type InsertSigningRequest = z.infer<typeof insertSigningRequestSchema>;
+
+// Voice tone analysis types
+export type CallRecording = typeof callRecordings.$inferSelect;
+export type InsertCallRecording = z.infer<typeof insertCallRecordingSchema>;
+export type VoiceToneAnalysis = typeof voiceToneAnalysis.$inferSelect;
+export type InsertVoiceToneAnalysis = z.infer<typeof insertVoiceToneAnalysisSchema>;
+export type CallInsights = typeof callInsights.$inferSelect;
+export type InsertCallInsights = z.infer<typeof insertCallInsightsSchema>;
+export type KeyCallMoments = typeof keyCallMoments.$inferSelect;
+export type InsertKeyCallMoments = z.infer<typeof insertKeyCallMomentsSchema>;
+export type CallParticipants = typeof callParticipants.$inferSelect;
+export type InsertCallParticipants = z.infer<typeof insertCallParticipantsSchema>;
+export type VoiceTrendAnalysis = typeof voiceTrendAnalysis.$inferSelect;
+export type InsertVoiceTrendAnalysis = z.infer<typeof insertVoiceTrendAnalysisSchema>;

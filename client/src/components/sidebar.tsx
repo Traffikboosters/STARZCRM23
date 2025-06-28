@@ -30,7 +30,8 @@ import {
   Mail,
   UserCheck,
   Code,
-  Search
+  Search,
+  Mic
 } from "lucide-react";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { Button } from "@/components/ui/button";
@@ -83,6 +84,7 @@ export default function Sidebar({
     { id: "sms-marketing", label: "SMS Marketing", icon: MessageSquare },
     { id: "sales-engagement", label: "Sales Rep Engagement", icon: Activity },
     { id: "technical-portal", label: "Technical Portal", icon: Code },
+    { id: "voice-analysis", label: "Voice Tone Analysis", icon: Mic },
     { id: "hr", label: "HR Portal", icon: UserPlus },
     { id: "dual-onboarding", label: "Employee Onboarding", icon: UserCheck },
   ];

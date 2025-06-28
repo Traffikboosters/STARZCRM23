@@ -42,6 +42,7 @@ import SalesRepEngagement from "@/components/sales-rep-engagement";
 import { DualOnboardingPortal } from "@/components/dual-onboarding-portal";
 import EmailNotificationTest from "@/components/email-notification-test";
 import TechnicalPortal from "@/components/technical-portal";
+import VoiceToneAnalysis from "@/components/voice-tone-analysis";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -135,6 +136,8 @@ export default function Dashboard() {
         return <TechnicalPortal />;
       case "dual-onboarding":
         return <DualOnboardingPortal />;
+      case "voice-analysis":
+        return <VoiceToneAnalysis />;
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
     }
