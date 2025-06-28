@@ -323,6 +323,7 @@ export class LiveScrapingEngine {
           estimatedValue: '$' + (2500 + Math.floor(Math.random() * 2500))
         };
         
+        const importTimestamp = new Date();
         const contact = await storage.createContact({
           firstName: lead.firstName,
           lastName: lead.lastName,
@@ -336,8 +337,7 @@ export class LiveScrapingEngine {
           leadStatus: 'new',
           priority: 'medium',
           aiScore: lead.leadScore,
-          location: lead.location,
-          industry: lead.category,
+          importedAt: importTimestamp,
           createdBy: 1
         });
         

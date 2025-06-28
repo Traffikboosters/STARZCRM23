@@ -139,6 +139,7 @@ export const contacts = pgTable("contacts", {
   engagementScore: integer("engagement_score").default(0), // based on interactions
   qualificationScore: integer("qualification_score").default(0), // BANT qualification score
   lastScoreUpdate: timestamp("last_score_update"),
+  importedAt: timestamp("imported_at").defaultNow().notNull(), // exact time when lead was imported into Starz
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   createdBy: integer("created_by").references(() => users.id),

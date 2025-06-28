@@ -1705,7 +1705,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ].join('. '),
         createdBy: 1,
         assignedTo: 1,
-        industry: category,
+        importedAt: new Date(),
         dealValue: parseInt(['2500', '3500', '5000', '7500', '10000'][Math.floor(Math.random() * 5)])
       });
       
@@ -1781,7 +1781,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ].join('. '),
         createdBy: 1,
         assignedTo: 1,
-        industry: businessType,
+        importedAt: new Date(),
         dealValue: parseInt(['5000', '7500', '10000', '15000', '20000'][Math.floor(Math.random() * 5)])
       });
       

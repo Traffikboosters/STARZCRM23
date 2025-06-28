@@ -932,6 +932,43 @@ export default function CRMView() {
   // Check if any filters are active
   const hasActiveFilters = searchTerm !== "" || statusFilter !== "all" || sourceFilter !== "all";
 
+  // Calculate time since import timestamp
+  const getTimeSinceImport = (importedAt: string | Date) => {
+    if (!importedAt) return 'Unknown';
+    
+    const now = new Date();
+    const importTime = new Date(importedAt);
+    const diffInSeconds = Math.floor((now.getTime() - importTime.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) {
+      return `${diffInSeconds}s ago`;
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes}m ago`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      const minutes = Math.floor((diffInSeconds % 3600) / 60);
+      return `${hours}h ${minutes}m ago`;
+    } else {
+      const days = Math.floor(diffInSeconds / 86400);
+      const hours = Math.floor((diffInSeconds % 86400) / 3600);
+      return `${days}d ${hours}h ago`;
+    }
+  };
+
+  // Format import timestamp for detailed display (H:M:S format)
+  const formatImportTimestamp = (importedAt: string | Date) => {
+    if (!importedAt) return 'No timestamp';
+    
+    const importTime = new Date(importedAt);
+    return importTime.toLocaleString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true
+    });
+  };
+
   // Mutations
   const addContactMutation = useMutation({
     mutationFn: async (data: ContactFormData) => {
@@ -1176,6 +1213,17 @@ export default function CRMView() {
                         <span className="truncate font-medium">{contact.position}</span>
                       </div>
                     )}
+                  </div>
+
+                  {/* Import Timestamp */}
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                    <div className="flex items-center text-xs text-gray-500">
+                      <Clock className="h-3 w-3 mr-1" />
+                      <span>Imported: {formatImportTimestamp(contact.importedAt || contact.createdAt)}</span>
+                    </div>
+                    <div className="text-xs text-blue-600 font-medium">
+                      {getTimeSinceImport(contact.importedAt || contact.createdAt)}
+                    </div>
                   </div>
 
                   {/* Lead Status & Priority */}
