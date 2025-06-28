@@ -354,15 +354,50 @@ export default function SalesRepDashboard({ currentUser }: SalesRepDashboardProp
                       </div>
                     </div>
                     <div className="flex space-x-2">
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Handle call functionality
+                        }}
+                      >
                         <Phone className="h-4 w-4 mr-1" />
                         Call
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Handle email functionality
+                        }}
+                      >
                         <Mail className="h-4 w-4 mr-1" />
                         Email
                       </Button>
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const contactData = {
+                            id: lead.id,
+                            firstName: lead.name.split(' ')[0],
+                            lastName: lead.name.split(' ').slice(1).join(' '),
+                            email: lead.email,
+                            phone: lead.phone,
+                            company: lead.company,
+                            status: lead.status,
+                            dealValue: lead.value,
+                            notes: `${lead.source} lead - ${lead.age} old`,
+                            leadSource: lead.source,
+                            priority: lead.status === 'New' ? 'high' : 'medium'
+                          };
+                          setSelectedContactForDetails(contactData);
+                          setIsDetailsModalOpen(true);
+                        }}
+                      >
                         <Bot className="h-4 w-4 mr-1" />
                         AI Assist
                       </Button>
