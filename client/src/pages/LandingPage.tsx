@@ -19,6 +19,7 @@ export default function LandingPage() {
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -269,7 +270,10 @@ export default function LandingPage() {
                   <p className="text-lg opacity-90 mb-6">
                     Real results from real businesses
                   </p>
-                  <button className="bg-white text-orange-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                  <button 
+                    onClick={() => setShowVideo(true)}
+                    className="bg-white text-orange-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+                  >
                     Watch Demo (3:45)
                   </button>
                 </div>
@@ -494,6 +498,56 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      {/* Video Modal */}
+      {showVideo && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h3 className="text-xl font-semibold">Traffik Boosters - Client Success Stories</h3>
+              <button 
+                onClick={() => setShowVideo(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                ×
+              </button>
+            </div>
+            <div className="aspect-video bg-gray-900 flex items-center justify-center">
+              <div className="text-center text-white p-8">
+                <div className="w-24 h-24 bg-orange-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Play className="w-10 h-10 text-white ml-1" />
+                </div>
+                <h4 className="text-2xl font-bold mb-4">Demo Video Coming Soon</h4>
+                <p className="text-lg mb-6 opacity-90">
+                  We're currently producing a comprehensive video showcasing our client success stories
+                </p>
+                <div className="space-y-3 text-left max-w-md mx-auto">
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                    <span>300% lead increase for HVAC company</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                    <span>$50K monthly revenue for plumbing business</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                    <span>24/7 automated lead generation systems</span>
+                  </div>
+                </div>
+                <div className="mt-8">
+                  <Button 
+                    onClick={() => setShowVideo(false)}
+                    className="bg-orange-600 hover:bg-orange-700 text-white px-8 py-3"
+                  >
+                    Get Free Audit Instead
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
