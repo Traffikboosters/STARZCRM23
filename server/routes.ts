@@ -32,6 +32,7 @@ import { AILeadScoringEngine } from "./ai-lead-scoring";
 import { AIConversationStarterEngine } from "./ai-conversation-starters";
 import { quickReplyEngine } from "./ai-quick-replies";
 import { AIQuickReplyEngine } from "./ai-quick-reply-engine";
+import { AIOnlinePresenceResearcher } from "./ai-online-presence-research";
 import { onboardingService } from "./employee-onboarding-complete";
 import { emailMarketingService } from "./email-marketing";
 import { smsMarketingService } from "./sms-marketing";
@@ -4263,6 +4264,26 @@ Email: support@traffikboosters.com
       res.json(quickReplies);
     } catch (error: any) {
       console.error('[Quick Replies] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // AI Online Presence Research endpoint
+  app.get('/api/contacts/:id/online-presence', async (req, res) => {
+    try {
+      const contactId = parseInt(req.params.id);
+      
+      const contact = await storage.getContact(contactId);
+      
+      if (!contact) {
+        return res.status(404).json({ error: 'Contact not found' });
+      }
+
+      const onlinePresence = await AIOnlinePresenceResearcher.researchOnlinePresence(contact);
+      
+      res.json(onlinePresence);
+    } catch (error: any) {
+      console.error('[Online Presence Research] Error:', error);
       res.status(500).json({ error: error.message });
     }
   });
