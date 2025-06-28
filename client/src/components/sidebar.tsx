@@ -83,6 +83,7 @@ export default function Sidebar({
     { id: "email-marketing", label: "Email Marketing", icon: Mail },
     { id: "sms-marketing", label: "SMS Marketing", icon: MessageSquare },
     { id: "sales-engagement", label: "Sales Rep Engagement", icon: Activity },
+    { id: "sales-rep-dashboard", label: "Sales Rep Dashboard", icon: BarChart3 },
     { id: "technical-portal", label: "Technical Portal", icon: Code },
     { id: "voice-analysis", label: "Voice Tone Analysis", icon: Mic },
     { id: "hr", label: "HR Portal", icon: UserPlus },

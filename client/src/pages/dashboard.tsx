@@ -43,6 +43,7 @@ import { DualOnboardingPortal } from "@/components/dual-onboarding-portal";
 import EmailNotificationTest from "@/components/email-notification-test";
 import TechnicalPortal from "@/components/technical-portal";
 import { VoiceToneAnalysis } from "@/components/voice-tone-analysis";
+import SalesRepDashboard from "@/components/sales-rep-dashboard";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -132,6 +133,8 @@ export default function Dashboard() {
         return <SMSMarketing />;
       case "sales-engagement":
         return <SalesRepEngagement />;
+      case "sales-rep-dashboard":
+        return <SalesRepDashboard currentUser={currentUser} />;
       case "technical-portal":
         return <TechnicalPortal />;
       case "dual-onboarding":
