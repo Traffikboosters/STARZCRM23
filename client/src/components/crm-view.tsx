@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Search, Filter, User, Mail, Phone, Building, MapPin, Calendar, Star, MessageCircle, X, Clock, DollarSign, FileText, ExternalLink, CreditCard, Users, Target, Edit, Send, Video, MoreVertical, CheckCircle, AlertCircle } from "lucide-react";
+import { Plus, Search, Filter, User, Mail, Phone, Building, MapPin, Calendar, Star, MessageCircle, X, Clock, DollarSign, FileText, ExternalLink, CreditCard, Users, Target, Edit, Send, Video, MoreVertical, CheckCircle, AlertCircle, Briefcase, TrendingUp } from "lucide-react";
 import { format } from "date-fns";
 import type { Contact, User as UserType } from "@shared/schema";
 import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
@@ -818,10 +818,78 @@ export default function CRMView() {
                     />
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center text-sm text-gray-600 min-h-[20px]">
-                    <Phone className="h-4 w-4 mr-2 flex-shrink-0" />
-                    <span className="truncate font-medium">{formatPhoneNumber(contact.phone) || 'No phone'}</span>
+                <CardContent className="space-y-3">
+                  {/* Contact Information */}
+                  <div className="space-y-2">
+                    <div className="flex items-center text-sm text-gray-600 min-h-[20px]">
+                      <User className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <span className="truncate font-medium">{contact.firstName} {contact.lastName}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600 min-h-[20px]">
+                      <Phone className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <span className="truncate font-medium">{formatPhoneNumber(contact.phone) || 'No phone'}</span>
+                    </div>
+                    <div className="flex items-center text-sm text-gray-600 min-h-[20px]">
+                      <Mail className="h-4 w-4 mr-2 flex-shrink-0" />
+                      <span className="truncate font-medium">{contact.email || 'No email'}</span>
+                    </div>
+                    {contact.position && (
+                      <div className="flex items-center text-sm text-gray-600 min-h-[20px]">
+                        <Briefcase className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <span className="truncate font-medium">{contact.position}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Lead Status & Priority */}
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs">
+                        {contact.leadStatus?.replace('_', ' ').toUpperCase() || 'NEW'}
+                      </Badge>
+                      {contact.priority && (
+                        <Badge variant={contact.priority === 'high' ? 'destructive' : contact.priority === 'medium' ? 'default' : 'secondary'} className="text-xs">
+                          {contact.priority.toUpperCase()}
+                        </Badge>
+                      )}
+                    </div>
+                    {(currentUser?.role === 'admin' || currentUser?.role === 'manager') && contact.leadSource && (
+                      <span className="text-xs text-gray-500 truncate max-w-[100px]">{contact.leadSource}</span>
+                    )}
+                  </div>
+
+                  {/* Budget & Deal Value */}
+                  {(contact.budget || contact.dealValue) && (
+                    <div className="flex items-center gap-4 text-sm">
+                      {contact.budget && (
+                        <div className="flex items-center text-green-600">
+                          <DollarSign className="h-4 w-4 mr-1" />
+                          <span className="font-medium">${(contact.budget / 100).toLocaleString()}</span>
+                        </div>
+                      )}
+                      {contact.dealValue && (
+                        <div className="flex items-center text-blue-600">
+                          <TrendingUp className="h-4 w-4 mr-1" />
+                          <span className="font-medium">${(contact.dealValue / 100).toLocaleString()}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Last Contact & Next Follow-up */}
+                  <div className="text-xs text-gray-500 space-y-1">
+                    {contact.lastContactedAt && (
+                      <div className="flex items-center">
+                        <Clock className="h-3 w-3 mr-1" />
+                        <span>Last: {format(new Date(contact.lastContactedAt), 'MMM d, yyyy')}</span>
+                      </div>
+                    )}
+                    {contact.nextFollowUpAt && (
+                      <div className="flex items-center">
+                        <Calendar className="h-3 w-3 mr-1" />
+                        <span>Next: {format(new Date(contact.nextFollowUpAt), 'MMM d, yyyy')}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Assigned Sales Rep Display */}
