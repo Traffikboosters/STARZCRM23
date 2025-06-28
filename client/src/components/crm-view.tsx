@@ -855,7 +855,7 @@ export default function CRMView() {
                     <img 
                       src={traffikBoostersLogo} 
                       alt="Traffik Boosters" 
-                      className="h-16 w-auto object-contain"
+                      className="h-25 w-auto object-contain"
                       style={{ imageRendering: 'crisp-edges' }}
                     />
                   </div>
