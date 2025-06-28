@@ -40,6 +40,7 @@ import SMSMarketing from "@/components/sms-marketing";
 import { ChatWidgetBackOffice } from "@/components/chat-widget-backoffice";
 import SalesRepEngagement from "@/components/sales-rep-engagement";
 import { DualOnboardingPortal } from "@/components/dual-onboarding-portal";
+import EmailNotificationTest from "@/components/email-notification-test";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -71,7 +72,14 @@ export default function Dashboard() {
       case "pipeline":
         return <SalesPipeline />;
       case "analytics":
-        return <CRMAnalyticsDashboard />;
+        return (
+          <div className="space-y-6">
+            <CRMAnalyticsDashboard />
+            <div className="flex justify-center">
+              <EmailNotificationTest />
+            </div>
+          </div>
+        );
       case "live-monitoring":
         return <LiveMonitoring />;
       case "sales-analytics":

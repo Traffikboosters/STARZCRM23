@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { EmailNotificationManager } from "./email-notification-sound";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -168,9 +169,13 @@ export default function EmailMarketing() {
       });
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      // Play email notification sound
+      const notificationManager = EmailNotificationManager.getInstance();
+      await notificationManager.playNotification(`Mass email campaign sent to ${data.sentCount} recipients`);
+      
       toast({
-        title: "Campaign Sent",
+        title: "📧 Campaign Sent",
         description: `Successfully sent ${data.sentCount} emails`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/marketing/campaigns"] });

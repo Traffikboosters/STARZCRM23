@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { EmailNotificationManager } from "./email-notification-sound";
 import { 
   MessageCircle, 
   Send, 
@@ -330,8 +331,12 @@ export default function ChatWidget() {
       if (response.ok) {
         const result = await response.json();
         
+        // Play email notification sound
+        const notificationManager = EmailNotificationManager.getInstance();
+        await notificationManager.playNotification(`New lead from ${visitorInfo.name} - ${visitorInfo.company || 'No Company'}`);
+        
         toast({
-          title: "Auto-Reply Sent",
+          title: "📧 Auto-Reply Sent",
           description: `Thank you ${visitorInfo.name}! Auto-reply email sent from starz@traffikboosters.com`,
         });
 
