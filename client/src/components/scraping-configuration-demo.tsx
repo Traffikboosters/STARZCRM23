@@ -304,6 +304,34 @@ const scrapingTemplates = [
     expectedLeads: "60-90 per region",
     conversionRate: "25%",
     targetAudience: "Verified home improvement contractors and professional service providers with established track records"
+  },
+  {
+    id: 12,
+    name: "Google Maps National Business Directory",
+    description: "Local service businesses across all 50 US states with Google ratings and verified contact information",
+    url: "https://maps.google.com/business",
+    selectors: {
+      business_name: ".place-name, .business-title, .listing-name",
+      owner_name: ".business-owner, .contact-person, .manager-name",
+      phone: ".phone-number, .business-phone, .contact-phone",
+      email: ".email-address, .business-email, .contact-email",
+      address: ".full-address, .business-address, .location-info",
+      category: ".business-category, .place-type, .service-category",
+      rating: ".star-rating, .google-rating, .review-score",
+      reviews: ".review-count, .total-reviews, .review-number",
+      hours: ".business-hours, .opening-hours, .operating-times",
+      website: ".website-link, .business-url, .company-website"
+    },
+    filters: {
+      min_rating: 3.0,
+      min_reviews: 10,
+      business_status: "open",
+      verification_status: "verified",
+      service_types: ["HVAC", "plumbing", "electrical", "roofing", "landscaping", "cleaning", "auto repair", "dental", "medical", "legal"]
+    },
+    expectedLeads: "180-250 per scrape",
+    conversionRate: "22%",
+    targetAudience: "Local service businesses across the entire United States with established Google presence"
   }
 ];
 
