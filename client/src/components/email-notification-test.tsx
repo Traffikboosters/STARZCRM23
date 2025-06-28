@@ -23,7 +23,7 @@ export default function EmailNotificationTest() {
       notificationManager.requestNotificationPermission();
       
       // Play email notification sound
-      await notificationManager.playNotification("Test email notification - New lead from John Smith at ABC Company");
+      await notificationManager.playNotification("Test email notification - Bark.com Lead: John Smith at ABC Company");
       
       toast({
         title: "📧 Email Notification Test",

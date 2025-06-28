@@ -90,6 +90,34 @@ export default function LiveMonitoring() {
             timestamp: data.timestamp || new Date().toISOString()
           };
           
+          // Handle individual new lead notifications
+          if (data.type === 'new_lead' && data.platform && data.lead) {
+            const platform = data.platform;
+            const leadName = data.lead.name || `${data.lead.firstName || ''} ${data.lead.lastName || ''}`.trim();
+            const company = data.lead.company || 'Unknown Company';
+            
+            // Show toast notification for new lead with platform source
+            toast({
+              title: `🚀 New ${platform} Lead!`,
+              description: `${leadName} from ${company}`,
+              duration: 6000,
+            });
+
+            // Play audio notification
+            const audio = new Audio('data:audio/wav;base64,UklGRvIBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU4BAABBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+H+sEA');
+            audio.volume = 0.5;
+            audio.play().catch(() => {});
+
+            // Show desktop notification if permission granted
+            if ("Notification" in window && Notification.permission === "granted") {
+              new Notification(`New ${platform} Lead`, {
+                body: `${leadName} from ${company}`,
+                icon: "/favicon.ico",
+                tag: 'new-lead'
+              });
+            }
+          }
+
           // Handle lead assignment notifications
           if (data.type === 'lead_assigned') {
             // Show toast notification for lead assignment

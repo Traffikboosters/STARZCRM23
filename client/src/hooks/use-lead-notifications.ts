@@ -100,8 +100,8 @@ export function useLeadNotifications(options: LeadNotificationOptions) {
   const showBrowserNotification = (lead: IncomingLead) => {
     if (!permissionGranted) return;
 
-    const notification = new Notification(`New ${lead.priority} Priority Lead`, {
-      body: `${lead.businessName} from ${lead.source} - Est. Value: $${lead.estimatedValue.toLocaleString()}`,
+    const notification = new Notification(`New Lead from ${lead.source}`, {
+      body: `${lead.businessName} - ${lead.priority} Priority - Est. Value: $${lead.estimatedValue.toLocaleString()}`,
       icon: '/favicon.ico',
       tag: `lead-${lead.id}`,
       requireInteraction: lead.priority === 'Critical',

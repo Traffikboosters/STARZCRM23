@@ -333,7 +333,7 @@ export default function ChatWidget() {
         
         // Play email notification sound
         const notificationManager = EmailNotificationManager.getInstance();
-        await notificationManager.playNotification(`New lead from ${visitorInfo.name} - ${visitorInfo.company || 'No Company'}`);
+        await notificationManager.playNotification(`Chat Widget Lead: ${visitorInfo.name} - ${visitorInfo.company || 'No Company'}`);
         
         toast({
           title: "📧 Auto-Reply Sent",
