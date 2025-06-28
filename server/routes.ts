@@ -2021,6 +2021,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const savedLeads = [];
       for (const lead of dashboardData.leads) {
         try {
+          // Convert budget string to integer (extract first number and convert to cents)
+          let budgetValue = null;
+          if (lead.budget) {
+            const budgetMatch = lead.budget.match(/\$([0-9,]+)/);
+            if (budgetMatch) {
+              budgetValue = parseInt(budgetMatch[1].replace(/,/g, '')) * 100; // convert to cents
+            }
+          }
+
           const contact = await storage.createContact({
             firstName: lead.customerName.split(' ')[0] || 'Customer',
             lastName: lead.customerName.split(' ').slice(1).join(' ') || 'Lead',
@@ -2028,13 +2037,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             phone: lead.customerPhone || null,
             company: `${lead.category} Client`,
             position: 'Service Requester',
-            source: 'Bark Dashboard',
+            leadSource: 'Bark Dashboard',
             leadStatus: 'new',
+            budget: budgetValue,
             notes: `${lead.title}\n\nDescription: ${lead.description}\n\nBudget: ${lead.budget}\nLocation: ${lead.location}\nUrgency: ${lead.urgency}\nLead Score: ${lead.leadScore}%\nTags: ${lead.tags.join(', ')}`,
             tags: ['bark-dashboard', lead.category.toLowerCase(), lead.urgency, ...lead.tags],
-            leadScore: lead.leadScore,
-            budget: lead.budget,
-            urgency: lead.urgency,
             assignedTo: 1,
             createdBy: 1
           });
@@ -2043,6 +2050,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`[Bark Dashboard] Saved lead: ${lead.title}`);
         } catch (error: any) {
           console.error(`[Bark Dashboard] Error saving lead ${lead.title}:`, error.message);
+          console.error(`[Bark Dashboard] Full error:`, error);
         }
       }
       
@@ -2087,10 +2095,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             id: lead.id,
             name: `${lead.firstName} ${lead.lastName}`,
             company: lead.company,
-            source: lead.source,
-            leadScore: lead.leadScore,
-            budget: lead.budget,
-            urgency: lead.urgency
+            source: lead.leadSource,
+            phone: lead.phone,
+            email: lead.email
           }))
         }
       });
