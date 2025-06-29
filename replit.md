@@ -374,6 +374,7 @@ The application uses a comprehensive schema including:
 - June 29, 2025. Implemented Pro plan web dialer URLs that open directly in browser windows for seamless click-to-call experience
 - June 29, 2025. Updated CRM interface to prioritize MightyCall Pro web dialer over fallback methods for enhanced calling capabilities
 - June 29, 2025. Confirmed API returning webDialerUrl field with Pro plan features enabled for account ID 4f917f13-aae1-401d-8241-010db91da5b2
+- June 29, 2025. Updated MightyCall integration with new secret key (10c2bac9-f2d1-427a-a1d9-31a582a3c782) for enhanced authentication and secure Pro plan access
 - June 28, 2025. Updated click-to-call user experience with "Call Ready" success messages and streamlined phone dialer integration for immediate call initiation
 - June 29, 2025. CALL FAILURE RESOLVED: Fixed "Failed to initiate call" error in CRM contact cards by updating handleCallContact function to use direct phone dialer instead of non-existent API endpoint
 - June 29, 2025. Updated click-to-call functionality to use standard US phone number formatting without country code (+1) for better compatibility with domestic phone systems
