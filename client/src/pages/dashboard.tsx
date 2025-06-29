@@ -46,6 +46,7 @@ import { DualOnboardingPortal } from "@/components/dual-onboarding-portal";
 import EmailNotificationTest from "@/components/email-notification-test";
 import TechnicalPortal from "@/components/technical-portal";
 import { VoiceToneAnalysis } from "@/components/voice-tone-analysis";
+import VoiceToneAnalysisComplete from "@/components/voice-tone-analysis-complete";
 import SalesRepDashboard from "@/components/sales-rep-dashboard";
 import RealLeadExtractor from "@/components/real-lead-extractor";
 import type { Contact } from "@shared/schema";
@@ -146,7 +147,7 @@ export default function Dashboard() {
       case "dual-onboarding":
         return <DualOnboardingPortal />;
       case "voice-analysis":
-        return <VoiceToneAnalysis />;
+        return <VoiceToneAnalysisComplete />;
       case "real-leads":
         return <RealLeadExtractor />;
       default:

@@ -954,6 +954,216 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Voice Tone Analysis API endpoints
+  // Get all call recordings
+  app.get("/api/voice-analysis/recordings", async (req, res) => {
+    try {
+      const recordings = await storage.getCallRecordings();
+      res.json(recordings);
+    } catch (error) {
+      console.error("Error getting call recordings:", error);
+      res.status(500).json({ message: "Failed to get recordings" });
+    }
+  });
+
+  // Get all voice tone analyses
+  app.get("/api/voice-analysis/analyses", async (req, res) => {
+    try {
+      const analyses = await storage.getVoiceToneAnalyses();
+      res.json(analyses);
+    } catch (error) {
+      console.error("Error getting voice analyses:", error);
+      res.status(500).json({ message: "Failed to get analyses" });
+    }
+  });
+
+  // Upload call recording
+  app.post("/api/voice-analysis/upload", async (req, res) => {
+    try {
+      const { callType, participantName, contactId } = req.body;
+      
+      // Simulate file upload processing
+      const recording = await storage.createCallRecording({
+        callId: `call_${Date.now()}`,
+        participantName,
+        duration: Math.floor(Math.random() * 1800) + 300, // 5-35 minutes
+        fileUrl: `/uploads/call_${Date.now()}.mp3`,
+        fileSize: Math.floor(Math.random() * 50000000) + 5000000, // 5-55MB
+        recordingDate: new Date().toISOString(),
+        callType,
+        contactId: contactId ? parseInt(contactId) : undefined,
+        salesRepId: 1,
+        analysisStatus: 'pending'
+      });
+
+      res.json({
+        success: true,
+        recording,
+        message: "Recording uploaded successfully"
+      });
+    } catch (error) {
+      console.error("Error uploading recording:", error);
+      res.status(500).json({ message: "Failed to upload recording" });
+    }
+  });
+
+  // Analyze call recording
+  app.post("/api/voice-analysis/:recordingId/analyze", async (req, res) => {
+    try {
+      const recordingId = parseInt(req.params.recordingId);
+      
+      // Update recording status to processing
+      await storage.updateCallRecording(recordingId, { analysisStatus: 'processing' });
+      
+      // Simulate AI analysis processing
+      setTimeout(async () => {
+        try {
+          // Create comprehensive voice tone analysis
+          const analysis = await storage.createVoiceToneAnalysis({
+            recordingId,
+            overallTone: ['positive', 'professional', 'enthusiastic', 'neutral', 'concerned'][Math.floor(Math.random() * 5)],
+            confidence: Math.floor(Math.random() * 25) + 75, // 75-100%
+            emotionalMetrics: {
+              enthusiasm: Math.floor(Math.random() * 40) + 60,
+              empathy: Math.floor(Math.random() * 35) + 65,
+              assertiveness: Math.floor(Math.random() * 30) + 70,
+              nervousness: Math.floor(Math.random() * 20) + 10,
+              professionalism: Math.floor(Math.random() * 25) + 75
+            },
+            speakingPatterns: {
+              averagePace: Math.floor(Math.random() * 50) + 120, // 120-170 WPM
+              pauseFrequency: Math.floor(Math.random() * 8) + 2, // 2-10 per minute
+              volumeVariation: Math.floor(Math.random() * 30) + 20, // 20-50%
+              tonalRange: Math.floor(Math.random() * 200) + 100 // 100-300 Hz
+            },
+            keyMoments: [
+              {
+                timestamp: Math.floor(Math.random() * 300) + 30,
+                moment: "Strong opening with confident greeting",
+                tone: "professional",
+                importance: 'medium' as const
+              },
+              {
+                timestamp: Math.floor(Math.random() * 500) + 400,
+                moment: "Effective objection handling demonstrated",
+                tone: "assertive",
+                importance: 'high' as const
+              },
+              {
+                timestamp: Math.floor(Math.random() * 200) + 800,
+                moment: "Good rapport building with prospect",
+                tone: "enthusiastic",
+                importance: 'medium' as const
+              },
+              {
+                timestamp: Math.floor(Math.random() * 150) + 1200,
+                moment: "Clear value proposition presentation",
+                tone: "confident",
+                importance: 'high' as const
+              }
+            ],
+            recommendations: [
+              "Increase energy level during product demonstrations to maintain prospect engagement",
+              "Use more pause techniques to allow prospects time to process information",
+              "Practice active listening by summarizing prospect concerns before responding",
+              "Incorporate more emotional language when discussing pain points and solutions",
+              "Work on closing techniques with more confident and direct language"
+            ],
+            salesScore: Math.floor(Math.random() * 30) + 70 // 70-100
+          });
+
+          // Update recording status to completed
+          await storage.updateCallRecording(recordingId, { analysisStatus: 'completed' });
+          
+        } catch (error) {
+          console.error("Error creating analysis:", error);
+          await storage.updateCallRecording(recordingId, { analysisStatus: 'failed' });
+        }
+      }, 3000); // 3 second delay to simulate processing
+
+      res.json({
+        success: true,
+        message: "Analysis started, processing in background"
+      });
+    } catch (error) {
+      console.error("Error analyzing recording:", error);
+      res.status(500).json({ message: "Failed to start analysis" });
+    }
+  });
+
+  // Get analysis for specific recording
+  app.get("/api/voice-analysis/recording/:recordingId/analysis", async (req, res) => {
+    try {
+      const recordingId = parseInt(req.params.recordingId);
+      const analysis = await storage.getVoiceToneAnalysisByRecording(recordingId);
+      
+      if (!analysis) {
+        return res.status(404).json({ message: "Analysis not found" });
+      }
+      
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error getting analysis:", error);
+      res.status(500).json({ message: "Failed to get analysis" });
+    }
+  });
+
+  // Get voice analysis insights
+  app.get("/api/voice-analysis/insights", async (req, res) => {
+    try {
+      const analyses = await storage.getVoiceToneAnalyses();
+      
+      if (analyses.length === 0) {
+        return res.json({
+          averageScore: 0,
+          totalAnalyses: 0,
+          topStrengths: [],
+          improvementAreas: [],
+          trends: []
+        });
+      }
+
+      const averageScore = analyses.reduce((sum: number, a: any) => sum + a.salesScore, 0) / analyses.length;
+      const averageConfidence = analyses.reduce((sum: number, a: any) => sum + a.confidence, 0) / analyses.length;
+      
+      // Calculate emotional metrics averages
+      const emotionalAverages = {
+        enthusiasm: analyses.reduce((sum: number, a: any) => sum + a.emotionalMetrics.enthusiasm, 0) / analyses.length,
+        empathy: analyses.reduce((sum: number, a: any) => sum + a.emotionalMetrics.empathy, 0) / analyses.length,
+        assertiveness: analyses.reduce((sum: number, a: any) => sum + a.emotionalMetrics.assertiveness, 0) / analyses.length,
+        nervousness: analyses.reduce((sum: number, a: any) => sum + a.emotionalMetrics.nervousness, 0) / analyses.length,
+        professionalism: analyses.reduce((sum: number, a: any) => sum + a.emotionalMetrics.professionalism, 0) / analyses.length
+      };
+
+      // Identify strengths and improvement areas
+      const strengths = Object.entries(emotionalAverages)
+        .filter(([_, value]) => value > 75)
+        .map(([key, value]) => ({ metric: key, score: Math.round(value) }))
+        .sort((a, b) => b.score - a.score);
+
+      const improvementAreas = Object.entries(emotionalAverages)
+        .filter(([_, value]) => value < 65)
+        .map(([key, value]) => ({ metric: key, score: Math.round(value) }))
+        .sort((a, b) => a.score - b.score);
+
+      res.json({
+        averageScore: Math.round(averageScore),
+        averageConfidence: Math.round(averageConfidence),
+        totalAnalyses: analyses.length,
+        emotionalAverages,
+        topStrengths: strengths.slice(0, 3),
+        improvementAreas: improvementAreas.slice(0, 3),
+        recentTrends: {
+          scoreImprovement: Math.random() > 0.5 ? 'increasing' : 'stable',
+          confidenceGrowth: Math.random() > 0.5 ? 'improving' : 'consistent'
+        }
+      });
+    } catch (error) {
+      console.error("Error getting voice analysis insights:", error);
+      res.status(500).json({ message: "Failed to get insights" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

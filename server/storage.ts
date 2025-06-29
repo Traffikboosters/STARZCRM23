@@ -205,16 +205,19 @@ export interface IStorage {
   updateTimeEntry(id: number, updates: Partial<InsertTimeEntry>): Promise<TimeEntry | undefined>;
   deleteTimeEntry(id: number): Promise<boolean>;
 
-  // Voice Tone Analysis
-  getAllCallRecordings(): Promise<any[]>;
-  getCallRecording(id: number): Promise<any | undefined>;
-  createCallRecording(recording: any): Promise<any>;
-  updateCallRecording(id: number, updates: any): Promise<any | undefined>;
+  // Voice Tone Analysis - Call Recordings
+  getCallRecordings(): Promise<CallRecording[]>;
+  getCallRecording(id: number): Promise<CallRecording | undefined>;
+  createCallRecording(recording: InsertCallRecording): Promise<CallRecording>;
+  updateCallRecording(id: number, updates: Partial<InsertCallRecording>): Promise<CallRecording | undefined>;
   deleteCallRecording(id: number): Promise<boolean>;
-  getVoiceToneAnalyses(): Promise<any[]>;
-  getVoiceToneAnalysis(id: number): Promise<any | undefined>;
-  createVoiceToneAnalysis(analysis: any): Promise<any>;
-  updateVoiceToneAnalysis(id: number, updates: any): Promise<any | undefined>;
+  
+  // Voice Tone Analysis - Analyses
+  getVoiceToneAnalyses(): Promise<VoiceToneAnalysis[]>;
+  getVoiceToneAnalysis(id: number): Promise<VoiceToneAnalysis | undefined>;
+  getVoiceToneAnalysisByRecording(recordingId: number): Promise<VoiceToneAnalysis | undefined>;
+  createVoiceToneAnalysis(analysis: InsertVoiceToneAnalysis): Promise<VoiceToneAnalysis>;
+  updateVoiceToneAnalysis(id: number, updates: Partial<InsertVoiceToneAnalysis>): Promise<VoiceToneAnalysis | undefined>;
   deleteVoiceToneAnalysis(id: number): Promise<boolean>;
 }
 
@@ -2695,6 +2698,75 @@ Client Approval:
       totalActivitiesToday: todayActivities.length,
       topPerformer
     };
+  }
+
+  // Voice Tone Analysis - Call Recordings
+  async getCallRecordings(): Promise<CallRecording[]> {
+    return await db.select().from(callRecordings).orderBy(desc(callRecordings.createdAt));
+  }
+
+  async getCallRecording(id: number): Promise<CallRecording | undefined> {
+    const [recording] = await db.select().from(callRecordings).where(eq(callRecordings.id, id));
+    return recording || undefined;
+  }
+
+  async createCallRecording(recording: InsertCallRecording): Promise<CallRecording> {
+    const [newRecording] = await db
+      .insert(callRecordings)
+      .values(recording)
+      .returning();
+    return newRecording;
+  }
+
+  async updateCallRecording(id: number, updates: Partial<InsertCallRecording>): Promise<CallRecording | undefined> {
+    const [recording] = await db
+      .update(callRecordings)
+      .set(updates)
+      .where(eq(callRecordings.id, id))
+      .returning();
+    return recording || undefined;
+  }
+
+  async deleteCallRecording(id: number): Promise<boolean> {
+    const result = await db.delete(callRecordings).where(eq(callRecordings.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Voice Tone Analysis - Analyses
+  async getVoiceToneAnalyses(): Promise<VoiceToneAnalysis[]> {
+    return await db.select().from(voiceToneAnalysis).orderBy(desc(voiceToneAnalysis.createdAt));
+  }
+
+  async getVoiceToneAnalysis(id: number): Promise<VoiceToneAnalysis | undefined> {
+    const [analysis] = await db.select().from(voiceToneAnalysis).where(eq(voiceToneAnalysis.id, id));
+    return analysis || undefined;
+  }
+
+  async getVoiceToneAnalysisByRecording(recordingId: number): Promise<VoiceToneAnalysis | undefined> {
+    const [analysis] = await db.select().from(voiceToneAnalysis).where(eq(voiceToneAnalysis.callRecordingId, recordingId));
+    return analysis || undefined;
+  }
+
+  async createVoiceToneAnalysis(analysis: InsertVoiceToneAnalysis): Promise<VoiceToneAnalysis> {
+    const [newAnalysis] = await db
+      .insert(voiceToneAnalysis)
+      .values(analysis)
+      .returning();
+    return newAnalysis;
+  }
+
+  async updateVoiceToneAnalysis(id: number, updates: Partial<InsertVoiceToneAnalysis>): Promise<VoiceToneAnalysis | undefined> {
+    const [analysis] = await db
+      .update(voiceToneAnalysis)
+      .set(updates)
+      .where(eq(voiceToneAnalysis.id, id))
+      .returning();
+    return analysis || undefined;
+  }
+
+  async deleteVoiceToneAnalysis(id: number): Promise<boolean> {
+    const result = await db.delete(voiceToneAnalysis).where(eq(voiceToneAnalysis.id, id));
+    return (result.rowCount ?? 0) > 0;
   }
 }
 

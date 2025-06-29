@@ -239,7 +239,7 @@ export function VoiceToneAnalysis() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label>Call Type</Label>
-                      <select className="w-full mt-1 p-2 border rounded">
+                      <select className="w-full mt-1 p-2 border rounded" id="callType">
                         <option value="discovery">Discovery Call</option>
                         <option value="demo">Product Demo</option>
                         <option value="closing">Closing Call</option>
