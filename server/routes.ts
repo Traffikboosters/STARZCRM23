@@ -140,8 +140,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!validation.success) {
         return res.status(400).json({ error: validation.error });
       }
-      const contact = await storage.createContact(validation.data);
-      logAuditEvent("CREATE", "Contact", contact.id, 1, null, validation.data);
+      
+      // Enhanced contact data with lead source tracking
+      const enhancedContactData = {
+        ...validation.data,
+        leadSource: validation.data.leadSource || 'manual_entry',
+        importedAt: new Date(),
+        createdBy: 1 // Default to admin user
+      };
+      
+      const contact = await storage.createContact(enhancedContactData);
+      
+      // Log lead source activity with timestamp
+      console.log(`LEAD CAPTURED: Source: ${enhancedContactData.leadSource}, Time: ${enhancedContactData.importedAt.toISOString()}, Contact: ${contact.firstName} ${contact.lastName}`);
+      
+      logAuditEvent("CREATE", "Contact", contact.id, 1, null, enhancedContactData);
       res.json(contact);
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
@@ -385,6 +398,145 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         error: 'Failed to initiate call',
         details: (error as Error).message 
+      });
+    }
+  });
+
+  // Lead Source Analytics API
+  app.get('/api/analytics/lead-sources/:timeframe?', async (req, res) => {
+    try {
+      const timeframe = req.params.timeframe || '24h';
+      let dateFilter: Date;
+      
+      switch (timeframe) {
+        case '7d':
+          dateFilter = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case '30d':
+          dateFilter = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        default: // 24h
+          dateFilter = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      }
+
+      const contacts = await storage.getAllContacts();
+      const filteredContacts = contacts.filter((contact: any) => 
+        contact.importedAt && contact.importedAt >= dateFilter
+      );
+
+      // Group by lead source and calculate metrics
+      const sourceGroups = filteredContacts.reduce((groups: any, contact: any) => {
+        const source = contact.leadSource || 'unknown';
+        if (!groups[source]) {
+          groups[source] = {
+            source,
+            count: 0,
+            contacts: [],
+            totalDealValue: 0,
+            conversions: 0
+          };
+        }
+        groups[source].count++;
+        groups[source].contacts.push(contact);
+        groups[source].totalDealValue += contact.dealValue || 0;
+        if (contact.leadStatus === 'closed_won') {
+          groups[source].conversions++;
+        }
+        return groups;
+      }, {});
+
+      // Format response data
+      const sourceData = Object.values(sourceGroups).map((group: any) => ({
+        source: group.source,
+        count: group.count,
+        lastReceived: group.contacts.length > 0 
+          ? group.contacts.sort((a: any, b: any) => 
+              new Date(b.importedAt).getTime() - new Date(a.importedAt).getTime()
+            )[0].importedAt 
+          : new Date().toISOString(),
+        conversionRate: group.count > 0 ? Math.round((group.conversions / group.count) * 100 * 10) / 10 : 0,
+        avgDealValue: group.count > 0 ? Math.round(group.totalDealValue / group.count) : 0,
+        recentLeads: group.contacts
+          .sort((a: any, b: any) => new Date(b.importedAt).getTime() - new Date(a.importedAt).getTime())
+          .slice(0, 3)
+          .map((contact: any) => ({
+            id: contact.id,
+            name: `${contact.firstName} ${contact.lastName}${contact.company ? ' - ' + contact.company : ''}`,
+            timestamp: contact.importedAt,
+            status: contact.leadStatus || 'new'
+          }))
+      })).sort((a, b) => b.count - a.count);
+
+      res.json(sourceData);
+    } catch (error) {
+      console.error('Lead source analytics error:', error);
+      res.status(500).json({ error: 'Failed to fetch lead source analytics' });
+    }
+  });
+
+  // Enhanced contact creation with lead source tracking
+  app.post('/api/contacts/with-source', async (req, res) => {
+    try {
+      const contactData = req.body;
+      
+      // Ensure lead source and timestamp are recorded
+      const enhancedContactData = {
+        ...contactData,
+        leadSource: contactData.leadSource || 'unknown',
+        importedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: 1 // Default to admin user
+      };
+
+      const contact = await storage.createContact(enhancedContactData);
+      
+      // Log lead source activity
+      console.log(`NEW LEAD RECEIVED: Source: ${enhancedContactData.leadSource}, Time: ${enhancedContactData.importedAt.toISOString()}, Contact: ${contact.firstName} ${contact.lastName}`);
+      
+      res.json(contact);
+    } catch (error) {
+      console.error('Enhanced contact creation error:', error);
+      res.status(500).json({ error: 'Failed to create contact with source tracking' });
+    }
+  });
+
+  // Chat Widget Submission with Enhanced Lead Source Tracking
+  app.post('/api/chat-widget/submit', async (req, res) => {
+    try {
+      const { visitorName, visitorEmail, visitorPhone, companyName, message } = req.body;
+      
+      // Create contact with precise lead source tracking
+      const contactData = {
+        firstName: visitorName?.split(' ')[0] || 'Chat',
+        lastName: visitorName?.split(' ').slice(1).join(' ') || 'Visitor',
+        email: visitorEmail,
+        phone: visitorPhone,
+        company: companyName,
+        notes: message || 'Initial contact from chat widget',
+        leadSource: 'chat_widget',
+        leadStatus: 'new',
+        dealValue: 3500, // Average website development deal
+        importedAt: new Date(),
+        createdBy: 1
+      };
+
+      const contact = await storage.createContact(contactData);
+      
+      // Log precise lead source activity
+      console.log(`CHAT WIDGET LEAD: Source: chat_widget, Time: ${contactData.importedAt.toISOString()}, Visitor: ${visitorName}, Email: ${visitorEmail}, Company: ${companyName || 'Not provided'}`);
+      
+      res.json({ 
+        success: true, 
+        message: 'Lead captured successfully',
+        contactId: contact.id,
+        timestamp: contactData.importedAt
+      });
+    } catch (error) {
+      console.error('Chat widget submission error:', error);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to capture chat widget lead' 
       });
     }
   });

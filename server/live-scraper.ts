@@ -333,13 +333,16 @@ export class LiveScrapingEngine {
           position: 'Business Owner',
           tags: ['bark_extraction', 'fallback'],
           notes: 'Lead extracted from Bark.com professional services',
-          leadSource: 'bark_live',
+          leadSource: 'bark_live_scraping',
           leadStatus: 'new',
           priority: 'medium',
           aiScore: lead.leadScore,
           importedAt: importTimestamp,
           createdBy: 1
         });
+        
+        // Log precise lead source activity with timestamp
+        console.log(`BARK LIVE SCRAPING LEAD: Source: bark_live_scraping, Time: ${importTimestamp.toISOString()}, Contact: ${lead.firstName} ${lead.lastName}, Company: ${lead.businessName}`);
         
         this.broadcast({
           type: 'scheduled_lead_extracted',
@@ -399,7 +402,8 @@ export class LiveScrapingEngine {
       
       leads.push(lead);
       
-      // Create contact in database
+      // Create contact in database with precise timestamp tracking
+      const importTimestamp = new Date();
       const contact = await storage.createContact({
         firstName: lead.firstName,
         lastName: lead.lastName,
@@ -409,14 +413,18 @@ export class LiveScrapingEngine {
         position: lead.position,
         tags: lead.tags,
         notes: lead.notes,
-        leadSource: 'businessinsider_scheduled',
+        leadSource: 'businessinsider_live_scraping',
         leadStatus: 'qualified',
         priority: 'high',
         aiScore: lead.leadScore,
         estimatedValue: parseFloat(lead.estimatedValue.replace('$', '')),
         industry: lead.industry,
+        importedAt: importTimestamp,
         createdBy: 1
       });
+      
+      // Log precise lead source activity with timestamp
+      console.log(`BUSINESS INSIDER LIVE SCRAPING LEAD: Source: businessinsider_live_scraping, Time: ${importTimestamp.toISOString()}, Contact: ${lead.firstName} ${lead.lastName}, Company: ${lead.company}, Position: ${lead.position}`);
 
       // Broadcast individual lead
       this.broadcast({
@@ -476,7 +484,8 @@ export class LiveScrapingEngine {
       
       leads.push(lead);
       
-      // Create contact in database
+      // Create contact in database with precise timestamp tracking
+      const importTimestamp = new Date();
       const contact = await storage.createContact({
         firstName: lead.firstName,
         lastName: lead.lastName,
@@ -486,15 +495,18 @@ export class LiveScrapingEngine {
         position: 'Business Owner',
         tags: lead.tags,
         notes: lead.notes,
-        leadSource: 'craigslist_scheduled',
+        leadSource: 'craigslist_live_scraping',
         leadStatus: 'new',
         priority: 'medium',
         aiScore: lead.leadScore,
-        estimatedValue: parseFloat(lead.estimatedValue.replace('$', '')),
         location: lead.location,
         industry: lead.category,
+        importedAt: importTimestamp,
         createdBy: 1
       });
+      
+      // Log precise lead source activity with timestamp
+      console.log(`CRAIGSLIST LIVE SCRAPING LEAD: Source: craigslist_live_scraping, Time: ${importTimestamp.toISOString()}, Contact: ${lead.firstName} ${lead.lastName}, Business: ${lead.businessName}, Location: ${lead.location}`);
 
       // Broadcast individual lead
       this.broadcast({

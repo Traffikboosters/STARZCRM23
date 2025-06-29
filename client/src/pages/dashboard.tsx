@@ -17,6 +17,7 @@ import WorkOrders from "@/pages/work-orders";
 import SecureFileManager from "@/components/secure-file-manager";
 import ChatWidget from "@/components/chat-widget";
 import DocumentSigning from "@/components/document-signing";
+import LeadSourceTracker from "@/components/lead-source-tracker";
 import VideoCallsView from "@/components/video-calls-view";
 import SalesPipeline from "@/components/sales-pipeline";
 import SalesFunnelBuilder from "@/components/sales-funnel-builder";
@@ -85,6 +86,8 @@ export default function Dashboard() {
             </div>
           </div>
         );
+      case "lead-sources":
+        return <LeadSourceTracker />;
       case "live-monitoring":
         return <LiveMonitoring />;
       case "sales-analytics":

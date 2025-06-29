@@ -63,6 +63,7 @@ export default function Sidebar({
     { id: "campaigns", label: "Campaigns", icon: Target },
     { id: "video", label: "Video Calls", icon: Video },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
+    { id: "lead-sources", label: "Lead Source Tracking", icon: Target },
     { id: "live-monitoring", label: "Live Monitoring", icon: BarChart3 },
     { id: "live-extraction", label: "Live Data Extractor", icon: Activity },
     { id: "real-leads", label: "Real Lead Extraction", icon: Search },

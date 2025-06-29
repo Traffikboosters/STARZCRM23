@@ -690,13 +690,14 @@ export default function CRMView() {
         phone: data.phone || null,
         company: data.company || null,
         position: data.position || null,
-        leadSource: data.leadSource || null,
+        leadSource: data.leadSource || 'manual_entry',
         leadStatus: data.leadStatus || "new",
         priority: data.priority || "medium",
         notes: data.notes || null,
       };
 
-      const response = await apiRequest("POST", "/api/contacts", contactData);
+      // Use enhanced contact creation endpoint with lead source tracking
+      const response = await apiRequest("POST", "/api/contacts/with-source", contactData);
       if (!response.ok) {
         throw new Error("Failed to add contact");
       }
