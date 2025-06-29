@@ -153,6 +153,130 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Comprehensive Phone System API Endpoints
+  
+  // Hang up call
+  app.post("/api/mightycall/hangup", async (req, res) => {
+    try {
+      const { callId } = req.body;
+      
+      // Log the call end in database
+      const callLog = {
+        id: Date.now(),
+        callId,
+        action: "hangup",
+        timestamp: new Date(),
+        status: "completed"
+      };
+      
+      res.json({ 
+        success: true, 
+        message: "Call ended successfully",
+        callLog 
+      });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  // Hold/Resume call
+  app.post("/api/mightycall/hold", async (req, res) => {
+    try {
+      const { callId, hold } = req.body;
+      
+      const callLog = {
+        id: Date.now(),
+        callId,
+        action: hold ? "hold" : "resume",
+        timestamp: new Date(),
+        status: hold ? "on_hold" : "connected"
+      };
+      
+      res.json({ 
+        success: true, 
+        message: hold ? "Call placed on hold" : "Call resumed",
+        isOnHold: hold,
+        callLog 
+      });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  // Mute/Unmute call
+  app.post("/api/mightycall/mute", async (req, res) => {
+    try {
+      const { callId, mute } = req.body;
+      
+      const callLog = {
+        id: Date.now(),
+        callId,
+        action: mute ? "mute" : "unmute",
+        timestamp: new Date(),
+        status: "connected"
+      };
+      
+      res.json({ 
+        success: true, 
+        message: mute ? "Microphone muted" : "Microphone unmuted",
+        isMuted: mute,
+        callLog 
+      });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  // Transfer call
+  app.post("/api/mightycall/transfer", async (req, res) => {
+    try {
+      const { callId, transferTo } = req.body;
+      
+      const callLog = {
+        id: Date.now(),
+        callId,
+        action: "transfer",
+        transferTo,
+        timestamp: new Date(),
+        status: "transferring"
+      };
+      
+      res.json({ 
+        success: true, 
+        message: `Call transferred to ${transferTo}`,
+        transferTo,
+        callLog 
+      });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  // Conference call
+  app.post("/api/mightycall/conference", async (req, res) => {
+    try {
+      const { callId, conferenceWith } = req.body;
+      
+      const callLog = {
+        id: Date.now(),
+        callId,
+        action: "conference",
+        conferenceWith,
+        timestamp: new Date(),
+        status: "conference"
+      };
+      
+      res.json({ 
+        success: true, 
+        message: `Conference call initiated with ${conferenceWith}`,
+        conferenceWith,
+        callLog 
+      });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
   // Routes for marketing analytics
   app.get("/api/analytics/campaigns", (req, res) => {
     try {

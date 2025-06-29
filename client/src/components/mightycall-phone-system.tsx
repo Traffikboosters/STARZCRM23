@@ -1,9 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Phone, PhoneCall, History, Settings, AlertCircle, CheckCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Phone, 
+  PhoneCall, 
+  PhoneOff, 
+  PhoneForwarded, 
+  Users, 
+  Pause, 
+  Play,
+  Volume2,
+  VolumeX,
+  History, 
+  Settings, 
+  AlertCircle, 
+  CheckCircle,
+  Clock,
+  UserPlus
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
@@ -17,13 +35,49 @@ interface CallLog {
   notes: string;
 }
 
+interface ActiveCall {
+  id: string;
+  phoneNumber: string;
+  contactName?: string;
+  status: 'dialing' | 'connected' | 'on_hold' | 'transferring';
+  startTime: Date;
+  duration: number;
+  isOnHold: boolean;
+  isMuted: boolean;
+}
+
 export function MightyCallPhoneSystem() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [contactName, setContactName] = useState("");
   const [extension, setExtension] = useState("");
   const [isDialing, setIsDialing] = useState(false);
   const [callLogs, setCallLogs] = useState<CallLog[]>([]);
+  const [activeCall, setActiveCall] = useState<ActiveCall | null>(null);
+  const [showTransferDialog, setShowTransferDialog] = useState(false);
+  const [showConferenceDialog, setShowConferenceDialog] = useState(false);
+  const [transferNumber, setTransferNumber] = useState("");
+  const [conferenceNumber, setConferenceNumber] = useState("");
+  const [callTimer, setCallTimer] = useState(0);
   const { toast } = useToast();
+
+  // Update call timer for active calls
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (activeCall && activeCall.status === 'connected') {
+      interval = setInterval(() => {
+        const duration = Math.floor((Date.now() - activeCall.startTime.getTime()) / 1000);
+        setCallTimer(duration);
+        setActiveCall(prev => prev ? { ...prev, duration } : null);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [activeCall]);
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const formatPhoneNumber = (value: string) => {
     const cleaned = value.replace(/\D/g, '');
@@ -39,6 +93,7 @@ export function MightyCallPhoneSystem() {
     setPhoneNumber(formatted);
   };
 
+  // Call management functions
   const initiateCall = async () => {
     if (!phoneNumber) {
       toast({
