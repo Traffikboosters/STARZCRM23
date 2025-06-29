@@ -271,32 +271,37 @@ export default function LeadSourceTrackingFixed() {
         <CardContent>
           <div className="space-y-4">
             {sourceStats.map((source, index) => (
-              <div key={source.source} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center space-x-4">
-                  <LeadSourceBadge source={source.source} size="md" showIcon={true} />
-                  <div>
-                    <h3 className="font-semibold">{source.source.replace('_', ' ').toUpperCase()}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Last activity: {new Date(source.lastActivity).toLocaleDateString()}
-                    </p>
+              <div key={source.source} className="p-4 border rounded-lg">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                  <div className="flex items-center space-x-4">
+                    <LeadSourceBadge source={source.source} size="md" showIcon={true} />
+                    <div>
+                      <h3 className="font-semibold">{source.source.replace('_', ' ').toUpperCase()}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Last activity: {new Date(source.lastActivity).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center space-x-6">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold">{source.count}</p>
-                    <p className="text-xs text-muted-foreground">Leads</p>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:min-w-[400px]">
+                    <div className="text-center">
+                      <p className="text-xl font-bold">{source.count}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Leads</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-semibold text-green-600">{source.conversionRate.toFixed(1)}%</p>
+                      <p className="text-xs text-muted-foreground mt-1">Conversion</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-semibold text-blue-600">{source.avgResponseTime.toFixed(1)}h</p>
+                      <p className="text-xs text-muted-foreground mt-1">Response</p>
+                    </div>
+                    <div className="text-center">
+                      <Badge variant="outline" className="text-sm">
+                        {((source.count / totalLeads) * 100).toFixed(1)}%
+                      </Badge>
+                      <p className="text-xs text-muted-foreground mt-1">Share</p>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <p className="text-lg font-semibold text-green-600">{source.conversionRate.toFixed(1)}%</p>
-                    <p className="text-xs text-muted-foreground">Conversion</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-lg font-semibold text-blue-600">{source.avgResponseTime.toFixed(1)}h</p>
-                    <p className="text-xs text-muted-foreground">Avg Response</p>
-                  </div>
-                  <Badge variant="outline">
-                    {((source.count / totalLeads) * 100).toFixed(1)}%
-                  </Badge>
                 </div>
               </div>
             ))}
