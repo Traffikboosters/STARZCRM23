@@ -1,0 +1,311 @@
+index-nnr0mE6-.js:910 CRM Debug - Total contacts received: 0
+index-nnr0mE6-.js:910 CRM Debug - Sample contact: undefined
+index-nnr0mE6-.js:910 CRM Debug - Search term: 
+index-nnr0mE6-.js:910 CRM Debug - Status filter: all
+index-nnr0mE6-.js:910 CRM Debug - Source filter: all
+index-nnr0mE6-.js:910 CRM Debug - Filtered contacts count: 0
+index-nnr0mE6-.js:797 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+(anonymous) @ index-nnr0mE6-.js:797
+index-nnr0mE6-.js:906 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+(anonymous) @ index-nnr0mE6-.js:906
+index-nnr0mE6-.js:910 CRM Debug - Total contacts received: 531
+index-nnr0mE6-.js:910 CRM Debug - Sample contact: Object
+index-nnr0mE6-.js:910 CRM Debug - Search term: 
+index-nnr0mE6-.js:910 CRM Debug - Status filter: all
+index-nnr0mE6-.js:910 CRM Debug - Source filter: all
+index-nnr0mE6-.js:910 CRM Debug - Filtered contacts count: 531
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket disconnected
+index-nnr0mE6-.js:1190 WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+index-nnr0mE6-.js:1190 WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected
+ WebSocket connection to 'wss://e52a36d3-740c-4744-bb8e-eff1db016728.riker.prod.repl.run/ws' failed: 
+d @ index-nnr0mE6-.js:1190
+ WebSocket error: Event {isTrusted: true, type: 'error', target: WebSocket, currentTarget: WebSocket, eventPhase: 2, …}
+c.current.onerror @ index-nnr0mE6-.js:1190
+ WebSocket disconnected

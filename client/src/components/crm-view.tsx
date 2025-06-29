@@ -867,15 +867,23 @@ export default function CRMView() {
             <div key={i} className="h-40 bg-gray-200 animate-pulse rounded-lg"></div>
           ))}
         </div>
+      ) : filteredContacts.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          No contacts found matching your criteria.
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredContacts.map((contact) => {
-            const ageStatus = getLeadAgeStatus(contact.createdAt);
-            return (
-              <Card 
-                key={contact.id} 
-                className={`hover:shadow-md transition-all duration-300 border-l-4 border-l-orange-500 ${ageStatus.bgColor}`}
-              >
+        <div className="space-y-4">
+          <div className="text-green-600 font-semibold">
+            Displaying {filteredContacts.length} lead cards
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredContacts.map((contact) => {
+              const ageStatus = getLeadAgeStatus(contact.createdAt);
+              return (
+                <Card 
+                  key={contact.id} 
+                  className={`hover:shadow-md transition-all duration-300 border-l-4 border-l-orange-500 ${ageStatus.bgColor} min-h-[200px]`}
+                >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between mb-3">
                     <Badge 
@@ -1212,6 +1220,7 @@ export default function CRMView() {
               </Card>
             );
           })}
+          </div>
         </div>
       )}
 
