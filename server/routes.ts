@@ -980,12 +980,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Upload call recording
   app.post("/api/voice-analysis/upload", async (req, res) => {
     try {
-      const { callType, participantName, contactId } = req.body;
+      const { callType, participantName, industry, contactId } = req.body;
       
       // Simulate file upload processing
       const recording = await storage.createCallRecording({
         callId: `call_${Date.now()}`,
         participantName,
+        industry,
         duration: Math.floor(Math.random() * 1800) + 300, // 5-35 minutes
         fileUrl: `/uploads/call_${Date.now()}.mp3`,
         fileSize: Math.floor(Math.random() * 50000000) + 5000000, // 5-55MB

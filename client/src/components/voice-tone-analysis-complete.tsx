@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Upload, Mic, Play, Pause, BarChart3, TrendingUp, TrendingDown, 
   Clock, Volume2, Target, Award, AlertTriangle, CheckCircle,
@@ -65,6 +66,7 @@ export default function VoiceToneAnalysisComplete() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [callType, setCallType] = useState('discovery');
   const [participantName, setParticipantName] = useState('');
+  const [selectedIndustry, setSelectedIndustry] = useState('');
   const [playingRecording, setPlayingRecording] = useState<number | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -81,11 +83,12 @@ export default function VoiceToneAnalysisComplete() {
 
   // Upload recording mutation
   const uploadMutation = useMutation({
-    mutationFn: async (data: { file: File; callType: string; participantName: string; contactId?: number }) => {
+    mutationFn: async (data: { file: File; callType: string; participantName: string; industry: string; contactId?: number }) => {
       const formData = new FormData();
       formData.append('recording', data.file);
       formData.append('callType', data.callType);
       formData.append('participantName', data.participantName);
+      formData.append('industry', data.industry);
       if (data.contactId) formData.append('contactId', data.contactId.toString());
 
       const response = await fetch('/api/voice-analysis/upload', {
@@ -104,6 +107,7 @@ export default function VoiceToneAnalysisComplete() {
       queryClient.invalidateQueries({ queryKey: ['/api/voice-analysis/recordings'] });
       setSelectedFile(null);
       setParticipantName('');
+      setSelectedIndustry('');
     },
     onError: () => {
       toast({
@@ -145,16 +149,17 @@ export default function VoiceToneAnalysisComplete() {
   };
 
   const handleUpload = () => {
-    if (selectedFile && participantName.trim()) {
+    if (selectedFile && participantName.trim() && selectedIndustry) {
       uploadMutation.mutate({
         file: selectedFile,
         callType,
-        participantName: participantName.trim()
+        participantName: participantName.trim(),
+        industry: selectedIndustry
       });
     } else {
       toast({
         title: "Missing Information",
-        description: "Please select a file and enter participant name",
+        description: "Please select a file, enter participant name, and choose an industry",
         variant: "destructive",
       });
     }
@@ -274,7 +279,7 @@ export default function VoiceToneAnalysisComplete() {
                     </Button>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div>
                       <Label className="text-blue-900">Call Type</Label>
                       <select 
@@ -291,6 +296,36 @@ export default function VoiceToneAnalysisComplete() {
                       </select>
                     </div>
                     <div>
+                      <Label className="text-blue-900">Industry</Label>
+                      <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
+                        <SelectTrigger className="mt-1 border-blue-300 focus:ring-blue-500 focus:border-blue-500">
+                          <SelectValue placeholder="Select industry" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="restaurants">Restaurants & Food Service</SelectItem>
+                          <SelectItem value="retail">Retail & E-commerce</SelectItem>
+                          <SelectItem value="automotive">Automotive Services</SelectItem>
+                          <SelectItem value="healthcare">Healthcare & Medical</SelectItem>
+                          <SelectItem value="professional">Professional Services</SelectItem>
+                          <SelectItem value="beauty">Beauty & Personal Care</SelectItem>
+                          <SelectItem value="home_services">Home Services & Contractors</SelectItem>
+                          <SelectItem value="real_estate">Real Estate</SelectItem>
+                          <SelectItem value="education">Education & Training</SelectItem>
+                          <SelectItem value="entertainment">Entertainment & Events</SelectItem>
+                          <SelectItem value="technology">Technology & Software</SelectItem>
+                          <SelectItem value="manufacturing">Manufacturing & Industrial</SelectItem>
+                          <SelectItem value="fitness">Fitness & Wellness</SelectItem>
+                          <SelectItem value="financial">Financial Services</SelectItem>
+                          <SelectItem value="legal">Legal Services</SelectItem>
+                          <SelectItem value="insurance">Insurance</SelectItem>
+                          <SelectItem value="travel">Travel & Hospitality</SelectItem>
+                          <SelectItem value="construction">Construction & Engineering</SelectItem>
+                          <SelectItem value="consulting">Business Consulting</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
                       <Label className="text-blue-900">Participant Name</Label>
                       <Input 
                         placeholder="Enter prospect/client name" 
@@ -303,7 +338,7 @@ export default function VoiceToneAnalysisComplete() {
 
                   <Button
                     onClick={handleUpload}
-                    disabled={uploadMutation.isPending || !participantName.trim()}
+                    disabled={uploadMutation.isPending || !participantName.trim() || !selectedIndustry}
                     className="w-full bg-blue-600 hover:bg-blue-700"
                   >
                     {uploadMutation.isPending ? (

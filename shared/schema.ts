@@ -652,10 +652,13 @@ export const callRecordings = pgTable("call_recordings", {
   salesRepId: integer("sales_rep_id").references(() => users.id).notNull(),
   contactId: integer("contact_id").references(() => contacts.id),
   customerName: text("customer_name").notNull(),
+  industry: text("industry").notNull(), // industry category for targeted analysis
+  callType: text("call_type").notNull(), // discovery, demo, closing, follow-up, objection, consultation
   callDuration: integer("call_duration").notNull(), // in minutes
   callDate: timestamp("call_date").notNull(),
   callOutcome: text("call_outcome").notNull(), // appointment_set, follow_up_scheduled, not_interested, callback_requested, deal_closed, objection_received
   recordingUrl: text("recording_url"), // URL to call recording file
+  fileSize: integer("file_size"), // file size in bytes
   transcript: text("transcript"), // Full call transcript
   transcriptionStatus: text("transcription_status").default("pending"), // pending, completed, failed
   analysisStatus: text("analysis_status").default("pending"), // pending, completed, failed
