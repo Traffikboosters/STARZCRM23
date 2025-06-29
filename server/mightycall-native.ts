@@ -23,7 +23,7 @@ interface MightyCallResponse {
 
 export class MightyCallNativeAPI {
   private apiKey = process.env.MIGHTYCALL_API_KEY;
-  private secretKey = process.env.MIGHTYCALL_SECRET_KEY;
+  private secretKey = process.env.MIGHTYCALL_SECRET_KEY || 'b0ec4538-9b35-42b3-b825-a8b88917f5ab';
   private accountId = '4f917f13-aae1-401d-8241-010db91da5b2';
   private baseUrl = 'https://api.mightycall.com/v4';
   private authToken: string | null = null;
