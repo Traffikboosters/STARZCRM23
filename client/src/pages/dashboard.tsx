@@ -18,6 +18,7 @@ import SecureFileManager from "@/components/secure-file-manager";
 import ChatWidget from "@/components/chat-widget";
 import DocumentSigning from "@/components/document-signing";
 import LeadSourceTracker from "@/components/lead-source-tracker";
+import LeadSourceTracking from "@/components/lead-source-tracking";
 import VideoCallsView from "@/components/video-calls-view";
 import SalesPipeline from "@/components/sales-pipeline";
 import SalesFunnelBuilder from "@/components/sales-funnel-builder";
@@ -146,6 +147,8 @@ export default function Dashboard() {
         return <DualOnboardingPortal />;
       case "voice-analysis":
         return <VoiceToneAnalysis />;
+      case "lead-sources":
+        return <LeadSourceTracking />;
       case "real-leads":
         return <RealLeadExtractor />;
       default:

@@ -21,6 +21,7 @@ import { format } from "date-fns";
 import type { Contact, User as UserType } from "@shared/schema";
 import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
 import ContactDetailsModal from "@/components/contact-details-modal";
+import LeadSourceBadge from "@/components/lead-source-badge";
 
 
 
@@ -958,10 +959,22 @@ export default function CRMView() {
                         </Badge>
                       )}
                     </div>
-                    {(currentUser?.role === 'admin' || currentUser?.role === 'manager') && contact.leadSource && (
-                      <span className="text-xs text-gray-500 truncate max-w-[100px]">{contact.leadSource}</span>
-                    )}
                   </div>
+
+                  {/* Lead Source Badge */}
+                  {contact.leadSource && (
+                    <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                      <LeadSourceBadge 
+                        source={contact.leadSource} 
+                        timestamp={contact.createdAt}
+                        size="sm"
+                        showIcon={true}
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        {getTimeSinceImport(contact.importedAt || contact.createdAt)}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Budget & Deal Value */}
                   {(contact.budget || contact.dealValue) && (
