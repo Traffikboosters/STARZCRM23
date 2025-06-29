@@ -30,12 +30,13 @@ export class MightyCallSimplified {
       const cleanNumber = request.phoneNumber.replace(/\D/g, '');
       let formattedNumber: string;
       
-      if (cleanNumber.length === 10) {
-        formattedNumber = `+1${cleanNumber}`;
-      } else if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
-        formattedNumber = `+${cleanNumber}`;
+      // Remove country code for US domestic calling
+      if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
+        formattedNumber = cleanNumber.substring(1);
+      } else if (cleanNumber.length === 10) {
+        formattedNumber = cleanNumber;
       } else {
-        formattedNumber = `+${cleanNumber}`;
+        formattedNumber = cleanNumber;
       }
 
       // Generate multiple call options for maximum compatibility
@@ -47,8 +48,8 @@ export class MightyCallSimplified {
       // Option 2: SIP URL for VoIP clients
       const sipUrl = `sip:${formattedNumber}@${this.domain}`;
       
-      // Option 3: Pro Plan Web dialer URL with enhanced authentication
-      const webDialerUrl = `https://panel.mightycall.com/dialer?number=${encodeURIComponent(formattedNumber)}&contact=${encodeURIComponent(request.contactName || 'Contact')}&account=${this.accountId}&key=${this.secretKey}`;
+      // Option 3: Pro Plan Web dialer URL with US domestic number (no country code)
+      const webDialerUrl = `https://panel.mightycall.com/dialer?number=${encodeURIComponent(formattedNumber)}&contact=${encodeURIComponent(request.contactName || 'Contact')}`;
 
       // Log call attempt for tracking
       console.log(`📞 Pro Plan Call (Auth) - Contact: ${request.contactName}, Number: ${formattedNumber}, Key: ${this.secretKey.substring(0, 8)}...`);
