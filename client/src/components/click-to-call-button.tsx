@@ -35,25 +35,37 @@ export default function ClickToCallButton({
     setIsConnecting(true);
 
     try {
-      // Direct phone dialer approach - bypass API call
+      // Clean and format phone number
       const cleanNumber = phoneNumber.replace(/\D/g, '');
-      const telLink = `tel:${cleanNumber}`;
+      const telLink = `tel:+1${cleanNumber}`;
+      
+      console.log('Calling:', contactName, phoneNumber);
+      console.log('Clean number:', cleanNumber);
+      console.log('Tel link:', telLink);
       
       toast({
-        title: "Calling Now",
-        description: `Dialing ${contactName || phoneNumber}`,
-        duration: 2000,
+        title: "Call Initiated",
+        description: `Calling ${contactName || phoneNumber}`,
+        duration: 3000,
       });
 
-      // Open phone dialer
-      window.open(telLink, '_self');
+      // Try multiple approaches to open dialer
+      const link = document.createElement('a');
+      link.href = telLink;
+      link.click();
+      
+      // Fallback
+      setTimeout(() => {
+        window.location.href = telLink;
+      }, 100);
       
     } catch (error) {
       console.error('Call error:', error);
       toast({
         title: "Call Failed",
-        description: "Unable to open phone dialer. Please dial manually.",
+        description: `Copy this number: ${phoneNumber}`,
         variant: "destructive",
+        duration: 5000,
       });
     } finally {
       setIsConnecting(false);

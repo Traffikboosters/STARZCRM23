@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Call Test</title>
+</head>
+<body>
+    <h1>Call Function Test</h1>
+    <button onclick="testCall()">Test Call: (954) 637-3041</button>
+    
+    <script>
+        function testCall() {
+            try {
+                const phoneNumber = "(954) 637-3041";
+                const cleanNumber = phoneNumber.replace(/\D/g, '');
+                const telLink = `tel:${cleanNumber}`;
+                
+                console.log('Phone number:', phoneNumber);
+                console.log('Clean number:', cleanNumber);
+                console.log('Tel link:', telLink);
+                
+                alert('Opening dialer for: ' + phoneNumber);
+                window.open(telLink, '_self');
+            } catch (error) {
+                console.error('Call error:', error);
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

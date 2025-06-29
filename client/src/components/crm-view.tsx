@@ -504,24 +504,37 @@ export default function CRMView() {
     }
 
     try {
-      // Direct phone dialer approach
+      // Clean and format phone number
       const cleanNumber = contact.phone.replace(/\D/g, '');
-      const telLink = `tel:${cleanNumber}`;
+      const telLink = `tel:+1${cleanNumber}`;
+      
+      console.log('Calling:', contact.firstName, contact.phone);
+      console.log('Clean number:', cleanNumber);
+      console.log('Tel link:', telLink);
       
       toast({
-        title: "Calling Now",
-        description: `Dialing ${contact.firstName} at ${formatPhoneNumber(contact.phone)}`,
-        duration: 2000,
+        title: "Call Initiated",
+        description: `Calling ${contact.firstName} ${contact.lastName}`,
+        duration: 3000,
       });
 
-      // Open phone dialer
-      window.open(telLink, '_self');
+      // Try multiple approaches to open dialer
+      const link = document.createElement('a');
+      link.href = telLink;
+      link.click();
+      
+      // Fallback
+      setTimeout(() => {
+        window.location.href = telLink;
+      }, 100);
       
     } catch (error) {
+      console.error('Call error:', error);
       toast({
-        title: "Call Error",
-        description: "Unable to open phone dialer. Please dial manually.",
+        title: "Call Failed", 
+        description: `Copy this number: ${contact.phone}`,
         variant: "destructive",
+        duration: 5000,
       });
     }
   };
