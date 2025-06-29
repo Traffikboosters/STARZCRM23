@@ -504,35 +504,46 @@ export default function CRMView() {
     }
 
     try {
-      // Clean and format phone number
-      const cleanNumber = contact.phone.replace(/\D/g, '');
-      const telLink = `tel:${cleanNumber}`;
-      
-      console.log('Calling:', contact.firstName, contact.phone);
-      console.log('Clean number:', cleanNumber);
-      console.log('Tel link:', telLink);
-      
-      toast({
-        title: "Call Initiated",
-        description: `Calling ${contact.firstName} ${contact.lastName}`,
-        duration: 3000,
+      // Call MightyCall API first
+      const response = await apiRequest("POST", "/api/mightycall/call", {
+        phoneNumber: contact.phone,
+        contactName: `${contact.firstName} ${contact.lastName}`,
+        userId: currentUser?.id || 1
       });
 
-      // Try multiple approaches to open dialer
-      const link = document.createElement('a');
-      link.href = telLink;
-      link.click();
+      const result = await response.json();
       
-      // Fallback
-      setTimeout(() => {
-        window.location.href = telLink;
-      }, 100);
-      
+      if (result.success) {
+        console.log('MightyCall response:', result);
+        
+        // Clean and format phone number for dialer
+        const cleanNumber = contact.phone.replace(/\D/g, '');
+        const telLink = `tel:${cleanNumber}`;
+        
+        toast({
+          title: "MightyCall Connected",
+          description: `Calling ${contact.firstName} via MightyCall system`,
+          duration: 3000,
+        });
+
+        // Open phone dialer
+        const link = document.createElement('a');
+        link.href = telLink;
+        link.click();
+        
+        // Fallback
+        setTimeout(() => {
+          window.location.href = telLink;
+        }, 100);
+        
+      } else {
+        throw new Error(result.message || 'MightyCall connection failed');
+      }
     } catch (error) {
-      console.error('Call error:', error);
+      console.error('MightyCall error:', error);
       toast({
-        title: "Call Failed", 
-        description: `Copy this number: ${contact.phone}`,
+        title: "MightyCall Error",
+        description: `Unable to connect to MightyCall. Copy number: ${contact.phone}`,
         variant: "destructive",
         duration: 5000,
       });
