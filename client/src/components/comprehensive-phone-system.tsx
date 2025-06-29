@@ -125,8 +125,6 @@ export function ComprehensivePhoneSystem() {
       const responseData = await response.json();
 
       if (responseData.success) {
-        // Try multiple call methods for maximum compatibility
-        
         // Method 1: Try MightyCall Pro web dialer first
         if (responseData.webDialerUrl) {
           window.open(responseData.webDialerUrl, '_blank', 'width=1000,height=700,scrollbars=yes,resizable=yes,toolbar=no,menubar=no');
@@ -136,29 +134,7 @@ export function ComprehensivePhoneSystem() {
         const telLink = `tel:${finalNumber}`;
         window.open(telLink, '_self');
         
-        // Method 3: Show manual dial option
-        toast({
-          title: "Multiple Call Options Available",
-          description: `Web dialer opened + Manual dial: ${formatPhoneNumber(finalNumber)}`,
-          action: (
-            <div className="flex gap-2">
-              <button 
-                onClick={() => navigator.clipboard.writeText(finalNumber)}
-                className="px-3 py-1 bg-blue-500 text-white rounded text-sm"
-              >
-                Copy Number
-              </button>
-              <button 
-                onClick={() => window.open(`tel:${finalNumber}`, '_self')}
-                className="px-3 py-1 bg-green-500 text-white rounded text-sm"
-              >
-                Phone App
-              </button>
-            </div>
-          ),
-        });
-
-        // Create an active call record
+        // Create an active call record to show the call management interface
         setActiveCall({
           id: responseData.dialString?.split('id=')[1] || `call_${Date.now()}`,
           phoneNumber: finalNumber,
@@ -169,13 +145,18 @@ export function ComprehensivePhoneSystem() {
           isOnHold: false,
           isMuted: false
         });
+
+        toast({
+          title: "Call Initiated",
+          description: `Call management interface now active for ${contactName || formatPhoneNumber(finalNumber)}`,
+        });
         
         // Simulate call connection after 3 seconds
         setTimeout(() => {
           setActiveCall(prev => prev ? { ...prev, status: 'connected' } : null);
           toast({
-            title: "Call Active",
-            description: `Managing call to ${contactName || phoneNumber}`,
+            title: "Call Connected",
+            description: "Use the call controls below to manage your call",
           });
         }, 3000);
 
@@ -340,6 +321,147 @@ export function ComprehensivePhoneSystem() {
 
   return (
     <div className="space-y-6">
+      {/* Floating Call Management Popup */}
+      {activeCall && (
+        <div className="fixed top-4 right-4 z-50 w-96 shadow-2xl">
+          <Card className="border-green-500 bg-white border-2">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <div>
+                    <CardTitle className="text-lg">
+                      {activeCall.contactName || "Unknown Contact"}
+                    </CardTitle>
+                    <CardDescription className="text-sm text-gray-600">
+                      {formatPhoneNumber(activeCall.phoneNumber)} • {formatDuration(callTimer)}
+                    </CardDescription>
+                  </div>
+                </div>
+                <Badge 
+                  variant={
+                    activeCall.status === 'connected' ? 'default' : 
+                    activeCall.status === 'dialing' ? 'secondary' : 
+                    activeCall.status === 'on_hold' ? 'outline' : 'destructive'
+                  }
+                  className={
+                    activeCall.status === 'connected' ? 'bg-green-500' : 
+                    activeCall.status === 'dialing' ? 'bg-blue-500' : 
+                    activeCall.status === 'on_hold' ? 'bg-yellow-500' : 'bg-red-500'
+                  }
+                >
+                  {activeCall.status.replace('_', ' ').toUpperCase()}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                {/* Hang Up */}
+                <Button 
+                  variant="destructive" 
+                  onClick={hangUpCall}
+                  className="flex flex-col items-center gap-1 h-16"
+                  size="sm"
+                >
+                  <PhoneOff className="h-4 w-4" />
+                  <span className="text-xs">Hang Up</span>
+                </Button>
+
+                {/* Hold/Resume */}
+                <Button 
+                  variant={activeCall.isOnHold ? "default" : "outline"}
+                  onClick={toggleHold}
+                  className="flex flex-col items-center gap-1 h-16"
+                  size="sm"
+                >
+                  {activeCall.isOnHold ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+                  <span className="text-xs">{activeCall.isOnHold ? 'Resume' : 'Hold'}</span>
+                </Button>
+
+                {/* Mute/Unmute */}
+                <Button 
+                  variant={activeCall.isMuted ? "default" : "outline"}
+                  onClick={toggleMute}
+                  className="flex flex-col items-center gap-1 h-16"
+                  size="sm"
+                >
+                  {activeCall.isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                  <span className="text-xs">{activeCall.isMuted ? 'Unmute' : 'Mute'}</span>
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                {/* Transfer */}
+                <Dialog open={showTransferDialog} onOpenChange={setShowTransferDialog}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="flex flex-col items-center gap-1 h-16" size="sm">
+                      <PhoneForwarded className="h-4 w-4" />
+                      <span className="text-xs">Transfer</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Transfer Call</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Input
+                        placeholder="Enter transfer number"
+                        value={transferNumber}
+                        onChange={(e) => setTransferNumber(formatPhoneNumber(e.target.value))}
+                      />
+                      <div className="flex gap-2">
+                        <Button onClick={initiateTransfer} className="flex-1">
+                          Transfer Call
+                        </Button>
+                        <Button variant="outline" onClick={() => setShowTransferDialog(false)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Conference */}
+                <Dialog open={showConferenceDialog} onOpenChange={setShowConferenceDialog}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="flex flex-col items-center gap-1 h-16" size="sm">
+                      <Users className="h-4 w-4" />
+                      <span className="text-xs">Conference</span>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add to Conference</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Input
+                        placeholder="Enter conference number"
+                        value={conferenceNumber}
+                        onChange={(e) => setConferenceNumber(formatPhoneNumber(e.target.value))}
+                      />
+                      <div className="flex gap-2">
+                        <Button onClick={initiateConference} className="flex-1">
+                          Add to Conference
+                        </Button>
+                        <Button variant="outline" onClick={() => setShowConferenceDialog(false)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                {/* Settings */}
+                <Button variant="outline" className="flex flex-col items-center gap-1 h-16" size="sm">
+                  <Settings className="h-4 w-4" />
+                  <span className="text-xs">Settings</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Active Call Interface */}
       {activeCall && (
         <Card className="border-green-200 bg-green-50">
