@@ -353,6 +353,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // MightyCall API integration
+  app.post('/api/mightycall/call', async (req, res) => {
+    try {
+      const { phoneNumber, contactName } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ error: 'Phone number is required' });
+      }
+
+      // Generate unique call ID
+      const callId = `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // MightyCall Pro web dialer URL
+      const webDialerUrl = `https://my.mightycall.com/webdialer?number=${encodeURIComponent(phoneNumber.replace(/\D/g, ''))}&account=4f917f13-aae1-401d-8241-010db91da5b2`;
+      
+      // Log the call attempt
+      console.log(`MightyCall: Initiating call to ${phoneNumber} (${contactName || 'Unknown Contact'})`);
+      
+      res.json({
+        success: true,
+        callId,
+        phoneNumber,
+        contactName: contactName || 'Unknown Contact',
+        webDialerUrl,
+        status: 'initiated'
+      });
+
+    } catch (error) {
+      console.error('MightyCall API error:', error);
+      res.status(500).json({ 
+        error: 'Failed to initiate call',
+        details: (error as Error).message 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
