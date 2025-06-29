@@ -48,13 +48,25 @@ const contactFormSchema = z.object({
 
 type ContactFormData = z.infer<typeof contactFormSchema>;
 
-// Phone number formatting utility
+// Phone number formatting utility - removes country codes
 const formatPhoneNumber = (phone: string | null | undefined): string => {
   if (!phone) return '';
+  
+  // Remove all non-digit characters
   const cleaned = phone.replace(/\D/g, '');
-  if (cleaned.length === 10) {
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+  
+  // Handle US phone numbers with country code (11 digits starting with 1)
+  if (cleaned.startsWith('1') && cleaned.length === 11) {
+    const digits = cleaned.substring(1);
+    return `(${digits.substring(0, 3)}) ${digits.substring(3, 6)}-${digits.substring(6)}`;
   }
+  
+  // Handle 10-digit US numbers without country code
+  if (cleaned.length === 10) {
+    return `(${cleaned.substring(0, 3)}) ${cleaned.substring(3, 6)}-${cleaned.substring(6)}`;
+  }
+  
+  // Return original if no formatting rules match
   return phone;
 };
 
@@ -523,25 +535,39 @@ export default function CRMView() {
           duration: 3000,
         });
       } else {
-        // Fallback to device dialer
+        // Fallback to device dialer (remove country code)
         const cleanNumber = contact.phone.replace(/\D/g, '');
-        const telLink = `tel:+1${cleanNumber}`;
+        let finalNumber = cleanNumber;
+        
+        // Remove +1 country code if present (11 digits starting with 1)
+        if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
+          finalNumber = cleanNumber.substring(1);
+        }
+        
+        const telLink = `tel:${finalNumber}`;
         window.location.href = telLink;
         
         toast({
-          title: "Call Initiated",
-          description: `Calling ${contact.firstName} ${contact.lastName} at ${contact.phone}`,
+          title: "Call Ready",
+          description: `Calling ${contact.firstName} ${contact.lastName}`,
           duration: 3000,
         });
       }
       
     } catch (error) {
-      // Emergency fallback: copy to clipboard
+      // Emergency fallback: copy to clipboard (remove country code)
       const cleanNumber = contact.phone.replace(/\D/g, '');
-      navigator.clipboard.writeText(cleanNumber).then(() => {
+      let finalNumber = cleanNumber;
+      
+      // Remove +1 country code if present (11 digits starting with 1)
+      if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
+        finalNumber = cleanNumber.substring(1);
+      }
+      
+      navigator.clipboard.writeText(finalNumber).then(() => {
         toast({
-          title: "Number Copied",
-          description: `${contact.phone} copied to clipboard for manual dial`,
+          title: "Number Ready",
+          description: `${finalNumber} copied for manual dial`,
           duration: 5000,
         });
       });

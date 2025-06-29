@@ -60,9 +60,16 @@ export function MightyCallPhoneSystem() {
       if (response.ok) {
         const result = await response.json();
         
-        // Create clickable tel: link for immediate dialing
+        // Create clickable tel: link for immediate dialing (remove country code)
         const cleanNumber = phoneNumber.replace(/\D/g, '');
-        const dialString = extension ? `tel:+1${cleanNumber},,${extension}` : `tel:+1${cleanNumber}`;
+        let finalNumber = cleanNumber;
+        
+        // Remove +1 country code if present (11 digits starting with 1)
+        if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
+          finalNumber = cleanNumber.substring(1);
+        }
+        
+        const dialString = extension ? `tel:${finalNumber},,${extension}` : `tel:${finalNumber}`;
         
         // Open phone dialer
         window.location.href = dialString;

@@ -67,16 +67,23 @@ export default function ClickToCallButton({
           duration: 5000,
         });
 
-        // Clean the phone number and create direct dial link
+        // Clean the phone number (remove country code)
         const cleanNumber = phoneNumber.replace(/\D/g, '');
-        const telLink = `tel:+1${cleanNumber}`;
+        let finalNumber = cleanNumber;
         
-        // Direct phone dialer
+        // Remove +1 country code if present (11 digits starting with 1)
+        if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
+          finalNumber = cleanNumber.substring(1);
+        }
+        
+        const telLink = `tel:${finalNumber}`;
+        
+        // Direct phone dialer without country code
         window.location.href = telLink;
         
         // Copy number to clipboard as backup
-        navigator.clipboard.writeText(cleanNumber).then(() => {
-          console.log('Phone number copied to clipboard as backup:', cleanNumber);
+        navigator.clipboard.writeText(finalNumber).then(() => {
+          console.log('Phone number copied to clipboard as backup:', finalNumber);
         });
         
       } else {

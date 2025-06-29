@@ -375,7 +375,8 @@ The application uses a comprehensive schema including:
 - June 29, 2025. Updated CRM interface to prioritize MightyCall Pro web dialer over fallback methods for enhanced calling capabilities
 - June 29, 2025. Confirmed API returning webDialerUrl field with Pro plan features enabled for account ID 4f917f13-aae1-401d-8241-010db91da5b2
 - June 29, 2025. Updated MightyCall integration with new secret key (10c2bac9-f2d1-427a-a1d9-31a582a3c782) for enhanced authentication and secure Pro plan access
-- June 29, 2025. Removed "+1" country code from all phone number displays and MightyCall web dialer URLs for streamlined US domestic calling experience
+- June 29, 2025. COMPLETE PHONE NUMBER FIX: Removed "+1" country code from all tel: dialing links in CRM view handleCallContact function, click-to-call-button component, and MightyCall phone system for streamlined US domestic calling experience
+- June 29, 2025. Updated all phone dialer functionality to use domestic format (tel:5551234567) instead of international format (tel:+15551234567) for better compatibility with US phone systems
 - June 29, 2025. Restored missing HR employees (Sarah Johnson, David Chen, Amanda Davis, Patrick Pluviose) to database with proper sales rep roles and commission structures
 - June 28, 2025. Updated click-to-call user experience with "Call Ready" success messages and streamlined phone dialer integration for immediate call initiation
 - June 29, 2025. CALL FAILURE RESOLVED: Fixed "Failed to initiate call" error in CRM contact cards by updating handleCallContact function to use direct phone dialer instead of non-existent API endpoint
