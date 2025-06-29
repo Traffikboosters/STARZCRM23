@@ -21,7 +21,7 @@ import {
 } from "../shared/schema";
 import { storage } from "./storage";
 import { mightyCallNativeAPI } from "./mightycall-native";
-import { mightyCallSimplified } from "./mightycall-simplified";
+import { mightyCallCoreFixed } from "./mightycall-core-fixed";
 
 function logAuditEvent(action: string, entityType: string, entityId: number, userId: number = 1, oldValues?: any, newValues?: any, description?: string) {
   console.log(`[AUDIT] ${new Date().toISOString()} - User ${userId} performed ${action} on ${entityType} ${entityId}${description ? ': ' + description : ''}`);
@@ -53,13 +53,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const callResponse = await mightyCallSimplified.generateCallString({
+      const callResponse = await mightyCallCoreFixed.initiateOutboundCall({
         phoneNumber,
         contactName,
-        userId
+        userId,
+        extension
       });
 
-      console.log(`MightyCall Native API: ${phoneNumber} - ${callResponse.success ? 'Success' : 'Failed'}`);
+      console.log(`MightyCall Fixed API: ${phoneNumber} - ${callResponse.success ? 'Success' : 'Failed'}`);
       res.json(callResponse);
     } catch (error) {
       res.status(500).json({
@@ -72,12 +73,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // MightyCall Native API connection test endpoint
   app.post("/api/mightycall/test-connection", async (req, res) => {
     try {
-      const status = await mightyCallSimplified.getConnectionStatus();
+      const status = await mightyCallCoreFixed.testConnection();
       res.json({
         success: true,
         status: "Connected",
         message: "MightyCall Simplified integration active",
-        accountStatus: status
+        accountStatus: status.success ? "Active" : "Inactive",
+        details: status.details
       });
     } catch (error) {
       res.status(500).json({
@@ -176,6 +178,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  // MightyCall webhook for inbound calls
+  app.post("/api/mightycall/webhook", async (req, res) => {
+    try {
+      console.log("📞 Inbound Call Webhook Received:", req.body);
+      
+      const webhookData = {
+        callId: req.body.call_id || `inbound_${Date.now()}`,
+        fromNumber: req.body.from_number || req.body.caller_id,
+        toNumber: req.body.to_number || '(877) 840-6250',
+        callStatus: req.body.status || 'ringing',
+        duration: req.body.duration || 0,
+        timestamp: req.body.timestamp || new Date().toISOString(),
+        direction: 'inbound' as const
+      };
+
+      const processed = await mightyCallCoreFixed.handleInboundWebhook(webhookData);
+      
+      if (processed) {
+        res.status(200).json({ success: true, message: "Webhook processed" });
+      } else {
+        res.status(400).json({ success: false, message: "Webhook processing failed" });
+      }
+    } catch (error) {
+      console.error("Webhook processing error:", error);
+      res.status(500).json({ success: false, message: "Internal server error" });
+    }
+  });
+
+  // MightyCall webhook configuration info
+  app.get("/api/mightycall/webhook-config", async (req, res) => {
+    try {
+      const config = mightyCallCoreFixed.getWebhookConfig();
+      res.json(config);
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Failed to get webhook config",
+        error: (error as Error).message
+      });
     }
   });
 

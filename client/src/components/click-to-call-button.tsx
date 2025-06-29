@@ -35,7 +35,7 @@ export default function ClickToCallButton({
     setIsConnecting(true);
 
     try {
-      // Call MightyCall API first
+      // Call MightyCall Fixed API
       const response = await apiRequest("POST", "/api/mightycall/call", {
         phoneNumber,
         contactName,
@@ -44,58 +44,48 @@ export default function ClickToCallButton({
 
       const result = await response.json();
       
-      if (result.success && result.dialString) {
-        console.log('MightyCall dial string generated:', result.dialString);
+      if (result.success) {
+        console.log('MightyCall Fixed API - Call initiated:', result);
         
-        // Try to open the dial string URL directly
-        try {
-          window.location.href = result.dialString;
-        } catch (error) {
-          // Fallback: copy dial string to clipboard and show instructions
-          navigator.clipboard.writeText(result.dialString);
+        // Priority 1: MightyCall Pro Web Dialer
+        if (result.webDialerUrl) {
+          window.open(result.webDialerUrl, '_blank', 'width=800,height=600');
+          
           toast({
-            title: "Call Ready",
-            description: "Dial string copied to clipboard. Open MightyCall app to place call.",
-            variant: "default",
+            title: "Call Initiated",
+            description: `MightyCall Pro web dialer opened for ${contactName || phoneNumber}`,
           });
-          return;
         }
+        // Priority 2: Device phone app with tel: link
+        else {
+          const cleanNumber = phoneNumber.replace(/\D/g, '');
+          window.location.href = `tel:${cleanNumber}`;
+          
+          toast({
+            title: "Call Initiated",
+            description: `Calling ${contactName || phoneNumber} via device phone app`,
+          });
+        }
+      } else {
+        // Fallback: Direct device dialing
+        const cleanNumber = phoneNumber.replace(/\D/g, '');
+        window.location.href = `tel:${cleanNumber}`;
         
         toast({
-          title: "MightyCall Ready",
-          description: `Call prepared for ${contactName || phoneNumber}. Opening dashboard...`,
-          duration: 5000,
+          title: "Direct Call",
+          description: `Opening device phone app for ${contactName || phoneNumber}`,
         });
-
-        // Clean the phone number (remove country code)
-        const cleanNumber = phoneNumber.replace(/\D/g, '');
-        let finalNumber = cleanNumber;
-        
-        // Remove +1 country code if present (11 digits starting with 1)
-        if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
-          finalNumber = cleanNumber.substring(1);
-        }
-        
-        const telLink = `tel:${finalNumber}`;
-        
-        // Direct phone dialer without country code
-        window.location.href = telLink;
-        
-        // Copy number to clipboard as backup
-        navigator.clipboard.writeText(finalNumber).then(() => {
-          console.log('Phone number copied to clipboard as backup:', finalNumber);
-        });
-        
-      } else {
-        throw new Error(result.message || 'MightyCall connection failed');
       }
     } catch (error) {
-      console.error('MightyCall error:', error);
+      console.error("Call initiation error:", error);
+      
+      // Fallback: Direct device dialing
+      const cleanNumber = phoneNumber.replace(/\D/g, '');
+      window.location.href = `tel:${cleanNumber}`;
+      
       toast({
-        title: "MightyCall Error",
-        description: `Unable to connect to MightyCall. Copy: ${phoneNumber}`,
-        variant: "destructive",
-        duration: 5000,
+        title: "Call Initiated",
+        description: `Using device phone app for ${contactName || phoneNumber}`,
       });
     } finally {
       setIsConnecting(false);
@@ -107,15 +97,15 @@ export default function ClickToCallButton({
       variant={variant}
       size={size}
       onClick={handleClick}
-      disabled={isConnecting || !phoneNumber}
-      className="gap-2"
+      disabled={isConnecting}
+      className="flex items-center gap-2"
     >
       {isConnecting ? (
-        <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+        <PhoneCall className="h-4 w-4 animate-spin" />
       ) : (
-        <PhoneCall className="h-4 w-4" />
+        <Phone className="h-4 w-4" />
       )}
-      {showText && (isConnecting ? "Calling..." : "Call")}
+      {showText && (isConnecting ? "Connecting..." : "Call")}
     </Button>
   );
 }
