@@ -37,7 +37,7 @@ export default function ClickToCallButton({
     try {
       // Clean and format phone number
       const cleanNumber = phoneNumber.replace(/\D/g, '');
-      const telLink = `tel:+1${cleanNumber}`;
+      const telLink = `tel:${cleanNumber}`;
       
       console.log('Calling:', contactName, phoneNumber);
       console.log('Clean number:', cleanNumber);

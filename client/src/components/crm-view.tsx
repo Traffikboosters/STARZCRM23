@@ -506,7 +506,7 @@ export default function CRMView() {
     try {
       // Clean and format phone number
       const cleanNumber = contact.phone.replace(/\D/g, '');
-      const telLink = `tel:+1${cleanNumber}`;
+      const telLink = `tel:${cleanNumber}`;
       
       console.log('Calling:', contact.firstName, contact.phone);
       console.log('Clean number:', cleanNumber);
