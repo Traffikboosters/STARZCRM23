@@ -35,33 +35,24 @@ export default function ClickToCallButton({
     setIsConnecting(true);
 
     try {
-      const response = await apiRequest("POST", "/api/mightycall/call", {
-        phoneNumber,
-        contactName
+      // Direct phone dialer approach - bypass API call
+      const cleanNumber = phoneNumber.replace(/\D/g, '');
+      const telLink = `tel:${cleanNumber}`;
+      
+      toast({
+        title: "Calling Now",
+        description: `Dialing ${contactName || phoneNumber}`,
+        duration: 2000,
       });
 
-      const result = await response.json();
-
-      if (result.success) {
-        // Create click-to-call action directly
-        const telLink = `tel:${phoneNumber.replace(/\D/g, '')}`;
-        
-        toast({
-          title: "Call Ready",
-          description: `Calling ${contactName || phoneNumber} via MightyCall system`,
-          duration: 3000,
-        });
-
-        // Open phone dialer immediately
-        window.open(telLink, '_self');
-        
-      } else {
-        throw new Error(result.message || 'Call preparation failed');
-      }
+      // Open phone dialer
+      window.open(telLink, '_self');
+      
     } catch (error) {
+      console.error('Call error:', error);
       toast({
-        title: "Call Setup Failed",
-        description: "Unable to prepare call. Check your MightyCall configuration.",
+        title: "Call Failed",
+        description: "Unable to open phone dialer. Please dial manually.",
         variant: "destructive",
       });
     } finally {
