@@ -122,18 +122,45 @@ export function ComprehensivePhoneSystem() {
         contactName: contactName || "Unknown Contact"
       });
 
-      if (response.success && response.webDialerUrl) {
-        // Open MightyCall Pro web dialer in new window
-        window.open(response.webDialerUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+      const responseData = await response.json();
+
+      if (responseData.success) {
+        // Try multiple call methods for maximum compatibility
         
+        // Method 1: Try MightyCall Pro web dialer first
+        if (responseData.webDialerUrl) {
+          window.open(responseData.webDialerUrl, '_blank', 'width=1000,height=700,scrollbars=yes,resizable=yes,toolbar=no,menubar=no');
+        }
+        
+        // Method 2: Also try direct tel: link as fallback
+        const telLink = `tel:${finalNumber}`;
+        window.open(telLink, '_self');
+        
+        // Method 3: Show manual dial option
         toast({
-          title: "Web Dialer Opened",
-          description: `MightyCall Pro dialer opened for ${contactName || phoneNumber}`,
+          title: "Multiple Call Options Available",
+          description: `Web dialer opened + Manual dial: ${formatPhoneNumber(finalNumber)}`,
+          action: (
+            <div className="flex gap-2">
+              <button 
+                onClick={() => navigator.clipboard.writeText(finalNumber)}
+                className="px-3 py-1 bg-blue-500 text-white rounded text-sm"
+              >
+                Copy Number
+              </button>
+              <button 
+                onClick={() => window.open(`tel:${finalNumber}`, '_self')}
+                className="px-3 py-1 bg-green-500 text-white rounded text-sm"
+              >
+                Phone App
+              </button>
+            </div>
+          ),
         });
 
         // Create an active call record
         setActiveCall({
-          id: response.dialString.split('id=')[1] || `call_${Date.now()}`,
+          id: responseData.dialString?.split('id=')[1] || `call_${Date.now()}`,
           phoneNumber: finalNumber,
           contactName,
           status: 'dialing',
@@ -143,21 +170,21 @@ export function ComprehensivePhoneSystem() {
           isMuted: false
         });
         
-        // Simulate call connection after 5 seconds
+        // Simulate call connection after 3 seconds
         setTimeout(() => {
           setActiveCall(prev => prev ? { ...prev, status: 'connected' } : null);
           toast({
-            title: "Call Connected",
-            description: `Connected to ${contactName || phoneNumber}`,
+            title: "Call Active",
+            description: `Managing call to ${contactName || phoneNumber}`,
           });
-        }, 5000);
+        }, 3000);
 
         // Clear form
         setPhoneNumber("");
         setContactName("");
         setExtension("");
       } else {
-        throw new Error("Failed to get web dialer URL");
+        throw new Error("Failed to initiate call");
       }
       
     } catch (error) {
