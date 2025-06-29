@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Building2, Clock, Zap, Phone, Globe, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
 
 interface ExtractionResult {
   success: boolean;
@@ -48,94 +49,75 @@ export default function EnhancedGoogleMapsExtractor() {
       types: ['hospital', 'dentist', 'doctor', 'pharmacy', 'physiotherapist', 'veterinary_care'],
       icon: '🏥'
     },
-    'professional_services': {
+    'professional': {
       name: 'Professional Services',
-      types: ['lawyer', 'accounting', 'real_estate_agency', 'insurance_agency', 'bank', 'atm'],
+      types: ['lawyer', 'accounting', 'real_estate_agency', 'insurance_agency', 'travel_agency', 'finance'],
       icon: '💼'
     },
-    'beauty_wellness': {
+    'beauty': {
       name: 'Beauty & Wellness',
       types: ['beauty_salon', 'hair_care', 'spa', 'gym', 'nail_salon', 'massage'],
       icon: '💅'
     },
-    'home_services': {
+    'home': {
       name: 'Home & Construction',
-      types: ['plumber', 'electrician', 'roofing_contractor', 'painter', 'general_contractor', 'locksmith'],
+      types: ['plumber', 'electrician', 'roofing_contractor', 'general_contractor', 'painter', 'locksmith'],
       icon: '🔨'
     },
-    'real_estate': {
+    'realestate': {
       name: 'Real Estate & Property',
       types: ['real_estate_agency', 'moving_company', 'storage', 'home_goods_store'],
       icon: '🏠'
     },
     'education': {
       name: 'Education & Training',
-      types: ['school', 'university', 'library', 'driving_school', 'training_center'],
+      types: ['school', 'university', 'library', 'tutoring', 'driving_school'],
       icon: '📚'
     },
     'entertainment': {
       name: 'Entertainment & Recreation',
-      types: ['movie_theater', 'amusement_park', 'bowling_alley', 'casino', 'night_club', 'tourist_attraction'],
+      types: ['movie_theater', 'amusement_park', 'bowling_alley', 'casino', 'night_club'],
       icon: '🎭'
     },
     'technology': {
       name: 'Technology & IT',
-      types: ['computer_store', 'electronics_repair', 'software_company', 'it_services'],
+      types: ['computer_store', 'electronics_repair', 'software_company', 'it_support'],
       icon: '💻'
     },
     'manufacturing': {
       name: 'Manufacturing & Industrial',
-      types: ['factory', 'warehouse', 'logistics', 'industrial_equipment'],
+      types: ['factory', 'warehouse', 'logistics', 'industrial_supply'],
       icon: '🏭'
     }
   };
 
   const extractionMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/real-extraction/google-maps', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          location,
-          categories: [businessType],
-          radius: parseInt(radius),
-          maxResults: parseInt(maxResults),
-          apiKey: 'AIzaSyAek_29lbVmrNswmCHqsHypfP6-Je0pgh0'
-        }),
+      const response = await apiRequest('POST', '/api/scraping-jobs/google-maps-enhanced', {
+        location,
+        industry: selectedIndustry,
+        businessType,
+        radius: parseInt(radius),
+        maxResults: parseInt(maxResults)
       });
-      return response.json();
+      return response;
     },
-    onSuccess: (data) => {
-      if (data.success) {
-        const result: ExtractionResult = {
-          success: true,
-          leadsExtracted: data.leadsExtracted,
-          leads: data.leads,
-          timestamp: new Date().toLocaleString(),
-          location,
-          industry: industries[selectedIndustry as keyof typeof industries].name
-        };
-
-        setExtractionHistory(prev => [result, ...prev.slice(0, 9)]);
-
-        toast({
-          title: "✅ Extraction Complete",
-          description: `Successfully extracted ${data.leadsExtracted} ${industries[selectedIndustry as keyof typeof industries].name.toLowerCase()} leads from ${location}`,
-        });
-
-        // Reset form
-        setLocation('');
-        setSelectedIndustry('');
-        setBusinessType('');
-      } else {
-        toast({
-          title: "Extraction Failed",
-          description: data.errorMessage || "Failed to extract leads. Please try again.",
-          variant: "destructive",
-        });
-      }
+    onSuccess: (data: any) => {
+      const result: ExtractionResult = {
+        success: data.success,
+        leadsExtracted: data.leadsExtracted || 0,
+        leads: data.leads || [],
+        timestamp: new Date().toISOString(),
+        location,
+        industry: selectedIndustry
+      };
+      
+      setExtractionHistory(prev => [result, ...prev]);
+      
+      toast({
+        title: "Extraction Complete",
+        description: `Successfully extracted ${result.leadsExtracted} leads from ${location}`,
+      });
     },
     onError: (error: any) => {
       toast({
@@ -165,106 +147,117 @@ export default function EnhancedGoogleMapsExtractor() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MapPin className="h-5 w-5 text-primary" />
-            Google Maps Lead Extractor with Industry Selection
+            Enhanced Google Maps Lead Extractor with Industry Selection
           </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Extract real business leads by industry category with timestamp tracking
+          </p>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="location">Target Location</Label>
-              <Input
-                id="location"
-                placeholder="e.g., Miami, FL or New York, NY"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="industry">Industry Category</Label>
-              <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select industry" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(industries).map(([key, industry]) => (
-                    <SelectItem key={key} value={key}>
-                      <span className="flex items-center gap-2">
-                        <span>{industry.icon}</span>
-                        {industry.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {selectedIndustry && (
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="businessType">Business Type</Label>
-                <Select value={businessType} onValueChange={setBusinessType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select business type" />
+                <Label htmlFor="location" className="text-sm font-medium">Target Location</Label>
+                <Input
+                  id="location"
+                  placeholder="e.g., Miami, FL or New York, NY"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="industry" className="text-sm font-medium">Industry Category</Label>
+                <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Choose an industry category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {industries[selectedIndustry as keyof typeof industries].types.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    {Object.entries(industries).map(([key, industry]) => (
+                      <SelectItem key={key} value={key}>
+                        <div className="flex items-center gap-2">
+                          <span>{industry.icon}</span>
+                          <span>{industry.name}</span>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="radius">Search Radius (meters)</Label>
-              <Select value={radius} onValueChange={setRadius}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="2000">2km (Local)</SelectItem>
-                  <SelectItem value="5000">5km (City Center)</SelectItem>
-                  <SelectItem value="10000">10km (Metro Area)</SelectItem>
-                  <SelectItem value="25000">25km (Regional)</SelectItem>
-                </SelectContent>
-              </Select>
+              {selectedIndustry && (
+                <div className="space-y-2">
+                  <Label htmlFor="businessType" className="text-sm font-medium">Business Type</Label>
+                  <Select value={businessType} onValueChange={setBusinessType}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select specific business type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {industries[selectedIndustry as keyof typeof industries].types.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
+            
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="radius" className="text-sm font-medium">Search Radius</Label>
+                <Select value={radius} onValueChange={setRadius}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select search radius" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="2000">2km (Local)</SelectItem>
+                    <SelectItem value="5000">5km (City Center)</SelectItem>
+                    <SelectItem value="10000">10km (Metro Area)</SelectItem>
+                    <SelectItem value="25000">25km (Regional)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="maxResults">Max Results</Label>
-              <Select value={maxResults} onValueChange={setMaxResults}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="5">5 leads</SelectItem>
-                  <SelectItem value="10">10 leads</SelectItem>
-                  <SelectItem value="15">15 leads</SelectItem>
-                  <SelectItem value="20">20 leads</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <Label htmlFor="maxResults" className="text-sm font-medium">Maximum Results</Label>
+                <Select value={maxResults} onValueChange={setMaxResults}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select number of leads" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="5">5 leads</SelectItem>
+                    <SelectItem value="10">10 leads</SelectItem>
+                    <SelectItem value="15">15 leads</SelectItem>
+                    <SelectItem value="20">20 leads</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
-          <Button 
-            onClick={handleExtraction} 
-            disabled={extractionMutation.isPending || !location || !selectedIndustry || !businessType}
-            className="w-full"
-          >
-            {extractionMutation.isPending ? (
-              <>
-                <Zap className="mr-2 h-4 w-4 animate-spin" />
-                Extracting Leads...
-              </>
-            ) : (
-              <>
-                <MapPin className="mr-2 h-4 w-4" />
-                Extract Google Maps Leads
-              </>
-            )}
-          </Button>
+          <div className="pt-4">
+            <Button 
+              onClick={handleExtraction} 
+              disabled={extractionMutation.isPending || !location || !selectedIndustry || !businessType}
+              className="w-full bg-primary hover:bg-primary/90"
+              size="lg"
+            >
+              {extractionMutation.isPending ? (
+                <>
+                  <Zap className="mr-2 h-4 w-4 animate-spin" />
+                  Extracting Leads...
+                </>
+              ) : (
+                <>
+                  <MapPin className="mr-2 h-4 w-4" />
+                  Extract {selectedIndustry ? industries[selectedIndustry as keyof typeof industries].name : 'Business'} Leads
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -277,50 +270,52 @@ export default function EnhancedGoogleMapsExtractor() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-4">
               {extractionHistory.map((result, index) => (
                 <div key={index} className="border rounded-lg p-4 space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Building2 className="h-4 w-4 text-primary" />
-                      <span className="font-medium">{result.industry}</span>
-                      <Badge variant="secondary">{result.location}</Badge>
+                      <Badge variant={result.success ? "default" : "destructive"}>
+                        {result.success ? "Success" : "Failed"}
+                      </Badge>
+                      <span className="text-sm font-medium">{result.location}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      {result.timestamp}
-                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      {new Date(result.timestamp).toLocaleString()}
+                    </span>
                   </div>
                   
-                  <div className="flex items-center gap-4 text-sm">
-                    <div className="flex items-center gap-1">
-                      <span className="font-medium text-primary">{result.leadsExtracted}</span>
-                      <span>leads extracted</span>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium">Industry:</span>
+                      <p className="text-muted-foreground">
+                        {industries[result.industry as keyof typeof industries]?.name || result.industry}
+                      </p>
                     </div>
-                    {result.leads.length > 0 && (
-                      <>
-                        <div className="flex items-center gap-1">
-                          <Phone className="h-3 w-3" />
-                          <span>{result.leads.filter(l => l.phone).length} with phone</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Globe className="h-3 w-3" />
-                          <span>{result.leads.filter(l => l.website).length} with website</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-3 w-3" />
-                          <span>{(result.leads.reduce((sum, l) => sum + (l.rating || 0), 0) / result.leads.length).toFixed(1)} avg rating</span>
-                        </div>
-                      </>
-                    )}
+                    <div>
+                      <span className="font-medium">Leads Extracted:</span>
+                      <p className="text-muted-foreground">{result.leadsExtracted}</p>
+                    </div>
+                    <div>
+                      <span className="font-medium">With Phone:</span>
+                      <p className="text-muted-foreground">
+                        {result.leads.filter(lead => lead.phone).length}
+                      </p>
+                    </div>
+                    <div>
+                      <span className="font-medium">With Website:</span>
+                      <p className="text-muted-foreground">
+                        {result.leads.filter(lead => lead.website).length}
+                      </p>
+                    </div>
                   </div>
 
                   {result.leads.length > 0 && (
-                    <div className="pt-2 border-t">
-                      <div className="text-xs text-muted-foreground mb-1">Sample Leads:</div>
-                      <div className="flex flex-wrap gap-1">
-                        {result.leads.slice(0, 3).map((lead, i) => (
-                          <Badge key={i} variant="outline" className="text-xs">
+                    <div>
+                      <span className="text-sm font-medium">Sample Businesses:</span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {result.leads.slice(0, 3).map((lead, leadIndex) => (
+                          <Badge key={leadIndex} variant="outline" className="text-xs">
                             {lead.name}
                           </Badge>
                         ))}
