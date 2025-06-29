@@ -516,43 +516,32 @@ export default function CRMView() {
     }
 
     try {
-      // Call MightyCall Pro API
-      const response = await apiRequest("POST", "/api/mightycall/call", {
-        phoneNumber: contact.phone,
-        contactName: `${contact.firstName} ${contact.lastName}`,
-        userId: currentUser?.id || 1
-      });
-
-      const result = await response.json();
+      // Clean and format phone number for MightyCall
+      const cleanNumber = contact.phone.replace(/\D/g, '');
+      let dialNumber = cleanNumber;
       
-      if (result.success && result.webDialerUrl) {
-        // Open MightyCall Pro web dialer
-        window.open(result.webDialerUrl, '_blank', 'width=600,height=500,scrollbars=yes,resizable=yes');
-        
-        toast({
-          title: "MightyCall Pro Dialer",
-          description: `Opening web dialer for ${contact.firstName} ${contact.lastName}`,
-          duration: 3000,
-        });
-      } else {
-        // Fallback to device dialer (remove country code)
-        const cleanNumber = contact.phone.replace(/\D/g, '');
-        let finalNumber = cleanNumber;
-        
-        // Remove +1 country code if present (11 digits starting with 1)
-        if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
-          finalNumber = cleanNumber.substring(1);
-        }
-        
-        const telLink = `tel:${finalNumber}`;
-        window.location.href = telLink;
-        
-        toast({
-          title: "Call Ready",
-          description: `Calling ${contact.firstName} ${contact.lastName}`,
-          duration: 3000,
-        });
+      // Remove +1 country code if present (11 digits starting with 1)
+      if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
+        dialNumber = cleanNumber.substring(1);
       }
+      
+      // Create contact name for dialer (URL encode for spaces)
+      const contactName = `${contact.firstName}+${contact.lastName}`;
+      
+      // Use direct MightyCall panel web dialer URL format
+      const webDialerUrl = `https://panel.mightycall.com/dialer?number=${dialNumber}&contact=${contactName}`;
+      
+      // Open MightyCall web dialer in new window
+      window.open(webDialerUrl, '_blank', 'width=800,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,status=no');
+      
+      // Log call attempt with precise timestamp
+      console.log(`MIGHTYCALL WEB DIALER: Contact: ${contact.firstName} ${contact.lastName}, Number: ${dialNumber}, Time: ${new Date().toISOString()}`);
+      
+      toast({
+        title: "MightyCall Web Dialer",
+        description: `Opening dialer for ${contact.firstName} ${contact.lastName} (${dialNumber})`,
+        duration: 3000,
+      });
       
     } catch (error) {
       // Emergency fallback: copy to clipboard (remove country code)
