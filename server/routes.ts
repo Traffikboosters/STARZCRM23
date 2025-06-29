@@ -70,6 +70,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // MightyCall Fixed API call endpoint
+  app.post("/api/mightycall/call", async (req, res) => {
+    try {
+      const { phoneNumber, contactName, userId, extension } = req.body;
+      
+      const callResponse = await mightyCallCoreFixed.initiateOutboundCall({
+        phoneNumber,
+        contactName,
+        userId: userId || 1,
+        extension
+      });
+
+      console.log(`MightyCall Fixed API: ${phoneNumber} - ${callResponse.success ? 'Success' : 'Failed'}`);
+      res.json(callResponse);
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: `MightyCall API call failed: ${(error as Error).message}`
+      });
+    }
+  });
+
   // MightyCall Native API connection test endpoint
   app.post("/api/mightycall/test-connection", async (req, res) => {
     try {
