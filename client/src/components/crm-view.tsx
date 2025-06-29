@@ -516,25 +516,25 @@ export default function CRMView() {
       if (result.success) {
         console.log('MightyCall response:', result);
         
-        // Clean and format phone number for dialer
-        const cleanNumber = contact.phone.replace(/\D/g, '');
-        const telLink = `tel:${cleanNumber}`;
-        
         toast({
-          title: "MightyCall Connected",
-          description: `Calling ${contact.firstName} via MightyCall system`,
-          duration: 3000,
+          title: "MightyCall Ready",
+          description: `Call initiated for ${contact.firstName}. SIP URL: ${result.sipUrl}`,
+          duration: 5000,
         });
 
-        // Open phone dialer
-        const link = document.createElement('a');
-        link.href = telLink;
-        link.click();
+        // Option 1: Open MightyCall dashboard in new tab
+        const mightyCallDashboard = `https://app.mightycall.com/dashboard`;
+        window.open(mightyCallDashboard, '_blank');
         
-        // Fallback
-        setTimeout(() => {
-          window.location.href = telLink;
-        }, 100);
+        // Option 2: Show SIP URL for VoIP clients
+        console.log('SIP URL for VoIP clients:', result.sipUrl);
+        console.log('Call ID for tracking:', result.callId);
+        
+        // Option 3: Copy number to clipboard for manual dial
+        const cleanNumber = contact.phone.replace(/\D/g, '');
+        navigator.clipboard.writeText(cleanNumber).then(() => {
+          console.log('Phone number copied to clipboard:', cleanNumber);
+        });
         
       } else {
         throw new Error(result.message || 'MightyCall connection failed');
