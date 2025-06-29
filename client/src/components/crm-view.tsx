@@ -503,34 +503,41 @@ export default function CRMView() {
       return;
     }
 
-    // Clean the phone number and create direct dial link
-    const cleanNumber = contact.phone.replace(/\D/g, '');
-    const telLink = `tel:+1${cleanNumber}`;
-    
     try {
-      // Direct phone dialer
-      window.location.href = telLink;
-      
-      toast({
-        title: "Call Initiated",
-        description: `Calling ${contact.firstName} ${contact.lastName} at ${contact.phone}`,
-        duration: 3000,
-      });
-      
-      // Log call attempt in background (silent fail)
-      apiRequest("POST", "/api/mightycall/call", {
+      // Call MightyCall Pro API
+      const response = await apiRequest("POST", "/api/mightycall/call", {
         phoneNumber: contact.phone,
         contactName: `${contact.firstName} ${contact.lastName}`,
         userId: currentUser?.id || 1
-      }).catch(() => {});
-      
-      // Copy number to clipboard as backup
-      navigator.clipboard.writeText(cleanNumber).then(() => {
-        console.log('Phone number copied to clipboard as backup:', cleanNumber);
       });
+
+      const result = await response.json();
+      
+      if (result.success && result.webDialerUrl) {
+        // Open MightyCall Pro web dialer
+        window.open(result.webDialerUrl, '_blank', 'width=600,height=500,scrollbars=yes,resizable=yes');
+        
+        toast({
+          title: "MightyCall Pro Dialer",
+          description: `Opening web dialer for ${contact.firstName} ${contact.lastName}`,
+          duration: 3000,
+        });
+      } else {
+        // Fallback to device dialer
+        const cleanNumber = contact.phone.replace(/\D/g, '');
+        const telLink = `tel:+1${cleanNumber}`;
+        window.location.href = telLink;
+        
+        toast({
+          title: "Call Initiated",
+          description: `Calling ${contact.firstName} ${contact.lastName} at ${contact.phone}`,
+          duration: 3000,
+        });
+      }
       
     } catch (error) {
-      // Fallback: copy to clipboard
+      // Emergency fallback: copy to clipboard
+      const cleanNumber = contact.phone.replace(/\D/g, '');
       navigator.clipboard.writeText(cleanNumber).then(() => {
         toast({
           title: "Number Copied",

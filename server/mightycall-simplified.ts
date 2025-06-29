@@ -8,6 +8,7 @@ interface SimplifiedCallResponse {
   success: boolean;
   dialString?: string;
   sipUrl?: string;
+  webDialerUrl?: string;
   message: string;
   timestamp: string;
   callMethod: 'dial_string' | 'sip_url' | 'web_dialer';
@@ -49,15 +50,16 @@ export class MightyCallSimplified {
       const webDialerUrl = `https://panel.mightycall.com/dialer?number=${encodeURIComponent(formattedNumber)}&contact=${encodeURIComponent(request.contactName || 'Contact')}`;
 
       // Log call attempt for tracking
-      console.log(`📞 Call initiated - Contact: ${request.contactName}, Number: ${formattedNumber}, Method: Dial String`);
+      console.log(`📞 Pro Plan Call - Contact: ${request.contactName}, Number: ${formattedNumber}, Method: Web Dialer`);
 
       return {
         success: true,
         dialString: dialString,
         sipUrl: sipUrl,
-        message: 'Call ready - Use dial string or SIP URL to initiate call',
+        webDialerUrl: webDialerUrl,
+        message: 'MightyCall Pro web dialer ready - click-to-call enabled',
         timestamp: new Date().toISOString(),
-        callMethod: 'dial_string'
+        callMethod: 'web_dialer'
       };
     } catch (error) {
       console.error('Call string generation error:', error);
