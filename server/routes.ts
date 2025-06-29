@@ -87,6 +87,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Contacts API
+  app.get("/api/contacts", async (req, res) => {
+    try {
+      const contacts = await storage.getAllContacts();
+      res.json(contacts);
+    } catch (error) {
+      console.error('Get contacts error:', error);
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  app.get("/api/contacts/:id", async (req, res) => {
+    try {
+      const contact = await storage.getContact(parseInt(req.params.id));
+      if (!contact) {
+        return res.status(404).json({ error: "Contact not found" });
+      }
+      res.json(contact);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  app.post("/api/contacts", async (req, res) => {
+    try {
+      const validation = insertContactSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ error: validation.error });
+      }
+      const contact = await storage.createContact(validation.data);
+      logAuditEvent("CREATE", "Contact", contact.id, 1, null, validation.data);
+      res.json(contact);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  app.patch("/api/contacts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const oldContact = await storage.getContact(id);
+      const contact = await storage.updateContact(id, req.body);
+      if (!contact) {
+        return res.status(404).json({ error: "Contact not found" });
+      }
+      logAuditEvent("UPDATE", "Contact", id, 1, oldContact, req.body);
+      res.json(contact);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  app.delete("/api/contacts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteContact(id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Contact not found" });
+      }
+      logAuditEvent("DELETE", "Contact", id, 1);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
   // Routes for marketing analytics
   app.get("/api/analytics/campaigns", (req, res) => {
     try {
