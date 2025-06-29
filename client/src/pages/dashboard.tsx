@@ -12,6 +12,7 @@ import AutomationsView from "@/components/automations-view";
 import PaymentIntegration from "@/components/payment-integration";
 import LegalDocumentsView from "@/components/legal-documents-view";
 import MightyCallIntegration from "@/components/mightycall-integration";
+import { ComprehensivePhoneSystem } from "@/components/comprehensive-phone-system";
 import WorkOrders from "@/pages/work-orders";
 import SecureFileManager from "@/components/secure-file-manager";
 import ChatWidget from "@/components/chat-widget";
@@ -99,7 +100,7 @@ export default function Dashboard() {
       case "legal":
         return <WorkOrders />;
       case "phone":
-        return <MightyCallIntegration />;
+        return <ComprehensivePhoneSystem />;
       case "users":
         return currentUser ? <UserManagement currentUser={currentUser as any} /> : <div>Loading...</div>;
       case "files":
