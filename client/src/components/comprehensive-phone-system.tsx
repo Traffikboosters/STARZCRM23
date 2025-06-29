@@ -116,46 +116,54 @@ export function ComprehensivePhoneSystem() {
         finalNumber = cleanNumber.substring(1);
       }
       
-      const dialString = extension ? `tel:${finalNumber},,${extension}` : `tel:${finalNumber}`;
-      
-      // Open phone dialer
-      window.location.href = dialString;
-      
-      toast({
-        title: "Call Initiated",
-        description: `Calling ${contactName || phoneNumber}${extension ? ` ext. ${extension}` : ''}`,
-      });
-
-      // Create an active call record
-      setActiveCall({
-        id: `call_${Date.now()}`,
+      // Call MightyCall API to get web dialer URL
+      const response = await apiRequest("POST", "/api/mightycall/call", {
         phoneNumber: finalNumber,
-        contactName,
-        status: 'dialing',
-        startTime: new Date(),
-        duration: 0,
-        isOnHold: false,
-        isMuted: false
+        contactName: contactName || "Unknown Contact"
       });
-      
-      // Simulate call connection after 3 seconds
-      setTimeout(() => {
-        setActiveCall(prev => prev ? { ...prev, status: 'connected' } : null);
-        toast({
-          title: "Call Connected",
-          description: `Connected to ${contactName || phoneNumber}`,
-        });
-      }, 3000);
 
-      // Clear form
-      setPhoneNumber("");
-      setContactName("");
-      setExtension("");
+      if (response.success && response.webDialerUrl) {
+        // Open MightyCall Pro web dialer in new window
+        window.open(response.webDialerUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+        
+        toast({
+          title: "Web Dialer Opened",
+          description: `MightyCall Pro dialer opened for ${contactName || phoneNumber}`,
+        });
+
+        // Create an active call record
+        setActiveCall({
+          id: response.dialString.split('id=')[1] || `call_${Date.now()}`,
+          phoneNumber: finalNumber,
+          contactName,
+          status: 'dialing',
+          startTime: new Date(),
+          duration: 0,
+          isOnHold: false,
+          isMuted: false
+        });
+        
+        // Simulate call connection after 5 seconds
+        setTimeout(() => {
+          setActiveCall(prev => prev ? { ...prev, status: 'connected' } : null);
+          toast({
+            title: "Call Connected",
+            description: `Connected to ${contactName || phoneNumber}`,
+          });
+        }, 5000);
+
+        // Clear form
+        setPhoneNumber("");
+        setContactName("");
+        setExtension("");
+      } else {
+        throw new Error("Failed to get web dialer URL");
+      }
       
     } catch (error) {
       toast({
         title: "Call Failed",
-        description: "Unable to initiate call. Please try again.",
+        description: "Unable to open web dialer. Please try again.",
         variant: "destructive"
       });
     } finally {
