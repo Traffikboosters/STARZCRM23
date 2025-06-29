@@ -357,7 +357,25 @@ export class DatabaseStorage implements IStorage {
   // Contacts
   async getAllContacts(): Promise<Contact[]> {
     const result = await db
-      .select()
+      .select({
+        id: contacts.id,
+        firstName: contacts.firstName,
+        lastName: contacts.lastName,
+        email: contacts.email,
+        phone: contacts.phone,
+        company: contacts.company,
+        position: contacts.position,
+        leadSource: contacts.leadSource,
+        leadStatus: contacts.leadStatus,
+        priority: contacts.priority,
+        notes: contacts.notes,
+        dealValue: contacts.dealValue,
+        createdAt: contacts.createdAt,
+        updatedAt: contacts.updatedAt,
+        createdBy: contacts.createdBy,
+        importedAt: contacts.importedAt,
+        assignedTo: contacts.assignedTo
+      })
       .from(contacts)
       .orderBy(desc(contacts.createdAt));
     
