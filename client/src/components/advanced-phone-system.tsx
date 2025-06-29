@@ -480,7 +480,7 @@ export function AdvancedPhoneSystem() {
                   <div className="p-3 bg-blue-50 rounded-lg">
                     <h4 className="font-medium text-blue-900">Account Information</h4>
                     <p className="text-sm text-blue-700">Account ID: 4f917f13-aae1-401d-8241-010db91da5b2</p>
-                    <p className="text-sm text-blue-700">Main Number: (877) 840-6250</p>
+                    <p className="text-sm text-blue-700">Main Number: 8778406250</p>
                     <p className="text-sm text-blue-700">Domain: traffikboosters.mightycall.com</p>
                   </div>
                   

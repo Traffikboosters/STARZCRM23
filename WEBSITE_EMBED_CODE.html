@@ -252,7 +252,7 @@
     
     html += '<div style="background: #fef3e7; border: 1px solid #f59e0b; padding: 15px; border-radius: 8px; margin-top: 20px;">';
     html += '<p style="margin: 0; color: #92400e; font-size: 14px;">';
-    html += '<strong>Need to reschedule?</strong> Call us at (877) 840-6250 or reply to your confirmation email.';
+    html += '<strong>Need to reschedule?</strong> Call us at 8778406250 or reply to your confirmation email.';
     html += '</p>';
     html += '</div>';
     
@@ -348,14 +348,14 @@
         var container = document.getElementById('booking-calendar-container');
         container.innerHTML = generateConfirmationHTML();
       } else {
-        alert('There was an error booking your appointment. Please try again or call us at (877) 840-6250.');
+        alert('There was an error booking your appointment. Please try again or call us at 8778406250.');
         submitBtn.textContent = 'Confirm Appointment';
         submitBtn.disabled = false;
       }
     })
     .catch(function(error) {
       console.error('Booking error:', error);
-      alert('There was an error booking your appointment. Please try again or call us at (877) 840-6250.');
+      alert('There was an error booking your appointment. Please try again or call us at 8778406250.');
       submitBtn.textContent = 'Confirm Appointment';
       submitBtn.disabled = false;
     });

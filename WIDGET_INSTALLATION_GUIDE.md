@@ -122,7 +122,7 @@ welcomeMessage: 'Your custom welcome message'
 
 For technical support or customization requests:
 - Email: support@traffikboosters.com
-- Phone: (877) 840-6250
+- Phone: 8778406250
 
 ## Testing
 
