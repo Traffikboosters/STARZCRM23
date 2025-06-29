@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { MapPin, Building, Phone, Mail, Star, DollarSign, Key, CheckCircle, XCircle, AlertCircle, TestTube, Target } from "lucide-react";
 import EnhancedGoogleMapsExtractor from "./enhanced-google-maps-extractor";
-import LeadSourceTracking from "./lead-source-tracking";
+import LeadSourceTrackingFixed from "./lead-source-tracking-fixed";
 
 interface ExtractionResult {
   success: boolean;
@@ -303,7 +303,7 @@ export default function RealLeadExtractor() {
             </TabsList>
 
             <TabsContent value="lead-sources" className="space-y-4">
-              <LeadSourceTracking />
+              <LeadSourceTrackingFixed />
             </TabsContent>
 
             <TabsContent value="google-maps" className="space-y-4">

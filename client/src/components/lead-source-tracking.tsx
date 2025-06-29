@@ -93,7 +93,7 @@ export default function LeadSourceTracking() {
     );
   }
 
-  if (!sourceData || sourceData.length === 0) {
+  if (!sourceData || !Array.isArray(sourceData) || sourceData.length === 0) {
     return (
       <div className="space-y-6">
         <Card>
