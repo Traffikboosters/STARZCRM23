@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { MapPin, Building, Phone, Mail, Star, DollarSign, Key, CheckCircle, XCircle, AlertCircle, TestTube } from "lucide-react";
+import EnhancedGoogleMapsExtractor from "./enhanced-google-maps-extractor";
 
 interface ExtractionResult {
   success: boolean;
@@ -297,98 +298,7 @@ export default function RealLeadExtractor() {
             </TabsList>
 
             <TabsContent value="google-maps" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <MapPin className="h-5 w-5" />
-                    <span>Google Maps Places API</span>
-                    {getApiStatusIcon(extractionResults?.apiKeyStatus)}
-                  </CardTitle>
-                  <CardDescription>
-                    Extract real business listings from Google Maps Places API
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="google-api-key">API Key</Label>
-                      <Input
-                        id="google-api-key"
-                        placeholder="AIzaSy..."
-                        value={googleMapsConfig.apiKey}
-                        onChange={(e) => setGoogleMapsConfig({...googleMapsConfig, apiKey: e.target.value})}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Get your API key from Google Cloud Console
-                      </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="google-location">Location</Label>
-                      <Input
-                        id="google-location"
-                        placeholder="New York, NY"
-                        value={googleMapsConfig.location}
-                        onChange={(e) => setGoogleMapsConfig({...googleMapsConfig, location: e.target.value})}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="google-radius">Radius (meters)</Label>
-                      <Input
-                        id="google-radius"
-                        type="number"
-                        value={googleMapsConfig.radius}
-                        onChange={(e) => setGoogleMapsConfig({...googleMapsConfig, radius: parseInt(e.target.value)})}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="google-max-results">Max Results</Label>
-                      <Input
-                        id="google-max-results"
-                        type="number"
-                        value={googleMapsConfig.maxResults}
-                        onChange={(e) => setGoogleMapsConfig({...googleMapsConfig, maxResults: parseInt(e.target.value)})}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Business Categories</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {googleMapsConfig.categories.map((category, index) => (
-                        <Badge key={index} variant="secondary">{category}</Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  {extractionResults?.apiKeyStatus === 'permissions_missing' && (
-                    <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <h4 className="font-semibold text-yellow-800">API Setup Required</h4>
-                      <p className="text-sm text-yellow-700 mt-1">
-                        Your Google API key needs the following APIs enabled:
-                      </p>
-                      <ul className="list-disc list-inside text-sm text-yellow-700 mt-2">
-                        <li>Places API (New)</li>
-                        <li>Maps JavaScript API</li>
-                        <li>Geocoding API</li>
-                      </ul>
-                      <p className="text-sm text-yellow-700 mt-2">
-                        Go to Google Cloud Console → APIs & Services → Library → Enable required APIs → Enable billing
-                      </p>
-                    </div>
-                  )}
-
-                  <Button
-                    onClick={() => googleMapsMutation.mutate()}
-                    disabled={isExtracting || !googleMapsConfig.apiKey}
-                    className="w-full"
-                  >
-                    {isExtracting ? "Extracting..." : "Extract Google Maps Leads"}
-                  </Button>
-                </CardContent>
-              </Card>
+              <EnhancedGoogleMapsExtractor />
             </TabsContent>
 
             <TabsContent value="yellow-pages" className="space-y-4">
