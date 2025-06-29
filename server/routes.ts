@@ -648,6 +648,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Enhanced Google Maps extraction with email extraction
+  app.post("/api/scraping-jobs/google-maps-enhanced", async (req, res) => {
+    try {
+      const { location, industry, businessType, radius, maxResults } = req.body;
+      const useApiKey = process.env.GOOGLE_MAPS_API_KEY;
+      
+      if (!useApiKey) {
+        return res.json({
+          success: false,
+          leadsExtracted: 0,
+          leads: [],
+          errorMessage: "Google Maps API key is required"
+        });
+      }
+
+      const extractor = new (await import("./google-maps-extractor")).GoogleMapsLeadExtractor(useApiKey);
+      const { EmailExtractor } = await import("./email-extractor");
+      
+      const results = await extractor.extractBusinessLeads(
+        location,
+        [businessType],
+        radius || 5000,
+        maxResults || 10
+      );
+
+      // Enhanced leads with email extraction
+      const enhancedLeads = [];
+      
+      for (const lead of results.leads) {
+        let extractedEmail = null;
+        
+        // Extract email from website if available
+        if (lead.website) {
+          try {
+            extractedEmail = await EmailExtractor.extractEmailFromWebsite(lead.website);
+          } catch (error) {
+            console.log(`Email extraction failed for ${lead.website}`);
+          }
+        }
+
+        // Save to database
+        try {
+          const savedContact = await storage.createContact({
+            firstName: lead.name.split(' ')[0] || 'Business',
+            lastName: lead.name.split(' ').slice(1).join(' ') || 'Owner',
+            email: extractedEmail,
+            phone: lead.phone || null,
+            company: lead.name,
+            position: 'Business Owner',
+            notes: `Google Maps Enhanced Lead - ${industry}\nAddress: ${lead.address}\nRating: ${lead.rating || 'N/A'}\nWebsite: ${lead.website || 'None'}`,
+            leadStatus: 'new',
+            leadSource: 'google_maps_enhanced',
+            createdBy: 1,
+            assignedTo: 1,
+            tags: [industry, businessType, 'google_maps_enhanced', location],
+            aiScore: Math.floor(Math.random() * 40) + 60,
+            scoreFactors: {
+              industryValue: 75,
+              companySizeValue: 70,
+              budgetScore: 65,
+              timelineScore: 80,
+              engagementScore: 70,
+              sourceQuality: 90,
+              urgencyMultiplier: 1.3,
+              qualificationLevel: 80
+            },
+            industryScore: 80,
+            urgencyLevel: 'medium',
+            qualificationScore: 80,
+            lastContactedAt: new Date(),
+            nextFollowUpAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+            importedAt: new Date()
+          });
+
+          enhancedLeads.push({
+            ...lead,
+            email: extractedEmail,
+            contactId: savedContact.id
+          });
+        } catch (error) {
+          console.error('Failed to save enhanced Google Maps lead:', error);
+          enhancedLeads.push({
+            ...lead,
+            email: extractedEmail,
+            contactId: null
+          });
+        }
+      }
+
+      res.json({
+        success: true,
+        leadsExtracted: enhancedLeads.length,
+        leads: enhancedLeads,
+        location,
+        industry,
+        businessType,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      console.error('Enhanced Google Maps extraction error:', error);
+      res.json({
+        success: false,
+        leadsExtracted: 0,
+        leads: [],
+        errorMessage: error.message
+      });
+    }
+  });
+
   app.post("/api/real-extraction/google-maps", async (req, res) => {
     try {
       const { location, categories, radius, maxResults, apiKey } = req.body;
@@ -672,17 +781,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxResults || 20
       );
 
-      // Convert Google Maps leads to contacts and save them
+      // Convert Google Maps leads to contacts and save them with email extraction
+      const { EmailExtractor } = await import("./email-extractor");
+      
       for (const lead of results.leads) {
         try {
+          // Extract email from website if available
+          let extractedEmail = null;
+          if (lead.website) {
+            try {
+              extractedEmail = await EmailExtractor.extractEmailFromWebsite(lead.website);
+            } catch (error) {
+              console.log(`Failed to extract email from ${lead.website}:`, error);
+            }
+          }
+
           await storage.createContact({
             firstName: lead.name.split(' ')[0] || 'Business',
             lastName: lead.name.split(' ').slice(1).join(' ') || 'Owner',
-            email: null,
+            email: extractedEmail,
             phone: lead.phone || null,
             company: lead.name,
             position: 'Business Owner',
-            notes: `Google Maps Lead - ${lead.category}\nAddress: ${lead.address}\nRating: ${lead.rating || 'N/A'}\nStatus: ${lead.businessStatus}`,
+            notes: `Google Maps Lead - ${lead.category}\nAddress: ${lead.address}\nRating: ${lead.rating || 'N/A'}\nStatus: ${lead.businessStatus}${lead.website ? `\nWebsite: ${lead.website}` : ''}${extractedEmail ? `\nEmail: ${extractedEmail}` : ''}`,
             leadStatus: 'new',
             leadSource: 'google_maps',
             createdBy: 1,
@@ -702,9 +823,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             industryScore: 75,
             urgencyLevel: 'medium',
             qualificationScore: 75,
-            estimatedValue: Math.floor(Math.random() * 3000) + 2000,
-            lastContactDate: new Date(),
-            nextFollowUpDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
+            lastContactedAt: new Date(),
+            nextFollowUpAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
             importedAt: new Date()
           });
         } catch (error) {
