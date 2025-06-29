@@ -147,8 +147,6 @@ export default function Dashboard() {
         return <DualOnboardingPortal />;
       case "voice-analysis":
         return <VoiceToneAnalysis />;
-      case "lead-sources":
-        return <LeadSourceTracking />;
       case "real-leads":
         return <RealLeadExtractor />;
       default:

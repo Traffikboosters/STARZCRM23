@@ -11,8 +11,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { MapPin, Building, Phone, Mail, Star, DollarSign, Key, CheckCircle, XCircle, AlertCircle, TestTube } from "lucide-react";
+import { MapPin, Building, Phone, Mail, Star, DollarSign, Key, CheckCircle, XCircle, AlertCircle, TestTube, Target } from "lucide-react";
 import EnhancedGoogleMapsExtractor from "./enhanced-google-maps-extractor";
+import LeadSourceTracking from "./lead-source-tracking";
 
 interface ExtractionResult {
   success: boolean;
@@ -27,7 +28,7 @@ interface ExtractionResult {
 
 export default function RealLeadExtractor() {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("google-maps");
+  const [activeTab, setActiveTab] = useState("lead-sources");
   const [progress, setProgress] = useState(0);
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractionResults, setExtractionResults] = useState<ExtractionResult | null>(null);
@@ -278,24 +279,32 @@ export default function RealLeadExtractor() {
     <div className="space-y-6">
       <div className="flex items-center space-x-2">
         <Building className="h-6 w-6 text-primary" />
-        <h2 className="text-2xl font-bold">Real Lead Extraction</h2>
-        <Badge variant="outline">API Integration</Badge>
+        <h2 className="text-2xl font-bold">Lead Card Research</h2>
+        <Badge variant="outline">Lead Analytics & Extraction</Badge>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Authentic Business Lead Sources</CardTitle>
+          <CardTitle>Lead Card Research & Analytics</CardTitle>
           <CardDescription>
-            Extract real business contacts from Google Maps, Yellow Pages, and Yelp using API keys
+            Track lead sources, analyze performance metrics, and extract real business contacts from authenticated APIs
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="lead-sources">
+                <Target className="h-4 w-4 mr-2" />
+                Lead Source Tracking
+              </TabsTrigger>
               <TabsTrigger value="google-maps">Google Maps</TabsTrigger>
               <TabsTrigger value="yellow-pages">Yellow Pages</TabsTrigger>
               <TabsTrigger value="yelp">Yelp</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="lead-sources" className="space-y-4">
+              <LeadSourceTracking />
+            </TabsContent>
 
             <TabsContent value="google-maps" className="space-y-4">
               <EnhancedGoogleMapsExtractor />
