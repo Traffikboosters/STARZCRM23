@@ -44,8 +44,22 @@ export default function ClickToCallButton({
 
       const result = await response.json();
       
-      if (result.success) {
-        console.log('MightyCall response:', result);
+      if (result.success && result.dialString) {
+        console.log('MightyCall dial string generated:', result.dialString);
+        
+        // Try to open the dial string URL directly
+        try {
+          window.location.href = result.dialString;
+        } catch (error) {
+          // Fallback: copy dial string to clipboard and show instructions
+          navigator.clipboard.writeText(result.dialString);
+          toast({
+            title: "Call Ready",
+            description: "Dial string copied to clipboard. Open MightyCall app to place call.",
+            variant: "default",
+          });
+          return;
+        }
         
         toast({
           title: "MightyCall Ready",

@@ -21,6 +21,7 @@ import {
 } from "../shared/schema";
 import { storage } from "./storage";
 import { mightyCallNativeAPI } from "./mightycall-native";
+import { mightyCallSimplified } from "./mightycall-simplified";
 
 function logAuditEvent(action: string, entityType: string, entityId: number, userId: number = 1, oldValues?: any, newValues?: any, description?: string) {
   console.log(`[AUDIT] ${new Date().toISOString()} - User ${userId} performed ${action} on ${entityType} ${entityId}${description ? ': ' + description : ''}`);
@@ -52,10 +53,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const callResponse = await mightyCallNativeAPI.makeCall({
+      const callResponse = await mightyCallSimplified.generateCallString({
         phoneNumber,
         contactName,
-        extension,
         userId
       });
 
@@ -72,11 +72,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // MightyCall Native API connection test endpoint
   app.post("/api/mightycall/test-connection", async (req, res) => {
     try {
-      const status = await mightyCallNativeAPI.getAccountStatus();
+      const status = await mightyCallSimplified.getConnectionStatus();
       res.json({
         success: true,
         status: "Connected",
-        message: "MightyCall Native API connection successful",
+        message: "MightyCall Simplified integration active",
         accountStatus: status
       });
     } catch (error) {

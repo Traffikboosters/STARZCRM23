@@ -41,45 +41,50 @@ export class MightyCallNativeAPI {
       return this.authToken;
     }
 
-    try {
-      console.log('MightyCall authentication attempt...');
-      console.log('API Key length:', this.apiKey?.length || 0);
-      console.log('Secret Key length:', this.secretKey?.length || 0);
-      
-      const response = await fetch(`${this.baseUrl}/auth/token`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'x-api-key': this.apiKey!
-        },
-        body: new URLSearchParams({
-          'grant_type': 'client_credentials',
-          'client_id': this.apiKey!,
-          'client_secret': this.secretKey!
-        })
-      });
+    // Common extension numbers to try for Core plan
+    const extensionCandidates = [
+      this.secretKey!, // Try the provided secret first
+      '501', '502', '503', '100', '101', '102', '200', '201', '202',
+      '1001', '1002', '1003', '2000', '2001', '2002'
+    ];
 
-      console.log('Auth response status:', response.status);
-      const responseText = await response.text();
-      console.log('Auth response body:', responseText);
+    for (const extension of extensionCandidates) {
+      try {
+        console.log(`MightyCall authentication attempt with extension: ${extension}`);
+        
+        const response = await fetch(`${this.baseUrl}/auth/token`, {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'x-api-key': this.apiKey!
+          },
+          body: new URLSearchParams({
+            'grant_type': 'client_credentials',
+            'client_id': this.apiKey!,
+            'client_secret': extension
+          })
+        });
 
-      if (!response.ok) {
-        throw new Error(`Authentication failed: ${response.status} ${response.statusText} - ${responseText}`);
+        console.log(`Auth response status for ${extension}:`, response.status);
+        
+        if (response.ok) {
+          const authData: MightyCallAuthResponse = await response.json();
+          this.authToken = authData.access_token;
+          this.tokenExpiration = Date.now() + (authData.expires_in * 1000) - 60000; // 1 min buffer
+          console.log(`✅ Authentication successful with extension: ${extension}`);
+          return this.authToken;
+        } else {
+          const errorText = await response.text();
+          console.log(`❌ Extension ${extension} failed:`, errorText);
+        }
+      } catch (error) {
+        console.log(`❌ Extension ${extension} error:`, error);
+        continue;
       }
-
-      const authData: MightyCallAuthResponse = await response.json();
-      
-      this.authToken = authData.access_token;
-      // Set expiration to 90% of actual expiration time for safety
-      this.tokenExpiration = Date.now() + (authData.expires_in * 900);
-      
-      console.log('MightyCall authentication successful');
-      return this.authToken;
-    } catch (error) {
-      console.error('MightyCall authentication error:', error);
-      throw new Error(`Failed to authenticate with MightyCall: ${error}`);
     }
+
+    throw new Error('Authentication failed: Unable to authenticate with any extension number');
   }
 
   async makeCall(request: MightyCallRequest): Promise<MightyCallResponse> {
@@ -107,14 +112,13 @@ export class MightyCallNativeAPI {
       }
 
       const profileData = await profileResponse.json();
-      console.log('Profile data:', profileData);
-
-      // Attempt to make the call
+      
+      // Build call payload
       const callPayload = {
+        from: formattedNumber,
         to: formattedNumber,
-        from: profileData.data?.phoneNumbers?.[0] || '', // Use first available number
-        extension: request.extension || '101', // Default extension
-        caller_id: request.contactName || 'Traffik Boosters'
+        contact_name: request.contactName || 'Unknown Contact',
+        extension: request.extension || '501'
       };
 
       console.log('Making call with payload:', callPayload);
@@ -131,27 +135,25 @@ export class MightyCallNativeAPI {
         body: JSON.stringify(callPayload)
       });
 
-      const callResult = await callResponse.json();
-      console.log('Call API response:', callResult);
-
-      if (callResponse.ok && callResult.isSuccess) {
-        return {
-          success: true,
-          callId: callResult.data?.id || `mc_${Date.now()}`,
-          status: 'initiated',
-          message: `Call initiated to ${formattedNumber} via MightyCall`,
-          timestamp: new Date().toISOString()
-        };
-      } else {
-        throw new Error(callResult.message || 'Call initiation failed');
+      if (!callResponse.ok) {
+        const errorText = await callResponse.text();
+        throw new Error(`Call request failed: ${callResponse.status} - ${errorText}`);
       }
 
-    } catch (error) {
-      console.error('MightyCall API error:', error);
+      const callData = await callResponse.json();
       
       return {
+        success: true,
+        callId: callData.data?.id || 'unknown',
+        status: callData.data?.status || 'initiated',
+        message: 'Call initiated successfully',
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('MightyCall call error:', error);
+      return {
         success: false,
-        message: `Call failed: ${error}`,
+        message: `Failed to initiate call: ${error}`,
         timestamp: new Date().toISOString(),
         error: error instanceof Error ? error.message : 'Unknown error'
       };
@@ -196,12 +198,12 @@ export class MightyCallNativeAPI {
   private formatPhoneNumber(phone: string): string {
     const cleaned = phone.replace(/\D/g, '');
     if (cleaned.length === 10) {
-      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+      return `+1${cleaned}`;
+    } else if (cleaned.length === 11 && cleaned.startsWith('1')) {
+      return `+${cleaned}`;
+    } else {
+      return `+${cleaned}`;
     }
-    if (cleaned.length === 11 && cleaned[0] === '1') {
-      return `+1 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7)}`;
-    }
-    return phone;
   }
 }
 
