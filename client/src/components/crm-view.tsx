@@ -504,30 +504,23 @@ export default function CRMView() {
     }
 
     try {
-      const response = await apiRequest("POST", "/api/mightycall/initiate-call", {
-        phoneNumber: contact.phone,
-        contactName: `${contact.firstName} ${contact.lastName}`,
-        userId: currentUser?.id || 1
+      // Direct phone dialer approach
+      const cleanNumber = contact.phone.replace(/\D/g, '');
+      const telLink = `tel:${cleanNumber}`;
+      
+      toast({
+        title: "Calling Now",
+        description: `Dialing ${contact.firstName} at ${formatPhoneNumber(contact.phone)}`,
+        duration: 2000,
       });
 
-      const result = await response.json();
+      // Open phone dialer
+      window.open(telLink, '_self');
       
-      if (result.success) {
-        toast({
-          title: "Call Initiated",
-          description: `Calling ${contact.firstName} at ${formatPhoneNumber(contact.phone)}`,
-        });
-      } else {
-        toast({
-          title: "Call Failed",
-          description: result.message || "Unable to initiate call",
-          variant: "destructive",
-        });
-      }
     } catch (error) {
       toast({
         title: "Call Error",
-        description: "Failed to initiate call. Please try again.",
+        description: "Unable to open phone dialer. Please dial manually.",
         variant: "destructive",
       });
     }
