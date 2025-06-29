@@ -342,9 +342,10 @@ export function AdvancedPhoneSystem() {
       )}
 
       <Tabs defaultValue="dialer" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="dialer">Dialer</TabsTrigger>
           <TabsTrigger value="history">Call History</TabsTrigger>
+          <TabsTrigger value="supervisor">Supervisor</TabsTrigger>
           <TabsTrigger value="conference">Conference</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
@@ -457,6 +458,100 @@ export function AdvancedPhoneSystem() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="supervisor" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                MightyCall Contact Center Supervisor
+              </CardTitle>
+              <CardDescription>
+                Access your Contact Center supervisor dashboard for call monitoring, analytics, and team management
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <h4 className="font-medium text-blue-900">Account Information</h4>
+                    <p className="text-sm text-blue-700">Account ID: 4f917f13-aae1-401d-8241-010db91da5b2</p>
+                    <p className="text-sm text-blue-700">Main Number: (877) 840-6250</p>
+                    <p className="text-sm text-blue-700">Domain: traffikboosters.mightycall.com</p>
+                  </div>
+                  
+                  <div className="p-3 bg-green-50 rounded-lg">
+                    <h4 className="font-medium text-green-900">System Status</h4>
+                    <p className="text-sm text-green-700">✓ MightyCall Pro Plan Active</p>
+                    <p className="text-sm text-green-700">✓ Web Dialer Enabled</p>
+                    <p className="text-sm text-green-700">✓ Call Recording Available</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <Button 
+                    onClick={() => window.open('https://console.mightycall.com/ContactCenter/supervisor', '_blank')}
+                    className="w-full bg-blue-600 hover:bg-blue-700"
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    Open Supervisor Dashboard
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => window.open('https://panel.mightycall.com', '_blank')}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    MightyCall Admin Panel
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => window.open('https://traffikboosters.mightycall.com', '_blank')}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    <Phone className="w-4 h-4 mr-2" />
+                    Company Portal
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-3">Quick Actions</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => toast({ title: "Feature Available", description: "Access supervisor dashboard for live call monitoring" })}
+                  >
+                    <PhoneCall className="w-4 h-4 mr-2" />
+                    Monitor Calls
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => toast({ title: "Feature Available", description: "View call analytics in supervisor dashboard" })}
+                  >
+                    <History className="w-4 h-4 mr-2" />
+                    Call Reports
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="p-4 bg-orange-50 rounded-lg">
+                <h4 className="font-medium text-orange-900 mb-2">Supervisor Features</h4>
+                <ul className="text-sm text-orange-700 space-y-1">
+                  <li>• Real-time call monitoring and whisper coaching</li>
+                  <li>• Call queue management and agent status</li>
+                  <li>• Performance analytics and reporting</li>
+                  <li>• Call recording playback and management</li>
+                  <li>• Agent productivity tracking</li>
+                </ul>
               </div>
             </CardContent>
           </Card>
