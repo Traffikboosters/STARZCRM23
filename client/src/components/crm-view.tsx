@@ -604,20 +604,13 @@ export default function CRMView() {
     }
   };
 
-  // Contact filtering with debug logging
+  // Contact filtering
   const filteredContacts = useMemo(() => {
-    console.log('CRM Debug - Total contacts received:', contacts?.length || 0);
-    console.log('CRM Debug - Sample contact:', contacts?.[0]);
-    console.log('CRM Debug - Search term:', searchTerm);
-    console.log('CRM Debug - Status filter:', statusFilter);
-    console.log('CRM Debug - Source filter:', sourceFilter);
-    
     if (!contacts || !Array.isArray(contacts)) {
-      console.log('CRM Debug - Contacts is not a valid array:', contacts);
       return [];
     }
     
-    const filtered = contacts
+    return contacts
       .filter((contact) => {
         const matchesSearch = searchTerm === "" || 
           contact.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -632,9 +625,6 @@ export default function CRMView() {
         return matchesSearch && matchesStatus && matchesSource;
       })
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // Newest first
-    
-    console.log('CRM Debug - Filtered contacts count:', filtered.length);
-    return filtered;
   }, [contacts, searchTerm, statusFilter, sourceFilter]);
 
   // Clear all filters
