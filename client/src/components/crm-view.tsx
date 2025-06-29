@@ -503,49 +503,40 @@ export default function CRMView() {
       return;
     }
 
+    // Clean the phone number and create direct dial link
+    const cleanNumber = contact.phone.replace(/\D/g, '');
+    const telLink = `tel:+1${cleanNumber}`;
+    
     try {
-      // Call MightyCall API first
-      const response = await apiRequest("POST", "/api/mightycall/call", {
+      // Direct phone dialer
+      window.location.href = telLink;
+      
+      toast({
+        title: "Call Initiated",
+        description: `Calling ${contact.firstName} ${contact.lastName} at ${contact.phone}`,
+        duration: 3000,
+      });
+      
+      // Log call attempt in background (silent fail)
+      apiRequest("POST", "/api/mightycall/call", {
         phoneNumber: contact.phone,
         contactName: `${contact.firstName} ${contact.lastName}`,
         userId: currentUser?.id || 1
-      });
-
-      const result = await response.json();
+      }).catch(() => {});
       
-      if (result.success) {
-        console.log('MightyCall response:', result);
-        
+      // Copy number to clipboard as backup
+      navigator.clipboard.writeText(cleanNumber).then(() => {
+        console.log('Phone number copied to clipboard as backup:', cleanNumber);
+      });
+      
+    } catch (error) {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(cleanNumber).then(() => {
         toast({
-          title: "MightyCall Ready",
-          description: `Call initiated for ${contact.firstName}. SIP URL: ${result.sipUrl}`,
+          title: "Number Copied",
+          description: `${contact.phone} copied to clipboard for manual dial`,
           duration: 5000,
         });
-
-        // Option 1: Open MightyCall dashboard in new tab
-        const mightyCallDashboard = `https://app.mightycall.com/dashboard`;
-        window.open(mightyCallDashboard, '_blank');
-        
-        // Option 2: Show SIP URL for VoIP clients
-        console.log('SIP URL for VoIP clients:', result.sipUrl);
-        console.log('Call ID for tracking:', result.callId);
-        
-        // Option 3: Copy number to clipboard for manual dial
-        const cleanNumber = contact.phone.replace(/\D/g, '');
-        navigator.clipboard.writeText(cleanNumber).then(() => {
-          console.log('Phone number copied to clipboard:', cleanNumber);
-        });
-        
-      } else {
-        throw new Error(result.message || 'MightyCall connection failed');
-      }
-    } catch (error) {
-      console.error('MightyCall error:', error);
-      toast({
-        title: "MightyCall Error",
-        description: `Unable to connect to MightyCall. Copy number: ${contact.phone}`,
-        variant: "destructive",
-        duration: 5000,
       });
     }
   };

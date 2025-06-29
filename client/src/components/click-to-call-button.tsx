@@ -67,18 +67,16 @@ export default function ClickToCallButton({
           duration: 5000,
         });
 
-        // Open MightyCall dashboard in new tab
-        const mightyCallDashboard = `https://app.mightycall.com/dashboard`;
-        window.open(mightyCallDashboard, '_blank');
-        
-        // Show SIP URL for VoIP clients
-        console.log('SIP URL for VoIP clients:', result.sipUrl);
-        console.log('Call ID for tracking:', result.callId);
-        
-        // Copy number to clipboard for manual dial
+        // Clean the phone number and create direct dial link
         const cleanNumber = phoneNumber.replace(/\D/g, '');
+        const telLink = `tel:+1${cleanNumber}`;
+        
+        // Direct phone dialer
+        window.location.href = telLink;
+        
+        // Copy number to clipboard as backup
         navigator.clipboard.writeText(cleanNumber).then(() => {
-          console.log('Phone number copied to clipboard:', cleanNumber);
+          console.log('Phone number copied to clipboard as backup:', cleanNumber);
         });
         
       } else {
