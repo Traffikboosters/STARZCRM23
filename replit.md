@@ -374,7 +374,7 @@ The application uses a comprehensive schema including:
 - June 29, 2025. Implemented Pro plan web dialer URLs that open directly in browser windows for seamless click-to-call experience
 - June 29, 2025. Updated CRM interface to prioritize MightyCall Pro web dialer over fallback methods for enhanced calling capabilities
 - June 29, 2025. Confirmed API returning webDialerUrl field with Pro plan features enabled for account ID 4f917f13-aae1-401d-8241-010db91da5b2
-- June 29, 2025. Updated MightyCall integration with new secret key (10c2bac9-f2d1-427a-a1d9-31a582a3c782) for enhanced authentication and secure Pro plan access
+- June 29, 2025. Updated MightyCall integration with new secret key (33a20a35-459d-46bf-9645-5e3ddd8b8966) for enhanced authentication and secure Pro plan access
 - June 29, 2025. COMPLETE PHONE NUMBER FIX: Removed "+1" country code from all tel: dialing links in CRM view handleCallContact function, click-to-call-button component, and MightyCall phone system for streamlined US domestic calling experience
 - June 29, 2025. Updated all phone dialer functionality to use domestic format (tel:5551234567) instead of international format (tel:+15551234567) for better compatibility with US phone systems
 - June 29, 2025. PHONE NUMBER STANDARDIZATION: Updated main Traffik Boosters phone number to 8778406250 throughout entire system (MightyCall integration, widget code, calendar booking, error messages) for consistent formatting

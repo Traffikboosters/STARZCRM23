@@ -37,7 +37,7 @@ interface InboundWebhookData {
 export class MightyCallCoreFixed {
   private config: MightyCallConfig = {
     accountId: '4f917f13-aae1-401d-8241-010db91da5b2',
-    secretKey: '10c2bac9-f2d1-427a-a1d9-31a582a3c782',
+    secretKey: '33a20a35-459d-46bf-9645-5e3ddd8b8966',
     mainNumber: '8778406250',
     domain: 'traffikboosters.mightycall.com',
     apiBaseUrl: 'https://panel.mightycall.com'
