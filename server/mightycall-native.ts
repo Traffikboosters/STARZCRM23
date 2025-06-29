@@ -24,6 +24,7 @@ interface MightyCallResponse {
 export class MightyCallNativeAPI {
   private apiKey = process.env.MIGHTYCALL_API_KEY;
   private secretKey = process.env.MIGHTYCALL_SECRET_KEY;
+  private accountId = '4f917f13-aae1-401d-8241-010db91da5b2';
   private baseUrl = 'https://api.mightycall.com/v4';
   private authToken: string | null = null;
   private tokenExpiration: number = 0;
@@ -41,6 +42,10 @@ export class MightyCallNativeAPI {
     }
 
     try {
+      console.log('MightyCall authentication attempt...');
+      console.log('API Key length:', this.apiKey?.length || 0);
+      console.log('Secret Key length:', this.secretKey?.length || 0);
+      
       const response = await fetch(`${this.baseUrl}/auth/token`, {
         method: 'POST',
         headers: {
@@ -55,8 +60,12 @@ export class MightyCallNativeAPI {
         })
       });
 
+      console.log('Auth response status:', response.status);
+      const responseText = await response.text();
+      console.log('Auth response body:', responseText);
+
       if (!response.ok) {
-        throw new Error(`Authentication failed: ${response.status} ${response.statusText}`);
+        throw new Error(`Authentication failed: ${response.status} ${response.statusText} - ${responseText}`);
       }
 
       const authData: MightyCallAuthResponse = await response.json();
@@ -88,6 +97,7 @@ export class MightyCallNativeAPI {
         headers: {
           'Authorization': `Bearer ${token}`,
           'x-api-key': this.apiKey!,
+          'x-account-id': this.accountId,
           'Accept': 'application/json'
         }
       });
@@ -114,6 +124,7 @@ export class MightyCallNativeAPI {
         headers: {
           'Authorization': `Bearer ${token}`,
           'x-api-key': this.apiKey!,
+          'x-account-id': this.accountId,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
@@ -156,6 +167,7 @@ export class MightyCallNativeAPI {
         headers: {
           'Authorization': `Bearer ${token}`,
           'x-api-key': this.apiKey!,
+          'x-account-id': this.accountId,
           'Accept': 'application/json'
         }
       });
