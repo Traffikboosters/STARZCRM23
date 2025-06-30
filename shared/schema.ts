@@ -1206,5 +1206,63 @@ export const insertCustomerTestimonialSchema = createInsertSchema(customerTestim
 export type CustomerTestimonial = typeof customerTestimonials.$inferSelect;
 export type InsertCustomerTestimonial = z.infer<typeof insertCustomerTestimonialSchema>;
 
+// WhatsApp Messages Table
+export const whatsappMessages = pgTable("whatsapp_messages", {
+  id: serial("id").primaryKey(),
+  messageSid: text("message_sid").unique(),
+  contactId: integer("contact_id").references(() => contacts.id),
+  fromNumber: text("from_number").notNull(),
+  toNumber: text("to_number").notNull(),
+  messageBody: text("message_body").notNull(),
+  direction: text("direction").notNull(), // 'inbound' or 'outbound'
+  status: text("status").default('sent'), // 'sent', 'delivered', 'read', 'failed'
+  messageType: text("message_type").default('text'), // 'text', 'media', 'template'
+  mediaUrl: text("media_url"),
+  templateName: text("template_name"),
+  sentBy: integer("sent_by").references(() => users.id),
+  readAt: timestamp("read_at"),
+  deliveredAt: timestamp("delivered_at"),
+  errorMessage: text("error_message"),
+  campaignId: integer("campaign_id").references(() => campaigns.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// WhatsApp Conversations Table
+export const whatsappConversations = pgTable("whatsapp_conversations", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  phoneNumber: text("phone_number").notNull(),
+  lastMessageAt: timestamp("last_message_at").defaultNow(),
+  messageCount: integer("message_count").default(0),
+  status: text("status").default('active'), // 'active', 'closed', 'archived'
+  assignedTo: integer("assigned_to").references(() => users.id),
+  tags: text("tags").array(),
+  notes: text("notes"),
+  isRead: boolean("is_read").default(false),
+  priority: text("priority").default('normal'), // 'low', 'normal', 'high', 'urgent'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// WhatsApp insert schemas
+export const insertWhatsappMessageSchema = createInsertSchema(whatsappMessages).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertWhatsappConversationSchema = createInsertSchema(whatsappConversations).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// WhatsApp types
+export type WhatsappMessage = typeof whatsappMessages.$inferSelect;
+export type InsertWhatsappMessage = z.infer<typeof insertWhatsappMessageSchema>;
+export type WhatsappConversation = typeof whatsappConversations.$inferSelect;
+export type InsertWhatsappConversation = z.infer<typeof insertWhatsappConversationSchema>;
+
 export type ExtractionHistory = typeof extractionHistory.$inferSelect;
 export type InsertExtractionHistory = z.infer<typeof insertExtractionHistorySchema>;

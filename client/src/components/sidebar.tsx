@@ -85,6 +85,7 @@ export default function Sidebar({
     { id: "locations", label: "Location Intelligence", icon: MapPin },
     { id: "email-marketing", label: "Email Marketing", icon: Mail },
     { id: "sms-marketing", label: "SMS Marketing", icon: MessageSquare },
+    { id: "whatsapp", label: "WhatsApp Business", icon: MessageCircle },
     { id: "sales-engagement", label: "Sales Rep Engagement", icon: Activity },
     { id: "sales-rep-dashboard", label: "Sales Rep Dashboard", icon: BarChart3 },
     { id: "technical-portal", label: "Technical Portal", icon: Code },

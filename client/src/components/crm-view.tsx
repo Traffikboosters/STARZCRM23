@@ -1078,37 +1078,37 @@ export default function CRMView() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs flex flex-col items-center py-3 h-auto min-h-[60px]"
+                      className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[65px] px-2"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleCallContact(contact);
                       }}
                       disabled={!contact.phone}
                     >
-                      <Phone className="h-3 w-3 mb-2 text-green-600 flex-shrink-0" />
-                      <span className="leading-tight">Call</span>
+                      <Phone className="h-4 w-4 mb-1 text-green-600 flex-shrink-0" />
+                      <span className="leading-none text-center">Call</span>
                     </Button>
 
                     {/* Schedule Button */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs flex flex-col items-center py-3 h-auto min-h-[60px]"
+                      className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[65px] px-2"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedContact(contact);
                         setIsScheduleModalOpen(true);
                       }}
                     >
-                      <Calendar className="h-3 w-3 mb-2 text-blue-600 flex-shrink-0" />
-                      <span className="leading-tight">Schedule</span>
+                      <Calendar className="h-4 w-4 mb-1 text-blue-600 flex-shrink-0" />
+                      <span className="leading-none text-center">Schedule</span>
                     </Button>
 
                     {/* Email Button */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs flex flex-col items-center py-3 h-auto min-h-[60px]"
+                      className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[65px] px-2"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedContact(contact);
@@ -1116,68 +1116,68 @@ export default function CRMView() {
                       }}
                       disabled={!contact.email}
                     >
-                      <Mail className="h-3 w-3 mb-2 text-orange-600 flex-shrink-0" />
-                      <span className="leading-tight">Email</span>
+                      <Mail className="h-4 w-4 mb-1 text-orange-600 flex-shrink-0" />
+                      <span className="leading-none text-center">Email</span>
                     </Button>
 
                     {/* AI Starters Button */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs flex flex-col items-center py-3 h-auto min-h-[60px]"
+                      className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[65px] px-2"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedContactForDetails(contact);
                         setIsDetailsModalOpen(true);
                       }}
                     >
-                      <Bot className="h-3 w-3 mb-2 text-indigo-600 flex-shrink-0" />
-                      <span className="leading-tight">AI Starters</span>
+                      <Bot className="h-4 w-4 mb-1 text-indigo-600 flex-shrink-0" />
+                      <span className="leading-none text-center">AI Starters</span>
                     </Button>
 
                     {/* Quick Replies Button */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs flex flex-col items-center py-3 h-auto min-h-[60px]"
+                      className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[65px] px-2"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedContactForDetails(contact);
                         setIsDetailsModalOpen(true);
                       }}
                     >
-                      <Zap className="h-3 w-3 mb-2 text-yellow-600 flex-shrink-0" />
-                      <span className="leading-tight">Quick Reply</span>
+                      <Zap className="h-4 w-4 mb-1 text-yellow-600 flex-shrink-0" />
+                      <span className="leading-none text-center">Quick Reply</span>
                     </Button>
 
                     {/* Notes Button */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs flex flex-col items-center py-3 h-auto min-h-[60px]"
+                      className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[65px] px-2"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedContactForDetails(contact);
                         setIsDetailsModalOpen(true);
                       }}
                     >
-                      <StickyNote className="h-3 w-3 mb-2 text-amber-600 flex-shrink-0" />
-                      <span className="leading-tight">Notes</span>
+                      <StickyNote className="h-4 w-4 mb-1 text-amber-600 flex-shrink-0" />
+                      <span className="leading-none text-center">Notes</span>
                     </Button>
 
                     {/* Qualification Button */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs flex flex-col items-center py-3 h-auto min-h-[60px]"
+                      className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[65px] px-2"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedContactForDetails(contact);
                         setIsDetailsModalOpen(true);
                       }}
                     >
-                      <ClipboardList className="h-3 w-3 mb-2 text-teal-600 flex-shrink-0" />
-                      <span className="leading-tight">Qualify</span>
+                      <ClipboardList className="h-4 w-4 mb-1 text-teal-600 flex-shrink-0" />
+                      <span className="leading-none text-center">Qualify</span>
                     </Button>
 
                     {/* More Actions */}
@@ -1186,11 +1186,11 @@ export default function CRMView() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-xs flex flex-col items-center py-3 h-auto min-h-[60px]"
+                          className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[65px] px-2"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <MoreVertical className="h-3 w-3 mb-2 flex-shrink-0" />
-                          <span className="leading-tight">More</span>
+                          <MoreVertical className="h-4 w-4 mb-1 flex-shrink-0" />
+                          <span className="leading-none text-center">More</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">

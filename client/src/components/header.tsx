@@ -108,21 +108,21 @@ export default function Header() {
 
   return (
     <header className="bg-white border-b border-neutral-lighter px-6 py-4">
-      <div className="relative flex items-center justify-between gap-6">
-        <div className="flex items-center space-x-4 flex-shrink-0">
+      <div className="relative flex items-center justify-between gap-8 min-h-[80px]">
+        <div className="flex items-center flex-shrink-0 max-w-[320px]">
           {/* Company Logo with Slogan */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-4">
             <img 
               src={traffikBoostersLogo} 
               alt="Company Logo" 
-              className="h-20 w-auto object-contain"
+              className="h-16 w-auto object-contain flex-shrink-0"
               style={{ imageRendering: 'crisp-edges' }}
             />
-            <div className="flex flex-col justify-center space-y-1">
-              <p className="text-xs font-bold text-black whitespace-nowrap leading-tight">
+            <div className="flex flex-col justify-center space-y-0.5 min-w-0">
+              <p className="text-sm font-bold text-black whitespace-nowrap leading-none">
                 More Traffik!
               </p>
-              <p className="text-xs font-bold text-black whitespace-nowrap leading-tight">
+              <p className="text-sm font-bold text-black whitespace-nowrap leading-none">
                 More Sales!
               </p>
             </div>

@@ -1281,6 +1281,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // WhatsApp API Routes
+  app.post('/api/whatsapp/send', async (req, res) => {
+    try {
+      const { contactId, message, phoneNumber } = req.body;
+      
+      if (!phoneNumber || !message) {
+        return res.status(400).json({ error: 'Phone number and message are required' });
+      }
+
+      const { whatsappService } = await import('./whatsapp-service');
+      
+      const formattedPhone = whatsappService.formatPhoneNumber(phoneNumber);
+      const success = await whatsappService.sendMessage({
+        to: formattedPhone,
+        body: message
+      });
+
+      if (success) {
+        // Store message in temporary array for demo
+        const messageData = {
+          id: Date.now(),
+          contactId: contactId || null,
+          fromNumber: 'whatsapp:+14155238886',
+          toNumber: formattedPhone,
+          messageBody: message,
+          direction: 'outbound',
+          status: 'sent',
+          messageType: 'text',
+          sentBy: 1,
+          createdAt: new Date().toISOString()
+        };
+
+        res.json({ 
+          success: true, 
+          message: 'WhatsApp message sent successfully',
+          data: messageData
+        });
+      } else {
+        res.status(500).json({ error: 'Failed to send WhatsApp message' });
+      }
+    } catch (error) {
+      console.error('WhatsApp send error:', error);
+      res.status(500).json({ error: 'WhatsApp service error: ' + error.message });
+    }
+  });
+
+  app.post('/api/whatsapp/template', async (req, res) => {
+    try {
+      const { contactId, templateName, phoneNumber, variables = [] } = req.body;
+      
+      if (!phoneNumber || !templateName) {
+        return res.status(400).json({ error: 'Phone number and template name are required' });
+      }
+
+      const { whatsappService } = await import('./whatsapp-service');
+      
+      const formattedPhone = whatsappService.formatPhoneNumber(phoneNumber);
+      const success = await whatsappService.sendTemplateMessage(formattedPhone, templateName, variables);
+
+      if (success) {
+        res.json({ 
+          success: true, 
+          message: 'WhatsApp template message sent successfully' 
+        });
+      } else {
+        res.status(500).json({ error: 'Failed to send WhatsApp template message' });
+      }
+    } catch (error) {
+      console.error('WhatsApp template send error:', error);
+      res.status(500).json({ error: 'WhatsApp template service error: ' + error.message });
+    }
+  });
+
+  app.get('/api/whatsapp/templates', async (req, res) => {
+    try {
+      const { whatsappService } = await import('./whatsapp-service');
+      const templates = whatsappService.getBusinessTemplates();
+      
+      res.json({ 
+        templates: Object.keys(templates).map(key => ({
+          name: key,
+          template: templates[key]('{{customerName}}'),
+          description: `${key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ')} message template`
+        }))
+      });
+    } catch (error) {
+      console.error('WhatsApp templates error:', error);
+      res.status(500).json({ error: 'Failed to fetch WhatsApp templates' });
+    }
+  });
+
+  app.post('/api/whatsapp/webhook', async (req, res) => {
+    try {
+      const { whatsappService } = await import('./whatsapp-service');
+      const messageData = whatsappService.parseWebhookMessage(req.body);
+      
+      console.log('WhatsApp webhook received:', messageData);
+      
+      // Store inbound message and create/update conversation
+      // This would integrate with your CRM system
+      
+      res.status(200).send('OK');
+    } catch (error) {
+      console.error('WhatsApp webhook error:', error);
+      res.status(500).json({ error: 'Webhook processing failed' });
+    }
+  });
+
   // Create sample extraction history data
   app.post('/api/extraction-history/seed', async (req, res) => {
     try {
