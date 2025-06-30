@@ -208,30 +208,33 @@ export default function LeadSourceTracking() {
             {sourceData.map((source: LeadSourceData) => (
               <div key={source.source} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
                     {sourceIcons[source.source as keyof typeof sourceIcons] || <Users className="h-4 w-4" />}
-                    <span className="font-medium">
+                    <span className="font-medium truncate">
                       {sourceNames[source.source as keyof typeof sourceNames] || source.source}
                     </span>
                     <Badge variant="secondary">{source.count} leads</Badge>
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm font-medium">{source.percentage.toFixed(1)}%</div>
-                    <div className="text-xs text-muted-foreground">
+                  <div className="text-right ml-4 flex-shrink-0 min-w-[80px]">
+                    <div className="text-sm font-medium whitespace-nowrap">{source.percentage.toFixed(1)}%</div>
+                    <div className="text-xs text-muted-foreground whitespace-nowrap">
                       {source.conversionRate}% conversion
                     </div>
                   </div>
                 </div>
                 <Progress value={source.percentage} className="h-2" />
-                <div className="grid grid-cols-3 gap-4 text-sm text-muted-foreground">
-                  <div>
-                    <span className="font-medium">Deal Value:</span> ${source.avgDealValue.toLocaleString()}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-muted-foreground">
+                  <div className="flex flex-col">
+                    <span className="font-medium text-xs uppercase tracking-wide">Deal Value</span>
+                    <span className="mt-1">${source.avgDealValue.toLocaleString()}</span>
                   </div>
-                  <div>
-                    <span className="font-medium">Last Lead:</span> {new Date(source.lastReceived).toLocaleDateString()}
+                  <div className="flex flex-col">
+                    <span className="font-medium text-xs uppercase tracking-wide">Last Lead</span>
+                    <span className="mt-1">{new Date(source.lastReceived).toLocaleDateString()}</span>
                   </div>
-                  <div>
-                    <span className="font-medium">Recent Activity:</span> {source.recentLeads.length} this week
+                  <div className="flex flex-col">
+                    <span className="font-medium text-xs uppercase tracking-wide">This Week</span>
+                    <span className="mt-1">{source.recentLeads.length} leads</span>
                   </div>
                 </div>
               </div>
