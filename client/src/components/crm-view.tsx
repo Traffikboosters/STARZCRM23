@@ -598,11 +598,11 @@ export default function CRMView() {
       // Create contact name for dialer (URL encode for spaces)
       const contactName = `${contact.firstName}+${contact.lastName}`;
       
-      // Use correct MightyCall app web dialer URL format
-      const webDialerUrl = `https://app.mightycall.com/dialer?number=${dialNumber}&contact=${contactName}`;
+      // Primary method: Use device phone dialer for reliable calling
+      const telUrl = `tel:${dialNumber}`;
       
-      // Open MightyCall web dialer in new window
-      window.open(webDialerUrl, '_blank', 'width=800,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,status=no');
+      // Try to open device phone dialer first
+      window.location.href = telUrl;
       
       // Log call attempt with precise timestamp
       console.log(`MIGHTYCALL WEB DIALER: Contact: ${contact.firstName} ${contact.lastName}, Number: ${dialNumber}, Time: ${new Date().toISOString()}`);

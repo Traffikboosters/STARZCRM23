@@ -489,7 +489,8 @@ The application uses a comprehensive schema including:
 - June 30, 2025. Added Department Management navigation tab with 4-department interface (Sales, Marketing, HR, Operations) featuring employee reassignment, performance metrics, budget tracking, and department-specific analytics
 - June 30, 2025. Integrated department-specific features including sales team performance tracking, marketing campaign analytics, HR employee management, and operations system monitoring
 - June 30, 2025. Enhanced mobile navigation accessibility by removing 15-tab limitation, adding proper touch targets (44px height), smooth scrolling, and green highlighting for active states
-- June 30, 2025. SOLD LEAD CARDS LOGO OPTIMIZATION: Reduced Traffik Boosters logo size by 50% then increased by 50% total for optimal balance (h-26 → h-6 → h-8 → h-10) in Sold Lead Cards header section
+- June 30, 2025. SOLD LEAD CARDS LOGO OPTIMIZATION: Reduced Traffik Boosters logo size by 50% then increased by 50% total for optimal balance (h-26 → h-6 → h-8 → h-10 → h-12) in Sold Lead Cards header section
+- June 30, 2025. MIGHTYCALL DIALER FIX: Updated click-to-call functionality to use device tel: protocol instead of web dialer URLs due to connectivity timeouts, ensuring reliable calling on all devices
 
 ## User Preferences
 
