@@ -506,32 +506,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/chat-widget/submit', async (req, res) => {
     try {
       const { visitorName, visitorEmail, visitorPhone, companyName, message } = req.body;
+      const importTime = new Date();
       
-      // Create contact with precise lead source tracking
+      // Create contact with complete lead source tracking
       const contactData = {
         firstName: visitorName?.split(' ')[0] || 'Chat',
         lastName: visitorName?.split(' ').slice(1).join(' ') || 'Visitor',
         email: visitorEmail,
         phone: visitorPhone,
         company: companyName,
-        notes: message || 'Initial contact from chat widget',
+        notes: `${message || 'Initial contact from chat widget'} | Vendor: Starz Chat Widget | Import Time: ${importTime.toLocaleString()}`,
         leadSource: 'chat_widget',
         leadStatus: 'new',
-        dealValue: 3500, // Average website development deal
-        importedAt: new Date(),
-        createdBy: 1
+        dealValue: 3500,
+        importedAt: importTime,
+        createdBy: 1,
+        // Enhanced tracking fields
+        vendorSource: 'Starz Chat Widget',
+        sourceTimestamp: importTime.toISOString(),
+        originalSource: 'Website Chat Widget'
       };
 
       const contact = await storage.createContact(contactData);
       
-      // Log precise lead source activity
-      console.log(`CHAT WIDGET LEAD: Source: chat_widget, Time: ${contactData.importedAt.toISOString()}, Visitor: ${visitorName}, Email: ${visitorEmail}, Company: ${companyName || 'Not provided'}`);
+      // Enhanced logging with vendor information
+      console.log(`CHAT WIDGET LEAD CREATED: ID: ${contact.id}, Source: Starz Chat Widget, Time: ${importTime.toISOString()}, Visitor: ${visitorName}, Email: ${visitorEmail}, Company: ${companyName || 'Not provided'}`);
+      
+      // Send real-time notification via WebSocket
+      if (wss) {
+        const notificationData = {
+          type: 'new_email_lead',
+          leadId: contact.id,
+          leadName: `${contactData.firstName} ${contactData.lastName}`,
+          vendorSource: 'Starz Chat Widget',
+          importTime: importTime.toISOString(),
+          company: companyName || 'Not provided',
+          email: visitorEmail,
+          message: 'New email lead from chat widget'
+        };
+        
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(notificationData));
+          }
+        });
+      }
       
       res.json({ 
         success: true, 
         message: 'Lead captured successfully',
         contactId: contact.id,
-        timestamp: contactData.importedAt
+        timestamp: importTime,
+        vendorSource: 'Starz Chat Widget'
       });
     } catch (error) {
       console.error('Chat widget submission error:', error);
