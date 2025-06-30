@@ -579,9 +579,15 @@ export default function LandingPage() {
                   Call (877) 840-6250
                 </Button>
               </div>
-              <p className="text-center text-sm text-gray-500 mt-4">
-                Available Monday-Friday, 9 AM - 6 PM EST
-              </p>
+              <div className="mt-4 space-y-2 text-center">
+                <p className="text-sm text-gray-500">
+                  Available Monday-Friday, 9 AM - 6 PM EST
+                </p>
+                <div className="text-xs text-gray-400 space-y-1">
+                  <p>Your information is secure and protected</p>
+                  <p>We'll contact you within 24 business hours with your personalized growth strategy.</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
