@@ -598,8 +598,8 @@ export default function CRMView() {
       // Create contact name for dialer (URL encode for spaces)
       const contactName = `${contact.firstName}+${contact.lastName}`;
       
-      // Use direct MightyCall panel web dialer URL format
-      const webDialerUrl = `https://panel.mightycall.com/dialer?number=${dialNumber}&contact=${contactName}`;
+      // Use correct MightyCall app web dialer URL format
+      const webDialerUrl = `https://app.mightycall.com/dialer?number=${dialNumber}&contact=${contactName}`;
       
       // Open MightyCall web dialer in new window
       window.open(webDialerUrl, '_blank', 'width=800,height=600,resizable=yes,scrollbars=yes,toolbar=no,location=no,status=no');
