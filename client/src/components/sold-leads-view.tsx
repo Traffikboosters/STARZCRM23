@@ -82,7 +82,7 @@ export default function SoldLeadsView() {
 
   // Calculate metrics
   const totalSales = filteredSoldLeads.length;
-  const totalRevenue = filteredSoldLeads.reduce((sum, lead) => sum + (lead.budget || 0), 0) / 100; // Convert from cents
+  const totalRevenue = filteredSoldLeads.reduce((sum, lead) => sum + (lead.budget || 0), 0); // Budget stored as dollars
   const averageDealSize = totalSales > 0 ? totalRevenue / totalSales : 0;
 
   const exportSoldLeads = () => {
@@ -93,7 +93,7 @@ export default function SoldLeadsView() {
         `"${lead.company || ''}"`,
         `"${lead.email || ''}"`,
         `"${lead.phone || ''}"`,
-        `"$${((lead.budget || 0) / 100).toLocaleString()}"`,
+        `"$${(lead.budget || 0).toLocaleString()}"`,
         `"${lead.leadSource || ''}"`,
         `"${new Date(lead.updatedAt || lead.createdAt).toLocaleDateString()}"`
       ].join(","))
@@ -285,7 +285,7 @@ export default function SoldLeadsView() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-600">Deal Value:</span>
                     <span className="font-semibold text-green-600">
-                      ${((lead.budget || 0) / 100).toLocaleString()}
+                      ${(lead.budget || 0).toLocaleString()}
                     </span>
                   </div>
                 )}
