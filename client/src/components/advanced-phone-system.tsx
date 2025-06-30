@@ -134,10 +134,15 @@ export function AdvancedPhoneSystem() {
         
         setActiveCall(newActiveCall);
         
-        // Open MightyCall web dialer if available
-        if (result.webDialerUrl) {
-          window.open(result.webDialerUrl, '_blank', 'width=400,height=600');
+        // Use device phone dialer instead of web interface
+        const cleanNumber = phoneNumber.replace(/\D/g, '');
+        let finalNumber = cleanNumber;
+        
+        if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
+          finalNumber = cleanNumber.substring(1);
         }
+        
+        window.location.href = `tel:${finalNumber}`;
         
         toast({
           title: "Call Initiated",

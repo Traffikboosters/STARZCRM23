@@ -453,6 +453,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // MightyCall initiate-call endpoint (used by phone system component)
+  app.post('/api/mightycall/initiate-call', async (req, res) => {
+    try {
+      const { phoneNumber, contactName, extension } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ error: 'Phone number is required' });
+      }
+
+      // Generate unique call ID
+      const callId = `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Clean phone number for dialing
+      const cleanNumber = phoneNumber.replace(/\D/g, '');
+      
+      // Log the call attempt
+      console.log(`Call Logging: Call to ${phoneNumber} (${contactName || 'Unknown Contact'}) - ID: ${callId}`);
+      
+      res.json({
+        success: true,
+        callId,
+        phoneNumber: cleanNumber,
+        contactName: contactName || 'Unknown Contact',
+        extension: extension || '',
+        status: 'logged',
+        useDeviceDialer: true
+      });
+
+    } catch (error) {
+      console.error('MightyCall initiate-call API error:', error);
+      res.status(500).json({ 
+        error: 'Failed to initiate call',
+        details: (error as Error).message 
+      });
+    }
+  });
+
   // Lead Source Analytics API
   app.get('/api/analytics/lead-sources/:timeframe?', async (req, res) => {
     try {

@@ -73,62 +73,52 @@ export default function MightyCallWebDialer({
     setCallStatus('connecting');
     
     try {
-      const response = await apiRequest("POST", "/api/mightycall/call", {
-        phoneNumber: dialNumber,
-        contactName: contactName || 'Contact',
-        userId: 1
+      // Clean phone number and remove country code if present
+      const cleanNumber = dialNumber.replace(/\D/g, '');
+      let finalNumber = cleanNumber;
+      
+      if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
+        finalNumber = cleanNumber.substring(1);
+      }
+      
+      // Use device phone dialer directly
+      window.location.href = `tel:${finalNumber}`;
+      
+      setCallStatus('ringing');
+      
+      toast({
+        title: "Call Initiated",
+        description: `Calling ${contactName || finalNumber} via device phone app`,
       });
 
-      const result = await response.json();
-      
-      if (result.success) {
-        // Open MightyCall web dialer in popup
-        if (result.webDialerUrl) {
-          const popup = window.open(
-            result.webDialerUrl, 
-            'mightycall-dialer',
-            'width=900,height=700,scrollbars=yes,resizable=yes'
-          );
-          
-          if (popup) {
-            setCallStatus('ringing');
-            
-            toast({
-              title: "MightyCall Dialer Opened",
-              description: `Connecting to ${contactName || dialNumber}`,
-            });
+      // Log call attempt in background
+      setTimeout(() => {
+        apiRequest("POST", "/api/mightycall/call", {
+          phoneNumber: finalNumber,
+          contactName: contactName || 'Contact',
+          userId: 1
+        }).catch(error => console.log('Call logging failed:', error));
+      }, 100);
 
-            // Simulate call progression
-            setTimeout(() => {
-              if (callStatus === 'ringing') {
-                setCallStatus('connected');
-                toast({
-                  title: "Call Connected",
-                  description: "Call in progress via MightyCall",
-                });
-              }
-            }, 3000);
-          } else {
-            throw new Error('Popup blocked');
-          }
-        } else {
-          // Fallback to device phone
-          window.location.href = `tel:${dialNumber.replace(/\D/g, '')}`;
-          setCallStatus('ringing');
+      // Simulate call progression for UI
+      setTimeout(() => {
+        if (callStatus === 'ringing') {
+          setCallStatus('connected');
+          toast({
+            title: "Call Connected",
+            description: "Call in progress",
+          });
         }
-      } else {
-        throw new Error('Call initiation failed');
-      }
+      }, 3000);
+      
     } catch (error) {
       console.error("Call error:", error);
       setCallStatus('idle');
       
-      // Fallback to device phone
-      window.location.href = `tel:${dialNumber.replace(/\D/g, '')}`;
-      
       toast({
-        title: "Using Device Phone",
-        description: "MightyCall unavailable, using device phone app",
+        title: "Call Error",
+        description: "Unable to initiate call. Please try manually.",
+        variant: "destructive",
       });
     }
   };
