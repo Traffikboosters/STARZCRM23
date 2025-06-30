@@ -59,6 +59,7 @@ import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png
 import ConversationStarters from "@/components/conversation-starters";
 import { QuickReplyTemplates } from "@/components/quick-reply-templates";
 import { OnlinePresenceResearch } from "@/components/online-presence-research";
+import { LeadEnrichmentView } from "@/components/lead-enrichment-view";
 
 interface ContactDetailsModalProps {
   contact: Contact | null;
@@ -251,7 +252,7 @@ export default function ContactDetailsModal({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger key="overview-tab" value="overview">Overview</TabsTrigger>
             <TabsTrigger key="notes-tab" value="notes">Notes ({notes.length})</TabsTrigger>
             <TabsTrigger key="intake-tab" value="intake">Lead Intake</TabsTrigger>
@@ -260,6 +261,7 @@ export default function ContactDetailsModal({
             <TabsTrigger key="conversation-tab" value="conversation">AI Starters</TabsTrigger>
             <TabsTrigger key="quick-replies-tab" value="quick-replies">Quick Replies</TabsTrigger>
             <TabsTrigger key="online-presence-tab" value="online-presence">Online Research</TabsTrigger>
+            <TabsTrigger key="enrichment-tab" value="enrichment">Social Media</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -927,6 +929,16 @@ export default function ContactDetailsModal({
           <TabsContent value="online-presence" className="space-y-6">
             {contact && (
               <OnlinePresenceResearch contact={contact} />
+            )}
+          </TabsContent>
+
+          <TabsContent value="enrichment" className="space-y-6">
+            {contact && (
+              <LeadEnrichmentView 
+                contactId={contact.id}
+                contactName={`${contact.firstName} ${contact.lastName}`}
+                onClose={() => setActiveTab("overview")}
+              />
             )}
           </TabsContent>
         </Tabs>

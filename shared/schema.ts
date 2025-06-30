@@ -500,6 +500,127 @@ export const insertPricingProposalSchema = createInsertSchema(pricingProposals).
   updatedAt: true,
 });
 
+// Lead Enrichment with Social Media Insights
+export const leadEnrichment = pgTable("lead_enrichment", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  // Social Media Profiles
+  linkedinUrl: text("linkedin_url"),
+  linkedinFollowers: integer("linkedin_followers"),
+  linkedinConnections: integer("linkedin_connections"),
+  linkedinJobTitle: text("linkedin_job_title"),
+  linkedinCompany: text("linkedin_company"),
+  linkedinBio: text("linkedin_bio"),
+  linkedinLocation: text("linkedin_location"),
+  linkedinIndustry: text("linkedin_industry"),
+  
+  facebookUrl: text("facebook_url"),
+  facebookLikes: integer("facebook_likes"),
+  facebookFollowers: integer("facebook_followers"),
+  facebookCheckins: integer("facebook_checkins"),
+  facebookRating: text("facebook_rating"),
+  
+  twitterUrl: text("twitter_url"),
+  twitterHandle: text("twitter_handle"),
+  twitterFollowers: integer("twitter_followers"),
+  twitterFollowing: integer("twitter_following"),
+  twitterTweets: integer("twitter_tweets"),
+  twitterVerified: boolean("twitter_verified").default(false),
+  
+  instagramUrl: text("instagram_url"),
+  instagramFollowers: integer("instagram_followers"),
+  instagramFollowing: integer("instagram_following"),
+  instagramPosts: integer("instagram_posts"),
+  instagramEngagementRate: text("instagram_engagement_rate"),
+  
+  youtubeUrl: text("youtube_url"),
+  youtubeSubscribers: integer("youtube_subscribers"),
+  youtubeViews: integer("youtube_views"),
+  youtubeVideos: integer("youtube_videos"),
+  
+  tiktokUrl: text("tiktok_url"),
+  tiktokFollowers: integer("tiktok_followers"),
+  tiktokLikes: integer("tiktok_likes"),
+  tiktokVideos: integer("tiktok_videos"),
+  
+  // Company Information
+  companyWebsite: text("company_website"),
+  companySize: text("company_size"), // 1-10, 11-50, 51-200, 201-500, 501-1000, 1000+
+  companyRevenue: text("company_revenue"), // estimated annual revenue
+  companyIndustry: text("company_industry"),
+  companyFounded: text("company_founded"),
+  companyLocation: text("company_location"),
+  companyDescription: text("company_description"),
+  
+  // Professional Information
+  jobTitle: text("job_title"),
+  seniority: text("seniority"), // entry, mid, senior, director, vp, c_level
+  department: text("department"), // marketing, sales, it, operations, hr, finance
+  yearsExperience: integer("years_experience"),
+  previousCompanies: text("previous_companies").array(),
+  skills: text("skills").array(),
+  certifications: text("certifications").array(),
+  
+  // Engagement & Activity
+  recentActivity: json("recent_activity"), // array of recent social media posts/activity
+  engagementScore: integer("engagement_score").default(0), // 0-100 based on social media activity
+  influencerScore: integer("influencer_score").default(0), // 0-100 based on follower count and engagement
+  socialMediaActivity: text("social_media_activity").default("low"), // low, medium, high, very_high
+  lastActivityDate: timestamp("last_activity_date"),
+  
+  // Technology Stack
+  technologies: text("technologies").array(), // software/tools they use
+  techStack: json("tech_stack"), // detailed technology information
+  
+  // Contact Preferences
+  preferredContactMethod: text("preferred_contact_method"), // email, phone, linkedin, social
+  bestContactTime: text("best_contact_time"), // morning, afternoon, evening
+  timezone: text("timezone"),
+  
+  // Enrichment Metadata
+  enrichmentStatus: text("enrichment_status").default("pending"), // pending, completed, failed, partial
+  dataSource: text("data_source"), // linkedin, apollo, clearbit, hunter, manual
+  confidence: integer("confidence").default(0), // 0-100 confidence in data accuracy
+  lastEnriched: timestamp("last_enriched").defaultNow().notNull(),
+  enrichedBy: integer("enriched_by").references(() => users.id),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const enrichmentHistory = pgTable("enrichment_history", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  enrichmentType: text("enrichment_type").notNull(), // social_media, company_info, professional_info
+  dataProvider: text("data_provider"), // linkedin, apollo, clearbit, hunter
+  fieldsUpdated: text("fields_updated").array(),
+  oldData: json("old_data"),
+  newData: json("new_data"),
+  confidence: integer("confidence"),
+  processingTime: integer("processing_time"), // milliseconds
+  success: boolean("success").default(true),
+  errorMessage: text("error_message"),
+  enrichedBy: integer("enriched_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Insert schemas for lead enrichment
+export const insertLeadEnrichmentSchema = createInsertSchema(leadEnrichment).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertEnrichmentHistorySchema = createInsertSchema(enrichmentHistory).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type LeadEnrichment = typeof leadEnrichment.$inferSelect;
+export type InsertLeadEnrichment = z.infer<typeof insertLeadEnrichmentSchema>;
+export type EnrichmentHistory = typeof enrichmentHistory.$inferSelect;
+export type InsertEnrichmentHistory = z.infer<typeof insertEnrichmentHistorySchema>;
+
 // Types for HR module
 export type JobPosting = typeof jobPostings.$inferSelect;
 export type InsertJobPosting = z.infer<typeof insertJobPostingSchema>;

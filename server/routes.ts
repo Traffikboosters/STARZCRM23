@@ -1640,6 +1640,135 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Lead Enrichment API Endpoints
+  app.post("/api/contacts/:contactId/enrich", async (req, res) => {
+    try {
+      const { contactId } = req.params;
+      const contact = await storage.getContact(parseInt(contactId));
+      
+      if (!contact) {
+        return res.status(404).json({ error: "Contact not found" });
+      }
+
+      // Import the enrichment engine
+      const { AILeadEnrichmentEngine } = await import('./ai-lead-enrichment');
+      
+      // Process enrichment
+      const enrichmentResult = await AILeadEnrichmentEngine.enrichContactData(contact);
+      
+      // Save enrichment data to database (placeholder for now since we need to update storage)
+      
+      // Create enrichment history record
+      const historyRecord = await AILeadEnrichmentEngine.processEnrichmentHistory(
+        parseInt(contactId),
+        enrichmentResult,
+        1 // Default to admin user
+      );
+
+      res.json({
+        success: true,
+        enrichmentData: enrichmentResult.enrichmentData,
+        confidence: enrichmentResult.confidence,
+        fieldsEnriched: enrichmentResult.fieldsEnriched,
+        dataSource: enrichmentResult.dataSource,
+        processingTime: 1500
+      });
+
+    } catch (error) {
+      console.error("Lead enrichment error:", error);
+      res.status(500).json({ 
+        success: false,
+        error: "Failed to enrich lead data",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.get("/api/contacts/:contactId/enrichment", async (req, res) => {
+    try {
+      const { contactId } = req.params;
+      
+      // Mock enrichment data for demonstration
+      const mockEnrichment = {
+        id: 1,
+        contactId: parseInt(contactId),
+        linkedinUrl: "https://linkedin.com/in/john-doe-123",
+        linkedinFollowers: 850,
+        linkedinConnections: 650,
+        linkedinJobTitle: "Marketing Director",
+        linkedinCompany: "Digital Solutions Inc",
+        facebookUrl: "https://facebook.com/john.doe123",
+        facebookFollowers: 1200,
+        twitterHandle: "@john_doe_biz",
+        twitterFollowers: 750,
+        instagramFollowers: 950,
+        companyWebsite: "https://www.digitalsolutions.com",
+        companySize: "11-50",
+        companyRevenue: "$2M-$5M",
+        companyIndustry: "Digital Marketing",
+        jobTitle: "Marketing Director",
+        seniority: "senior",
+        department: "marketing",
+        engagementScore: 78,
+        influencerScore: 65,
+        socialMediaActivity: "high",
+        preferredContactMethod: "linkedin",
+        bestContactTime: "morning",
+        enrichmentStatus: "completed",
+        confidence: 85,
+        lastEnriched: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      res.json(mockEnrichment);
+
+    } catch (error) {
+      console.error("Error fetching enrichment data:", error);
+      res.status(500).json({ error: "Failed to fetch enrichment data" });
+    }
+  });
+
+  app.get("/api/enrichment/history/:contactId", async (req, res) => {
+    try {
+      const { contactId } = req.params;
+      
+      // Mock enrichment history
+      const mockHistory = [
+        {
+          id: 1,
+          contactId: parseInt(contactId),
+          enrichmentType: "social_media",
+          dataProvider: "linkedin_apollo",
+          fieldsUpdated: ["linkedin", "social_media", "company_info"],
+          confidence: 85,
+          processingTime: 1500,
+          success: true,
+          enrichedBy: 1,
+          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) // 2 days ago
+        },
+        {
+          id: 2,
+          contactId: parseInt(contactId),
+          enrichmentType: "company_info",
+          dataProvider: "clearbit",
+          fieldsUpdated: ["company_info", "technologies"],
+          confidence: 92,
+          processingTime: 1200,
+          success: true,
+          enrichedBy: 1,
+          createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000) // 1 day ago
+        }
+      ];
+
+      res.json(mockHistory);
+
+    } catch (error) {
+      console.error("Error fetching enrichment history:", error);
+      res.status(500).json({ error: "Failed to fetch enrichment history" });
+    }
+  });
+
   // Get voice analysis insights
   app.get("/api/voice-analysis/insights", async (req, res) => {
     try {
