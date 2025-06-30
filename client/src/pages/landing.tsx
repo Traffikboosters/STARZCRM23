@@ -178,7 +178,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <Badge className="bg-orange-100 text-orange-800 border-orange-200 mb-6 animate-pulse">
+              <Badge className="bg-green-100 text-green-800 border-green-200 mb-6 animate-pulse">
                 🚀 No Monthly Contracts - Pay Per Project
               </Badge>
               <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
