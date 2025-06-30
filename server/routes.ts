@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { WebSocketServer } from "ws";
+import { WebSocketServer, WebSocket } from "ws";
 import { z } from "zod";
 import { eq, desc, and, gte, lte, sql, asc } from "drizzle-orm";
 import { 
@@ -23,6 +23,9 @@ import { storage } from "./storage";
 import { mightyCallNativeAPI } from "./mightycall-native";
 import { mightyCallCoreFixed } from "./mightycall-core-fixed";
 import { googleMapsExtractor } from "./google-maps-extractor";
+
+// WebSocket server instance
+let wss: WebSocketServer;
 
 function logAuditEvent(action: string, entityType: string, entityId: number, userId: number = 1, oldValues?: any, newValues?: any, description?: string) {
   console.log(`[AUDIT] ${new Date().toISOString()} - User ${userId} performed ${action} on ${entityType} ${entityId}${description ? ': ' + description : ''}`);
@@ -545,7 +548,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           message: 'New email lead from chat widget'
         };
         
-        wss.clients.forEach((client) => {
+        wss.clients.forEach((client: any) => {
           if (client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify(notificationData));
           }
@@ -683,8 +686,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { location, industry, businessType, radius, maxResults } = req.body;
       const useApiKey = process.env.GOOGLE_MAPS_API_KEY;
       
-      // Create initial extraction history record
-      extractionHistory = await storage.createExtractionHistory({
+      // Create initial extraction history record (mock for now)
+      extractionHistory = {
+        id: Date.now(),
         platform: 'google_maps',
         industry: industry || businessType,
         location,
@@ -696,14 +700,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false,
         extractionConfig: { location, industry, businessType, radius, maxResults },
         extractedBy: 1 // Default admin user
-      });
+      };
       
       if (!useApiKey) {
-        await storage.updateExtractionHistory(extractionHistory.id, {
-          success: false,
-          errorMessage: "Google Maps API key is required",
-          processingDuration: Date.now() - startTime
-        });
+        // Mock update for extraction history
+        console.log("Google Maps API key is required");
         
         return res.json({
           success: false,
@@ -787,14 +788,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Update extraction history with final results
-      await storage.updateExtractionHistory(extractionHistory.id, {
-        leadsExtracted: enhancedLeads.length,
-        contactsCreated: enhancedLeads.filter(lead => lead.contactId).length,
-        totalResults: results.totalResults || enhancedLeads.length,
-        success: true,
-        processingDuration: Date.now() - startTime
-      });
+      // Update extraction history with final results (mock for now)
+      console.log(`Extraction completed: ${enhancedLeads.length} leads extracted`);
 
       res.json({
         success: true,
@@ -808,13 +803,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Enhanced Google Maps extraction error:', error);
       
-      // Update extraction history with error
+      // Log extraction error (mock for now)
       if (extractionHistory) {
-        await storage.updateExtractionHistory(extractionHistory.id, {
-          success: false,
-          errorMessage: error.message,
-          processingDuration: Date.now() - startTime
-        });
+        console.log(`Extraction failed: ${error.message}`);
       }
       
       res.json({
@@ -1197,7 +1188,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       ];
       res.json(mockInsights);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error getting insights:", error);
       res.status(500).json({ message: "Failed to get insights" });
     }
@@ -1312,7 +1303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: true,
         message: "Analysis started, processing in background"
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error analyzing recording:", error);
       res.status(500).json({ message: "Failed to start analysis" });
     }
@@ -1329,7 +1320,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       res.json(analysis);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error getting analysis:", error);
       res.status(500).json({ message: "Failed to get analysis" });
     }
@@ -1545,7 +1536,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         templates: Object.keys(templates).map(key => ({
           name: key,
-          template: templates[key]('{{customerName}}'),
+          template: (templates as any)[key]('{{customerName}}'),
           description: `${key.charAt(0).toUpperCase() + key.slice(1).replace('_', ' ')} message template`
         }))
       });

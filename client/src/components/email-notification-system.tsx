@@ -25,7 +25,7 @@ interface EmailNotification {
 }
 
 // Real-time email lead notifications with vendor tracking
-const generateEmailLeadNotifications = (): EmailNotification[] => [
+const generateMockEmails = (): EmailNotification[] => [
   {
     id: "1",
     from: "sarah.johnson@techstartup.com",
@@ -85,7 +85,7 @@ export default function EmailNotificationSystem({ onEmailClick }: EmailNotificat
   const queryClient = useQueryClient();
 
   // Generate email lead notifications with vendor source tracking
-  const generateEmailLeadNotifications = () => {
+  const generateLiveEmailNotifications = () => {
     const vendors = [
       'Website Contact Form',
       'Google Ads Landing Page',
@@ -153,7 +153,7 @@ export default function EmailNotificationSystem({ onEmailClick }: EmailNotificat
   // Initialize with mock emails and set up polling
   useEffect(() => {
     // Load initial emails
-    setEmails(generateEmailLeadNotifications());
+    setEmails(generateMockEmails());
 
     // Simulate receiving new emails periodically
     const emailInterval = setInterval(() => {

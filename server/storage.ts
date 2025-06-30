@@ -160,7 +160,7 @@ export interface IStorage {
   // User invitation methods
   createUserInvitation(invitation: InsertUserInvitation): Promise<UserInvitation>;
   getUserInvitationByToken(token: string): Promise<UserInvitation | undefined>;
-  updateUserInvitationStatus(token: string, status: string): Promise<void>;
+  updateUserInvitationStatus(token: string, status: string, acceptedAt?: Date): Promise<UserInvitation | undefined>;
   getAllUserInvitations(): Promise<UserInvitation[]>;
 
   // Additional methods needed by routes
@@ -277,11 +277,13 @@ export class DatabaseStorage implements IStorage {
     return invitation || undefined;
   }
 
-  async updateUserInvitationStatus(token: string, status: string): Promise<void> {
-    await db
+  async updateUserInvitationStatus(token: string, status: string, acceptedAt?: Date): Promise<UserInvitation | undefined> {
+    const [invitation] = await db
       .update(userInvitations)
-      .set({ status })
-      .where(eq(userInvitations.invitationToken, token));
+      .set({ status, acceptedAt })
+      .where(eq(userInvitations.invitationToken, token))
+      .returning();
+    return invitation || undefined;
   }
 
   async getAllUserInvitations(): Promise<UserInvitation[]> {
@@ -311,35 +313,7 @@ export class DatabaseStorage implements IStorage {
     return (result.rowCount ?? 0) > 0;
   }
 
-  // User Invitations
-  async createUserInvitation(invitation: InsertUserInvitation): Promise<UserInvitation> {
-    const [newInvitation] = await db
-      .insert(userInvitations)
-      .values(invitation)
-      .returning();
-    return newInvitation;
-  }
 
-  async getUserInvitationByToken(token: string): Promise<UserInvitation | undefined> {
-    const [invitation] = await db
-      .select()
-      .from(userInvitations)
-      .where(eq(userInvitations.invitationToken, token));
-    return invitation || undefined;
-  }
-
-  async updateUserInvitationStatus(token: string, status: string, acceptedAt?: Date): Promise<UserInvitation | undefined> {
-    const [invitation] = await db
-      .update(userInvitations)
-      .set({ status, acceptedAt })
-      .where(eq(userInvitations.invitationToken, token))
-      .returning();
-    return invitation || undefined;
-  }
-
-  async getAllUserInvitations(): Promise<UserInvitation[]> {
-    return await db.select().from(userInvitations).orderBy(desc(userInvitations.createdAt));
-  }
 
   // Companies
   async getCompany(id: number): Promise<Company | undefined> {
@@ -1760,12 +1734,7 @@ Client Approval:
     return this.events.get(id);
   }
 
-  async getEventsByDateRange(startDate: Date, endDate: Date): Promise<Event[]> {
-    const events = Array.from(this.events.values());
-    return events.filter(event => 
-      event.startDate >= startDate && event.startDate <= endDate
-    );
-  }
+
 
   async createEvent(insertEvent: InsertEvent & { createdBy: number }): Promise<Event> {
     const event: Event = {
@@ -2564,15 +2533,6 @@ Client Approval:
     return (result.rowCount || 0) > 0;
   }
 
-  // Extraction History methods
-  async createExtractionHistory(history: InsertExtractionHistory): Promise<ExtractionHistory> {
-    const [created] = await db
-      .insert(extractionHistory)
-      .values(history)
-      .returning();
-    return created;
-  }
-
   async updateExtractionHistory(id: number, updates: Partial<ExtractionHistory>): Promise<ExtractionHistory | undefined> {
     const [updated] = await db
       .update(extractionHistory)
@@ -2631,12 +2591,70 @@ Client Approval:
     return await db.select().from(callRecordings).orderBy(callRecordings.createdAt);
   }
 
+  async getCallRecording(id: number): Promise<CallRecording | undefined> {
+    const [recording] = await db.select().from(callRecordings).where(eq(callRecordings.id, id));
+    return recording;
+  }
+
+  async createCallRecording(recording: InsertCallRecording): Promise<CallRecording> {
+    const [created] = await db
+      .insert(callRecordings)
+      .values(recording)
+      .returning();
+    return created;
+  }
+
+  async updateCallRecording(id: number, updates: Partial<InsertCallRecording>): Promise<CallRecording | undefined> {
+    const [updated] = await db
+      .update(callRecordings)
+      .set(updates)
+      .where(eq(callRecordings.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteCallRecording(id: number): Promise<boolean> {
+    const result = await db.delete(callRecordings).where(eq(callRecordings.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getVoiceToneAnalyses(): Promise<VoiceToneAnalysis[]> {
+    return await db.select().from(voiceToneAnalysis).orderBy(voiceToneAnalysis.createdAt);
+  }
+
+  async getVoiceToneAnalysis(id: number): Promise<VoiceToneAnalysis | undefined> {
+    const [analysis] = await db.select().from(voiceToneAnalysis).where(eq(voiceToneAnalysis.id, id));
+    return analysis;
+  }
+
   async getVoiceToneAnalysisByRecording(recordingId: number): Promise<VoiceToneAnalysis | undefined> {
     const [analysis] = await db
       .select()
       .from(voiceToneAnalysis)
-      .where(eq(voiceToneAnalysis.recordingId, recordingId));
+      .where(eq(voiceToneAnalysis.callRecordingId, recordingId));
     return analysis;
+  }
+
+  async createVoiceToneAnalysis(analysis: InsertVoiceToneAnalysis): Promise<VoiceToneAnalysis> {
+    const [created] = await db
+      .insert(voiceToneAnalysis)
+      .values(analysis)
+      .returning();
+    return created;
+  }
+
+  async updateVoiceToneAnalysis(id: number, updates: Partial<InsertVoiceToneAnalysis>): Promise<VoiceToneAnalysis | undefined> {
+    const [updated] = await db
+      .update(voiceToneAnalysis)
+      .set(updates)
+      .where(eq(voiceToneAnalysis.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteVoiceToneAnalysis(id: number): Promise<boolean> {
+    const result = await db.delete(voiceToneAnalysis).where(eq(voiceToneAnalysis.id, id));
+    return (result.rowCount || 0) > 0;
   }
 
   // User Activity
@@ -2786,73 +2804,58 @@ Client Approval:
     };
   }
 
-  // Voice Tone Analysis - Call Recordings
+  // Voice Tone Analysis methods - Complete implementation
   async getCallRecordings(): Promise<CallRecording[]> {
-    return await db.select().from(callRecordings).orderBy(desc(callRecordings.createdAt));
+    return await db.select().from(callRecordings).orderBy(callRecordings.createdAt);
   }
 
   async getCallRecording(id: number): Promise<CallRecording | undefined> {
     const [recording] = await db.select().from(callRecordings).where(eq(callRecordings.id, id));
-    return recording || undefined;
+    return recording;
   }
 
   async createCallRecording(recording: InsertCallRecording): Promise<CallRecording> {
-    const [newRecording] = await db
-      .insert(callRecordings)
-      .values(recording)
-      .returning();
-    return newRecording;
+    const [created] = await db.insert(callRecordings).values(recording).returning();
+    return created;
   }
 
   async updateCallRecording(id: number, updates: Partial<InsertCallRecording>): Promise<CallRecording | undefined> {
-    const [recording] = await db
-      .update(callRecordings)
-      .set(updates)
-      .where(eq(callRecordings.id, id))
-      .returning();
-    return recording || undefined;
+    const [updated] = await db.update(callRecordings).set(updates).where(eq(callRecordings.id, id)).returning();
+    return updated;
   }
 
   async deleteCallRecording(id: number): Promise<boolean> {
     const result = await db.delete(callRecordings).where(eq(callRecordings.id, id));
-    return (result.rowCount ?? 0) > 0;
+    return (result.rowCount || 0) > 0;
   }
 
-  // Voice Tone Analysis - Analyses
   async getVoiceToneAnalyses(): Promise<VoiceToneAnalysis[]> {
-    return await db.select().from(voiceToneAnalysis).orderBy(desc(voiceToneAnalysis.createdAt));
+    return await db.select().from(voiceToneAnalysis).orderBy(voiceToneAnalysis.createdAt);
   }
 
   async getVoiceToneAnalysis(id: number): Promise<VoiceToneAnalysis | undefined> {
     const [analysis] = await db.select().from(voiceToneAnalysis).where(eq(voiceToneAnalysis.id, id));
-    return analysis || undefined;
+    return analysis;
   }
 
   async getVoiceToneAnalysisByRecording(recordingId: number): Promise<VoiceToneAnalysis | undefined> {
     const [analysis] = await db.select().from(voiceToneAnalysis).where(eq(voiceToneAnalysis.callRecordingId, recordingId));
-    return analysis || undefined;
+    return analysis;
   }
 
   async createVoiceToneAnalysis(analysis: InsertVoiceToneAnalysis): Promise<VoiceToneAnalysis> {
-    const [newAnalysis] = await db
-      .insert(voiceToneAnalysis)
-      .values(analysis)
-      .returning();
-    return newAnalysis;
+    const [created] = await db.insert(voiceToneAnalysis).values(analysis).returning();
+    return created;
   }
 
   async updateVoiceToneAnalysis(id: number, updates: Partial<InsertVoiceToneAnalysis>): Promise<VoiceToneAnalysis | undefined> {
-    const [analysis] = await db
-      .update(voiceToneAnalysis)
-      .set(updates)
-      .where(eq(voiceToneAnalysis.id, id))
-      .returning();
-    return analysis || undefined;
+    const [updated] = await db.update(voiceToneAnalysis).set(updates).where(eq(voiceToneAnalysis.id, id)).returning();
+    return updated;
   }
 
   async deleteVoiceToneAnalysis(id: number): Promise<boolean> {
     const result = await db.delete(voiceToneAnalysis).where(eq(voiceToneAnalysis.id, id));
-    return (result.rowCount ?? 0) > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   // Extraction History Methods
