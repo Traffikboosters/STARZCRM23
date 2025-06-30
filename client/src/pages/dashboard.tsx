@@ -179,7 +179,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-neutral-lightest">
       <Header />
       
-      <div className="flex min-h-screen">
+      <div className="flex flex-col lg:flex-row min-h-screen">
         <Sidebar 
           activeTab={activeTab} 
           onTabChange={setActiveTab}
@@ -187,17 +187,19 @@ export default function Dashboard() {
           onStartVideoCall={() => setIsVideoCallOpen(true)}
         />
         
-        <main className="flex-1 overflow-y-auto main-content">
-          <div className="container mx-auto py-6 px-4">
+        <main className="flex-1 overflow-y-auto bg-neutral-lightest">
+          <div className="container mx-auto py-3 lg:py-6 px-2 lg:px-4">
             {renderMainContent()}
           </div>
         </main>
         
-        <RightSidebar 
-          onJoinCall={() => setIsVideoCallOpen(true)}
-          onCreateEvent={() => setIsEventModalOpen(true)}
-          onContactClick={(contact) => setSelectedContact(contact)}
-        />
+        <div className="hidden xl:block">
+          <RightSidebar 
+            onJoinCall={() => setIsVideoCallOpen(true)}
+            onCreateEvent={() => setIsEventModalOpen(true)}
+            onContactClick={(contact) => setSelectedContact(contact)}
+          />
+        </div>
       </div>
 
       <VideoCallModal 

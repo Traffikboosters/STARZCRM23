@@ -107,18 +107,18 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white border-b border-neutral-lighter px-6 py-4">
-      <div className="relative flex items-center justify-between gap-8 min-h-[80px]">
-        <div className="flex items-center flex-shrink-0 max-w-[320px]">
+    <header className="bg-white border-b border-neutral-lighter px-3 md:px-6 py-2 md:py-4">
+      <div className="relative flex items-center justify-between gap-2 md:gap-8 min-h-[60px] md:min-h-[80px]">
+        <div className="flex items-center flex-shrink-0 max-w-[200px] md:max-w-[320px]">
           {/* Company Logo with Slogan */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 md:space-x-4">
             <img 
               src={traffikBoostersLogo} 
               alt="Company Logo" 
-              className="h-16 w-auto object-contain flex-shrink-0"
+              className="h-10 md:h-16 w-auto object-contain flex-shrink-0"
               style={{ imageRendering: 'crisp-edges' }}
             />
-            <div className="flex flex-col justify-center space-y-0.5 min-w-0">
+            <div className="hidden md:flex flex-col justify-center space-y-0.5 min-w-0">
               <p className="text-sm font-bold text-black whitespace-nowrap leading-none">
                 More Traffik!
               </p>
@@ -131,23 +131,28 @@ export default function Header() {
         
         {/* Centered STARZ Title */}
         <div className="absolute left-1/2 transform -translate-x-1/2">
-          <h1 className="text-3xl font-bold text-black whitespace-nowrap">
+          <h1 className="text-xl md:text-3xl font-bold text-black whitespace-nowrap">
             STARZ
           </h1>
         </div>
         
-        <div className="flex items-center space-x-4 flex-shrink min-w-0">
+        <div className="flex items-center space-x-2 md:space-x-4 flex-shrink min-w-0">
           {/* Search functionality */}
-          <div className="relative flex-shrink min-w-0">
+          <div className="relative flex-shrink min-w-0 hidden md:block">
             <Input
               type="text"
               placeholder="Search contacts, events..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-48 pl-10"
+              className="w-32 lg:w-48 pl-10 text-sm"
             />
             <Search className="absolute left-3 top-3 h-4 w-4 text-neutral-light" />
           </div>
+          
+          {/* Mobile search button */}
+          <Button variant="ghost" size="icon" className="md:hidden">
+            <Search className="h-5 w-5 text-neutral-medium" />
+          </Button>
           
           {/* Notifications */}
           <DropdownMenu>
