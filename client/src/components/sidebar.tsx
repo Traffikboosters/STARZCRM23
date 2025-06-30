@@ -102,21 +102,46 @@ export default function Sidebar({
   return (
     <>
       {/* Mobile Horizontal Navigation */}
-      <nav className="lg:hidden bg-white border-b border-neutral-lighter w-full overflow-x-auto">
-        <div className="flex items-center p-2 space-x-2 min-w-max">
-          {navigationItems.slice(0, 8).map((item) => {
+      <nav className="lg:hidden bg-white border-b border-neutral-lighter w-full sticky top-0 z-30">
+        <div 
+          className="flex items-center p-2 gap-2 overflow-x-auto scrollbar-hide" 
+          style={{ 
+            scrollbarWidth: 'none', 
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehaviorX: 'contain'
+          }}
+        >
+          {navigationItems.slice(0, 15).map((item) => {
             const Icon = item.icon;
+            const isActive = activeTab === item.id;
             return (
-              <Button
+              <button
                 key={item.id}
-                variant={activeTab === item.id ? "default" : "ghost"}
-                size="sm"
-                onClick={() => onTabChange(item.id)}
-                className="flex items-center space-x-1 whitespace-nowrap text-xs px-3 py-2 min-h-[36px]"
+                onClick={() => {
+                  console.log(`Mobile nav clicked: ${item.id}`);
+                  onTabChange(item.id);
+                }}
+                className={`
+                  flex items-center gap-1 px-3 py-2 rounded-md text-xs font-medium
+                  min-w-max whitespace-nowrap flex-shrink-0 transition-all duration-200
+                  border border-transparent touch-manipulation
+                  ${isActive 
+                    ? 'bg-brand-primary text-white shadow-md' 
+                    : 'bg-transparent text-neutral-medium hover:bg-neutral-lightest hover:text-neutral-dark'
+                  }
+                `}
+                style={{ 
+                  minHeight: '36px',
+                  touchAction: 'manipulation',
+                  WebkitTapHighlightColor: 'transparent'
+                }}
               >
-                <Icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{item.label}</span>
-              </Button>
+                <Icon className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden xs:inline text-[10px] sm:text-xs leading-tight">
+                  {item.label}
+                </span>
+              </button>
             );
           })}
         </div>
