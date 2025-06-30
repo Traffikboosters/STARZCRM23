@@ -16,7 +16,8 @@ import {
   Search,
   Filter,
   Target,
-  Star
+  Star,
+  Globe
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -112,108 +113,132 @@ const highRevenueProspects: HighRevenueProspect[] = [
     opportunityScore: 85,
     lastContact: null,
     status: "new",
-    notes: "Multiple brands, strong service department revenue",
-    leadSource: "Business Directory"
+    notes: "Multiple dealerships, high-volume sales potential",
+    leadSource: "Market Research",
+    marketingIntent: "comparing_options",
+    googleSearchActivity: ["automotive digital marketing", "car dealership advertising", "automotive lead generation"],
+    lastSearchDate: "2025-06-27",
+    searchKeywords: ["car dealership marketing", "automotive PPC", "dealer lead generation", "auto inventory marketing"]
   },
   {
     id: 4,
-    companyName: "Coastal Restaurant Group",
-    industry: "Food & Beverage",
-    estimatedMonthlyRevenue: 78000,
-    employeeCount: "100-200",
-    location: "Fort Lauderdale, FL",
-    contactPerson: "Anthony Russo",
-    email: "arusso@coastalrestaurants.com",
-    phone: "(954) 762-3800",
-    website: "coastalrestaurantgroup.com",
-    businessType: "Restaurant Chain",
-    services: ["Social Media Marketing", "Online Ordering", "Local SEO"],
-    painPoints: ["Labor costs", "Online ordering competition", "Location visibility"],
+    companyName: "Meridian Law Firm",
+    industry: "Legal Services",
+    estimatedMonthlyRevenue: 145000,
+    employeeCount: "15-30",
+    location: "Jacksonville, FL",
+    contactPerson: "Robert Williams",
+    email: "rwilliams@meridianlegal.com",
+    phone: "(904) 758-2100",
+    website: "meridianlawfirm.com",
+    businessType: "Law Practice",
+    services: ["Client Acquisition", "SEO", "Reputation Management"],
+    painPoints: ["Client trust", "Online reputation", "Competition"],
     opportunityScore: 90,
     lastContact: null,
     status: "new",
-    notes: "5 locations, catering services, strong weekend revenue",
-    leadSource: "Market Analysis"
+    notes: "Personal injury and corporate law, strong case volume",
+    leadSource: "Professional Network",
+    marketingIntent: "ready_to_buy",
+    googleSearchActivity: ["law firm marketing", "legal SEO services", "attorney lead generation"],
+    lastSearchDate: "2025-06-30",
+    searchKeywords: ["law firm SEO", "legal marketing agency", "attorney PPC", "lawyer lead generation"]
   },
   {
     id: 5,
-    companyName: "Precision Manufacturing Inc",
-    industry: "Manufacturing",
-    estimatedMonthlyRevenue: 145000,
-    employeeCount: "75-150",
-    location: "Jacksonville, FL",
-    contactPerson: "Robert Chen",
-    email: "rchen@precisionmfg.com",
-    phone: "(904) 458-9100",
-    website: "precisionmanufacturing.com",
-    businessType: "Contract Manufacturing",
-    services: ["B2B Lead Generation", "Industry Website", "LinkedIn Marketing"],
-    painPoints: ["Client acquisition", "Industry competition", "Digital presence"],
-    opportunityScore: 87,
+    companyName: "TechFlow Solutions",
+    industry: "Technology",
+    estimatedMonthlyRevenue: 200000,
+    employeeCount: "40-80",
+    location: "Fort Lauderdale, FL",
+    contactPerson: "Alex Chen",
+    email: "achen@techflowsolutions.com",
+    phone: "(954) 632-7800",
+    website: "techflowsolutions.com",
+    businessType: "Software Development",
+    services: ["B2B Marketing", "Lead Generation", "Content Strategy"],
+    painPoints: ["Market penetration", "Lead qualification", "Sales cycle"],
+    opportunityScore: 94,
     lastContact: null,
     status: "new",
-    notes: "Aerospace and medical device components, government contracts",
-    leadSource: "LinkedIn Research"
+    notes: "B2B software company, expanding client base",
+    leadSource: "Technology Directory",
+    marketingIntent: "actively_searching",
+    googleSearchActivity: ["B2B marketing agency", "software company marketing", "tech startup marketing"],
+    lastSearchDate: "2025-06-29",
+    searchKeywords: ["B2B digital marketing", "software marketing agency", "tech lead generation", "SaaS marketing"]
   },
   {
     id: 6,
-    companyName: "FlexTech Solutions",
-    industry: "Technology",
-    estimatedMonthlyRevenue: 110000,
-    employeeCount: "20-40",
-    location: "Boca Raton, FL",
-    contactPerson: "Lisa Wang",
-    email: "lwang@flextechsolutions.com",
-    phone: "(561) 397-2600",
-    website: "flextechsolutions.com",
-    businessType: "IT Services",
-    services: ["Content Marketing", "Technical SEO", "Lead Nurturing"],
-    painPoints: ["Client retention", "Technical expertise marketing", "Competitive landscape"],
-    opportunityScore: 91,
-    lastContact: null,
-    status: "new",
-    notes: "MSP services, cloud migration specialist, growing client base",
-    leadSource: "Tech Directory"
-  },
-  {
-    id: 7,
-    companyName: "Pinnacle Real Estate Group",
-    industry: "Real Estate",
-    estimatedMonthlyRevenue: 165000,
-    employeeCount: "15-30",
-    location: "Naples, FL",
-    contactPerson: "David Kumar",
-    email: "dkumar@pinnaclereg.com",
-    phone: "(239) 581-4700",
-    website: "pinnaclerealestategroup.com",
-    businessType: "Real Estate Brokerage",
-    services: ["Luxury Property Marketing", "Virtual Tours", "Social Media"],
-    painPoints: ["Market competition", "Listing visibility", "Agent productivity"],
-    opportunityScore: 89,
-    lastContact: null,
-    status: "new",
-    notes: "Luxury market focus, waterfront properties, high-value transactions",
-    leadSource: "MLS Analysis"
-  },
-  {
-    id: 8,
-    companyName: "Atlantic Legal Partners",
-    industry: "Legal Services",
-    estimatedMonthlyRevenue: 135000,
-    employeeCount: "25-50",
-    location: "West Palm Beach, FL",
-    contactPerson: "Amanda Foster",
-    email: "afoster@atlanticlegal.com",
-    phone: "(561) 627-8900",
-    website: "atlanticlegalpartners.com",
-    businessType: "Law Firm",
-    services: ["Legal SEO", "Content Marketing", "Reputation Management"],
-    painPoints: ["Client acquisition", "Online reputation", "Referral generation"],
+    companyName: "Coastal Hospitality Group",
+    industry: "Hospitality",
+    estimatedMonthlyRevenue: 180000,
+    employeeCount: "100-200",
+    location: "Key West, FL",
+    contactPerson: "Maria Santos",
+    email: "msantos@coastalhospitality.com",
+    phone: "(305) 294-8500",
+    website: "coastalhospitalitygroup.com",
+    businessType: "Hotel & Resort",
+    services: ["Digital Marketing", "Booking Optimization", "Brand Management"],
+    painPoints: ["Seasonal bookings", "Online presence", "Direct bookings"],
     opportunityScore: 86,
     lastContact: null,
     status: "new",
-    notes: "Corporate and litigation practice, established client base",
-    leadSource: "Legal Directory"
+    notes: "Multiple properties, seasonal revenue challenges",
+    leadSource: "Tourism Board",
+    marketingIntent: "research_phase",
+    googleSearchActivity: ["hotel marketing strategies", "hospitality digital marketing", "resort advertising"],
+    lastSearchDate: "2025-06-26",
+    searchKeywords: ["hotel digital marketing", "resort marketing agency", "hospitality SEO", "booking optimization"]
+  },
+  {
+    id: 7,
+    companyName: "Digital Marketing Masters Inc",
+    industry: "Marketing Agency",
+    estimatedMonthlyRevenue: 85000,
+    employeeCount: "15-25",
+    location: "Atlanta, GA",
+    contactPerson: "Ryan Patterson",
+    email: "rpatterson@dmmastersagency.com",
+    phone: "(404) 892-7300",
+    website: "digitalmarketingmasters.com",
+    businessType: "Marketing Agency",
+    services: ["White-label Services", "Advanced Analytics", "Enterprise Solutions"],
+    painPoints: ["Scaling operations", "Client retention", "Competitive pricing"],
+    opportunityScore: 91,
+    lastContact: null,
+    status: "new",
+    notes: "Looking for white-label partnership, actively searching Google for marketing automation",
+    leadSource: "Google Search Analysis",
+    marketingIntent: "actively_searching",
+    googleSearchActivity: ["white label digital marketing", "marketing automation tools", "agency partnership programs"],
+    lastSearchDate: "2025-06-30",
+    searchKeywords: ["white label SEO", "marketing automation platform", "agency partnership", "digital marketing tools"]
+  },
+  {
+    id: 8,
+    companyName: "Florida Real Estate Partners",
+    industry: "Real Estate",
+    estimatedMonthlyRevenue: 120000,
+    employeeCount: "25-50",
+    location: "Naples, FL",
+    contactPerson: "James Rodriguez",
+    email: "jrodriguez@flrealtypartners.com",
+    phone: "(239) 774-9200",
+    website: "flrealtypartners.com",
+    businessType: "Real Estate Brokerage",
+    services: ["Lead Generation", "Virtual Tours", "Social Media Marketing"],
+    painPoints: ["Market competition", "Lead quality", "Listing visibility"],
+    opportunityScore: 89,
+    lastContact: null,
+    status: "new",
+    notes: "Luxury and commercial properties, high transaction values",
+    leadSource: "Real Estate Network",
+    marketingIntent: "actively_searching",
+    googleSearchActivity: ["real estate marketing", "realtor lead generation", "property marketing services"],
+    lastSearchDate: "2025-06-29",
+    searchKeywords: ["real estate digital marketing", "realtor PPC", "property lead generation", "real estate SEO"]
   }
 ];
 
@@ -276,23 +301,22 @@ export function HighRevenueProspects() {
         position: 'Decision Maker',
         leadSource: 'High Revenue Prospects',
         status: 'new',
-        notes: `High revenue prospect: $${prospect.estimatedMonthlyRevenue.toLocaleString()}/month. ${prospect.notes}`,
-        tags: ['high-revenue', 'qualified-prospect', prospect.industry.toLowerCase()],
+        notes: `High revenue prospect: $${prospect.estimatedMonthlyRevenue.toLocaleString()}/month. ${prospect.notes}. Marketing Intent: ${prospect.marketingIntent}. Recent Google searches: ${prospect.googleSearchActivity.join(', ')}`,
+        tags: ['high-revenue', 'qualified-prospect', prospect.industry.toLowerCase(), prospect.marketingIntent],
         dealValue: 5000,
         budget: 2500,
         isDemo: false
       });
 
-      // Update prospect status
-      const updatedProspects = prospects.map(p =>
-        p.id === prospect.id ? { ...p, status: 'contacted' as const, lastContact: new Date().toLocaleDateString() } : p
-      );
-      setProspects(updatedProspects);
-
       toast({
-        title: "Contact Added to CRM",
-        description: `${prospect.contactPerson} from ${prospect.companyName} has been added to your lead pipeline.`,
+        title: "Contact Added",
+        description: `${prospect.contactPerson} from ${prospect.companyName} has been added to your CRM.`,
       });
+
+      // Update prospect status
+      setProspects(prev => prev.map(p => 
+        p.id === prospect.id ? { ...p, status: 'contacted' as const } : p
+      ));
     } catch (error) {
       toast({
         title: "Error",
@@ -304,39 +328,38 @@ export function HighRevenueProspects() {
 
   const exportProspects = () => {
     const csvContent = [
-      'Company,Contact,Email,Phone,Industry,Monthly Revenue,Location,Opportunity Score,Services Needed',
-      ...filteredProspects.map(p => 
-        `"${p.companyName}","${p.contactPerson}","${p.email}","${p.phone}","${p.industry}","$${p.estimatedMonthlyRevenue.toLocaleString()}","${p.location}",${p.opportunityScore},"${p.services.join(', ')}"`
-      )
-    ].join('\n');
+      ['Company', 'Contact', 'Industry', 'Revenue', 'Location', 'Email', 'Phone', 'Marketing Intent', 'Last Search Date', 'Google Activity'],
+      ...filteredProspects.map(p => [
+        p.companyName,
+        p.contactPerson,
+        p.industry,
+        `$${p.estimatedMonthlyRevenue.toLocaleString()}`,
+        p.location,
+        p.email,
+        p.phone,
+        p.marketingIntent,
+        p.lastSearchDate,
+        p.googleSearchActivity.join('; ')
+      ])
+    ].map(row => row.join(',')).join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = 'high-revenue-prospects.csv';
     a.click();
-    window.URL.revokeObjectURL(url);
+    URL.revokeObjectURL(url);
 
     toast({
       title: "Export Complete",
-      description: `Exported ${filteredProspects.length} high-revenue prospects to CSV file.`,
+      description: `Exported ${filteredProspects.length} high-revenue prospects to CSV.`,
     });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'new': return 'bg-green-100 text-green-800';
-      case 'contacted': return 'bg-blue-100 text-blue-800';
-      case 'interested': return 'bg-yellow-100 text-yellow-800';
-      case 'qualified': return 'bg-purple-100 text-purple-800';
-      case 'proposal_sent': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
   };
 
   const totalRevenue = filteredProspects.reduce((sum, p) => sum + p.estimatedMonthlyRevenue, 0);
   const averageRevenue = filteredProspects.length > 0 ? totalRevenue / filteredProspects.length : 0;
+  const activelySearchingCount = filteredProspects.filter(p => p.marketingIntent === 'actively_searching').length;
 
   return (
     <div className="space-y-6">
@@ -344,9 +367,9 @@ export function HighRevenueProspects() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">High Revenue Prospects</h1>
-          <p className="text-gray-600">Businesses averaging $55,000+ monthly revenue</p>
+          <p className="text-gray-600">Businesses averaging $55,000+ monthly revenue actively searching for digital marketing services</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3">
           <Button onClick={exportProspects} variant="outline">
             <Download className="h-4 w-4 mr-2" />
             Export CSV
@@ -381,10 +404,10 @@ export function HighRevenueProspects() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-purple-600" />
+              <Globe className="h-5 w-5 text-orange-600" />
               <div>
-                <p className="text-sm text-gray-600">Average Revenue</p>
-                <p className="text-xl font-bold">${(averageRevenue / 1000).toFixed(0)}K</p>
+                <p className="text-sm text-gray-600">Actively Searching</p>
+                <p className="text-xl font-bold">{activelySearchingCount}</p>
               </div>
             </div>
           </CardContent>
@@ -392,7 +415,7 @@ export function HighRevenueProspects() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-orange-600" />
+              <Target className="h-5 w-5 text-purple-600" />
               <div>
                 <p className="text-sm text-gray-600">Avg Opportunity Score</p>
                 <p className="text-xl font-bold">
@@ -428,16 +451,16 @@ export function HighRevenueProspects() {
                 <SelectItem value="Healthcare">Healthcare</SelectItem>
                 <SelectItem value="Construction">Construction</SelectItem>
                 <SelectItem value="Automotive">Automotive</SelectItem>
-                <SelectItem value="Food & Beverage">Food & Beverage</SelectItem>
-                <SelectItem value="Manufacturing">Manufacturing</SelectItem>
-                <SelectItem value="Technology">Technology</SelectItem>
-                <SelectItem value="Real Estate">Real Estate</SelectItem>
                 <SelectItem value="Legal Services">Legal Services</SelectItem>
+                <SelectItem value="Technology">Technology</SelectItem>
+                <SelectItem value="Hospitality">Hospitality</SelectItem>
+                <SelectItem value="Real Estate">Real Estate</SelectItem>
+                <SelectItem value="Marketing Agency">Marketing Agency</SelectItem>
               </SelectContent>
             </Select>
             <Select value={revenueFilter} onValueChange={setRevenueFilter}>
               <SelectTrigger>
-                <SelectValue placeholder="Revenue Range" />
+                <SelectValue placeholder="Revenue" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Revenue</SelectItem>
@@ -493,74 +516,86 @@ export function HighRevenueProspects() {
           <Card key={prospect.id} className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">{prospect.companyName}</CardTitle>
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 text-yellow-500" />
-                  <span className="text-sm font-medium">{prospect.opportunityScore}</span>
+                <div className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-blue-600" />
+                  <CardTitle className="text-lg">{prospect.companyName}</CardTitle>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary">{prospect.industry}</Badge>
+                  <Badge 
+                    variant={prospect.marketingIntent === 'actively_searching' ? 'default' : 'outline'}
+                    className={prospect.marketingIntent === 'actively_searching' ? 'bg-green-600' : ''}
+                  >
+                    {prospect.marketingIntent === 'actively_searching' ? 'Searching Now' : 
+                     prospect.marketingIntent === 'ready_to_buy' ? 'Ready to Buy' :
+                     prospect.marketingIntent === 'budget_approved' ? 'Budget OK' : 'Research'}
+                  </Badge>
                 </div>
               </div>
-              <Badge className={getStatusColor(prospect.status)}>
-                {prospect.status.replace('_', ' ')}
-              </Badge>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Contact Info */}
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Users className="h-4 w-4" />
-                  <span>{prospect.contactPerson}</span>
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm">{prospect.contactPerson}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Mail className="h-4 w-4" />
-                  <span>{prospect.email}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Phone className="h-4 w-4" />
-                  <span>{prospect.phone}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <MapPin className="h-4 w-4" />
-                  <span>{prospect.location}</span>
-                </div>
-              </div>
-
-              <div className="p-3 bg-green-50 rounded-lg">
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-green-600" />
-                  <span className="font-semibold text-green-800">
-                    ${prospect.estimatedMonthlyRevenue.toLocaleString()}/month
-                  </span>
+                  <span className="text-sm font-medium">${prospect.estimatedMonthlyRevenue.toLocaleString()}/month</span>
                 </div>
-                <p className="text-xs text-green-600 mt-1">{prospect.industry} • {prospect.employeeCount} employees</p>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-gray-500" />
+                  <span className="text-sm">{prospect.location}</span>
+                </div>
               </div>
 
-              <div>
-                <p className="text-xs font-medium text-gray-700 mb-1">Services Needed:</p>
+              {/* Google Search Activity */}
+              {prospect.marketingIntent === 'actively_searching' && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-green-600">Recent Google Searches:</h4>
+                  <div className="flex flex-wrap gap-1">
+                    {prospect.googleSearchActivity.slice(0, 3).map((search, idx) => (
+                      <Badge key={idx} variant="outline" className="text-xs">
+                        {search}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500">Last searched: {prospect.lastSearchDate}</p>
+                </div>
+              )}
+
+              {/* Services Needed */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium">Services Needed:</h4>
                 <div className="flex flex-wrap gap-1">
-                  {prospect.services.slice(0, 3).map((service, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
+                  {prospect.services.map((service, idx) => (
+                    <Badge key={idx} variant="outline" className="text-xs">
                       {service}
                     </Badge>
                   ))}
                 </div>
               </div>
 
-              <div>
-                <p className="text-xs text-gray-600">{prospect.notes}</p>
+              {/* Opportunity Score */}
+              <div className="flex items-center gap-2">
+                <Star className="h-4 w-4 text-yellow-500" />
+                <span className="text-sm">Opportunity Score: <strong>{prospect.opportunityScore}/100</strong></span>
               </div>
 
-              <div className="flex gap-2">
+              {/* Contact Actions */}
+              <div className="flex gap-2 pt-2">
                 <Button 
                   onClick={() => handleContactProspect(prospect)}
-                  className="flex-1"
                   disabled={prospect.status === 'contacted'}
+                  className="flex-1"
                 >
                   {prospect.status === 'contacted' ? 'Added to CRM' : 'Add to CRM'}
                 </Button>
-                <Button 
-                  variant="outline" 
-                  size="icon"
-                  onClick={() => window.open(`mailto:${prospect.email}?subject=Partnership Opportunity with Traffik Boosters&body=Hi ${prospect.contactPerson},%0D%0A%0D%0AI hope this email finds you well. I wanted to reach out regarding potential marketing opportunities for ${prospect.companyName}.%0D%0A%0D%0ABest regards,%0D%0ATraffik Boosters Team`, '_blank')}
-                >
+                <Button variant="outline" size="sm">
+                  <Phone className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="sm">
                   <Mail className="h-4 w-4" />
                 </Button>
               </div>
