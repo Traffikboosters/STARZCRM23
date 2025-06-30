@@ -147,6 +147,19 @@ export const contacts = pgTable("contacts", {
   updatedBy: integer("updated_by").references(() => users.id),
 });
 
+export const userOnboarding = pgTable("user_onboarding", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  isCompleted: boolean("is_completed").default(false).notNull(),
+  currentStep: integer("current_step").default(0).notNull(),
+  completedSteps: text("completed_steps").array().default([]).notNull(),
+  startedAt: timestamp("started_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+  skipped: boolean("skipped").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const contactNotes = pgTable("contact_notes", {
   id: serial("id").primaryKey(),
   contactId: integer("contact_id").references(() => contacts.id).notNull(),
@@ -621,6 +634,16 @@ export type LeadEnrichment = typeof leadEnrichment.$inferSelect;
 export type InsertLeadEnrichment = z.infer<typeof insertLeadEnrichmentSchema>;
 export type EnrichmentHistory = typeof enrichmentHistory.$inferSelect;
 export type InsertEnrichmentHistory = z.infer<typeof insertEnrichmentHistorySchema>;
+
+// Insert schema for user onboarding
+export const insertUserOnboardingSchema = createInsertSchema(userOnboarding).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type UserOnboarding = typeof userOnboarding.$inferSelect;
+export type InsertUserOnboarding = z.infer<typeof insertUserOnboardingSchema>;
 
 // Types for HR module
 export type JobPosting = typeof jobPostings.$inferSelect;

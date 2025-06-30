@@ -96,7 +96,7 @@ export default function LandingPage() {
               <img 
                 src={traffikBoostersLogo} 
                 alt="Traffik Boosters" 
-                className="h-22 w-auto object-contain mb-2"
+                className="h-24 w-auto object-contain mb-2"
                 style={{ imageRendering: 'crisp-edges' }}
               />
               <p className="text-sm text-orange-600 font-semibold">More Traffik! More Sales!</p>
@@ -130,8 +130,7 @@ export default function LandingPage() {
                 <span className="text-red-600"> Sales</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                We help businesses increase their online visibility, generate quality leads, 
-                and convert more customers. No long-term contracts. Results-driven approach.
+                Increase online visibility and convert more customers. No contracts. Results-driven.
               </p>
               
               <div className="grid sm:grid-cols-2 gap-4 mb-8">
@@ -260,10 +259,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Our Services Drive Real Results
+              Services That Drive Results
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We provide comprehensive digital marketing solutions tailored to your business needs.
+              Digital marketing solutions tailored to your business.
             </p>
           </div>
 
@@ -273,13 +272,12 @@ export default function LandingPage() {
                 <TrendingUp className="h-12 w-12 text-orange-600 mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">SEO & Local Search</h3>
                 <p className="text-gray-600 mb-4">
-                  Dominate local search results and drive more qualified traffic to your business.
+                  Dominate local search and drive qualified traffic.
                 </p>
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li>• Google My Business optimization</li>
                   <li>• Local keyword targeting</li>
                   <li>• Review management</li>
-                  <li>• Citation building</li>
                 </ul>
               </CardContent>
             </Card>
@@ -289,13 +287,12 @@ export default function LandingPage() {
                 <Globe className="h-12 w-12 text-orange-600 mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">Website Development</h3>
                 <p className="text-gray-600 mb-4">
-                  Professional websites that convert visitors into customers.
+                  Professional websites that convert visitors.
                 </p>
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li>• Mobile-responsive design</li>
                   <li>• Lead capture optimization</li>
                   <li>• Fast loading speeds</li>
-                  <li>• SEO-ready structure</li>
                 </ul>
               </CardContent>
             </Card>
@@ -396,10 +393,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Why Businesses Choose Traffik Boosters
+              Why Choose Traffik Boosters
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              We're not just another marketing agency. We're your growth partners.
+              Your growth partners, not just another agency.
             </p>
           </div>
 
@@ -413,7 +410,7 @@ export default function LandingPage() {
                   <div>
                     <h3 className="text-xl font-semibold text-gray-900 mb-2">No Long-Term Contracts</h3>
                     <p className="text-gray-600">
-                      Work with us month-to-month. We earn your business through results, not contracts.
+                      Month-to-month work. We earn your business through results.
                     </p>
                   </div>
                 </div>
@@ -497,7 +494,7 @@ export default function LandingPage() {
                 <img 
                   src={traffikBoostersLogo} 
                   alt="Traffik Boosters" 
-                  className="h-17 w-auto object-contain mb-2"
+                  className="h-25 w-auto object-contain mb-2"
                   style={{ imageRendering: 'crisp-edges' }}
                 />
                 <p className="text-orange-400 text-sm font-semibold">More Traffik! More Sales!</p>
