@@ -47,10 +47,6 @@ export default function Payments() {
 
   const { data: payments = [] } = useQuery<Payment[]>({
     queryKey: ["/api/payments"],
-    queryFn: async () => {
-      // For now, return empty array since we need Stripe data
-      return [];
-    }
   });
 
   const createPaymentMutation = useMutation({
