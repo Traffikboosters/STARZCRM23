@@ -182,7 +182,7 @@ export function AISalesTipGenerator({
     }
   };
 
-  if (!isOpen) return null;
+  // Modal renders based on parent conditional and Dialog open prop
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

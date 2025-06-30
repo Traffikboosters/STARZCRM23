@@ -1636,7 +1636,7 @@ export default function CRMView() {
       </Dialog>
 
       {/* AI Sales Tip Generator Modal */}
-      {selectedContact && (
+      {selectedContact && isAITipGeneratorOpen && (
         <AISalesTipGenerator
           contact={selectedContact}
           currentAction={currentAction}
