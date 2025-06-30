@@ -1184,9 +1184,15 @@ export default function CRMView() {
                       className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[65px] px-2"
                       onClick={(e) => {
                         e.stopPropagation();
+                        console.log("AI Tips button clicked for contact:", contact.firstName, contact.lastName);
                         setSelectedContact(contact);
                         setCurrentAction('calling');
                         setIsAITipGeneratorOpen(true);
+                        console.log("AI Tip Generator state set to open");
+                        toast({
+                          title: "AI Tips Opening",
+                          description: `Generating tips for ${contact.firstName} ${contact.lastName}`,
+                        });
                       }}
                     >
                       <ClipboardList className="h-4 w-4 mb-1 text-purple-600 flex-shrink-0" />
