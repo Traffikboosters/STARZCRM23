@@ -23,6 +23,7 @@ import { storage } from "./storage";
 import { mightyCallNativeAPI } from "./mightycall-native";
 import { mightyCallCoreFixed } from "./mightycall-core-fixed";
 import { googleMapsExtractor } from "./google-maps-extractor";
+import { AISalesTipGenerator } from "./ai-sales-tip-generator";
 
 // WebSocket server instance
 let wss: WebSocketServer;
@@ -1726,6 +1727,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching enrichment data:", error);
       res.status(500).json({ error: "Failed to fetch enrichment data" });
+    }
+  });
+
+  // AI Sales Tip Generator Endpoint
+  app.post("/api/contacts/:contactId/sales-tips", async (req, res) => {
+    try {
+      const { contactId } = req.params;
+      const { currentAction, leadAge, callContext } = req.body;
+      
+      const contact = await storage.getContact(parseInt(contactId));
+      
+      if (!contact) {
+        return res.status(404).json({ error: "Contact not found" });
+      }
+
+      // Calculate lead age if not provided
+      const calculatedLeadAge = leadAge || 
+        Math.floor((Date.now() - new Date(contact.createdAt).getTime()) / (1000 * 60 * 60));
+
+      // Generate AI-powered sales tips
+      const salesTips = AISalesTipGenerator.generateSalesTips(
+        contact,
+        currentAction,
+        calculatedLeadAge,
+        callContext
+      );
+
+      res.json(salesTips);
+
+    } catch (error) {
+      console.error("Error generating sales tips:", error);
+      res.status(500).json({ error: "Failed to generate sales tips" });
     }
   });
 

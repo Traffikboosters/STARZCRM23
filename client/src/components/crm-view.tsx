@@ -22,6 +22,8 @@ import type { Contact, User as UserType } from "@shared/schema";
 import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
 import ContactDetailsModal from "@/components/contact-details-modal";
 import LeadSourceBadge from "@/components/lead-source-badge";
+import ContextualSalesCoaching from "@/components/contextual-sales-coaching";
+import AISalesTipGenerator from "@/components/ai-sales-tip-generator";
 
 
 
@@ -413,6 +415,8 @@ export default function CRMView() {
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isWorkOrderModalOpen, setIsWorkOrderModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [isCoachingModalOpen, setIsCoachingModalOpen] = useState(false);
+  const [isAITipGeneratorOpen, setIsAITipGeneratorOpen] = useState(false);
 
   const [isLeadAllocationModalOpen, setIsLeadAllocationModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
@@ -422,6 +426,8 @@ export default function CRMView() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
+  const [currentAction, setCurrentAction] = useState<'calling' | 'emailing' | 'scheduling' | 'qualifying' | 'closing' | undefined>(undefined);
+  const [coachingContact, setCoachingContact] = useState<Contact | null>(null);
   const [scheduleForm, setScheduleForm] = useState({
     date: "",
     time: "",
@@ -1171,19 +1177,20 @@ export default function CRMView() {
                       <span className="leading-none text-center">Notes</span>
                     </Button>
 
-                    {/* Qualification Button */}
+                    {/* AI Sales Tips Button */}
                     <Button
                       variant="outline"
                       size="sm"
                       className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[65px] px-2"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedContactForDetails(contact);
-                        setIsDetailsModalOpen(true);
+                        setSelectedContact(contact);
+                        setCurrentAction('calling');
+                        setIsAITipGeneratorOpen(true);
                       }}
                     >
-                      <ClipboardList className="h-4 w-4 mb-1 text-teal-600 flex-shrink-0" />
-                      <span className="leading-none text-center">Qualify</span>
+                      <ClipboardList className="h-4 w-4 mb-1 text-purple-600 flex-shrink-0" />
+                      <span className="leading-none text-center">AI Tips</span>
                     </Button>
 
                     {/* More Actions */}
@@ -1621,6 +1628,26 @@ export default function CRMView() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* AI Sales Tip Generator Modal */}
+      {selectedContact && (
+        <AISalesTipGenerator
+          contact={selectedContact}
+          currentAction={currentAction}
+          isOpen={isAITipGeneratorOpen}
+          onClose={() => {
+            setIsAITipGeneratorOpen(false);
+            setSelectedContact(null);
+            setCurrentAction(undefined);
+          }}
+          onApplyTip={(tipId) => {
+            toast({
+              title: "Sales Tip Applied",
+              description: `AI tip ${tipId} has been applied to your sales approach.`,
+            });
+          }}
+        />
+      )}
     </div>
   );
 }
