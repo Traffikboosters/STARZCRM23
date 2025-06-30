@@ -149,7 +149,7 @@ export default function LandingPage() {
       <header className="bg-white shadow-sm border-b-2 border-orange-500 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-3 md:py-4">
-            <div className="flex flex-col items-start">
+            <div className="flex flex-col items-center">
               <img 
                 src={traffikBoostersLogo} 
                 alt="Traffik Boosters" 
@@ -592,7 +592,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8">
             <div>
-              <div className="flex flex-col items-start mb-4">
+              <div className="flex flex-col items-center mb-4">
                 <img 
                   src={traffikBoostersLogo} 
                   alt="Traffik Boosters" 
