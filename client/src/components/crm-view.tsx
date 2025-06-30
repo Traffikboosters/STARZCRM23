@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Search, Filter, User, Mail, Phone, Building, MapPin, Calendar, Star, MessageCircle, X, Clock, DollarSign, FileText, ExternalLink, CreditCard, Users, Target, Edit, Send, Video, MoreVertical, CheckCircle, AlertCircle, Briefcase, TrendingUp, Bot, Zap, ClipboardList, StickyNote, Copy } from "lucide-react";
+import { Plus, Search, Filter, User, Mail, Phone, Building, MapPin, Calendar, Star, MessageCircle, X, Clock, DollarSign, FileText, ExternalLink, CreditCard, Users, Target, Edit, Send, Video, MoreVertical, CheckCircle, AlertCircle, Briefcase, TrendingUp, Bot, Zap, ClipboardList, StickyNote, Copy, TestTube } from "lucide-react";
 import { format } from "date-fns";
 import type { Contact, User as UserType } from "@shared/schema";
 import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
@@ -24,6 +24,7 @@ import ContactDetailsModal from "@/components/contact-details-modal";
 import LeadSourceBadge from "@/components/lead-source-badge";
 import ContextualSalesCoaching from "@/components/contextual-sales-coaching";
 import AISalesTipGenerator from "@/components/ai-sales-tip-generator";
+import DataTypeFilter from "@/components/data-type-filter";
 
 
 
@@ -42,6 +43,7 @@ const contactFormSchema = z.object({
   leadStatus: z.string().optional(),
   priority: z.string().optional(),
   notes: z.string().optional(),
+  isDemo: z.boolean().default(false),
   scheduleAppointment: z.boolean().default(false),
   appointmentDate: z.string().optional(),
   appointmentTime: z.string().optional(),
@@ -426,6 +428,7 @@ export default function CRMView() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
+  const [dataTypeFilter, setDataTypeFilter] = useState<'all' | 'real' | 'demo'>('all');
   const [currentAction, setCurrentAction] = useState<'calling' | 'emailing' | 'scheduling' | 'qualifying' | 'closing' | undefined>(undefined);
   const [coachingContact, setCoachingContact] = useState<Contact | null>(null);
   const [scheduleForm, setScheduleForm] = useState({
@@ -616,7 +619,7 @@ export default function CRMView() {
     }
   };
 
-  // Contact filtering
+  // Contact filtering with data type support
   const filteredContacts = useMemo(() => {
     if (!contacts || !Array.isArray(contacts)) {
       return [];
@@ -633,21 +636,38 @@ export default function CRMView() {
 
         const matchesStatus = statusFilter === "all" || contact.leadStatus === statusFilter;
         const matchesSource = sourceFilter === "all" || contact.leadSource === sourceFilter;
+        
+        // Data type filtering: real customer inquiries vs demo data
+        const matchesDataType = dataTypeFilter === "all" || 
+          (dataTypeFilter === "real" && !contact.isDemo) ||
+          (dataTypeFilter === "demo" && contact.isDemo);
 
-        return matchesSearch && matchesStatus && matchesSource;
+        return matchesSearch && matchesStatus && matchesSource && matchesDataType;
       })
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // Newest first
-  }, [contacts, searchTerm, statusFilter, sourceFilter]);
+  }, [contacts, searchTerm, statusFilter, sourceFilter, dataTypeFilter]);
+
+  // Calculate data type counts
+  const realCount = useMemo(() => {
+    return contacts?.filter(contact => !contact.isDemo).length || 0;
+  }, [contacts]);
+
+  const demoCount = useMemo(() => {
+    return contacts?.filter(contact => contact.isDemo).length || 0;
+  }, [contacts]);
+
+  const totalCount = contacts?.length || 0;
 
   // Clear all filters
   const clearAllFilters = () => {
     setSearchTerm("");
     setStatusFilter("all");
     setSourceFilter("all");
+    setDataTypeFilter("all");
   };
 
   // Check if any filters are active
-  const hasActiveFilters = searchTerm !== "" || statusFilter !== "all" || sourceFilter !== "all";
+  const hasActiveFilters = searchTerm !== "" || statusFilter !== "all" || sourceFilter !== "all" || dataTypeFilter !== "all";
 
   // Calculate time since import timestamp
   const getTimeSinceImport = (importedAt: string | Date) => {
@@ -809,6 +829,15 @@ export default function CRMView() {
         </div>
       </div>
 
+      {/* Data Type Filter */}
+      <DataTypeFilter
+        onFilterChange={setDataTypeFilter}
+        currentFilter={dataTypeFilter}
+        realCount={realCount}
+        demoCount={demoCount}
+        totalCount={totalCount}
+      />
+
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
         <div className="relative flex-1">
@@ -903,6 +932,11 @@ export default function CRMView() {
                       className={`${ageStatus.badgeColor} text-white text-xs px-2 py-1 ${ageStatus.description === '0-24H' ? ageStatus.animation : ''}`}
                     >
                       {ageStatus.description}
+                    </Badge>
+                    <Badge 
+                      className={`text-xs px-2 py-1 ${contact.isDemo ? 'bg-gray-500 text-white' : 'bg-green-600 text-white'}`}
+                    >
+                      {contact.isDemo ? 'DEMO' : 'REAL'}
                     </Badge>
                   </div>
                   
@@ -1454,6 +1488,29 @@ export default function CRMView() {
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="isDemo"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="text-sm font-medium">
+                        Demo Data
+                      </FormLabel>
+                      <p className="text-xs text-muted-foreground">
+                        Check this if this is demonstration/sample data rather than a real customer inquiry
+                      </p>
+                    </div>
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
