@@ -104,15 +104,17 @@ export default function Sidebar({
       {/* Mobile Horizontal Navigation */}
       <nav className="lg:hidden bg-white border-b border-neutral-lighter w-full sticky top-0 z-30">
         <div 
-          className="flex items-center p-2 gap-2 overflow-x-auto scrollbar-hide" 
+          className="flex items-center px-4 py-3 gap-3 overflow-x-auto scrollbar-hide w-full mobile-nav-container" 
           style={{ 
             scrollbarWidth: 'none', 
             msOverflowStyle: 'none',
             WebkitOverflowScrolling: 'touch',
-            overscrollBehaviorX: 'contain'
+            overscrollBehaviorX: 'contain',
+            scrollBehavior: 'smooth',
+            paddingRight: '60px'
           }}
         >
-          {navigationItems.slice(0, 15).map((item) => {
+          {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
             return (
@@ -123,22 +125,23 @@ export default function Sidebar({
                   onTabChange(item.id);
                 }}
                 className={`
-                  flex items-center gap-1 px-3 py-2 rounded-md text-xs font-medium
+                  flex items-center gap-2 px-4 py-3 rounded-lg text-xs font-medium
                   min-w-max whitespace-nowrap flex-shrink-0 transition-all duration-200
                   border border-transparent touch-manipulation
                   ${isActive 
                     ? 'bg-green-500 text-white shadow-md border-green-600' 
-                    : 'bg-transparent text-neutral-medium hover:bg-green-50 hover:text-green-700 hover:border-green-200'
+                    : 'bg-gray-50 text-gray-700 hover:bg-green-50 hover:text-green-700 hover:border-green-200'
                   }
                 `}
                 style={{ 
-                  minHeight: '36px',
+                  minHeight: '44px',
+                  minWidth: '100px',
                   touchAction: 'manipulation',
                   WebkitTapHighlightColor: 'transparent'
                 }}
               >
                 <Icon className="h-4 w-4 flex-shrink-0" />
-                <span className="hidden xs:inline text-[10px] sm:text-xs leading-tight">
+                <span className="text-xs font-medium">
                   {item.label}
                 </span>
               </button>
