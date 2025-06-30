@@ -194,7 +194,7 @@ export default function Payments() {
                           <div>
                             <p className="text-sm font-medium">${payment.amount.toFixed(2)}</p>
                             <p className="text-xs text-muted-foreground">
-                              {payment.created.toLocaleDateString()}
+                              {new Date(payment.created).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
