@@ -96,7 +96,7 @@ export default function LandingPage() {
               <img 
                 src={traffikBoostersLogo} 
                 alt="Traffik Boosters" 
-                className="h-24 w-auto object-contain mb-2"
+                className="h-28 w-auto object-contain mb-2"
                 style={{ imageRendering: 'crisp-edges' }}
               />
               <p className="text-sm text-orange-600 font-semibold">More Traffik! More Sales!</p>
@@ -494,7 +494,7 @@ export default function LandingPage() {
                 <img 
                   src={traffikBoostersLogo} 
                   alt="Traffik Boosters" 
-                  className="h-25 w-auto object-contain mb-2"
+                  className="h-28 w-auto object-contain mb-2"
                   style={{ imageRendering: 'crisp-edges' }}
                 />
                 <p className="text-orange-400 text-sm font-semibold">More Traffik! More Sales!</p>
