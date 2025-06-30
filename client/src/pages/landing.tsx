@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,9 +20,14 @@ import {
   ArrowRight,
   Rocket,
   BarChart3,
-  Globe
+  Globe,
+  Shield,
+  Award
 } from "lucide-react";
 import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
+
+// Lazy load heavy components for better performance
+const LiveTestimonials = lazy(() => import("@/components/live-testimonials"));
 
 export default function LandingPage() {
   const { toast } = useToast();
@@ -35,9 +40,57 @@ export default function LandingPage() {
     message: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({});
+
+  // Add SEO metadata to document head
+  useEffect(() => {
+    document.title = "Traffik Boosters - No Monthly Contracts Digital Marketing | More Traffik! More Sales!";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', 'Get more traffic and sales with Traffik Boosters digital marketing services. No monthly contracts, proven results, and 24/7 lead generation systems that grow your business.');
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = 'description';
+      meta.content = 'Get more traffic and sales with Traffik Boosters digital marketing services. No monthly contracts, proven results, and 24/7 lead generation systems that grow your business.';
+      document.head.appendChild(meta);
+    }
+
+    // Add animation trigger
+    setIsVisible(true);
+  }, []);
+
+  // Form validation
+  const validateForm = () => {
+    const errors: {[key: string]: string} = {};
+    
+    if (!formData.firstName.trim()) errors.firstName = "First name is required";
+    if (!formData.lastName.trim()) errors.lastName = "Last name is required";
+    if (!formData.email.trim()) {
+      errors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      errors.email = "Please enter a valid email address";
+    }
+    if (!formData.phone.trim()) errors.phone = "Phone number is required";
+    if (!formData.company.trim()) errors.company = "Company name is required";
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form before submission
+    if (!validateForm()) {
+      toast({
+        title: "Please complete all required fields",
+        description: "Fill in all required information to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -47,7 +100,7 @@ export default function LandingPage() {
         email: formData.email,
         phone: formData.phone,
         company: formData.company,
-        notes: formData.message,
+        notes: `Landing page inquiry: ${formData.message || 'Interested in digital marketing services'}`,
         leadSource: "landing_page",
         leadStatus: "new",
         isDemo: false
@@ -89,24 +142,25 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b-2 border-orange-500">
+      <header className="bg-white shadow-sm border-b-2 border-orange-500 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex justify-between items-center py-3 md:py-4">
             <div className="flex flex-col items-start">
               <img 
                 src={traffikBoostersLogo} 
                 alt="Traffik Boosters" 
-                className="h-28 w-auto object-contain mb-2"
+                className="h-20 md:h-28 w-auto object-contain mb-1 md:mb-2"
                 style={{ imageRendering: 'crisp-edges' }}
+                loading="eager"
               />
-              <p className="text-sm text-orange-600 font-semibold">More Traffik! More Sales!</p>
+              <p className="text-xs md:text-sm text-orange-600 font-semibold">More Traffik! More Sales!</p>
             </div>
-            <div className="hidden md:flex items-center space-x-6">
-              <div className="flex items-center text-gray-600">
-                <Phone className="h-4 w-4 mr-2" />
+            <div className="flex flex-col md:flex-row items-end md:items-center space-y-2 md:space-y-0 md:space-x-6">
+              <div className="flex items-center text-gray-600 text-sm md:text-base">
+                <Phone className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
                 <span className="font-medium">(877) 840-6250</span>
               </div>
-              <div className="flex items-center text-gray-600">
+              <div className="hidden lg:flex items-center text-gray-600">
                 <Mail className="h-4 w-4 mr-2" />
                 <span>info@traffikboosters.com</span>
               </div>
@@ -116,21 +170,22 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className={`py-20 px-4 sm:px-6 lg:px-8 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <Badge className="bg-orange-100 text-orange-800 border-orange-200 mb-6">
-                🚀 Digital Marketing Experts
+              <Badge className="bg-orange-100 text-orange-800 border-orange-200 mb-6 animate-pulse">
+                🚀 No Monthly Contracts - Pay Per Project
               </Badge>
               <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
                 Get More
                 <span className="text-orange-600"> Traffic </span>
                 & Boost Your
                 <span className="text-red-600"> Sales</span>
+                <span className="block text-3xl lg:text-4xl mt-2 text-gray-700">Without Long-Term Contracts</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                Increase online visibility and convert more customers. No contracts. Results-driven.
+                Increase online visibility and convert more customers with our proven digital marketing strategies. Pay only for what you need, when you need it.
               </p>
               
               <div className="grid sm:grid-cols-2 gap-4 mb-8">
@@ -184,49 +239,74 @@ export default function LandingPage() {
                   
                   <form id="contact-form" onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <Input
-                        name="firstName"
-                        placeholder="First Name *"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        required
-                        className="border-gray-300 focus:border-orange-500"
-                      />
-                      <Input
-                        name="lastName"
-                        placeholder="Last Name *"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        required
-                        className="border-gray-300 focus:border-orange-500"
-                      />
+                      <div>
+                        <Input
+                          name="firstName"
+                          placeholder="First Name *"
+                          value={formData.firstName}
+                          onChange={handleInputChange}
+                          required
+                          className={`border-gray-300 focus:border-orange-500 ${formErrors.firstName ? 'border-red-500' : ''}`}
+                        />
+                        {formErrors.firstName && (
+                          <p className="text-red-500 text-xs mt-1">{formErrors.firstName}</p>
+                        )}
+                      </div>
+                      <div>
+                        <Input
+                          name="lastName"
+                          placeholder="Last Name *"
+                          value={formData.lastName}
+                          onChange={handleInputChange}
+                          required
+                          className={`border-gray-300 focus:border-orange-500 ${formErrors.lastName ? 'border-red-500' : ''}`}
+                        />
+                        {formErrors.lastName && (
+                          <p className="text-red-500 text-xs mt-1">{formErrors.lastName}</p>
+                        )}
+                      </div>
                     </div>
-                    <Input
-                      name="email"
-                      type="email"
-                      placeholder="Business Email *"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                      className="border-gray-300 focus:border-orange-500"
-                    />
-                    <Input
-                      name="phone"
-                      type="tel"
-                      placeholder="Phone Number *"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      required
-                      className="border-gray-300 focus:border-orange-500"
-                    />
-                    <Input
-                      name="company"
-                      placeholder="Company Name *"
-                      value={formData.company}
-                      onChange={handleInputChange}
-                      required
-                      className="border-gray-300 focus:border-orange-500"
-                    />
+                    <div>
+                      <Input
+                        name="email"
+                        type="email"
+                        placeholder="Business Email *"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        required
+                        className={`border-gray-300 focus:border-orange-500 ${formErrors.email ? 'border-red-500' : ''}`}
+                      />
+                      {formErrors.email && (
+                        <p className="text-red-500 text-xs mt-1">{formErrors.email}</p>
+                      )}
+                    </div>
+                    <div>
+                      <Input
+                        name="phone"
+                        type="tel"
+                        placeholder="Phone Number *"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        required
+                        className={`border-gray-300 focus:border-orange-500 ${formErrors.phone ? 'border-red-500' : ''}`}
+                      />
+                      {formErrors.phone && (
+                        <p className="text-red-500 text-xs mt-1">{formErrors.phone}</p>
+                      )}
+                    </div>
+                    <div>
+                      <Input
+                        name="company"
+                        placeholder="Company Name *"
+                        value={formData.company}
+                        onChange={handleInputChange}
+                        required
+                        className={`border-gray-300 focus:border-orange-500 ${formErrors.company ? 'border-red-500' : ''}`}
+                      />
+                      {formErrors.company && (
+                        <p className="text-red-500 text-xs mt-1">{formErrors.company}</p>
+                      )}
+                    </div>
                     <Textarea
                       name="message"
                       placeholder="Tell us about your business goals..."
@@ -238,15 +318,33 @@ export default function LandingPage() {
                     <Button 
                       type="submit" 
                       disabled={isSubmitting}
-                      className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 text-lg font-semibold"
+                      className="w-full bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white py-3 text-lg font-semibold transition-all duration-200 hover:scale-105"
                     >
-                      {isSubmitting ? "Submitting..." : "Get My Free Analysis"}
+                      {isSubmitting ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <Rocket className="mr-2 h-5 w-5" />
+                          Get My Free Analysis
+                        </>
+                      )}
                     </Button>
                   </form>
                   
-                  <p className="text-center text-sm text-gray-500 mt-4">
-                    We'll contact you within 24 hours with your personalized growth strategy.
-                  </p>
+                  <div className="text-center text-xs text-gray-500 mt-4">
+                    <div className="flex items-center justify-center mb-2">
+                      <Shield className="h-4 w-4 mr-1" />
+                      Your information is secure and protected
+                    </div>
+                    <p className="mb-2">We'll contact you within 24 hours with your personalized growth strategy.</p>
+                    <div className="flex items-center justify-center">
+                      <Award className="h-4 w-4 mr-1 text-orange-500" />
+                      <span className="text-orange-600 font-medium">Free Analysis - No Commitments</span>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
