@@ -53,6 +53,7 @@ import WhatsAppBusiness from "@/components/whatsapp-business-clean";
 import { LiveExtractionHistory } from "@/components/live-extraction-history";
 import RealLeadExtractor from "@/components/real-lead-extractor";
 import { PersonalizedDashboardWidgets } from "@/components/personalized-dashboard-widgets";
+import { HighRevenueProspects } from "@/components/high-revenue-prospects";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -137,6 +138,8 @@ export default function Dashboard() {
         return <PricingSheet />;
       case "competitive-pricing":
         return <PricingSheet />;
+      case "high-revenue-prospects":
+        return <HighRevenueProspects />;
       case "sales-funnels":
         return <SalesFunnelBuilder />;
       case "leaderboard":
