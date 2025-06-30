@@ -278,6 +278,10 @@ const WorkOrderModal = ({ isOpen, onClose, contact }: { isOpen: boolean; onClose
     const service = services.find(s => s.name === selectedService);
     const workOrderId = `WO-${Date.now().toString().slice(-6)}`;
     
+    // Generate account number with first 3 letters of service
+    const servicePrefix = selectedService.substring(0, 3).toUpperCase();
+    const accountNumber = `${servicePrefix}-${Date.now().toString().slice(-8)}`;
+    
     const workOrderContent = `WORK ORDER AGREEMENT
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -285,6 +289,7 @@ const WorkOrderModal = ({ isOpen, onClose, contact }: { isOpen: boolean; onClose
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Work Order #: ${workOrderId}
+Account Number: ${accountNumber}
 Date: ${new Date().toLocaleDateString()}
 
 CLIENT INFORMATION:

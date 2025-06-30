@@ -25,6 +25,7 @@ import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.
 
 interface WorkOrder {
   id: string;
+  accountNumber?: string;
   clientName: string;
   clientEmail: string;
   clientCompany: string;
@@ -48,6 +49,7 @@ interface WorkOrderItem {
 const sampleWorkOrders: WorkOrder[] = [
   {
     id: "WO-2025-001",
+    accountNumber: "GOO-17460321",
     clientName: "Maria Gonzalez",
     clientEmail: "maria@bellavista.com",
     clientCompany: "Bella Vista Restaurant",
@@ -65,6 +67,7 @@ const sampleWorkOrders: WorkOrder[] = [
   },
   {
     id: "WO-2025-002",
+    accountNumber: "CRM-17460358",
     clientName: "David Chen",
     clientEmail: "d.chen@techflow.com",
     clientCompany: "TechFlow Solutions",
@@ -110,6 +113,7 @@ Thank you for choosing Traffik Boosters for your digital marketing needs. Please
 WORK ORDER DETAILS
 ==================
 Work Order #: ${order.id}
+Account Number: ${order.accountNumber || 'N/A'}
 Project: ${order.projectTitle}
 Client: ${order.clientName}
 Company: ${order.clientCompany}
@@ -202,9 +206,15 @@ This work order is valid for 30 days from the date of issue.`;
   };
 
   const createWorkOrder = () => {
+    // Generate account number based on service name from items
+    const firstServiceName = newOrder.items?.[0]?.description || "General";
+    const servicePrefix = firstServiceName.substring(0, 3).toUpperCase();
+    const accountNumber = `${servicePrefix}-${Date.now().toString().slice(-8)}`;
+    
     const order: WorkOrder = {
       ...newOrder as WorkOrder,
       id: `WO-${new Date().getFullYear()}-${String(workOrders.length + 1).padStart(3, '0')}`,
+      accountNumber,
       status: 'draft',
       createdAt: new Date().toISOString().split('T')[0]
     };
