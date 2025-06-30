@@ -35,69 +35,36 @@ export default function ClickToCallButton({
     setIsConnecting(true);
 
     try {
-      // Call MightyCall Fixed API
-      const response = await apiRequest("POST", "/api/mightycall/call", {
-        phoneNumber,
+      // Direct device calling - most reliable method
+      const cleanNumber = phoneNumber.replace(/\D/g, '');
+      
+      // Remove country code if present (US domestic)
+      let dialNumber = cleanNumber;
+      if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
+        dialNumber = cleanNumber.substring(1);
+      }
+      
+      // Use device phone dialer
+      window.location.href = `tel:${dialNumber}`;
+      
+      // Log call attempt in background
+      apiRequest("POST", "/api/mightycall/call", {
+        phoneNumber: dialNumber,
         contactName,
         userId: 1
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        console.log('MightyCall Fixed API - Call initiated:', result);
-        
-        // Priority 1: MightyCall Pro Web Dialer
-        if (result.webDialerUrl) {
-          const popup = window.open(result.webDialerUrl, '_blank', 'width=800,height=600,resizable=yes,scrollbars=yes');
-          
-          if (popup) {
-            popup.focus();
-            toast({
-              title: "Call Ready",
-              description: `MightyCall Pro dialer opened for ${contactName || phoneNumber}`,
-            });
-          } else {
-            // Popup blocked - provide alternative
-            navigator.clipboard.writeText(result.webDialerUrl).then(() => {
-              toast({
-                title: "Popup Blocked",
-                description: "MightyCall dialer URL copied to clipboard. Please paste in browser to make call.",
-                variant: "destructive",
-              });
-            });
-          }
-        }
-        // Priority 2: Device phone app with tel: link
-        else {
-          const cleanNumber = phoneNumber.replace(/\D/g, '');
-          window.location.href = `tel:${cleanNumber}`;
-          
-          toast({
-            title: "Call Initiated",
-            description: `Calling ${contactName || phoneNumber} via device phone app`,
-          });
-        }
-      } else {
-        // Fallback: Direct device dialing
-        const cleanNumber = phoneNumber.replace(/\D/g, '');
-        window.location.href = `tel:${cleanNumber}`;
-        
-        toast({
-          title: "Direct Call",
-          description: `Opening device phone app for ${contactName || phoneNumber}`,
-        });
-      }
-    } catch (error) {
-      console.error("Call initiation error:", error);
-      
-      // Fallback: Direct device dialing
-      const cleanNumber = phoneNumber.replace(/\D/g, '');
-      window.location.href = `tel:${cleanNumber}`;
+      }).catch(error => console.log('Call logging failed:', error));
       
       toast({
         title: "Call Initiated",
-        description: `Using device phone app for ${contactName || phoneNumber}`,
+        description: `Calling ${contactName || dialNumber} via device phone app`,
+      });
+    } catch (error) {
+      console.error("Call initiation error:", error);
+      
+      toast({
+        title: "Call Error",
+        description: "Unable to initiate call. Please dial manually.",
+        variant: "destructive",
       });
     } finally {
       setIsConnecting(false);
