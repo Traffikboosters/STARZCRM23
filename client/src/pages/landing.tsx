@@ -22,7 +22,9 @@ import {
   BarChart3,
   Globe,
   Shield,
-  Award
+  Award,
+  X,
+  DollarSign
 } from "lucide-react";
 import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
 
@@ -179,14 +181,14 @@ export default function LandingPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <Badge className="bg-green-100 text-green-800 border-green-200 mb-6 animate-pulse">
-                🚀 No Monthly Contracts - Pay Per Project
+                🚀 No Monthly Contracts - Pay Per Project Only
               </Badge>
               <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
                 Get More
                 <span className="text-orange-600"> Traffic </span>
                 & Boost Your
                 <span className="text-red-600"> Sales</span>
-                <span className="block text-3xl lg:text-4xl mt-2 text-gray-700">Without Long-Term Contracts</span>
+                <span className="block text-3xl lg:text-4xl mt-2 text-gray-700">No Contracts • No Monthly Fees • Just Results</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
                 Increase online visibility and convert more customers with our proven digital marketing strategies. Pay only for what you need, when you need it.
@@ -195,19 +197,19 @@ export default function LandingPage() {
               <div className="grid sm:grid-cols-2 gap-4 mb-8">
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0" />
-                  <span className="text-gray-700">No Monthly Contracts</span>
+                  <span className="text-gray-700">No Monthly Contracts Required</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0" />
-                  <span className="text-gray-700">Proven Results</span>
+                  <span className="text-gray-700">Pay Per Project Only</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0" />
-                  <span className="text-gray-700">24/7 Support</span>
+                  <span className="text-gray-700">Guaranteed Results</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-600 mr-3 flex-shrink-0" />
-                  <span className="text-gray-700">Custom Solutions</span>
+                  <span className="text-gray-700">Cancel Anytime</span>
                 </div>
               </div>
 
@@ -351,6 +353,127 @@ export default function LandingPage() {
                   </div>
                 </CardContent>
               </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* No Contracts Benefits Section */}
+      <section className="py-20 bg-gradient-to-br from-green-50 to-emerald-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <Badge className="bg-green-600 text-white mb-6 text-lg px-6 py-2">
+              Industry Different Approach
+            </Badge>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Why We Don't Require Monthly Contracts
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              We're so confident in our results, we don't need to lock you into long-term agreements
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            <Card className="border-2 border-green-200 bg-white hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Shield className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">No Risk to You</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Pay only for projects that deliver results. If we don't perform, you don't pay ongoing fees.
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-2 border-green-200 bg-white hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <DollarSign className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Flexible Investment</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  Choose exactly which services you need, when you need them. Scale up or down based on your budget.
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-2 border-green-200 bg-white hover:shadow-lg transition-all duration-300">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Target className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Results-Focused</h3>
+                <p className="text-gray-600 leading-relaxed">
+                  We earn your business with every project. Our success depends on delivering measurable results.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <div className="text-center bg-white rounded-2xl p-8 shadow-lg border-2 border-green-200">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              Compare Our Approach vs. Traditional Agencies
+            </h3>
+            <div className="grid md:grid-cols-2 gap-8 mt-8">
+              <div className="text-left">
+                <h4 className="text-lg font-bold text-red-600 mb-4 flex items-center">
+                  <X className="h-5 w-5 mr-2" />
+                  Traditional Agencies
+                </h4>
+                <ul className="space-y-2 text-gray-600">
+                  <li className="flex items-center">
+                    <X className="h-4 w-4 text-red-500 mr-2 flex-shrink-0" />
+                    Long-term contracts (6-12 months)
+                  </li>
+                  <li className="flex items-center">
+                    <X className="h-4 w-4 text-red-500 mr-2 flex-shrink-0" />
+                    Monthly retainer fees regardless of results
+                  </li>
+                  <li className="flex items-center">
+                    <X className="h-4 w-4 text-red-500 mr-2 flex-shrink-0" />
+                    Cancellation penalties and fees
+                  </li>
+                  <li className="flex items-center">
+                    <X className="h-4 w-4 text-red-500 mr-2 flex-shrink-0" />
+                    One-size-fits-all packages
+                  </li>
+                </ul>
+              </div>
+              <div className="text-left">
+                <h4 className="text-lg font-bold text-green-600 mb-4 flex items-center">
+                  <CheckCircle className="h-5 w-5 mr-2" />
+                  Traffik Boosters
+                </h4>
+                <ul className="space-y-2 text-gray-600">
+                  <li className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                    Project-based pricing only
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                    Pay for results, not promises
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                    Cancel anytime with no penalties
+                  </li>
+                  <li className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                    Custom solutions for your business
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div className="mt-8">
+              <Button 
+                size="lg" 
+                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg font-semibold"
+                onClick={() => document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                Get Started Risk-Free Today
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
             </div>
           </div>
         </div>

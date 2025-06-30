@@ -48,6 +48,7 @@ import TechnicalPortal from "@/components/technical-portal";
 import { VoiceToneAnalysis } from "@/components/voice-tone-analysis";
 import VoiceToneAnalysisEnhanced from "@/components/voice-tone-analysis-enhanced";
 import SalesRepDashboard from "@/components/sales-rep-dashboard";
+import { HighRevenueProspectsComplete } from "@/components/high-revenue-prospects-complete";
 import { DepartmentManagement } from "@/components/department-management";
 import SoldLeadsView from "@/components/sold-leads-view";
 import WhatsAppBusiness from "@/components/whatsapp-business-clean";
@@ -142,7 +143,7 @@ export default function Dashboard() {
       case "competitive-pricing":
         return <PricingSheet />;
       case "high-revenue-prospects":
-        return <HighRevenueProspects />;
+        return <HighRevenueProspectsComplete />;
       case "sales-funnels":
         return <SalesFunnelBuilder />;
       case "leaderboard":
