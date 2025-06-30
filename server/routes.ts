@@ -204,11 +204,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Contact not found" });
       }
 
-      // Import the AI conversation starter engine
-      const { conversationStarterEngine } = await import("./ai-conversation-starters");
-      
-      // Generate conversation starters for this contact
-      const conversationData = conversationStarterEngine.generateConversationStarters(contact);
+      // Import and use the AI conversation starter engine
+      const aiModule = await import("./ai-conversation-starters");
+      const conversationData = aiModule.AIConversationStarterEngine.generateConversationStarters(contact);
       
       res.json(conversationData);
     } catch (error) {
