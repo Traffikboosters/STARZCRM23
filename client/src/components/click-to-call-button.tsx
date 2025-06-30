@@ -47,12 +47,14 @@ export default function ClickToCallButton({
       // Use device phone dialer
       window.location.href = `tel:${dialNumber}`;
       
-      // Log call attempt in background
-      apiRequest("POST", "/api/mightycall/call", {
-        phoneNumber: dialNumber,
-        contactName,
-        userId: 1
-      }).catch(error => console.log('Call logging failed:', error));
+      // Log call attempt in background (don't wait for response)
+      setTimeout(() => {
+        apiRequest("POST", "/api/mightycall/call", {
+          phoneNumber: dialNumber,
+          contactName,
+          userId: 1
+        }).catch(error => console.log('Call logging failed:', error));
+      }, 100);
       
       toast({
         title: "Call Initiated",

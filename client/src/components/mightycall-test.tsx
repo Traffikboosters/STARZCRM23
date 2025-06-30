@@ -26,23 +26,15 @@ export default function MightyCallTest() {
       const result = await response.json();
       setLastResult(result);
       
-      if (result.success && result.webDialerUrl) {
-        // Try to open the web dialer
-        const popup = window.open(result.webDialerUrl, '_blank', 'width=900,height=700,resizable=yes,scrollbars=yes');
+      if (result.success) {
+        // Use device phone dialer instead of web dialer
+        const cleanNumber = testNumber.replace(/\D/g, '');
+        window.location.href = `tel:${cleanNumber}`;
         
-        if (popup) {
-          popup.focus();
-          toast({
-            title: "✅ MightyCall Working!",
-            description: "Web dialer opened successfully",
-          });
-        } else {
-          toast({
-            title: "⚠️ Popup Blocked",
-            description: "Please allow popups or manually open the dialer URL",
-            variant: "destructive",
-          });
-        }
+        toast({
+          title: "✅ Call Test Working!",
+          description: "Device phone dialer opened for " + testName,
+        });
       } else {
         toast({
           title: "❌ MightyCall Failed",

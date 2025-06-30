@@ -429,20 +429,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate unique call ID
       const callId = `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
-      // MightyCall Pro web dialer URL with authentication
+      // Clean phone number for dialing
       const cleanNumber = phoneNumber.replace(/\D/g, '');
-      const webDialerUrl = `https://panel.mightycall.com/dialer?number=${cleanNumber}&contact_name=${encodeURIComponent(contactName || 'Contact')}&account_id=4f917f13-aae1-401d-8241-010db91da5b2&auth_key=33a20a35-459d-46bf-9645-5e3ddd8b8966`;
       
       // Log the call attempt
-      console.log(`MightyCall: Initiating call to ${phoneNumber} (${contactName || 'Unknown Contact'})`);
+      console.log(`Call Logging: Call to ${phoneNumber} (${contactName || 'Unknown Contact'}) - ID: ${callId}`);
       
       res.json({
         success: true,
         callId,
-        phoneNumber,
+        phoneNumber: cleanNumber,
         contactName: contactName || 'Unknown Contact',
-        webDialerUrl,
-        status: 'initiated'
+        status: 'logged',
+        useDeviceDialer: true
       });
 
     } catch (error) {
