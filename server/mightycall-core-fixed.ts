@@ -200,11 +200,15 @@ export class MightyCallCoreFixed {
   }
 
   private generateWebDialerUrl(phoneNumber: string, contactName?: string): string {
+    // MightyCall Pro web dialer - direct access with account authentication
+    const cleanNumber = this.cleanPhoneNumber(phoneNumber);
     const params = new URLSearchParams({
-      number: phoneNumber,
-      contact: contactName || 'Contact'
+      number: cleanNumber,
+      contact_name: contactName || 'Contact',
+      account_id: this.config.accountId,
+      auth_key: this.config.secretKey
     });
-    return `${this.config.apiBaseUrl}/dialer?${params.toString()}`;
+    return `https://panel.mightycall.com/dialer?${params.toString()}`;
   }
 
   private generateCallId(): string {

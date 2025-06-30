@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import MightyCallWebDialer from "@/components/mightycall-web-dialer";
 
 interface CallLog {
   id: string;
@@ -351,52 +352,112 @@ export function AdvancedPhoneSystem() {
         </TabsList>
 
         <TabsContent value="dialer" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Make a Call</CardTitle>
-              <CardDescription>
-                Enter phone number and contact details to initiate a call
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="phoneNumber">Phone Number</Label>
-                  <Input
-                    id="phoneNumber"
-                    type="tel"
-                    placeholder="(877) 840-6250"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="contactName">Contact Name (Optional)</Label>
-                  <Input
-                    id="contactName"
-                    placeholder="John Smith - HVAC Contractor"
-                    value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <Label htmlFor="extension">Extension (Optional)</Label>
-                <Input
-                  id="extension"
-                  placeholder="1001"
-                  value={extension}
-                  onChange={(e) => setExtension(e.target.value)}
-                />
-              </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* MightyCall Web Dialer */}
+            <div>
+              <MightyCallWebDialer 
+                phoneNumber={phoneNumber}
+                contactName={contactName}
+                onCallStatusChange={(status) => {
+                  if (status === 'connected') {
+                    setActiveCall({
+                      id: `call_${Date.now()}`,
+                      phoneNumber,
+                      contactName,
+                      startTime: new Date(),
+                      isOnHold: false,
+                      isMuted: false,
+                      status: 'active'
+                    });
+                  } else if (status === 'ended' || status === 'idle') {
+                    setActiveCall(null);
+                  }
+                }}
+              />
+            </div>
 
-              <Button 
-                onClick={handleMakeCall} 
-                disabled={isDialing || !!activeCall}
-                className="w-full"
-                size="lg"
-              >
+            {/* Quick Call Contacts */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Dial</CardTitle>
+                <CardDescription>
+                  Frequently called numbers and contacts
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setPhoneNumber("8778406250");
+                      setContactName("Traffik Boosters Main");
+                    }}
+                  >
+                    <Phone className="h-4 w-4 mr-2" />
+                    Traffik Boosters Main: (877) 840-6250
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setPhoneNumber("5551234567");
+                      setContactName("Customer Service");
+                    }}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Customer Service: (555) 123-4567
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setPhoneNumber("5559876543");
+                      setContactName("Technical Support");
+                    }}
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Technical Support: (555) 987-6543
+                  </Button>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="quickPhone">Phone Number</Label>
+                      <Input
+                        id="quickPhone"
+                        type="tel"
+                        placeholder="Enter number"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="quickContact">Contact Name</Label>
+                      <Input
+                        id="quickContact"
+                        placeholder="Contact name"
+                        value={contactName}
+                        onChange={(e) => setContactName(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Legacy Call Button (Hidden) */}
+          <div style={{ display: 'none' }}>
+            <Button 
+              onClick={handleMakeCall} 
+              disabled={isDialing || !!activeCall}
+              className="w-full"
+              size="lg"
+            >
                 {isDialing ? (
                   <>
                     <Clock className="w-4 h-4 mr-2 animate-spin" />
@@ -408,9 +469,8 @@ export function AdvancedPhoneSystem() {
                     Make Call
                   </>
                 )}
-              </Button>
-            </CardContent>
-          </Card>
+            </Button>
+          </div>
         </TabsContent>
 
         <TabsContent value="history" className="space-y-4">

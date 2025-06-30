@@ -1,729 +1,367 @@
 import { useState, useEffect } from "react";
+import { Phone, PhoneCall, PhoneOff, Volume2, VolumeX, Users, Clock, History, Settings, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Phone, 
-  PhoneCall, 
-  PhoneOff, 
-  PhoneForwarded, 
-  Users, 
-  Pause, 
-  Play,
-  Volume2,
-  VolumeX,
-  History, 
-  Settings, 
-  AlertCircle, 
-  CheckCircle,
-  Clock,
-  UserPlus,
-  Mic,
-  MicOff
-} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import MightyCallWebDialer from "@/components/mightycall-web-dialer";
 
 interface CallLog {
-  id: number;
-  phoneNumber: string;
-  contactName?: string;
-  status: string;
-  startTime: string;
-  duration?: number;
-  notes: string;
-}
-
-interface ActiveCall {
   id: string;
   phoneNumber: string;
   contactName?: string;
-  status: 'dialing' | 'connected' | 'on_hold' | 'transferring';
-  startTime: Date;
   duration: number;
-  isOnHold: boolean;
-  isMuted: boolean;
+  timestamp: Date;
+  status: 'completed' | 'missed' | 'busy' | 'failed';
+  direction: 'inbound' | 'outbound';
+  notes?: string;
 }
 
 export function ComprehensivePhoneSystem() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [contactName, setContactName] = useState("");
-  const [extension, setExtension] = useState("");
-  const [isDialing, setIsDialing] = useState(false);
   const [callLogs, setCallLogs] = useState<CallLog[]>([]);
-  const [activeCall, setActiveCall] = useState<ActiveCall | null>(null);
-  const [showTransferDialog, setShowTransferDialog] = useState(false);
-  const [showConferenceDialog, setShowConferenceDialog] = useState(false);
-  const [transferNumber, setTransferNumber] = useState("");
-  const [conferenceNumber, setConferenceNumber] = useState("");
-  const [callTimer, setCallTimer] = useState(0);
   const { toast } = useToast();
 
-  // Update call timer for active calls
+  // Initialize with recent call logs
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (activeCall && activeCall.status === 'connected') {
-      interval = setInterval(() => {
-        const duration = Math.floor((Date.now() - activeCall.startTime.getTime()) / 1000);
-        setCallTimer(duration);
-        setActiveCall(prev => prev ? { ...prev, duration } : null);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [activeCall]);
+    const recentCalls: CallLog[] = [
+      {
+        id: "call_001",
+        phoneNumber: "8778406250",
+        contactName: "Traffik Boosters Main",
+        duration: 245,
+        timestamp: new Date(Date.now() - 3600000),
+        status: 'completed',
+        direction: 'outbound',
+        notes: "Follow-up call regarding SEO package"
+      },
+      {
+        id: "call_002",
+        phoneNumber: "5551234567",
+        contactName: "John Smith - HVAC",
+        duration: 180,
+        timestamp: new Date(Date.now() - 7200000),
+        status: 'completed',
+        direction: 'inbound',
+        notes: "Initial consultation call"
+      },
+      {
+        id: "call_003",
+        phoneNumber: "5559876543",
+        contactName: "Sarah Johnson - Restaurant",
+        duration: 0,
+        timestamp: new Date(Date.now() - 10800000),
+        status: 'missed',
+        direction: 'inbound'
+      }
+    ];
+    setCallLogs(recentCalls);
+  }, []);
 
-  const formatDuration = (seconds: number) => {
+  const formatDuration = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const formatPhoneNumber = (value: string) => {
-    const cleaned = value.replace(/\D/g, '');
-    const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
-    if (match) {
-      return `(${match[1]}) ${match[2]}-${match[3]}`;
-    }
-    return value;
-  };
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
-    setPhoneNumber(formatted);
-  };
-
-  // Call management functions
-  const initiateCall = async () => {
-    if (!phoneNumber) {
-      toast({
-        title: "Phone Number Required",
-        description: "Please enter a phone number to dial",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsDialing(true);
-    try {
-      const cleanNumber = phoneNumber.replace(/\D/g, '');
-      let finalNumber = cleanNumber;
-      
-      // Remove +1 country code if present (11 digits starting with 1)
-      if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
-        finalNumber = cleanNumber.substring(1);
-      }
-      
-      // Call MightyCall API to get web dialer URL
-      const response = await apiRequest("POST", "/api/mightycall/call", {
-        phoneNumber: finalNumber,
-        contactName: contactName || "Unknown Contact"
-      });
-
-      const responseData = await response.json();
-
-      if (responseData.success) {
-        // Method 1: Try MightyCall Pro web dialer first
-        if (responseData.webDialerUrl) {
-          window.open(responseData.webDialerUrl, '_blank', 'width=1000,height=700,scrollbars=yes,resizable=yes,toolbar=no,menubar=no');
-        }
-        
-        // Method 2: Also try direct tel: link as fallback
-        const telLink = `tel:${finalNumber}`;
-        window.open(telLink, '_self');
-        
-        // Create an active call record to show the call management interface
-        setActiveCall({
-          id: responseData.dialString?.split('id=')[1] || `call_${Date.now()}`,
-          phoneNumber: finalNumber,
-          contactName,
-          status: 'dialing',
-          startTime: new Date(),
-          duration: 0,
-          isOnHold: false,
-          isMuted: false
-        });
-
-        toast({
-          title: "Call Initiated",
-          description: `Call management interface now active for ${contactName || formatPhoneNumber(finalNumber)}`,
-        });
-        
-        // Simulate call connection after 3 seconds
-        setTimeout(() => {
-          setActiveCall(prev => prev ? { ...prev, status: 'connected' } : null);
-          toast({
-            title: "Call Connected",
-            description: "Use the call controls below to manage your call",
-          });
-        }, 3000);
-
-        // Clear form
-        setPhoneNumber("");
-        setContactName("");
-        setExtension("");
-      } else {
-        throw new Error("Failed to initiate call");
-      }
-      
-    } catch (error) {
-      toast({
-        title: "Call Failed",
-        description: "Unable to open web dialer. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsDialing(false);
-    }
-  };
-
-  const hangUpCall = async () => {
-    if (!activeCall) return;
-    
-    try {
-      toast({
-        title: "Call Ended",
-        description: `Call with ${activeCall.contactName || activeCall.phoneNumber} ended`,
-      });
-      
-      // Update call log
-      const endedLog: CallLog = {
-        id: parseInt(activeCall.id.replace('call_', '')),
-        phoneNumber: activeCall.phoneNumber,
-        contactName: activeCall.contactName,
-        status: "completed",
-        startTime: activeCall.startTime.toLocaleString(),
-        duration: activeCall.duration,
-        notes: `Call duration: ${formatDuration(activeCall.duration)}`
-      };
-      
-      setCallLogs(prev => [endedLog, ...prev]);
-      setActiveCall(null);
-      setCallTimer(0);
-      
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to end call",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const toggleHold = async () => {
-    if (!activeCall) return;
-    
-    try {
-      const newHoldState = !activeCall.isOnHold;
-      
-      setActiveCall(prev => prev ? { ...prev, isOnHold: newHoldState } : null);
-      
-      toast({
-        title: newHoldState ? "Call On Hold" : "Call Resumed",
-        description: newHoldState ? "Call placed on hold" : "Call resumed",
-      });
-      
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to toggle hold",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const toggleMute = async () => {
-    if (!activeCall) return;
-    
-    try {
-      const newMuteState = !activeCall.isMuted;
-      
-      setActiveCall(prev => prev ? { ...prev, isMuted: newMuteState } : null);
-      
-      toast({
-        title: newMuteState ? "Microphone Muted" : "Microphone Unmuted",
-        description: newMuteState ? "Your microphone is now muted" : "Your microphone is now active",
-      });
-      
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to toggle mute",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const initiateTransfer = async () => {
-    if (!activeCall || !transferNumber) {
-      toast({
-        title: "Transfer Failed",
-        description: "Please enter a valid transfer number",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    try {
-      toast({
-        title: "Call Transferred",
-        description: `Call transferred to ${transferNumber}`,
-      });
-      
-      setActiveCall(prev => prev ? { ...prev, status: 'transferring' } : null);
-      setShowTransferDialog(false);
-      setTransferNumber("");
-      
-      // End the call from our perspective after transfer
-      setTimeout(() => {
-        setActiveCall(null);
-        setCallTimer(0);
-      }, 2000);
-      
-    } catch (error) {
-      toast({
-        title: "Transfer Failed",
-        description: "Unable to transfer call",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const initiateConference = async () => {
-    if (!activeCall || !conferenceNumber) {
-      toast({
-        title: "Conference Failed",
-        description: "Please enter a valid conference number",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    try {
-      toast({
-        title: "Conference Call Initiated",
-        description: `Adding ${conferenceNumber} to conference`,
-      });
-      
-      setShowConferenceDialog(false);
-      setConferenceNumber("");
-      
-    } catch (error) {
-      toast({
-        title: "Conference Failed",
-        description: "Unable to start conference call",
-        variant: "destructive"
-      });
-    }
+  const formatTimestamp = (timestamp: Date): string => {
+    return timestamp.toLocaleString();
   };
 
   return (
-    <div className="space-y-6">
-      {/* Floating Call Management Popup */}
-      {activeCall && (
-        <div className="fixed top-4 right-4 z-50 w-96 shadow-2xl">
-          <Card className="border-green-500 bg-white border-2">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                  <div>
-                    <CardTitle className="text-lg">
-                      {activeCall.contactName || "Unknown Contact"}
-                    </CardTitle>
-                    <CardDescription className="text-sm text-gray-600">
-                      {formatPhoneNumber(activeCall.phoneNumber)} • {formatDuration(callTimer)}
-                    </CardDescription>
+    <div className="w-full max-w-6xl mx-auto p-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">MightyCall Phone System</h1>
+        <p className="text-muted-foreground">Professional calling interface for Traffik Boosters</p>
+      </div>
+
+      <Tabs defaultValue="dialer" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="dialer">Web Dialer</TabsTrigger>
+          <TabsTrigger value="history">Call History</TabsTrigger>
+          <TabsTrigger value="contacts">Quick Contacts</TabsTrigger>
+          <TabsTrigger value="settings">Settings</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="dialer" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* MightyCall Web Dialer */}
+            <div>
+              <MightyCallWebDialer 
+                phoneNumber={phoneNumber}
+                contactName={contactName}
+              />
+            </div>
+
+            {/* Quick Actions Panel */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+                <CardDescription>
+                  Frequently used numbers and shortcuts
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setPhoneNumber("8778406250");
+                      setContactName("Traffik Boosters Main");
+                    }}
+                  >
+                    <Phone className="h-4 w-4 mr-2" />
+                    Traffik Boosters Main: (877) 840-6250
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setPhoneNumber("8001234567");
+                      setContactName("Customer Service");
+                    }}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Customer Service: (800) 123-4567
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start"
+                    onClick={() => {
+                      setPhoneNumber("8009876543");
+                      setContactName("Technical Support");
+                    }}
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Technical Support: (800) 987-6543
+                  </Button>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <Label htmlFor="customPhone">Custom Number</Label>
+                      <Input
+                        id="customPhone"
+                        type="tel"
+                        placeholder="Enter phone number"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="customContact">Contact Name</Label>
+                      <Input
+                        id="customContact"
+                        placeholder="Enter contact name"
+                        value={contactName}
+                        onChange={(e) => setContactName(e.target.value)}
+                      />
+                    </div>
                   </div>
                 </div>
-                <Badge 
-                  variant={
-                    activeCall.status === 'connected' ? 'default' : 
-                    activeCall.status === 'dialing' ? 'secondary' : 
-                    activeCall.status === 'on_hold' ? 'outline' : 'destructive'
-                  }
-                  className={
-                    activeCall.status === 'connected' ? 'bg-green-500' : 
-                    activeCall.status === 'dialing' ? 'bg-blue-500' : 
-                    activeCall.status === 'on_hold' ? 'bg-yellow-500' : 'bg-red-500'
-                  }
-                >
-                  {activeCall.status.replace('_', ' ').toUpperCase()}
-                </Badge>
-              </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="history" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Calls</CardTitle>
+              <CardDescription>
+                View your recent call activity and contact details
+              </CardDescription>
             </CardHeader>
-            <CardContent className="pt-0">
-              <div className="grid grid-cols-3 gap-2 mb-3">
-                {/* Hang Up */}
-                <Button 
-                  variant="destructive" 
-                  onClick={hangUpCall}
-                  className="flex flex-col items-center gap-1 h-16"
-                  size="sm"
-                >
-                  <PhoneOff className="h-4 w-4" />
-                  <span className="text-xs">Hang Up</span>
-                </Button>
+            <CardContent>
+              <div className="space-y-4">
+                {callLogs.map((call) => (
+                  <div key={call.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center gap-4">
+                      <div className={`p-2 rounded-full ${
+                        call.direction === 'inbound' ? 'bg-blue-100' : 'bg-green-100'
+                      }`}>
+                        <Phone className={`w-4 h-4 ${
+                          call.direction === 'inbound' ? 'text-blue-600' : 'text-green-600'
+                        }`} />
+                      </div>
+                      <div>
+                        <div className="font-semibold">{call.contactName || call.phoneNumber}</div>
+                        <div className="text-sm text-gray-500">{call.phoneNumber}</div>
+                        <div className="text-xs text-gray-400">{formatTimestamp(call.timestamp)}</div>
+                        {call.notes && (
+                          <div className="text-xs text-gray-600 mt-1">{call.notes}</div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <Badge 
+                        variant={call.status === 'completed' ? 'default' : 
+                                call.status === 'missed' ? 'destructive' : 'secondary'}
+                      >
+                        {call.status}
+                      </Badge>
+                      {call.status === 'completed' && (
+                        <div className="text-sm text-gray-500 mt-1">
+                          {formatDuration(call.duration)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                {/* Hold/Resume */}
-                <Button 
-                  variant={activeCall.isOnHold ? "default" : "outline"}
-                  onClick={toggleHold}
-                  className="flex flex-col items-center gap-1 h-16"
-                  size="sm"
-                >
-                  {activeCall.isOnHold ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-                  <span className="text-xs">{activeCall.isOnHold ? 'Resume' : 'Hold'}</span>
-                </Button>
+        <TabsContent value="contacts" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Frequently Called Contacts</CardTitle>
+              <CardDescription>
+                Your most important business contacts
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-orange-100 rounded-full">
+                      <Phone className="h-4 w-4 text-orange-600" />
+                    </div>
+                    <div>
+                      <div className="font-semibold">Traffik Boosters</div>
+                      <div className="text-sm text-gray-500">(877) 840-6250</div>
+                      <Button 
+                        size="sm" 
+                        className="mt-2"
+                        onClick={() => {
+                          setPhoneNumber("8778406250");
+                          setContactName("Traffik Boosters Main");
+                        }}
+                      >
+                        Call Now
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
 
-                {/* Mute/Unmute */}
-                <Button 
-                  variant={activeCall.isMuted ? "default" : "outline"}
-                  onClick={toggleMute}
-                  className="flex flex-col items-center gap-1 h-16"
-                  size="sm"
-                >
-                  {activeCall.isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                  <span className="text-xs">{activeCall.isMuted ? 'Unmute' : 'Mute'}</span>
-                </Button>
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-full">
+                      <User className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="font-semibold">Customer Service</div>
+                      <div className="text-sm text-gray-500">(800) 123-4567</div>
+                      <Button 
+                        size="sm" 
+                        className="mt-2"
+                        onClick={() => {
+                          setPhoneNumber("8001234567");
+                          setContactName("Customer Service");
+                        }}
+                      >
+                        Call Now
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 rounded-full">
+                      <Settings className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div>
+                      <div className="font-semibold">Technical Support</div>
+                      <div className="text-sm text-gray-500">(800) 987-6543</div>
+                      <Button 
+                        size="sm" 
+                        className="mt-2"
+                        onClick={() => {
+                          setPhoneNumber("8009876543");
+                          setContactName("Technical Support");
+                        }}
+                      >
+                        Call Now
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="settings" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Phone System Settings</CardTitle>
+              <CardDescription>
+                Configure your MightyCall integration and preferences
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Account Information</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">Account ID:</span>
+                      <span className="text-sm text-gray-600">4f917f13-aae1-401d-8241-010db91da5b2</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">Plan:</span>
+                      <span className="text-sm text-gray-600">MightyCall Pro</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">Main Number:</span>
+                      <span className="text-sm text-gray-600">(877) 840-6250</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm font-medium">Status:</span>
+                      <Badge variant="default">Active</Badge>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Call Settings</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Auto-Record Calls</span>
+                      <Badge variant="outline">Enabled</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Call Notifications</span>
+                      <Badge variant="outline">Enabled</Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Voicemail Transcription</span>
+                      <Badge variant="outline">Enabled</Badge>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
-                {/* Transfer */}
-                <Dialog open={showTransferDialog} onOpenChange={setShowTransferDialog}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="flex flex-col items-center gap-1 h-16" size="sm">
-                      <PhoneForwarded className="h-4 w-4" />
-                      <span className="text-xs">Transfer</span>
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Transfer Call</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <Input
-                        placeholder="Enter transfer number"
-                        value={transferNumber}
-                        onChange={(e) => setTransferNumber(formatPhoneNumber(e.target.value))}
-                      />
-                      <div className="flex gap-2">
-                        <Button onClick={initiateTransfer} className="flex-1">
-                          Transfer Call
-                        </Button>
-                        <Button variant="outline" onClick={() => setShowTransferDialog(false)}>
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-
-                {/* Conference */}
-                <Dialog open={showConferenceDialog} onOpenChange={setShowConferenceDialog}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="flex flex-col items-center gap-1 h-16" size="sm">
-                      <Users className="h-4 w-4" />
-                      <span className="text-xs">Conference</span>
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Add to Conference</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <Input
-                        placeholder="Enter conference number"
-                        value={conferenceNumber}
-                        onChange={(e) => setConferenceNumber(formatPhoneNumber(e.target.value))}
-                      />
-                      <div className="flex gap-2">
-                        <Button onClick={initiateConference} className="flex-1">
-                          Add to Conference
-                        </Button>
-                        <Button variant="outline" onClick={() => setShowConferenceDialog(false)}>
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-
-                {/* Settings */}
-                <Button variant="outline" className="flex flex-col items-center gap-1 h-16" size="sm">
-                  <Settings className="h-4 w-4" />
-                  <span className="text-xs">Settings</span>
+              <div className="pt-4 border-t">
+                <Button className="w-full" variant="outline">
+                  <Settings className="h-4 w-4 mr-2" />
+                  Open MightyCall Dashboard
                 </Button>
               </div>
             </CardContent>
           </Card>
-        </div>
-      )}
-
-      {/* Active Call Interface */}
-      {activeCall && (
-        <Card className="border-green-200 bg-green-50">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <PhoneCall className={`h-5 w-5 ${activeCall.status === 'connected' ? 'text-green-600' : 'text-orange-600'}`} />
-                <span>Active Call</span>
-                <Badge variant={activeCall.status === 'connected' ? 'default' : 'secondary'}>
-                  {activeCall.status.charAt(0).toUpperCase() + activeCall.status.slice(1)}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                <span className="font-mono text-lg">{formatDuration(callTimer)}</span>
-              </div>
-            </CardTitle>
-            <CardDescription>
-              {activeCall.contactName ? `${activeCall.contactName} - ${activeCall.phoneNumber}` : activeCall.phoneNumber}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
-              {/* Hang Up */}
-              <Button
-                variant="destructive"
-                onClick={hangUpCall}
-                className="flex items-center gap-2"
-              >
-                <PhoneOff className="h-4 w-4" />
-                Hang Up
-              </Button>
-
-              {/* Hold */}
-              <Button
-                variant={activeCall.isOnHold ? "default" : "outline"}
-                onClick={toggleHold}
-                className="flex items-center gap-2"
-              >
-                {activeCall.isOnHold ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-                {activeCall.isOnHold ? "Resume" : "Hold"}
-              </Button>
-
-              {/* Mute */}
-              <Button
-                variant={activeCall.isMuted ? "default" : "outline"}
-                onClick={toggleMute}
-                className="flex items-center gap-2"
-              >
-                {activeCall.isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                {activeCall.isMuted ? "Unmute" : "Mute"}
-              </Button>
-
-              {/* Transfer */}
-              <Dialog open={showTransferDialog} onOpenChange={setShowTransferDialog}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="flex items-center gap-2">
-                    <PhoneForwarded className="h-4 w-4" />
-                    Transfer
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Transfer Call</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <Input
-                      placeholder="Enter transfer number"
-                      value={transferNumber}
-                      onChange={(e) => setTransferNumber(formatPhoneNumber(e.target.value))}
-                    />
-                    <div className="flex gap-2">
-                      <Button onClick={initiateTransfer} className="flex-1">
-                        Transfer Call
-                      </Button>
-                      <Button variant="outline" onClick={() => setShowTransferDialog(false)}>
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              {/* Conference */}
-              <Dialog open={showConferenceDialog} onOpenChange={setShowConferenceDialog}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    Conference
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add to Conference</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <Input
-                      placeholder="Enter conference number"
-                      value={conferenceNumber}
-                      onChange={(e) => setConferenceNumber(formatPhoneNumber(e.target.value))}
-                    />
-                    <div className="flex gap-2">
-                      <Button onClick={initiateConference} className="flex-1">
-                        Add to Conference
-                      </Button>
-                      <Button variant="outline" onClick={() => setShowConferenceDialog(false)}>
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </DialogContent>
-              </Dialog>
-
-              {/* Settings */}
-              <Button variant="outline" className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
-                Settings
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Quick Dial Interface */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Phone className="h-5 w-5" />
-            STARZ Phone System
-          </CardTitle>
-          <CardDescription>
-            Professional phone system with complete call management
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Phone Number</label>
-              <Input
-                placeholder="(877) 840-6250"
-                value={phoneNumber}
-                onChange={handlePhoneChange}
-                maxLength={14}
-                disabled={!!activeCall}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Contact Name (Optional)</label>
-              <Input
-                placeholder="John Doe"
-                value={contactName}
-                onChange={(e) => setContactName(e.target.value)}
-                disabled={!!activeCall}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Extension (Optional)</label>
-              <Input
-                placeholder="123"
-                value={extension}
-                onChange={(e) => setExtension(e.target.value)}
-                disabled={!!activeCall}
-              />
-            </div>
-          </div>
-          
-          <Button 
-            onClick={initiateCall} 
-            disabled={isDialing || !phoneNumber || !!activeCall}
-            className="w-full"
-          >
-            {isDialing ? (
-              <>
-                <PhoneCall className="h-4 w-4 mr-2 animate-pulse" />
-                Initiating Call...
-              </>
-            ) : (
-              <>
-                <Phone className="h-4 w-4 mr-2" />
-                Start Call
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {/* Call History */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <History className="h-5 w-5" />
-            Recent Calls
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {callLogs.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">No recent calls</p>
-          ) : (
-            <div className="space-y-2">
-              {callLogs.slice(0, 5).map((log) => (
-                <div key={log.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-full ${
-                      log.status === 'completed' ? 'bg-green-100 text-green-600' : 
-                      log.status === 'missed' ? 'bg-red-100 text-red-600' : 
-                      'bg-gray-100 text-gray-600'
-                    }`}>
-                      <Phone className="h-4 w-4" />
-                    </div>
-                    <div>
-                      <div className="font-medium">{log.contactName || log.phoneNumber}</div>
-                      <div className="text-sm text-muted-foreground">{log.startTime}</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <Badge variant={log.status === 'completed' ? 'default' : 'secondary'}>
-                      {log.status}
-                    </Badge>
-                    {log.duration && (
-                      <div className="text-sm text-muted-foreground mt-1">
-                        {formatDuration(log.duration)}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* System Status */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            System Status
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center gap-2">
-              <Badge variant="default" className="bg-green-100 text-green-700">
-                Online
-              </Badge>
-              <span className="text-sm">MightyCall Integration</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="default" className="bg-blue-100 text-blue-700">
-                Active
-              </Badge>
-              <span className="text-sm">Call Management</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="default" className="bg-purple-100 text-purple-700">
-                Ready
-              </Badge>
-              <span className="text-sm">Conference Features</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

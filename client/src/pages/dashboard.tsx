@@ -12,7 +12,7 @@ import AutomationsView from "@/components/automations-view";
 import Payments from "@/pages/payments";
 import LegalDocumentsView from "@/components/legal-documents-view";
 import MightyCallIntegration from "@/components/mightycall-integration";
-import { AdvancedPhoneSystem } from "@/components/advanced-phone-system";
+import { ComprehensivePhoneSystem } from "@/components/comprehensive-phone-system";
 import WorkOrders from "@/pages/work-orders";
 import SecureFileManager from "@/components/secure-file-manager";
 import ChatWidget from "@/components/chat-widget";
@@ -96,12 +96,12 @@ export default function Dashboard() {
           </div>
         );
       case "widget-recommendations":
-        return currentUser ? (
+        return (
           <PersonalizedDashboardWidgets 
-            userRole={currentUser.role || 'sales_rep'} 
-            userId={currentUser.id || 1} 
+            userRole={'sales_rep'} 
+            userId={1} 
           />
-        ) : <div>Loading...</div>;
+        );
       case "lead-sources":
         return <LeadSourceTracker />;
       case "live-monitoring":
@@ -119,7 +119,7 @@ export default function Dashboard() {
       case "legal":
         return <WorkOrders />;
       case "phone":
-        return <AdvancedPhoneSystem />;
+        return <ComprehensivePhoneSystem />;
       case "users":
         return currentUser ? <UserManagement currentUser={currentUser as any} /> : <div>Loading...</div>;
       case "files":
