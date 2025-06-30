@@ -168,6 +168,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Log lead source activity with timestamp
       console.log(`LEAD CAPTURED: Source: ${enhancedContactData.leadSource}, Time: ${enhancedContactData.importedAt.toISOString()}, Contact: ${contact.firstName} ${contact.lastName}`);
       
+      // Send real-time WebSocket notification for immediate Lead Card updates
+      if (wss) {
+        const notificationData = {
+          type: 'new_lead',
+          contact: contact,
+          leadSource: enhancedContactData.leadSource,
+          timestamp: enhancedContactData.importedAt.toISOString()
+        };
+        
+        wss.clients.forEach((client: any) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(notificationData));
+          }
+        });
+      }
+      
       logAuditEvent("CREATE", "Contact", contact.id, 1, null, enhancedContactData);
       res.json(contact);
     } catch (error) {
@@ -528,6 +544,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Log lead source activity
       console.log(`NEW LEAD RECEIVED: Source: ${enhancedContactData.leadSource}, Time: ${enhancedContactData.importedAt.toISOString()}, Contact: ${contact.firstName} ${contact.lastName}`);
+      
+      // Send real-time WebSocket notification for immediate Lead Card updates
+      if (wss) {
+        const notificationData = {
+          type: 'new_lead',
+          contact: contact,
+          leadSource: enhancedContactData.leadSource,
+          timestamp: enhancedContactData.importedAt.toISOString()
+        };
+        
+        wss.clients.forEach((client: any) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(notificationData));
+          }
+        });
+      }
       
       res.json(contact);
     } catch (error) {

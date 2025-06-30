@@ -17,7 +17,8 @@ import {
   Filter,
   Target,
   Star,
-  Globe
+  Globe,
+  UserPlus
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -291,8 +292,8 @@ export function HighRevenueProspects() {
 
   const handleContactProspect = async (prospect: HighRevenueProspect) => {
     try {
-      // Create contact in CRM
-      await apiRequest('POST', '/api/contacts', {
+      // Create contact in CRM with enhanced source tracking for real-time updates
+      await apiRequest('POST', '/api/contacts/with-source', {
         firstName: prospect.contactPerson.split(' ')[0],
         lastName: prospect.contactPerson.split(' ').slice(1).join(' '),
         email: prospect.email,
@@ -300,17 +301,21 @@ export function HighRevenueProspects() {
         company: prospect.companyName,
         position: 'Decision Maker',
         leadSource: 'High Revenue Prospects',
-        status: 'new',
+        leadStatus: 'new',
+        priority: 'high',
         notes: `High revenue prospect: $${prospect.estimatedMonthlyRevenue.toLocaleString()}/month. ${prospect.notes}. Marketing Intent: ${prospect.marketingIntent}. Recent Google searches: ${prospect.googleSearchActivity.join(', ')}`,
         tags: ['high-revenue', 'qualified-prospect', prospect.industry.toLowerCase(), prospect.marketingIntent],
-        dealValue: 5000,
-        budget: 2500,
-        isDemo: false
+        dealValue: prospect.estimatedMonthlyRevenue * 12, // Annual revenue estimate
+        budget: Math.floor(prospect.estimatedMonthlyRevenue * 0.15), // 15% of monthly revenue as potential budget
+        isDemo: false,
+        estimatedMonthlyRevenue: prospect.estimatedMonthlyRevenue,
+        marketingIntent: prospect.marketingIntent,
+        opportunityScore: prospect.opportunityScore
       });
 
       toast({
-        title: "Contact Added",
-        description: `${prospect.contactPerson} from ${prospect.companyName} has been added to your CRM.`,
+        title: "High Revenue Prospect Added to CRM",
+        description: `${prospect.contactPerson} from ${prospect.companyName} has been added to your Lead Cards and will appear immediately.`,
       });
 
       // Update prospect status

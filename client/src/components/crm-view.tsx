@@ -411,6 +411,43 @@ export default function CRMView() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  // WebSocket connection for real-time Lead Card updates
+  useEffect(() => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.host}`);
+    
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        
+        if (data.type === 'new_lead') {
+          // Invalidate contacts query to trigger immediate refresh
+          queryClient.invalidateQueries({ queryKey: ['/api/contacts'] });
+          
+          // Show real-time notification
+          toast({
+            title: "New Lead Added",
+            description: `${data.contact.firstName} ${data.contact.lastName} from ${data.leadSource} has been added to your Lead Cards`,
+          });
+        }
+      } catch (error) {
+        console.error('WebSocket message parsing error:', error);
+      }
+    };
+
+    ws.onopen = () => {
+      console.log('CRM WebSocket connected for real-time Lead Card updates');
+    };
+
+    ws.onclose = () => {
+      console.log('CRM WebSocket disconnected');
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, [queryClient, toast]);
+  
   // State management
   const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
@@ -448,17 +485,35 @@ export default function CRMView() {
       try {
         const data = JSON.parse(event.data);
         
-        // Handle lead count updates from email submissions
-        if (data.type === 'lead_count_update' || data.type === 'new_lead' || data.type === 'chat_widget_submission') {
-          // Invalidate and refetch contacts immediately
+        // Handle lead count updates from any source
+        if (data.type === 'lead_count_update' || data.type === 'new_lead' || data.type === 'chat_widget_submission' || data.type === 'high_revenue_prospect' || data.type === 'scraping_complete') {
+          // Invalidate and refetch contacts immediately for real-time updates
           queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
           
-          // Show toast notification for new email leads
+          // Show toast notification for new leads from various sources
           if (data.type === 'chat_widget_submission' && data.newLead) {
             toast({
               title: "New Email Lead Received!",
               description: `${data.newLead.name} from ${data.newLead.company} via ${data.newLead.source}`,
               duration: 5000,
+            });
+          } else if (data.type === 'high_revenue_prospect' && data.contact) {
+            toast({
+              title: "New High Revenue Prospect!",
+              description: `${data.contact.firstName} ${data.contact.lastName} - $${data.contact.estimatedMonthlyRevenue?.toLocaleString()}/month`,
+              duration: 5000,
+            });
+          } else if (data.type === 'new_lead' && data.contact) {
+            toast({
+              title: "New Lead Added!",
+              description: `${data.contact.firstName} ${data.contact.lastName} via ${data.contact.leadSource || 'Unknown Source'}`,
+              duration: 4000,
+            });
+          } else if (data.type === 'scraping_complete' && data.newLeads) {
+            toast({
+              title: "Lead Extraction Complete!",
+              description: `${data.newLeads} new leads added to your CRM`,
+              duration: 4000,
             });
           }
         }
