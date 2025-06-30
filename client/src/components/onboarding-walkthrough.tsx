@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
-import { X, ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, CheckCircle, Lightbulb, Users, Calendar, Phone, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 interface OnboardingStep {
   id: string;
@@ -16,57 +19,64 @@ const onboardingSteps: OnboardingStep[] = [
   {
     id: 'welcome',
     title: 'Welcome to STARZ',
-    description: 'Your comprehensive business management platform. Let\'s take a quick tour of the key features.',
+    description: 'Your comprehensive business management platform designed for Traffik Boosters. Let\'s explore the key features that will boost your sales and efficiency.',
     target: '.header-logo',
     position: 'bottom'
   },
   {
     id: 'sidebar',
-    title: 'Navigation Menu',
-    description: 'Access all platform features from the sidebar. Navigate between CRM, Analytics, Calendar, and more.',
+    title: 'Navigation Center',
+    description: 'Your command center for all platform features. Access CRM, Analytics, Phone System, Lead Generation, and advanced business tools.',
     target: '.sidebar',
     position: 'right'
   },
   {
     id: 'crm',
     title: 'Lead Card Management',
-    description: 'Manage your leads and customer relationships. View, filter, and take action on all your prospects.',
+    description: 'Manage all customer relationships and leads. Use AI-powered tools, conversation starters, and quick replies to close more deals.',
     target: '[data-nav="crm"]',
     position: 'right',
-    action: 'Click here to view your leads'
+    action: 'Click to view your lead cards'
+  },
+  {
+    id: 'widget-recommendations',
+    title: 'Widget Recommendations',
+    description: 'Get personalized dashboard widget suggestions based on your role and activity patterns to optimize your workflow.',
+    target: '[data-nav="widget-recommendations"]',
+    position: 'right'
   },
   {
     id: 'analytics',
-    title: 'Analytics Dashboard',
-    description: 'Track your business performance with comprehensive analytics and reporting tools.',
+    title: 'Business Analytics',
+    description: 'Track performance metrics, conversion rates, and business intelligence with comprehensive reporting dashboards.',
     target: '[data-nav="analytics"]',
     position: 'right'
   },
   {
-    id: 'calendar',
-    title: 'Calendar & Scheduling',
-    description: 'Manage appointments, events, and scheduling. Integrate with your existing calendar systems.',
-    target: '[data-nav="calendar"]',
-    position: 'right'
-  },
-  {
     id: 'phone',
-    title: 'Phone System',
-    description: 'Make calls directly from the platform with MightyCall integration. Track call history and performance.',
+    title: 'MightyCall Integration',
+    description: 'Make professional calls with click-to-call functionality, call logging, and advanced phone system features.',
     target: '[data-nav="phone"]',
     position: 'right'
   },
   {
     id: 'lead-extraction',
-    title: 'Lead Generation',
-    description: 'Extract leads from multiple sources including Google Maps, Yellow Pages, and more.',
-    target: '[data-nav="lead-extraction"]',
+    title: 'Automated Lead Generation',
+    description: 'Extract high-quality leads from Google Maps, Yellow Pages, and multiple data sources with real-time processing.',
+    target: '[data-nav="real-leads"]',
+    position: 'right'
+  },
+  {
+    id: 'payments',
+    title: 'Payment Processing',
+    description: 'Handle payments, create invoices, and manage transactions with integrated Stripe payment processing.',
+    target: '[data-nav="payments"]',
     position: 'right'
   },
   {
     id: 'complete',
-    title: 'You\'re All Set!',
-    description: 'You\'ve completed the tour. Start managing your business more effectively with STARZ.',
+    title: 'Ready to Boost Your Business!',
+    description: 'You\'ve completed the STARZ tour. Start generating more traffic and closing more sales with your new business management platform.',
     target: '.main-content',
     position: 'top'
   }
@@ -76,11 +86,14 @@ interface OnboardingWalkthroughProps {
   isVisible: boolean;
   onComplete: () => void;
   onSkip: () => void;
+  userId?: number;
 }
 
-export function OnboardingWalkthrough({ isVisible, onComplete, onSkip }: OnboardingWalkthroughProps) {
+export function OnboardingWalkthrough({ isVisible, onComplete, onSkip, userId = 1 }: OnboardingWalkthroughProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [highlightTarget, setHighlightTarget] = useState<Element | null>(null);
+  const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!isVisible) return;
@@ -94,9 +107,36 @@ export function OnboardingWalkthrough({ isVisible, onComplete, onSkip }: Onboard
     }
   }, [currentStep, isVisible]);
 
-  const nextStep = () => {
+  const saveProgress = async (stepId: string) => {
+    try {
+      await apiRequest('POST', '/api/user-progress', {
+        userId,
+        stepId,
+        completedAt: new Date().toISOString(),
+        onboardingComplete: stepId === 'complete'
+      });
+    } catch (error) {
+      console.error('Failed to save progress:', error);
+    }
+  };
+
+  const nextStep = async () => {
+    const currentStepData = onboardingSteps[currentStep];
+    const newCompletedSteps = new Set(completedSteps);
+    newCompletedSteps.add(currentStepData.id);
+    setCompletedSteps(newCompletedSteps);
+    
+    await saveProgress(currentStepData.id);
+    
     if (currentStep < onboardingSteps.length - 1) {
       setCurrentStep(currentStep + 1);
+      
+      if (currentStepData.id === 'complete') {
+        toast({
+          title: "Onboarding Complete!",
+          description: "You've successfully completed the STARZ platform tour.",
+        });
+      }
     } else {
       onComplete();
     }

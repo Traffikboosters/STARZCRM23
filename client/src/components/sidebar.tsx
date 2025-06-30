@@ -32,7 +32,8 @@ import {
   Code,
   Search,
   Mic,
-  Clock
+  Clock,
+  Lightbulb
 } from "lucide-react";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { Button } from "@/components/ui/button";
@@ -65,6 +66,7 @@ export default function Sidebar({
     { id: "campaigns", label: "Campaigns", icon: Target },
     { id: "video", label: "Video Calls", icon: Video },
     { id: "analytics", label: "Analytics", icon: BarChart3 },
+    { id: "widget-recommendations", label: "Widget Recommendations", icon: Lightbulb },
     { id: "live-monitoring", label: "Live Monitoring", icon: BarChart3 },
     { id: "live-extraction", label: "Live Data Extractor", icon: Activity },
     { id: "extraction-history", label: "Live Extraction History", icon: Clock },
