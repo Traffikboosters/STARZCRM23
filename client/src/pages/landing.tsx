@@ -71,7 +71,11 @@ export default function LandingPage() {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = "Please enter a valid email address";
     }
-    if (!formData.phone.trim()) errors.phone = "Phone number is required";
+    if (!formData.phone.trim()) {
+      errors.phone = "Phone number is required";
+    } else if (!/^[\d\s\-\(\)\+\.]{10,}$/.test(formData.phone.replace(/\s/g, ''))) {
+      errors.phone = "Please enter a valid phone number";
+    }
     if (!formData.company.trim()) errors.company = "Company name is required";
     
     setFormErrors(errors);
