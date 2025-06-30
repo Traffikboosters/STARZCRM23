@@ -134,14 +134,14 @@ export default function SoldLeadsView() {
           <h1 className="text-3xl font-bold text-gray-900">Sold Lead Cards</h1>
           <p className="text-gray-600 mt-1">Track and manage your closed deals</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col items-center gap-2">
           <img 
             src={traffikBoostersLogo} 
             alt="Traffik Boosters" 
-            className="h-16 w-auto object-contain"
+            className="h-26 w-auto object-contain"
             style={{ imageRendering: 'crisp-edges' }}
           />
-          <div className="text-right">
+          <div className="text-center">
             <div className="text-sm font-semibold text-black">STARZ</div>
             <div className="text-xs text-black">More Traffik! More Sales!</div>
           </div>
