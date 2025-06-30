@@ -24,9 +24,18 @@ import { mightyCallNativeAPI } from "./mightycall-native";
 import { mightyCallCoreFixed } from "./mightycall-core-fixed";
 import { googleMapsExtractor } from "./google-maps-extractor";
 import { AISalesTipGenerator } from "./ai-sales-tip-generator";
+import Stripe from "stripe";
 
 // WebSocket server instance
 let wss: WebSocketServer;
+
+// Initialize Stripe
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2025-05-28.basil",
+});
 
 function logAuditEvent(action: string, entityType: string, entityId: number, userId: number = 1, oldValues?: any, newValues?: any, description?: string) {
   console.log(`[AUDIT] ${new Date().toISOString()} - User ${userId} performed ${action} on ${entityType} ${entityId}${description ? ': ' + description : ''}`);
@@ -1855,6 +1864,170 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error getting voice analysis insights:", error);
       res.status(500).json({ message: "Failed to get insights" });
+    }
+  });
+
+  // Stripe payment intent endpoint for one-time payments
+  app.post("/api/create-payment-intent", async (req, res) => {
+    try {
+      const { amount, contactId } = req.body;
+      
+      if (!amount || amount < 50) {
+        return res.status(400).json({ message: "Amount must be at least $0.50" });
+      }
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: "usd",
+        metadata: {
+          contactId: contactId?.toString() || "",
+          platform: "STARZ CRM"
+        }
+      });
+
+      console.log(`Payment Intent Created: ${paymentIntent.id} for $${amount}`);
+      res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error: any) {
+      console.error("Payment intent creation error:", error);
+      res.status(500).json({ 
+        message: "Error creating payment intent: " + error.message 
+      });
+    }
+  });
+
+  // Stripe subscription endpoint for recurring payments
+  app.post('/api/create-subscription', async (req, res) => {
+    try {
+      const { customerId, priceId, contactId } = req.body;
+      
+      if (!priceId) {
+        return res.status(400).json({ message: "Price ID is required" });
+      }
+
+      let customer;
+      if (customerId) {
+        customer = await stripe.customers.retrieve(customerId);
+      } else {
+        // Create new customer if none provided
+        customer = await stripe.customers.create({
+          metadata: {
+            contactId: contactId?.toString() || "",
+            platform: "STARZ CRM"
+          }
+        });
+      }
+
+      const subscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [{
+          price: priceId,
+        }],
+        payment_behavior: 'default_incomplete',
+        expand: ['latest_invoice.payment_intent'],
+      });
+
+      console.log(`Subscription Created: ${subscription.id} for customer ${customer.id}`);
+      res.send({
+        subscriptionId: subscription.id,
+        clientSecret: (subscription.latest_invoice as any)?.payment_intent?.client_secret,
+      });
+    } catch (error: any) {
+      console.error("Subscription creation error:", error);
+      res.status(500).json({ 
+        message: "Error creating subscription: " + error.message 
+      });
+    }
+  });
+
+  // Get all payments
+  app.get("/api/payments", async (req, res) => {
+    try {
+      const paymentIntents = await stripe.paymentIntents.list({
+        limit: 100
+      });
+
+      const payments = paymentIntents.data.map(pi => ({
+        id: pi.id,
+        amount: pi.amount / 100,
+        currency: pi.currency,
+        status: pi.status,
+        created: new Date(pi.created * 1000),
+        description: pi.description || "",
+      }));
+
+      res.json(payments);
+    } catch (error: any) {
+      console.error("Payment fetch error:", error);
+      res.status(500).json({ 
+        message: "Error fetching payments: " + error.message 
+      });
+    }
+  });
+
+  // Get payment history for a contact
+  app.get("/api/payments/contact/:contactId", async (req, res) => {
+    try {
+      const { contactId } = req.params;
+      
+      const paymentIntents = await stripe.paymentIntents.list({
+        limit: 100
+      });
+
+      // Filter by contactId in metadata locally
+      const filteredPayments = paymentIntents.data
+        .filter(pi => pi.metadata.contactId === contactId)
+        .map(pi => ({
+          id: pi.id,
+          amount: pi.amount / 100,
+          currency: pi.currency,
+          status: pi.status,
+          created: new Date(pi.created * 1000),
+          description: pi.description || "",
+        }));
+
+      res.json(filteredPayments);
+    } catch (error: any) {
+      console.error("Payment history error:", error);
+      res.status(500).json({ 
+        message: "Error fetching payment history: " + error.message 
+      });
+    }
+  });
+
+  // Webhook endpoint for Stripe events
+  app.post('/api/stripe/webhook', async (req, res) => {
+    try {
+      const sig = req.headers['stripe-signature'];
+      
+      // In production, you should use the webhook secret
+      // const event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+      
+      const event = req.body;
+
+      switch (event.type) {
+        case 'payment_intent.succeeded':
+          const paymentIntent = event.data.object;
+          console.log(`Payment succeeded: ${paymentIntent.id}`);
+          
+          // Here you could update your database with payment success
+          // await storage.updateContactPaymentStatus(paymentIntent.metadata.contactId, 'paid');
+          break;
+        
+        case 'payment_intent.payment_failed':
+          const failedPayment = event.data.object;
+          console.log(`Payment failed: ${failedPayment.id}`);
+          break;
+
+        default:
+          console.log(`Unhandled event type: ${event.type}`);
+      }
+
+      res.json({ received: true });
+    } catch (error: any) {
+      console.error("Webhook error:", error);
+      res.status(500).json({ 
+        message: "Webhook error: " + error.message 
+      });
     }
   });
 

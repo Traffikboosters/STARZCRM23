@@ -17,6 +17,7 @@ import SalesFunnelsPage from "@/pages/sales-funnels";
 import CompetitivePricingPage from "@/pages/competitive-pricing";
 import AcceptInvitation from "@/pages/accept-invitation";
 import LandingPage from "@/pages/LandingPage";
+import Payments from "@/pages/payments";
 
 function Router() {
   return (
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/timezone-settings" component={TimeZoneManager} />
       <Route path="/sales-funnels" component={SalesFunnelsPage} />
       <Route path="/competitive-pricing" component={CompetitivePricingPage} />
+      <Route path="/payments" component={Payments} />
       <Route path="/accept-invitation" component={AcceptInvitation} />
       <Route component={NotFound} />
     </Switch>

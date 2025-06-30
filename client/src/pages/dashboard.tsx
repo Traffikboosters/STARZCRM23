@@ -9,7 +9,7 @@ import FilesView from "@/components/files-view";
 import ScrapingConfigurationDemo from "@/components/scraping-configuration-demo";
 import CRMAnalyticsDashboard from "@/components/crm-analytics-dashboard";
 import AutomationsView from "@/components/automations-view";
-import PaymentIntegration from "@/components/payment-integration";
+import Payments from "@/pages/payments";
 import LegalDocumentsView from "@/components/legal-documents-view";
 import MightyCallIntegration from "@/components/mightycall-integration";
 import { AdvancedPhoneSystem } from "@/components/advanced-phone-system";
@@ -106,7 +106,7 @@ export default function Dashboard() {
       case "automations":
         return <AutomationsView />;
       case "payments":
-        return <PaymentIntegration />;
+        return <Payments />;
       case "legal":
         return <WorkOrders />;
       case "phone":
