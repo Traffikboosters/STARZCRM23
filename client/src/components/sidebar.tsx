@@ -58,7 +58,7 @@ export default function Sidebar({
   const navigationItems = [
     { id: "calendar", label: "Calendar", icon: Calendar },
     { id: "crm", label: "CRM", icon: Users },
-    { id: "sold-leads", label: "Sold Leads", icon: Trophy },
+    { id: "sold-leads", label: "Sold Lead Cards", icon: Trophy },
     { id: "ai-scoring", label: "AI Lead Scoring", icon: Brain },
     { id: "pipeline", label: "Sales Pipeline", icon: TrendingUp },
     { id: "leaderboard", label: "Sales Leaderboard", icon: TrendingUp },
