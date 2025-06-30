@@ -829,6 +829,7 @@ export default function CRMView() {
               <SelectItem value="not_interested">Not Interested</SelectItem>
               <SelectItem value="callback">Callback</SelectItem>
               <SelectItem value="converted">Converted</SelectItem>
+              <SelectItem value="sold">Sold</SelectItem>
             </SelectContent>
           </Select>
           

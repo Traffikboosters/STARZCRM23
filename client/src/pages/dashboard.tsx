@@ -48,6 +48,7 @@ import TechnicalPortal from "@/components/technical-portal";
 import { VoiceToneAnalysis } from "@/components/voice-tone-analysis";
 import VoiceToneAnalysisEnhanced from "@/components/voice-tone-analysis-enhanced";
 import SalesRepDashboard from "@/components/sales-rep-dashboard";
+import SoldLeadsView from "@/components/sold-leads-view";
 import WhatsAppBusiness from "@/components/whatsapp-business-clean";
 import { LiveExtractionHistory } from "@/components/live-extraction-history";
 import RealLeadExtractor from "@/components/real-lead-extractor";
@@ -75,6 +76,8 @@ export default function Dashboard() {
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
       case "crm":
         return <CRMView />;
+      case "sold-leads":
+        return <SoldLeadsView />;
       case "campaigns":
         return <CampaignManagementView />;
       case "video":

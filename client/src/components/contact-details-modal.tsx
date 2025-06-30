@@ -756,6 +756,7 @@ export default function ContactDetailsModal({
                                 <SelectItem value="interested">Interested</SelectItem>
                                 <SelectItem value="not_interested">Not Interested</SelectItem>
                                 <SelectItem value="callback">Callback Required</SelectItem>
+                                <SelectItem value="sold">Sold</SelectItem>
                                 <SelectItem value="do_not_call">Do Not Call</SelectItem>
                                 <SelectItem value="wrong_number">Wrong Number</SelectItem>
                                 <SelectItem value="busy">Busy</SelectItem>
