@@ -16,7 +16,7 @@ import TimeZoneManager from "@/components/timezone-manager";
 import SalesFunnelsPage from "@/pages/sales-funnels";
 import CompetitivePricingPage from "@/pages/competitive-pricing";
 import AcceptInvitation from "@/pages/accept-invitation";
-import LandingPage from "@/pages/LandingPage";
+import LandingPage from "@/pages/landing";
 import Payments from "@/pages/payments";
 
 function Router() {
