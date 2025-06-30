@@ -237,6 +237,24 @@ export const scrapingJobs = pgTable("scraping_jobs", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const extractionHistory = pgTable("extraction_history", {
+  id: serial("id").primaryKey(),
+  platform: text("platform").notNull(), // google_maps, bark_com, yelp, etc.
+  industry: text("industry"),
+  location: text("location"),
+  searchTerms: text("search_terms").array(),
+  leadsExtracted: integer("leads_extracted").default(0),
+  contactsCreated: integer("contacts_created").default(0),
+  totalResults: integer("total_results").default(0),
+  apiKeyStatus: text("api_key_status"), // valid, invalid, missing
+  success: boolean("success").default(false),
+  errorMessage: text("error_message"),
+  extractionConfig: json("extraction_config"), // Store full config used
+  extractedBy: integer("extracted_by").references(() => users.id),
+  extractionTime: timestamp("extraction_time").defaultNow().notNull(),
+  processingDuration: integer("processing_duration"), // in milliseconds
+});
+
 export const chatMessages = pgTable("chat_messages", {
   id: serial("id").primaryKey(),
   contactId: integer("contact_id").references(() => contacts.id),
@@ -995,6 +1013,11 @@ export const insertWorkOrderSchema = createInsertSchema(workOrders).omit({
   approveRequestId: true,
 });
 
+export const insertExtractionHistorySchema = createInsertSchema(extractionHistory).omit({
+  id: true,
+  extractionTime: true,
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -1182,3 +1205,6 @@ export const insertCustomerTestimonialSchema = createInsertSchema(customerTestim
 
 export type CustomerTestimonial = typeof customerTestimonials.$inferSelect;
 export type InsertCustomerTestimonial = z.infer<typeof insertCustomerTestimonialSchema>;
+
+export type ExtractionHistory = typeof extractionHistory.$inferSelect;
+export type InsertExtractionHistory = z.infer<typeof insertExtractionHistorySchema>;

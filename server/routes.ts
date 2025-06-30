@@ -650,11 +650,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Enhanced Google Maps extraction with email extraction
   app.post("/api/scraping-jobs/google-maps-enhanced", async (req, res) => {
+    const startTime = Date.now();
+    let extractionHistory;
+    
     try {
       const { location, industry, businessType, radius, maxResults } = req.body;
       const useApiKey = process.env.GOOGLE_MAPS_API_KEY;
       
+      // Create initial extraction history record
+      extractionHistory = await storage.createExtractionHistory({
+        platform: 'google_maps',
+        industry: industry || businessType,
+        location,
+        searchTerms: [businessType],
+        leadsExtracted: 0,
+        contactsCreated: 0,
+        totalResults: 0,
+        apiKeyStatus: useApiKey ? 'valid' : 'missing',
+        success: false,
+        extractionConfig: { location, industry, businessType, radius, maxResults },
+        extractedBy: 1 // Default admin user
+      });
+      
       if (!useApiKey) {
+        await storage.updateExtractionHistory(extractionHistory.id, {
+          success: false,
+          errorMessage: "Google Maps API key is required",
+          processingDuration: Date.now() - startTime
+        });
+        
         return res.json({
           success: false,
           leadsExtracted: 0,
@@ -737,6 +761,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // Update extraction history with final results
+      await storage.updateExtractionHistory(extractionHistory.id, {
+        leadsExtracted: enhancedLeads.length,
+        contactsCreated: enhancedLeads.filter(lead => lead.contactId).length,
+        totalResults: results.totalResults || enhancedLeads.length,
+        success: true,
+        processingDuration: Date.now() - startTime
+      });
+
       res.json({
         success: true,
         leadsExtracted: enhancedLeads.length,
@@ -748,6 +781,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       console.error('Enhanced Google Maps extraction error:', error);
+      
+      // Update extraction history with error
+      if (extractionHistory) {
+        await storage.updateExtractionHistory(extractionHistory.id, {
+          success: false,
+          errorMessage: error.message,
+          processingDuration: Date.now() - startTime
+        });
+      }
+      
       res.json({
         success: false,
         leadsExtracted: 0,
@@ -1106,6 +1149,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error getting analysis:", error);
       res.status(500).json({ message: "Failed to get analysis" });
+    }
+  });
+
+  // Extraction History Routes
+  app.get('/api/extraction-history', async (req, res) => {
+    try {
+      const history = await storage.getAllExtractionHistory();
+      res.json(history);
+    } catch (error) {
+      console.error('Error fetching extraction history:', error);
+      res.status(500).json({ error: 'Failed to fetch extraction history' });
+    }
+  });
+
+  app.get('/api/extraction-history/recent', async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const history = await storage.getRecentExtractionHistory(limit);
+      res.json(history);
+    } catch (error) {
+      console.error('Error fetching recent extraction history:', error);
+      res.status(500).json({ error: 'Failed to fetch recent extraction history' });
+    }
+  });
+
+  app.get('/api/extraction-history/platform/:platform', async (req, res) => {
+    try {
+      const { platform } = req.params;
+      const history = await storage.getExtractionHistoryByPlatform(platform);
+      res.json(history);
+    } catch (error) {
+      console.error('Error fetching extraction history by platform:', error);
+      res.status(500).json({ error: 'Failed to fetch extraction history by platform' });
+    }
+  });
+
+  app.post('/api/extraction-history', async (req, res) => {
+    try {
+      const extractionData = req.body;
+      const history = await storage.createExtractionHistory(extractionData);
+      res.json(history);
+    } catch (error) {
+      console.error('Error creating extraction history:', error);
+      res.status(500).json({ error: 'Failed to create extraction history' });
     }
   });
 

@@ -31,7 +31,8 @@ import {
   UserCheck,
   Code,
   Search,
-  Mic
+  Mic,
+  Clock
 } from "lucide-react";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { Button } from "@/components/ui/button";
@@ -65,6 +66,7 @@ export default function Sidebar({
     { id: "analytics", label: "Analytics", icon: BarChart3 },
     { id: "live-monitoring", label: "Live Monitoring", icon: BarChart3 },
     { id: "live-extraction", label: "Live Data Extractor", icon: Activity },
+    { id: "extraction-history", label: "Live Extraction History", icon: Clock },
     { id: "real-leads", label: "Lead Card Research", icon: Search },
     { id: "dial-tracking", label: "Dial Tracking", icon: Timer },
     { id: "pricing", label: "Pricing & Profit", icon: DollarSign },

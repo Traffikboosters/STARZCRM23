@@ -2,7 +2,7 @@ import {
   users, contacts, events, files, automations, scrapingJobs, companies, chatMessages, chatConversations,
   callLogs, campaigns, leadAllocations, documentTemplates, signingRequests, servicePackages, costStructure, profitabilityAnalysis, userInvitations,
   userSessions, userActivity, technicalProjects, technicalTasks, timeEntries,
-  callRecordings, voiceToneAnalysis, callInsights, keyCallMoments, callParticipants, voiceTrendAnalysis, customerTestimonials,
+  callRecordings, voiceToneAnalysis, callInsights, keyCallMoments, callParticipants, voiceTrendAnalysis, customerTestimonials, extractionHistory,
   type User, type InsertUser, type UserInvitation, type InsertUserInvitation, type Contact, type InsertContact,
   type Event, type InsertEvent, type File, type InsertFile,
   type Automation, type InsertAutomation, type ScrapingJob, type InsertScrapingJob,
@@ -14,6 +14,7 @@ import {
   type ProfitabilityAnalysis, type InsertProfitabilityAnalysis, type UserSession, type InsertUserSession,
   type UserActivity, type InsertUserActivity, type TechnicalProject, type InsertTechnicalProject,
   type TechnicalTask, type InsertTechnicalTask, type TimeEntry, type InsertTimeEntry,
+  type ExtractionHistory, type InsertExtractionHistory,
   type CallRecording, type InsertCallRecording, type VoiceToneAnalysis, type InsertVoiceToneAnalysis,
   type CallInsights, type InsertCallInsights, type KeyCallMoments, type InsertKeyCallMoments,
   type CallParticipants, type InsertCallParticipants, type VoiceTrendAnalysis, type InsertVoiceTrendAnalysis,
@@ -219,6 +220,16 @@ export interface IStorage {
   createVoiceToneAnalysis(analysis: InsertVoiceToneAnalysis): Promise<VoiceToneAnalysis>;
   updateVoiceToneAnalysis(id: number, updates: Partial<InsertVoiceToneAnalysis>): Promise<VoiceToneAnalysis | undefined>;
   deleteVoiceToneAnalysis(id: number): Promise<boolean>;
+  
+  // Extraction History
+  getAllExtractionHistory(): Promise<ExtractionHistory[]>;
+  getExtractionHistory(id: number): Promise<ExtractionHistory | undefined>;
+  getExtractionHistoryByPlatform(platform: string): Promise<ExtractionHistory[]>;
+  getExtractionHistoryByUser(userId: number): Promise<ExtractionHistory[]>;
+  getRecentExtractionHistory(limit?: number): Promise<ExtractionHistory[]>;
+  createExtractionHistory(extraction: InsertExtractionHistory): Promise<ExtractionHistory>;
+  updateExtractionHistory(id: number, updates: Partial<InsertExtractionHistory>): Promise<ExtractionHistory | undefined>;
+  deleteExtractionHistory(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2550,7 +2561,82 @@ Client Approval:
 
   async deleteTimeEntry(id: number): Promise<boolean> {
     const result = await db.delete(timeEntries).where(eq(timeEntries.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Extraction History methods
+  async createExtractionHistory(history: InsertExtractionHistory): Promise<ExtractionHistory> {
+    const [created] = await db
+      .insert(extractionHistory)
+      .values(history)
+      .returning();
+    return created;
+  }
+
+  async updateExtractionHistory(id: number, updates: Partial<ExtractionHistory>): Promise<ExtractionHistory | undefined> {
+    const [updated] = await db
+      .update(extractionHistory)
+      .set(updates)
+      .where(eq(extractionHistory.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getAllExtractionHistory(): Promise<ExtractionHistory[]> {
+    return await db
+      .select()
+      .from(extractionHistory)
+      .orderBy(extractionHistory.extractionTime);
+  }
+
+  async getRecentExtractionHistory(limit: number = 10): Promise<ExtractionHistory[]> {
+    return await db
+      .select()
+      .from(extractionHistory)
+      .orderBy(extractionHistory.extractionTime)
+      .limit(limit);
+  }
+
+  async getExtractionHistoryByPlatform(platform: string): Promise<ExtractionHistory[]> {
+    return await db
+      .select()
+      .from(extractionHistory)
+      .where(eq(extractionHistory.platform, platform))
+      .orderBy(extractionHistory.extractionTime);
+  }
+
+  async getExtractionHistory(id: number): Promise<ExtractionHistory | undefined> {
+    const [history] = await db
+      .select()
+      .from(extractionHistory)
+      .where(eq(extractionHistory.id, id));
+    return history;
+  }
+
+  async getExtractionHistoryByUser(userId: number): Promise<ExtractionHistory[]> {
+    return await db
+      .select()
+      .from(extractionHistory)
+      .where(eq(extractionHistory.extractedBy, userId))
+      .orderBy(extractionHistory.extractionTime);
+  }
+
+  async deleteExtractionHistory(id: number): Promise<boolean> {
+    const result = await db.delete(extractionHistory).where(eq(extractionHistory.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Voice Tone Analysis methods
+  async getCallRecordings(): Promise<CallRecording[]> {
+    return await db.select().from(callRecordings).orderBy(callRecordings.createdAt);
+  }
+
+  async getVoiceToneAnalysisByRecording(recordingId: number): Promise<VoiceToneAnalysis | undefined> {
+    const [analysis] = await db
+      .select()
+      .from(voiceToneAnalysis)
+      .where(eq(voiceToneAnalysis.recordingId, recordingId));
+    return analysis;
   }
 
   // User Activity
@@ -2766,6 +2852,56 @@ Client Approval:
 
   async deleteVoiceToneAnalysis(id: number): Promise<boolean> {
     const result = await db.delete(voiceToneAnalysis).where(eq(voiceToneAnalysis.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  // Extraction History Methods
+  async getAllExtractionHistory(): Promise<ExtractionHistory[]> {
+    return await db.select().from(extractionHistory).orderBy(desc(extractionHistory.extractionTime));
+  }
+
+  async getExtractionHistory(id: number): Promise<ExtractionHistory | undefined> {
+    const [history] = await db.select().from(extractionHistory).where(eq(extractionHistory.id, id));
+    return history || undefined;
+  }
+
+  async getExtractionHistoryByPlatform(platform: string): Promise<ExtractionHistory[]> {
+    return await db.select().from(extractionHistory)
+      .where(eq(extractionHistory.platform, platform))
+      .orderBy(desc(extractionHistory.extractionTime));
+  }
+
+  async getExtractionHistoryByUser(userId: number): Promise<ExtractionHistory[]> {
+    return await db.select().from(extractionHistory)
+      .where(eq(extractionHistory.extractedBy, userId))
+      .orderBy(desc(extractionHistory.extractionTime));
+  }
+
+  async getRecentExtractionHistory(limit: number = 10): Promise<ExtractionHistory[]> {
+    return await db.select().from(extractionHistory)
+      .orderBy(desc(extractionHistory.extractionTime))
+      .limit(limit);
+  }
+
+  async createExtractionHistory(extraction: InsertExtractionHistory): Promise<ExtractionHistory> {
+    const [history] = await db
+      .insert(extractionHistory)
+      .values(extraction)
+      .returning();
+    return history;
+  }
+
+  async updateExtractionHistory(id: number, updates: Partial<InsertExtractionHistory>): Promise<ExtractionHistory | undefined> {
+    const [history] = await db
+      .update(extractionHistory)
+      .set(updates)
+      .where(eq(extractionHistory.id, id))
+      .returning();
+    return history || undefined;
+  }
+
+  async deleteExtractionHistory(id: number): Promise<boolean> {
+    const result = await db.delete(extractionHistory).where(eq(extractionHistory.id, id));
     return (result.rowCount ?? 0) > 0;
   }
 }

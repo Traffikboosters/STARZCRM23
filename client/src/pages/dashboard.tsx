@@ -48,6 +48,7 @@ import TechnicalPortal from "@/components/technical-portal";
 import { VoiceToneAnalysis } from "@/components/voice-tone-analysis";
 import VoiceToneAnalysisComplete from "@/components/voice-tone-analysis-complete";
 import SalesRepDashboard from "@/components/sales-rep-dashboard";
+import { LiveExtractionHistory } from "@/components/live-extraction-history";
 import RealLeadExtractor from "@/components/real-lead-extractor";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
@@ -150,6 +151,8 @@ export default function Dashboard() {
         return <VoiceToneAnalysisComplete />;
       case "real-leads":
         return <RealLeadExtractor />;
+      case "extraction-history":
+        return <LiveExtractionHistory />;
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
     }
