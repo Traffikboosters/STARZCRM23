@@ -92,17 +92,14 @@ export default function LandingPage() {
       <header className="bg-white shadow-sm border-b-2 border-orange-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
+            <div className="flex flex-col items-start">
               <img 
                 src={traffikBoostersLogo} 
                 alt="Traffik Boosters" 
-                className="h-16 w-auto object-contain"
+                className="h-22 w-auto object-contain mb-2"
                 style={{ imageRendering: 'crisp-edges' }}
               />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Traffik Boosters</h1>
-                <p className="text-sm text-orange-600 font-semibold">More Traffik! More Sales!</p>
-              </div>
+              <p className="text-sm text-orange-600 font-semibold">More Traffik! More Sales!</p>
             </div>
             <div className="hidden md:flex items-center space-x-6">
               <div className="flex items-center text-gray-600">
@@ -496,16 +493,14 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8">
             <div>
-              <div className="flex items-center space-x-3 mb-4">
+              <div className="flex flex-col items-start mb-4">
                 <img 
                   src={traffikBoostersLogo} 
                   alt="Traffik Boosters" 
-                  className="h-12 w-auto object-contain"
+                  className="h-17 w-auto object-contain mb-2"
+                  style={{ imageRendering: 'crisp-edges' }}
                 />
-                <div>
-                  <h3 className="text-xl font-bold">Traffik Boosters</h3>
-                  <p className="text-orange-400 text-sm font-semibold">More Traffik! More Sales!</p>
-                </div>
+                <p className="text-orange-400 text-sm font-semibold">More Traffik! More Sales!</p>
               </div>
               <p className="text-gray-300 mb-4">
                 Helping businesses grow through proven digital marketing strategies.
