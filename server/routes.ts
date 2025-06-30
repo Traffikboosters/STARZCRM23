@@ -194,6 +194,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Conversation Starters endpoint
+  app.get("/api/contacts/:contactId/conversation-starters", async (req, res) => {
+    try {
+      const contactId = parseInt(req.params.contactId);
+      const contact = await storage.getContact(contactId);
+      
+      if (!contact) {
+        return res.status(404).json({ error: "Contact not found" });
+      }
+
+      // Import the AI conversation starter engine
+      const { conversationStarterEngine } = await import("./ai-conversation-starters");
+      
+      // Generate conversation starters for this contact
+      const conversationData = conversationStarterEngine.generateConversationStarters(contact);
+      
+      res.json(conversationData);
+    } catch (error) {
+      console.error('Conversation starters error:', error);
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
   // Comprehensive Phone System API Endpoints
   
   // Hang up call
