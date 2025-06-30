@@ -46,7 +46,7 @@ import { DualOnboardingPortal } from "@/components/dual-onboarding-portal";
 import EmailNotificationTest from "@/components/email-notification-test";
 import TechnicalPortal from "@/components/technical-portal";
 import { VoiceToneAnalysis } from "@/components/voice-tone-analysis";
-import VoiceToneAnalysisComplete from "@/components/voice-tone-analysis-complete";
+import VoiceToneAnalysisEnhanced from "@/components/voice-tone-analysis-enhanced";
 import SalesRepDashboard from "@/components/sales-rep-dashboard";
 import WhatsAppBusiness from "@/components/whatsapp-business-clean";
 import { LiveExtractionHistory } from "@/components/live-extraction-history";
@@ -149,7 +149,7 @@ export default function Dashboard() {
       case "dual-onboarding":
         return <DualOnboardingPortal />;
       case "voice-analysis":
-        return <VoiceToneAnalysisComplete />;
+        return <VoiceToneAnalysisEnhanced />;
       case "whatsapp":
         return <WhatsAppBusiness />;
       case "real-leads":

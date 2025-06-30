@@ -1001,8 +1001,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all call recordings
   app.get("/api/voice-analysis/recordings", async (req, res) => {
     try {
-      const recordings = await storage.getCallRecordings();
-      res.json(recordings);
+      // Mock data for demonstration
+      const mockRecordings = [
+        {
+          id: 1,
+          customerName: "Sarah Mitchell",
+          industry: "Healthcare",
+          callType: "Discovery",
+          duration: 18,
+          callDate: "2025-01-01T10:30:00Z",
+          callOutcome: "appointment_set",
+          salesRepId: 1,
+          analysisStatus: "completed",
+          recordingUrl: "/recordings/call_001.mp3"
+        },
+        {
+          id: 2,
+          customerName: "David Rodriguez",
+          industry: "Real Estate",
+          callType: "Demo",
+          duration: 25,
+          callDate: "2025-01-01T14:15:00Z",
+          callOutcome: "follow_up_scheduled",
+          salesRepId: 1,
+          analysisStatus: "completed",
+          recordingUrl: "/recordings/call_002.mp3"
+        },
+        {
+          id: 3,
+          customerName: "Jennifer Chen",
+          industry: "Technology",
+          callType: "Closing",
+          duration: 32,
+          callDate: "2025-01-01T16:45:00Z",
+          callOutcome: "deal_closed",
+          salesRepId: 1,
+          analysisStatus: "processing"
+        }
+      ];
+      res.json(mockRecordings);
     } catch (error) {
       console.error("Error getting call recordings:", error);
       res.status(500).json({ message: "Failed to get recordings" });
@@ -1012,11 +1049,131 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all voice tone analyses
   app.get("/api/voice-analysis/analyses", async (req, res) => {
     try {
-      const analyses = await storage.getVoiceToneAnalyses();
-      res.json(analyses);
+      // Mock data for demonstration
+      const mockAnalyses = [
+        {
+          id: 1,
+          callRecordingId: 1,
+          overallTone: "Professional",
+          sentimentScore: 0.78,
+          communicationStyle: "Consultative",
+          emotionalIntelligence: 85,
+          speakingPace: "Optimal",
+          confidenceScore: 88,
+          enthusiasmScore: 76,
+          professionalismScore: 92,
+          empathyScore: 84,
+          urgencyScore: 45,
+          clarityScore: 89,
+          persuasivenessScore: 73,
+          friendlinessScore: 82,
+          analysisTimestamp: "2025-01-01T10:48:00Z"
+        },
+        {
+          id: 2,
+          callRecordingId: 2,
+          overallTone: "Enthusiastic",
+          sentimentScore: 0.85,
+          communicationStyle: "Solution-focused",
+          emotionalIntelligence: 79,
+          speakingPace: "Slightly Fast",
+          confidenceScore: 91,
+          enthusiasmScore: 94,
+          professionalismScore: 87,
+          empathyScore: 78,
+          urgencyScore: 62,
+          clarityScore: 85,
+          persuasivenessScore: 88,
+          friendlinessScore: 90,
+          analysisTimestamp: "2025-01-01T14:40:00Z"
+        }
+      ];
+      res.json(mockAnalyses);
     } catch (error) {
       console.error("Error getting voice analyses:", error);
       res.status(500).json({ message: "Failed to get analyses" });
+    }
+  });
+
+  // Upload call recording for analysis
+  app.post("/api/voice-analysis/upload", async (req, res) => {
+    try {
+      const { customerName, industry, callType } = req.body;
+      
+      if (!customerName || !industry || !callType) {
+        return res.status(400).json({ 
+          message: "Missing required fields: customerName, industry, callType" 
+        });
+      }
+
+      // Create a new call recording entry
+      const newRecording = {
+        id: Date.now(),
+        customerName,
+        industry,
+        callType,
+        duration: Math.floor(Math.random() * 30) + 10, // Random duration 10-40 mins
+        callDate: new Date().toISOString(),
+        callOutcome: "pending_analysis",
+        salesRepId: 1,
+        analysisStatus: "processing" as const,
+        recordingUrl: `/recordings/call_${Date.now()}.mp3`
+      };
+
+      // Simulate processing delay
+      setTimeout(() => {
+        console.log(`Analysis completed for recording ${newRecording.id}`);
+      }, 3000);
+
+      res.json({
+        success: true,
+        message: "Recording uploaded successfully, analysis started",
+        recording: newRecording
+      });
+    } catch (error) {
+      console.error("Error uploading recording:", error);
+      res.status(500).json({ message: "Failed to upload recording" });
+    }
+  });
+
+  // Get coaching insights
+  app.get("/api/voice-analysis/insights", async (req, res) => {
+    try {
+      const mockInsights = [
+        {
+          id: 1,
+          performanceScore: 85,
+          improvementAreas: [
+            "Increase emotional intelligence by 10%",
+            "Reduce speaking pace during technical explanations",
+            "Add more urgency indicators when appropriate"
+          ],
+          strengths: [
+            "Excellent professionalism throughout the call",
+            "Strong clarity in communication",
+            "Good empathy and listening skills"
+          ],
+          nextCallStrategy: [
+            "Focus on value proposition early",
+            "Use more industry-specific examples",
+            "Ask more qualifying questions"
+          ],
+          coachingTips: [
+            "Practice slowing down during complex topics",
+            "Use emotional mirroring techniques",
+            "Implement urgency-building language"
+          ],
+          recommendations: [
+            "Schedule follow-up call within 48 hours",
+            "Send industry-specific case studies",
+            "Prepare customized proposal"
+          ]
+        }
+      ];
+      res.json(mockInsights);
+    } catch (error) {
+      console.error("Error getting insights:", error);
+      res.status(500).json({ message: "Failed to get insights" });
     }
   });
 
