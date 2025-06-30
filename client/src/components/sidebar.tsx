@@ -96,6 +96,7 @@ export default function Sidebar({
     { id: "technical-portal", label: "Technical Portal", icon: Code },
     { id: "voice-analysis", label: "Voice Tone Analysis", icon: Mic },
     { id: "hr", label: "HR Portal", icon: UserPlus },
+    { id: "departments", label: "Department Management", icon: Building2 },
     { id: "dual-onboarding", label: "Employee Onboarding", icon: UserCheck },
   ];
 

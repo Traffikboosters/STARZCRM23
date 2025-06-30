@@ -48,6 +48,7 @@ import TechnicalPortal from "@/components/technical-portal";
 import { VoiceToneAnalysis } from "@/components/voice-tone-analysis";
 import VoiceToneAnalysisEnhanced from "@/components/voice-tone-analysis-enhanced";
 import SalesRepDashboard from "@/components/sales-rep-dashboard";
+import { DepartmentManagement } from "@/components/department-management";
 import SoldLeadsView from "@/components/sold-leads-view";
 import WhatsAppBusiness from "@/components/whatsapp-business-clean";
 import { LiveExtractionHistory } from "@/components/live-extraction-history";
@@ -132,6 +133,8 @@ export default function Dashboard() {
         return <DocumentSigning />;
       case "hr":
         return <HRPortal />;
+      case "departments":
+        return <DepartmentManagement />;
       case "dial-tracking":
         return <DialTrackingDashboard />;
       case "pricing":
