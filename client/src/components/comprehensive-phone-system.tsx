@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MightyCallWebDialer from "@/components/mightycall-web-dialer";
+import MightyCallTest from "@/components/mightycall-test";
 
 interface CallLog {
   id: string;
@@ -357,6 +358,12 @@ export function ComprehensivePhoneSystem() {
                   <Settings className="h-4 w-4 mr-2" />
                   Open MightyCall Dashboard
                 </Button>
+              </div>
+              
+              {/* MightyCall Integration Test */}
+              <div className="mt-6 pt-6 border-t">
+                <h3 className="text-lg font-semibold mb-4">Integration Test</h3>
+                <MightyCallTest />
               </div>
             </CardContent>
           </Card>

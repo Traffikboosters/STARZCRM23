@@ -49,12 +49,24 @@ export default function ClickToCallButton({
         
         // Priority 1: MightyCall Pro Web Dialer
         if (result.webDialerUrl) {
-          window.open(result.webDialerUrl, '_blank', 'width=800,height=600');
+          const popup = window.open(result.webDialerUrl, '_blank', 'width=800,height=600,resizable=yes,scrollbars=yes');
           
-          toast({
-            title: "Call Initiated",
-            description: `MightyCall Pro web dialer opened for ${contactName || phoneNumber}`,
-          });
+          if (popup) {
+            popup.focus();
+            toast({
+              title: "Call Ready",
+              description: `MightyCall Pro dialer opened for ${contactName || phoneNumber}`,
+            });
+          } else {
+            // Popup blocked - provide alternative
+            navigator.clipboard.writeText(result.webDialerUrl).then(() => {
+              toast({
+                title: "Popup Blocked",
+                description: "MightyCall dialer URL copied to clipboard. Please paste in browser to make call.",
+                variant: "destructive",
+              });
+            });
+          }
         }
         // Priority 2: Device phone app with tel: link
         else {
