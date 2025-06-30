@@ -138,7 +138,7 @@ export default function SoldLeadsView() {
           <img 
             src={traffikBoostersLogo} 
             alt="Traffik Boosters" 
-            className="h-8 w-auto object-contain"
+            className="h-10 w-auto object-contain"
             style={{ imageRendering: 'crisp-edges' }}
           />
           <div className="text-center">
