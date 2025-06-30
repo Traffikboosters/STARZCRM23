@@ -127,8 +127,8 @@ export default function Sidebar({
                   min-w-max whitespace-nowrap flex-shrink-0 transition-all duration-200
                   border border-transparent touch-manipulation
                   ${isActive 
-                    ? 'bg-brand-primary text-white shadow-md' 
-                    : 'bg-transparent text-neutral-medium hover:bg-neutral-lightest hover:text-neutral-dark'
+                    ? 'bg-green-500 text-white shadow-md border-green-600' 
+                    : 'bg-transparent text-neutral-medium hover:bg-green-50 hover:text-green-700 hover:border-green-200'
                   }
                 `}
                 style={{ 
