@@ -123,6 +123,8 @@ export default function Dashboard() {
       case "payments":
         return <Payments />;
       case "legal":
+        return <LegalDocumentsView />;
+      case "work-orders":
         return <WorkOrders />;
       case "phone":
         return <ComprehensivePhoneSystem />;
