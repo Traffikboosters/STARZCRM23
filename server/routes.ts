@@ -2530,5 +2530,83 @@ a=ssrc:1001 msid:stream track`
   });
 
   const httpServer = createServer(app);
+
+  // Set up WebSocket server with proper connection handling
+  wss = new WebSocketServer({ 
+    server: httpServer,
+    path: '/ws',
+    clientTracking: true,
+    perMessageDeflate: false
+  });
+
+  // WebSocket connection handler with optimized performance
+  wss.on('connection', (ws: WebSocket, req) => {
+    console.log('🔌 WebSocket client connected from:', req.socket.remoteAddress);
+    
+    // Send welcome message
+    ws.send(JSON.stringify({
+      type: 'connection_established',
+      message: 'STARZ WebSocket connected',
+      timestamp: new Date().toISOString(),
+      connectionId: Date.now().toString()
+    }));
+
+    // Set up ping/pong heartbeat to prevent disconnections
+    const pingInterval = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.ping();
+      }
+    }, 30000); // Ping every 30 seconds
+
+    // Handle pong response
+    ws.on('pong', () => {
+      console.log('🏓 WebSocket pong received - connection healthy');
+    });
+
+    // Handle incoming messages
+    ws.on('message', (data) => {
+      try {
+        const message = JSON.parse(data.toString());
+        console.log('📨 WebSocket message received:', message.type);
+        
+        // Echo back acknowledgment
+        ws.send(JSON.stringify({
+          type: 'message_received',
+          originalType: message.type,
+          timestamp: new Date().toISOString()
+        }));
+      } catch (error) {
+        console.error('❌ WebSocket message error:', error);
+      }
+    });
+
+    // Handle connection close
+    ws.on('close', (code, reason) => {
+      console.log(`🔌 WebSocket client disconnected: ${code} - ${reason}`);
+      clearInterval(pingInterval);
+    });
+
+    // Handle connection errors
+    ws.on('error', (error) => {
+      console.error('❌ WebSocket error:', error);
+      clearInterval(pingInterval);
+    });
+  });
+
+  // Broadcast function for real-time updates
+  const broadcast = (message: any) => {
+    if (wss) {
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify(message));
+        }
+      });
+    }
+  };
+
+  // Store broadcast function globally for use in other endpoints
+  (global as any).wssBroadcast = broadcast;
+
+  console.log('🚀 WebSocket Server initialized with optimized connection handling');
   return httpServer;
 }
