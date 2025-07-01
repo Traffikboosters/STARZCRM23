@@ -34,6 +34,8 @@ console.log('✅ MIGHTYCALL STATUS: CONNECTED - Account:', mightyCallConfig.acco
 import { googleMapsExtractor } from "./google-maps-extractor";
 import { AISalesTipGenerator } from "./ai-sales-tip-generator";
 import Stripe from "stripe";
+import fs from "fs";
+import path from "path";
 
 // WebSocket server instance
 let wss: WebSocketServer;
@@ -51,6 +53,39 @@ function logAuditEvent(action: string, entityType: string, entityId: number, use
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve WordPress plugin files for mobile download
+  app.get("/starz-chat-widget.php", async (req, res) => {
+    try {
+      const filePath = path.join(process.cwd(), "starz-chat-widget.php");
+      if (fs.existsSync(filePath)) {
+        res.setHeader('Content-Type', 'text/plain');
+        res.setHeader('Content-Disposition', 'attachment; filename="starz-chat-widget.php"');
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        res.send(fileContent);
+      } else {
+        res.status(404).json({ error: "Plugin file not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to read plugin file" });
+    }
+  });
+
+  app.get("/STARZ-Chat-Widget-Installation-Guide.md", async (req, res) => {
+    try {
+      const filePath = path.join(process.cwd(), "STARZ-Chat-Widget-Installation-Guide.md");
+      if (fs.existsSync(filePath)) {
+        res.setHeader('Content-Type', 'text/markdown');
+        res.setHeader('Content-Disposition', 'attachment; filename="STARZ-Chat-Widget-Installation-Guide.md"');
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        res.send(fileContent);
+      } else {
+        res.status(404).json({ error: "Installation guide not found" });
+      }
+    } catch (error) {
+      res.status(500).json({ error: "Failed to read installation guide" });
+    }
+  });
+
   // MightyCall Native API status endpoint
   app.get("/api/mightycall/status", async (req, res) => {
     // BYPASS NATIVE API - USE FIXED CORE SYSTEM

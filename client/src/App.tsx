@@ -18,6 +18,7 @@ import CompetitivePricingPage from "@/pages/competitive-pricing";
 import AcceptInvitation from "@/pages/accept-invitation";
 import LandingPage from "@/pages/landing";
 import Payments from "@/pages/payments";
+import DownloadPlugin from "@/pages/download-plugin";
 
 function Router() {
   return (
@@ -37,6 +38,7 @@ function Router() {
       <Route path="/competitive-pricing" component={CompetitivePricingPage} />
       <Route path="/payments" component={Payments} />
       <Route path="/accept-invitation" component={AcceptInvitation} />
+      <Route path="/download-plugin" component={DownloadPlugin} />
       <Route component={NotFound} />
     </Switch>
   );
