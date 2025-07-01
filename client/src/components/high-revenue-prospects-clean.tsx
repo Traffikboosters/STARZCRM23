@@ -172,9 +172,14 @@ export function HighRevenueProspects() {
     });
   };
 
-  const extractGoogleMapsLeads = async () => {
+  const extractGoogleMapsLeads = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Google Maps extraction button clicked');
+    
     setLoading(true);
     try {
+      console.log('Making API request...');
       const response = await fetch('/api/scraping-jobs/google-maps-enhanced', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -185,15 +190,24 @@ export function HighRevenueProspects() {
         })
       });
       
+      const result = await response.json();
+      console.log('API response:', result);
+      
       if (response.ok) {
         toast({
-          title: "Lead Extraction Started",
-          description: "Extracting high-revenue restaurant prospects from Google Maps...",
+          title: "Lead Extraction Completed",
+          description: `Extracted ${result.leadsExtracted || 0} prospects. Refreshing data...`,
         });
-        // Refresh prospects after extraction
-        setTimeout(() => {
-          window.location.reload();
-        }, 3000);
+        // Refresh prospects data instead of full page reload
+        setTimeout(async () => {
+          const contactsResponse = await fetch('/api/contacts');
+          if (contactsResponse.ok) {
+            const contacts = await contactsResponse.json();
+            console.log('Refreshed contacts:', contacts.length);
+            // Trigger re-render by reloading prospects
+            window.location.reload();
+          }
+        }, 2000);
       } else {
         throw new Error('Failed to start extraction');
       }
@@ -208,7 +222,11 @@ export function HighRevenueProspects() {
     }
   };
 
-  const extractBarkLeads = async () => {
+  const extractBarkLeads = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Bark extraction button clicked');
+    
     setLoading(true);
     try {
       const response = await fetch('/api/scraping-jobs/bark-dashboard', {
@@ -216,14 +234,17 @@ export function HighRevenueProspects() {
         headers: { 'Content-Type': 'application/json' },
       });
       
+      const result = await response.json();
+      console.log('Bark API response:', result);
+      
       if (response.ok) {
         toast({
-          title: "Bark Extraction Started",
-          description: "Extracting high-value service business prospects from Bark.com...",
+          title: "Bark Extraction Completed",
+          description: `Extracted ${result.leadsExtracted || 0} prospects. Refreshing data...`,
         });
         setTimeout(() => {
           window.location.reload();
-        }, 3000);
+        }, 2000);
       } else {
         throw new Error('Failed to start Bark extraction');
       }
@@ -238,7 +259,11 @@ export function HighRevenueProspects() {
     }
   };
 
-  const extractYellowPagesLeads = async () => {
+  const extractYellowPagesLeads = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Yellow Pages extraction button clicked');
+    
     setLoading(true);
     try {
       const response = await fetch('/api/scraping-jobs/yellowpages', {
@@ -246,14 +271,17 @@ export function HighRevenueProspects() {
         headers: { 'Content-Type': 'application/json' },
       });
       
+      const result = await response.json();
+      console.log('Yellow Pages API response:', result);
+      
       if (response.ok) {
         toast({
-          title: "Yellow Pages Extraction Started",
-          description: "Extracting established business prospects from Yellow Pages...",
+          title: "Yellow Pages Extraction Completed",
+          description: `Extracted ${result.leadsExtracted || 0} prospects. Refreshing data...`,
         });
         setTimeout(() => {
           window.location.reload();
-        }, 3000);
+        }, 2000);
       } else {
         throw new Error('Failed to start Yellow Pages extraction');
       }
