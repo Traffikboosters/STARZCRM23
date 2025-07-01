@@ -84,7 +84,7 @@ export function ChatWidgetBackOffice() {
   const { data: messages = [] } = useQuery({
     queryKey: ["/api/chat/messages", selectedConversation?.id],
     enabled: !!selectedConversation?.id,
-    refetchInterval: 5000, // Refresh messages every 5 seconds
+    refetchInterval: 30000, // Optimized to 30 seconds for better performance
   });
 
   // Assign conversation mutation

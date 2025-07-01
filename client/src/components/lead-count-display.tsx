@@ -25,10 +25,12 @@ export default function LeadCountDisplay({ variant = "sidebar", className = "" }
     setTimeout(() => setIsRefreshing(false), 1000);
   };
 
-  // Fetch contacts with auto-refresh
+  // Fetch contacts with optimized refresh
   const { data: contacts = [], isLoading } = useQuery<Contact[]>({
     queryKey: ["/api/contacts"],
-    refetchInterval: 5000, // Auto-refresh every 5 seconds for faster updates
+    refetchInterval: 30000, // Reduced to 30 seconds to improve performance
+    staleTime: 20000, // Consider data fresh for 20 seconds
+    gcTime: 300000, // Keep in cache for 5 minutes (renamed from cacheTime in v5)
   });
 
   // WebSocket connection for real-time updates
