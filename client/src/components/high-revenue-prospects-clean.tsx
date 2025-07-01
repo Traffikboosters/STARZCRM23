@@ -70,6 +70,11 @@ export function HighRevenueProspects() {
     queryKey: ['/api/contacts'],
   });
 
+  // Fetch users for lead allocation display
+  const { data: users = [] } = useQuery({
+    queryKey: ['/api/users'],
+  });
+
   // Filter for high-revenue prospect sources
   const prospects = allContacts.filter(contact => {
     const sources = ['google_maps_enhanced', 'bark_dashboard', 'yellowpages'];
@@ -119,6 +124,22 @@ export function HighRevenueProspects() {
       case 'bark_dashboard': return 'bg-purple-100 text-purple-800';
       case 'yellowpages': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // Get assigned sales rep information
+  const getAssignedRep = (assignedTo: number | null) => {
+    if (!assignedTo) return null;
+    return users.find((user: any) => user.id === assignedTo);
+  };
+
+  // Get lead source icon
+  const getSourceIcon = (source: string | null) => {
+    switch (source) {
+      case 'google_maps_enhanced': return <Globe className="h-4 w-4" />;
+      case 'bark_dashboard': return <Building2 className="h-4 w-4" />;
+      case 'yellowpages': return <Database className="h-4 w-4" />;
+      default: return <Target className="h-4 w-4" />;
     }
   };
 
@@ -360,9 +381,29 @@ export function HighRevenueProspects() {
                       </Badge>
                     )}
                   </div>
-                  <Badge className={`w-fit ${getSourceColor(contact.leadSource)}`}>
-                    {getSourceDisplayName(contact.leadSource)}
-                  </Badge>
+                  
+                  {/* Point of Origin and Lead Allocation */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Badge className={`flex items-center gap-1 ${getSourceColor(contact.leadSource)}`}>
+                        {getSourceIcon(contact.leadSource)}
+                        {getSourceDisplayName(contact.leadSource)}
+                      </Badge>
+                      {(() => {
+                        const assignedRep = getAssignedRep(contact.assignedTo);
+                        return assignedRep ? (
+                          <Badge variant="secondary" className="flex items-center gap-1">
+                            <Users className="h-3 w-3" />
+                            {assignedRep.username}
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-gray-500">
+                            Unassigned
+                          </Badge>
+                        );
+                      })()}
+                    </div>
+                  </div>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
@@ -390,6 +431,26 @@ export function HighRevenueProspects() {
                       <span className="text-sm">{formatPhoneNumber(contact.phone)}</span>
                     </div>
                   </div>
+
+                  {/* Lead Allocation Details */}
+                  {(() => {
+                    const assignedRep = getAssignedRep(contact.assignedTo);
+                    return assignedRep && (
+                      <div className="space-y-2 bg-blue-50 p-3 rounded-lg">
+                        <div className="flex items-center space-x-2">
+                          <Users className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm font-medium text-blue-600">Assigned Sales Rep</span>
+                        </div>
+                        <div className="text-sm space-y-1">
+                          <div><strong>{assignedRep.username}</strong></div>
+                          <div className="text-gray-600">{assignedRep.email}</div>
+                          {assignedRep.phone && (
+                            <div className="text-gray-600">{formatPhoneNumber(assignedRep.phone)}</div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
 
                   {/* Deal Value */}
                   {contact.dealValue && (
@@ -452,9 +513,20 @@ export function HighRevenueProspects() {
                     </Button>
                   </div>
 
-                  {/* Creation Date */}
-                  <div className="text-xs text-gray-500 pt-2 border-t">
-                    Added: {new Date(contact.createdAt).toLocaleDateString()}
+                  {/* Lead Information */}
+                  <div className="text-xs text-gray-500 pt-2 border-t space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span>Added: {new Date(contact.createdAt).toLocaleDateString()}</span>
+                      <span className="flex items-center gap-1">
+                        <Target className="h-3 w-3" />
+                        Origin: {getSourceDisplayName(contact.leadSource)}
+                      </span>
+                    </div>
+                    {contact.assignedTo && (
+                      <div className="text-blue-600">
+                        Assigned: {new Date(contact.updatedAt).toLocaleDateString()}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

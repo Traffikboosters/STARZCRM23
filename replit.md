@@ -515,6 +515,9 @@ The application uses a comprehensive schema including:
 - July 1, 2025. Added 24-hour "NEW" lead highlighting with green background, animated badges, and ring borders for immediate visual identification of fresh prospects
 - July 1, 2025. Enhanced lead cards with comprehensive contact details, action buttons (Call, Schedule, Email, Notes), deal values, priority badges, and authentic Traffik Boosters branding
 - July 1, 2025. Implemented platform-specific filtering (Google Maps, Bark.com, Yellow Pages), search functionality, and real-time prospect count with extraction success notifications
+- July 1, 2025. POINT OF ORIGIN & LEAD ALLOCATION: Added comprehensive lead tracking information to each lead card including point of origin with platform icons and assigned sales representative details
+- July 1, 2025. Enhanced lead cards with dual badge system showing lead source (Google Maps, Bark.com, Yellow Pages) and assigned sales rep with contact information
+- July 1, 2025. Added detailed lead allocation section displaying assigned sales rep name, email, phone, and assignment timestamp for complete lead tracking visibility
 - July 1, 2025. Updated Dashboard to use clean High Revenue Prospects component ensuring platform integrity and eliminating all fictional business data per user requirements
 - July 1, 2025. INTEGRATED LEAD EXTRACTION INTO HIGH-REVENUE PROSPECTS: Added direct lead generation buttons (Google Maps, Bark.com, Yellow Pages) to High-Revenue Business Prospects page
 - July 1, 2025. Enhanced component to automatically load existing CRM contacts that qualify as high-revenue prospects ($55K+ deal value or target industries)
