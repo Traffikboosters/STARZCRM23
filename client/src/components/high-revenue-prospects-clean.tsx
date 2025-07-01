@@ -454,32 +454,50 @@ export function HighRevenueProspects() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Button 
-              onClick={extractGoogleMapsLeads} 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('BUTTON CLICK CAPTURED - Google Maps');
+                extractGoogleMapsLeads(e);
+              }}
               disabled={loading}
               className="bg-blue-600 hover:bg-blue-700 h-auto p-6 flex-col"
+              type="button"
             >
               <Globe className="h-8 w-8 mb-2" />
-              <span className="font-semibold">Google Maps</span>
+              <span className="font-semibold">Extract Google Maps Leads</span>
               <span className="text-xs opacity-80">Restaurants & Services</span>
             </Button>
             
             <Button 
-              onClick={extractBarkLeads} 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('BUTTON CLICK CAPTURED - Bark');
+                extractBarkLeads(e);
+              }}
               disabled={loading}
               className="bg-green-600 hover:bg-green-700 h-auto p-6 flex-col"
+              type="button"
             >
               <Building2 className="h-8 w-8 mb-2" />
-              <span className="font-semibold">Bark.com</span>
+              <span className="font-semibold">Extract Bark Leads</span>
               <span className="text-xs opacity-80">Service Businesses</span>
             </Button>
             
             <Button 
-              onClick={extractYellowPagesLeads} 
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('BUTTON CLICK CAPTURED - Yellow Pages');
+                extractYellowPagesLeads(e);
+              }}
               disabled={loading}
               className="bg-yellow-600 hover:bg-yellow-700 h-auto p-6 flex-col"
+              type="button"
             >
               <Phone className="h-8 w-8 mb-2" />
-              <span className="font-semibold">Yellow Pages</span>
+              <span className="font-semibold">Extract Yellow Pages Leads</span>
               <span className="text-xs opacity-80">Established Businesses</span>
             </Button>
           </div>
