@@ -70,8 +70,12 @@ export function HighRevenueProspects() {
         if (response.ok) {
           const contacts = await response.json();
           
-          // Filter for high-revenue prospects (deal value $55K+ or specific industries)
+          // Filter for authentic high-revenue prospects (no demo data, no fake phone numbers)
           const highRevenueContacts = contacts.filter((contact: any) => {
+            // Skip demo contacts and contacts with fake 555 phone numbers
+            if (contact.isDemo || !contact.phone || !contact.email) return false;
+            if (contact.phone.includes('555-')) return false;
+            
             const dealValue = contact.dealValue || 0;
             const budget = contact.budget || 0;
             const isHighRevenue = dealValue >= 55000 || budget >= 55000;
@@ -469,11 +473,19 @@ export function HighRevenueProspects() {
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertCircle className="h-12 w-12 text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No Prospects Available
+              No Authentic High-Revenue Prospects Found
             </h3>
             <p className="text-gray-600 text-center max-w-md mb-6">
-              Use the extraction tools above to generate high-revenue business prospects from authentic data sources.
+              Current CRM contains only demonstration data with fake phone numbers. Use the extraction tools above to generate authentic business prospects from real data sources with verified contact information.
             </p>
+            <div className="text-sm text-gray-500 text-center">
+              <p>Authentic prospects require:</p>
+              <ul className="list-disc list-inside mt-2 space-y-1">
+                <li>Real phone numbers (no 555 numbers)</li>
+                <li>Valid email addresses</li>
+                <li>$55,000+ revenue potential or target industries</li>
+              </ul>
+            </div>
           </CardContent>
         </Card>
       ) : (
