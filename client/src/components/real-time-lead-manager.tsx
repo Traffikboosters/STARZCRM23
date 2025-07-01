@@ -73,8 +73,8 @@ export default function RealTimeLeadManager() {
         ws.onclose = () => {
           console.log('Real-time connection closed, attempting reconnect...');
           setIsConnected(false);
-          // Attempt reconnection after 3 seconds
-          setTimeout(connectWebSocket, 3000);
+          // Attempt reconnection after 30 seconds to reduce server load
+          setTimeout(connectWebSocket, 30000);
         };
 
         ws.onerror = (error) => {

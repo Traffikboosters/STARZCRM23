@@ -19,12 +19,14 @@ import AcceptInvitation from "@/pages/accept-invitation";
 import LandingPage from "@/pages/landing";
 import Payments from "@/pages/payments";
 import DownloadPlugin from "@/pages/download-plugin";
+import STARZLandingPage from "@/components/starz-landing-page";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/landing" component={LandingPage} />
+      <Route path="/starz-landing" component={STARZLandingPage} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/analytics" component={AnalyticsPage} />
       <Route path="/mightycall" component={MightyCallPage} />

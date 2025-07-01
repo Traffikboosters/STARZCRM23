@@ -214,6 +214,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Landing page lead capture endpoint
+  app.post("/api/landing-leads", async (req, res) => {
+    try {
+      const { name, email, phone, company, message, source = 'STARZ Landing Page' } = req.body;
+      
+      const [firstName, ...lastNameParts] = name.split(' ');
+      const lastName = lastNameParts.join(' ') || '';
+      
+      const contactData = {
+        firstName,
+        lastName,
+        email,
+        phone,
+        company,
+        notes: message || '',
+        leadSource: source,
+        status: 'new',
+        priority: 'high',
+        createdBy: 1 // Default to admin user
+      };
+      
+      const contact = await storage.createContact(contactData);
+      
+      // Send real-time notification
+      if (wss) {
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+              type: 'new_landing_lead',
+              contact,
+              timestamp: new Date().toISOString(),
+              message: `New lead from ${name} at ${company}`
+            }));
+          }
+        });
+      }
+      
+      res.json({ success: true, contact });
+    } catch (error) {
+      console.error('Landing lead creation error:', error);
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
   app.post("/api/contacts", async (req, res) => {
     try {
       const validation = insertContactSchema.safeParse(req.body);
