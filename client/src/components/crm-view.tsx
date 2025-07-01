@@ -563,7 +563,7 @@ export default function CRMView() {
   // Data fetching with optimized performance
   const { data: contacts = [], isLoading } = useQuery<Contact[]>({
     queryKey: ["/api/contacts"],
-    refetchInterval: 30000, // Reduced to 30 seconds for better performance
+    refetchInterval: 120000, // Reduced to 2 minutes for optimal performance
     staleTime: 20000, // Consider data fresh for 20 seconds
     gcTime: 300000, // Keep in cache for 5 minutes (renamed from cacheTime in v5)
   });

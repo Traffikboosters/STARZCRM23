@@ -28,7 +28,7 @@ export default function LeadCountDisplay({ variant = "sidebar", className = "" }
   // Fetch contacts with optimized refresh
   const { data: contacts = [], isLoading } = useQuery<Contact[]>({
     queryKey: ["/api/contacts"],
-    refetchInterval: 30000, // Reduced to 30 seconds to improve performance
+    refetchInterval: 120000, // Reduced to 2 minutes for optimal performance
     staleTime: 20000, // Consider data fresh for 20 seconds
     gcTime: 300000, // Keep in cache for 5 minutes (renamed from cacheTime in v5)
   });

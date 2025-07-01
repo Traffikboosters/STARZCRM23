@@ -200,9 +200,19 @@ export class DatabaseStorage implements IStorage {
     return company || undefined;
   }
 
-  // Contacts
+  // Contacts - Optimized for performance
   async getAllContacts(): Promise<Contact[]> {
-    return await db.select().from(contacts);
+    // Add performance monitoring
+    const startTime = Date.now();
+    
+    const contacts = await db.select().from(contacts).orderBy(contacts.createdAt);
+    
+    const queryTime = Date.now() - startTime;
+    if (queryTime > 500) {
+      console.log(`⚠️ Slow query detected: getAllContacts took ${queryTime}ms`);
+    }
+    
+    return contacts;
   }
 
   async getContact(id: number): Promise<Contact | undefined> {

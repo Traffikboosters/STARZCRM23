@@ -34,7 +34,7 @@ export default function RealTimeLeadManager() {
     conversionRate: 0,
     lastUpdateTime: new Date().toISOString(),
     systemPerformance: 'optimal',
-    refreshRate: 2000
+    refreshRate: 45000
   });
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

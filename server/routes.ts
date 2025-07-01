@@ -187,7 +187,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Contacts API
   app.get("/api/contacts", async (req, res) => {
     try {
+      // Add response caching for better performance
+      res.set('Cache-Control', 'public, max-age=30'); // Cache for 30 seconds
+      
       const contacts = await storage.getAllContacts();
+      
+      // Log performance for monitoring
+      console.log(`📊 Contacts API: Returning ${contacts.length} records`);
+      
       res.json(contacts);
     } catch (error) {
       console.error('Get contacts error:', error);
@@ -2591,7 +2598,7 @@ a=ssrc:1001 msid:stream track`
       if (ws.readyState === WebSocket.OPEN) {
         ws.ping();
       }
-    }, 30000); // Ping every 30 seconds
+    }, 60000); // Ping every 60 seconds (reduced frequency)
 
     // Handle pong response
     ws.on('pong', () => {
