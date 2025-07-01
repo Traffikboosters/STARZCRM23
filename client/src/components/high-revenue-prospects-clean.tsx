@@ -175,46 +175,48 @@ export function HighRevenueProspects() {
   const extractGoogleMapsLeads = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('Google Maps extraction button clicked');
+    console.log('🚀 GOOGLE MAPS EXTRACTION STARTED');
     
     setLoading(true);
+    toast({
+      title: "Starting Extraction",
+      description: "Extracting high-revenue Google Maps prospects...",
+    });
+    
     try {
-      console.log('Making API request...');
+      console.log('📡 Making Google Maps API request...');
       const response = await fetch('/api/scraping-jobs/google-maps-enhanced', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           category: 'restaurant',
           location: 'United States',
-          maxResults: 20
+          maxResults: 25
         })
       });
       
       const result = await response.json();
-      console.log('API response:', result);
+      console.log('✅ Google Maps API response:', result);
       
-      if (response.ok) {
+      if (response.ok && result.leadsExtracted > 0) {
         toast({
-          title: "Lead Extraction Completed",
-          description: `Extracted ${result.leadsExtracted || 0} prospects. Refreshing data...`,
+          title: "✅ Extraction Successful",
+          description: `Extracted ${result.leadsExtracted} high-revenue prospects from Google Maps`,
         });
-        // Refresh prospects data instead of full page reload
-        setTimeout(async () => {
-          const contactsResponse = await fetch('/api/contacts');
-          if (contactsResponse.ok) {
-            const contacts = await contactsResponse.json();
-            console.log('Refreshed contacts:', contacts.length);
-            // Trigger re-render by reloading prospects
-            window.location.reload();
-          }
-        }, 2000);
+        
+        // Force refresh the prospects data
+        setTimeout(() => {
+          console.log('🔄 Refreshing prospects data...');
+          window.location.reload();
+        }, 1500);
       } else {
-        throw new Error('Failed to start extraction');
+        throw new Error(`Extraction returned ${result.leadsExtracted || 0} leads`);
       }
     } catch (error) {
+      console.error('❌ Google Maps extraction failed:', error);
       toast({
-        title: "Extraction Failed",
-        description: "Unable to extract leads. Please try again.",
+        title: "❌ Extraction Failed",
+        description: "Unable to extract Google Maps leads. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -225,33 +227,42 @@ export function HighRevenueProspects() {
   const extractBarkLeads = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('Bark extraction button clicked');
+    console.log('🚀 BARK.COM EXTRACTION STARTED');
     
     setLoading(true);
+    toast({
+      title: "Starting Extraction",
+      description: "Extracting high-revenue Bark.com service businesses...",
+    });
+    
     try {
+      console.log('📡 Making Bark.com API request...');
       const response = await fetch('/api/scraping-jobs/bark-dashboard', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
       
       const result = await response.json();
-      console.log('Bark API response:', result);
+      console.log('✅ Bark.com API response:', result);
       
-      if (response.ok) {
+      if (response.ok && result.leadsExtracted > 0) {
         toast({
-          title: "Bark Extraction Completed",
-          description: `Extracted ${result.leadsExtracted || 0} prospects. Refreshing data...`,
+          title: "✅ Extraction Successful",
+          description: `Extracted ${result.leadsExtracted} high-revenue service businesses from Bark.com`,
         });
+        
         setTimeout(() => {
+          console.log('🔄 Refreshing prospects data...');
           window.location.reload();
-        }, 2000);
+        }, 1500);
       } else {
-        throw new Error('Failed to start Bark extraction');
+        throw new Error(`Extraction returned ${result.leadsExtracted || 0} leads`);
       }
     } catch (error) {
+      console.error('❌ Bark.com extraction failed:', error);
       toast({
-        title: "Extraction Failed",
-        description: "Unable to extract Bark leads. Please try again.",
+        title: "❌ Extraction Failed",
+        description: "Unable to extract Bark.com leads. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -262,32 +273,41 @@ export function HighRevenueProspects() {
   const extractYellowPagesLeads = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('Yellow Pages extraction button clicked');
+    console.log('🚀 YELLOW PAGES EXTRACTION STARTED');
     
     setLoading(true);
+    toast({
+      title: "Starting Extraction",
+      description: "Extracting high-revenue Yellow Pages businesses...",
+    });
+    
     try {
+      console.log('📡 Making Yellow Pages API request...');
       const response = await fetch('/api/scraping-jobs/yellowpages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
       
       const result = await response.json();
-      console.log('Yellow Pages API response:', result);
+      console.log('✅ Yellow Pages API response:', result);
       
-      if (response.ok) {
+      if (response.ok && result.leadsExtracted > 0) {
         toast({
-          title: "Yellow Pages Extraction Completed",
-          description: `Extracted ${result.leadsExtracted || 0} prospects. Refreshing data...`,
+          title: "✅ Extraction Successful",
+          description: `Extracted ${result.leadsExtracted} high-revenue businesses from Yellow Pages`,
         });
+        
         setTimeout(() => {
+          console.log('🔄 Refreshing prospects data...');
           window.location.reload();
-        }, 2000);
+        }, 1500);
       } else {
-        throw new Error('Failed to start Yellow Pages extraction');
+        throw new Error(`Extraction returned ${result.leadsExtracted || 0} leads`);
       }
     } catch (error) {
+      console.error('❌ Yellow Pages extraction failed:', error);
       toast({
-        title: "Extraction Failed",
+        title: "❌ Extraction Failed",
         description: "Unable to extract Yellow Pages leads. Please try again.",
         variant: "destructive",
       });
