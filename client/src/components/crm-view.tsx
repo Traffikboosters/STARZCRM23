@@ -25,6 +25,7 @@ import LeadSourceBadge from "@/components/lead-source-badge";
 import ContextualSalesCoaching from "@/components/contextual-sales-coaching";
 import AISalesTipGenerator from "@/components/ai-sales-tip-generator";
 import DataTypeFilter from "@/components/data-type-filter";
+import STARZMightyCallDialer from "@/components/starz-mightycall-dialer";
 
 
 
@@ -456,6 +457,7 @@ export default function CRMView() {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isCoachingModalOpen, setIsCoachingModalOpen] = useState(false);
   const [isAITipGeneratorOpen, setIsAITipGeneratorOpen] = useState(false);
+  const [showSTARZDialer, setShowSTARZDialer] = useState(false);
 
   const [isLeadAllocationModalOpen, setIsLeadAllocationModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
@@ -574,7 +576,7 @@ export default function CRMView() {
   // Filter to get only actual employees (users with sales_rep or admin role)
   const salesReps = allUsers.filter(user => user.role === 'sales_rep' || user.role === 'admin');
 
-  // Click-to-call functionality with MightyCall integration
+  // STARZ MightyCall Dialer Integration
   const handleCallContact = async (contact: Contact) => {
     if (!contact.phone) {
       toast({
@@ -585,106 +587,15 @@ export default function CRMView() {
       return;
     }
 
-    try {
-      // Clean and format phone number
-      const cleanNumber = contact.phone.replace(/\D/g, '');
-      let dialNumber = cleanNumber;
-      
-      // Remove +1 country code if present (US domestic calling)
-      if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
-        dialNumber = cleanNumber.substring(1);
-      }
-      
-      const contactName = `${contact.firstName} ${contact.lastName}`;
-      
-      // Show initial call setup message
-      console.log(`🔄 LEAD CARD CALL: Initiating call to ${contactName} (${dialNumber})`);
-      toast({
-        title: "Initiating Call",
-        description: `Setting up call to ${contactName}...`,
-      });
-
-      // Call MightyCall API for professional calling features
-      const response = await fetch('/api/mightycall/call', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          phoneNumber: dialNumber,
-          contactName: contactName,
-          userId: currentUser?.id || 1
-        }),
-      });
-
-      if (response.ok) {
-        const callData = await response.json();
-        
-        // Primary: Open MightyCall Pro web dialer in new window
-        if (callData.webDialerUrl) {
-          const dialerWindow = window.open(
-            callData.webDialerUrl, 
-            'MightyCallDialer',
-            'width=800,height=600,scrollbars=yes,resizable=yes'
-          );
-          
-          if (dialerWindow) {
-            toast({
-              title: "MightyCall Pro Dialer",
-              description: `Professional dialer opened for ${contactName}`,
-              duration: 5000,
-            });
-          } else {
-            // Fallback to device dialer if popup blocked
-            window.location.href = `tel:${dialNumber}`;
-            toast({
-              title: "Device Dialer",
-              description: `Calling ${contactName} via device phone`,
-              duration: 3000,
-            });
-          }
-        } else {
-          // Standard device dialer fallback
-          window.location.href = `tel:${dialNumber}`;
-          toast({
-            title: "Call Ready",
-            description: `Device dialer opened for ${contactName}`,
-            duration: 3000,
-          });
-        }
-        
-        console.log(`✅ LEAD CARD SUCCESS: MightyCall Call Initiated:`, {
-          callId: callData.callId,
-          contact: contactName,
-          number: dialNumber,
-          method: callData.method || 'web_dialer',
-          webDialerUrl: callData.webDialerUrl
-        });
-        
-      } else {
-        throw new Error('MightyCall API call failed');
-      }
-      
-    } catch (error) {
-      console.error('❌ LEAD CARD ERROR: Call setup failed:', error);
-      
-      // Emergency fallback: Direct device dialer
-      const cleanNumber = contact.phone.replace(/\D/g, '');
-      let finalNumber = cleanNumber;
-      
-      if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
-        finalNumber = cleanNumber.substring(1);
-      }
-      
-      console.log(`🔄 LEAD CARD FALLBACK: Using device dialer for ${finalNumber}`);
-      window.location.href = `tel:${finalNumber}`;
-      
-      toast({
-        title: "Backup Dialer",
-        description: `Using device dialer for ${contact.firstName} ${contact.lastName}`,
-        duration: 3000,
-      });
-    }
+    // Set selected contact and open STARZ dialer
+    setSelectedContact(contact);
+    setShowSTARZDialer(true);
+    
+    console.log(`📞 OPENING STARZ DIALER: ${contact.firstName} ${contact.lastName} (${contact.phone})`);
+    toast({
+      title: "STARZ Dialer Opening",
+      description: `Preparing to call ${contact.firstName} ${contact.lastName}`,
+    });
   };
 
   // Schedule appointment functionality
@@ -1820,6 +1731,47 @@ export default function CRMView() {
           }}
         />
       )}
+
+      {/* STARZ MightyCall Dialer Modal */}
+      <Dialog open={showSTARZDialer} onOpenChange={setShowSTARZDialer}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Phone className="h-5 w-5" />
+              STARZ MightyCall Dialer
+              <div className="ml-auto flex items-center gap-3">
+                <img 
+                  src={traffikBoostersLogo}
+                  alt="Traffik Boosters" 
+                  className="h-8 w-8"
+                />
+                <div className="text-right">
+                  <div className="text-sm font-semibold text-black">STARZ</div>
+                  <div className="text-xs text-black">More Traffik! More Sales!</div>
+                </div>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedContact && (
+            <STARZMightyCallDialer
+              contact={{
+                firstName: selectedContact.firstName,
+                lastName: selectedContact.lastName,
+                phone: selectedContact.phone || ""
+              }}
+              onCallEnd={() => {
+                setShowSTARZDialer(false);
+                setSelectedContact(null);
+                toast({
+                  title: "Call Completed",
+                  description: "STARZ dialer session ended",
+                });
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
