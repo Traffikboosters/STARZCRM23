@@ -35,38 +35,77 @@ export default function ClickToCallButton({
     setIsConnecting(true);
 
     try {
-      // Direct device calling - most reliable method
+      // Clean and format phone number
       const cleanNumber = phoneNumber.replace(/\D/g, '');
+      let dialNumber = cleanNumber;
       
       // Remove country code if present (US domestic)
+      if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
+        dialNumber = cleanNumber.substring(1);
+      }
+      
+      // Call MightyCall API for enhanced calling experience
+      const response = await apiRequest("POST", "/api/mightycall/call", {
+        phoneNumber: dialNumber,
+        contactName: contactName || "Unknown Contact",
+        userId: 1
+      });
+
+      if (response.ok) {
+        const callData = await response.json();
+        
+        // Try MightyCall Pro web dialer first (if available)
+        if (callData.webDialerUrl) {
+          const dialerWindow = window.open(
+            callData.webDialerUrl,
+            'MightyCallDialer',
+            'width=800,height=600,scrollbars=yes,resizable=yes'
+          );
+          
+          if (dialerWindow) {
+            toast({
+              title: "MightyCall Pro",
+              description: `Professional dialer opened for ${contactName || dialNumber}`,
+              duration: 4000,
+            });
+          } else {
+            // Popup blocked, fallback to device dialer
+            window.location.href = `tel:${dialNumber}`;
+            toast({
+              title: "Device Dialer",
+              description: `Calling ${contactName || dialNumber}`,
+              duration: 3000,
+            });
+          }
+        } else {
+          // Standard device dialer
+          window.location.href = `tel:${dialNumber}`;
+          toast({
+            title: "Call Ready",
+            description: `Calling ${contactName || dialNumber}`,
+            duration: 3000,
+          });
+        }
+      } else {
+        throw new Error('MightyCall API error');
+      }
+      
+    } catch (error) {
+      console.error("MightyCall error, using fallback:", error);
+      
+      // Fallback: Direct device dialer
+      const cleanNumber = phoneNumber.replace(/\D/g, '');
       let dialNumber = cleanNumber;
       if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
         dialNumber = cleanNumber.substring(1);
       }
       
-      // Use device phone dialer
       window.location.href = `tel:${dialNumber}`;
       
-      // Log call attempt in background (don't wait for response)
-      setTimeout(() => {
-        apiRequest("POST", "/api/mightycall/call", {
-          phoneNumber: dialNumber,
-          contactName,
-          userId: 1
-        }).catch(error => console.log('Call logging failed:', error));
-      }, 100);
-      
       toast({
-        title: "Call Initiated",
-        description: `Calling ${contactName || dialNumber} via device phone app`,
-      });
-    } catch (error) {
-      console.error("Call initiation error:", error);
-      
-      toast({
-        title: "Call Error",
-        description: "Unable to initiate call. Please dial manually.",
-        variant: "destructive",
+        title: "Backup Dialer",
+        description: `Using device dialer for ${contactName || dialNumber}`,
+        duration: 3000,
       });
     } finally {
       setIsConnecting(false);

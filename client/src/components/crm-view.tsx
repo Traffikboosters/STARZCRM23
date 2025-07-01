@@ -574,7 +574,7 @@ export default function CRMView() {
   // Filter to get only actual employees (users with sales_rep or admin role)
   const salesReps = allUsers.filter(user => user.role === 'sales_rep' || user.role === 'admin');
 
-  // Click-to-call functionality
+  // Click-to-call functionality with MightyCall integration
   const handleCallContact = async (contact: Contact) => {
     if (!contact.phone) {
       toast({
@@ -586,49 +586,100 @@ export default function CRMView() {
     }
 
     try {
-      // Clean and format phone number for MightyCall
+      // Clean and format phone number
       const cleanNumber = contact.phone.replace(/\D/g, '');
       let dialNumber = cleanNumber;
       
-      // Remove +1 country code if present (11 digits starting with 1)
+      // Remove +1 country code if present (US domestic calling)
       if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
         dialNumber = cleanNumber.substring(1);
       }
       
-      // Create contact name for dialer (URL encode for spaces)
-      const contactName = `${contact.firstName}+${contact.lastName}`;
+      const contactName = `${contact.firstName} ${contact.lastName}`;
       
-      // Primary method: Use device phone dialer for reliable calling
-      const telUrl = `tel:${dialNumber}`;
-      
-      // Try to open device phone dialer first
-      window.location.href = telUrl;
-      
-      // Log call attempt with precise timestamp
-      console.log(`MIGHTYCALL WEB DIALER: Contact: ${contact.firstName} ${contact.lastName}, Number: ${dialNumber}, Time: ${new Date().toISOString()}`);
-      
+      // Show initial call setup message
       toast({
-        title: "MightyCall Web Dialer",
-        description: `Opening dialer for ${contact.firstName} ${contact.lastName} (${dialNumber})`,
-        duration: 3000,
+        title: "Initiating Call",
+        description: `Setting up call to ${contactName}...`,
       });
+
+      // Call MightyCall API for professional calling features
+      const response = await fetch('/api/mightycall/call', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phoneNumber: dialNumber,
+          contactName: contactName,
+          userId: currentUser?.id || 1
+        }),
+      });
+
+      if (response.ok) {
+        const callData = await response.json();
+        
+        // Primary: Open MightyCall Pro web dialer in new window
+        if (callData.webDialerUrl) {
+          const dialerWindow = window.open(
+            callData.webDialerUrl, 
+            'MightyCallDialer',
+            'width=800,height=600,scrollbars=yes,resizable=yes'
+          );
+          
+          if (dialerWindow) {
+            toast({
+              title: "MightyCall Pro Dialer",
+              description: `Professional dialer opened for ${contactName}`,
+              duration: 5000,
+            });
+          } else {
+            // Fallback to device dialer if popup blocked
+            window.location.href = `tel:${dialNumber}`;
+            toast({
+              title: "Device Dialer",
+              description: `Calling ${contactName} via device phone`,
+              duration: 3000,
+            });
+          }
+        } else {
+          // Standard device dialer fallback
+          window.location.href = `tel:${dialNumber}`;
+          toast({
+            title: "Call Ready",
+            description: `Device dialer opened for ${contactName}`,
+            duration: 3000,
+          });
+        }
+        
+        console.log(`MightyCall Call Initiated:`, {
+          callId: callData.callId,
+          contact: contactName,
+          number: dialNumber,
+          method: callData.method || 'web_dialer'
+        });
+        
+      } else {
+        throw new Error('MightyCall API call failed');
+      }
       
     } catch (error) {
-      // Emergency fallback: copy to clipboard (remove country code)
+      console.error('Call setup error:', error);
+      
+      // Emergency fallback: Direct device dialer
       const cleanNumber = contact.phone.replace(/\D/g, '');
       let finalNumber = cleanNumber;
       
-      // Remove +1 country code if present (11 digits starting with 1)
       if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
         finalNumber = cleanNumber.substring(1);
       }
       
-      navigator.clipboard.writeText(finalNumber).then(() => {
-        toast({
-          title: "Number Ready",
-          description: `${finalNumber} copied for manual dial`,
-          duration: 5000,
-        });
+      window.location.href = `tel:${finalNumber}`;
+      
+      toast({
+        title: "Backup Dialer",
+        description: `Using device dialer for ${contact.firstName} ${contact.lastName}`,
+        duration: 3000,
       });
     }
   };
