@@ -1,0 +1,337 @@
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Building2,
+  DollarSign,
+  TrendingUp,
+  Users,
+  MapPin,
+  Mail,
+  Phone,
+  Globe,
+  Target,
+  Download,
+  Search,
+  Filter,
+  AlertCircle,
+  Database,
+  Trophy
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import traffikBoostersLogo from '@assets/TRAFIC BOOSTERS3 copy_1751060321835.png';
+
+interface HighRevenueProspect {
+  id: number;
+  companyName: string;
+  industry: string;
+  estimatedMonthlyRevenue: number;
+  employeeCount: string;
+  location: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  website: string;
+  businessType: string;
+  services: string[];
+  painPoints: string[];
+  opportunityScore: number;
+  lastContact: string | null;
+  status: 'new' | 'contacted' | 'interested' | 'qualified' | 'proposal_sent';
+  notes: string;
+  leadSource: string;
+}
+
+export function HighRevenueProspects() {
+  const [prospects, setProspects] = useState<HighRevenueProspect[]>([]);
+  const [filteredProspects, setFilteredProspects] = useState<HighRevenueProspect[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [industryFilter, setIndustryFilter] = useState('all');
+  const [revenueFilter, setRevenueFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  // Load authentic prospects from authenticated data sources
+  useEffect(() => {
+    const loadAuthenticProspects = async () => {
+      setLoading(true);
+      try {
+        // Here we would integrate with authenticated business data sources
+        // For now, we show empty state until authentic data is connected
+        setProspects([]);
+        setFilteredProspects([]);
+      } catch (error) {
+        console.error('Failed to load prospects:', error);
+        toast({
+          title: "Data Loading Error",
+          description: "Unable to connect to authenticated business data sources.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAuthenticProspects();
+  }, [toast]);
+
+  useEffect(() => {
+    let filtered = prospects;
+
+    if (searchTerm) {
+      filtered = filtered.filter(prospect =>
+        prospect.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        prospect.contactPerson.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        prospect.location.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (industryFilter !== 'all') {
+      filtered = filtered.filter(prospect => prospect.industry === industryFilter);
+    }
+
+    if (revenueFilter !== 'all') {
+      filtered = filtered.filter(prospect => {
+        switch (revenueFilter) {
+          case 'high': return prospect.estimatedMonthlyRevenue >= 100000;
+          case 'medium': return prospect.estimatedMonthlyRevenue >= 75000 && prospect.estimatedMonthlyRevenue < 100000;
+          case 'target': return prospect.estimatedMonthlyRevenue >= 55000;
+          default: return true;
+        }
+      });
+    }
+
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(prospect => prospect.status === statusFilter);
+    }
+
+    setFilteredProspects(filtered);
+  }, [prospects, searchTerm, industryFilter, revenueFilter, statusFilter]);
+
+  const connectDataSource = () => {
+    toast({
+      title: "Connect Data Source",
+      description: "Please configure authenticated business data sources to populate high-revenue prospects.",
+    });
+  };
+
+  const totalRevenue = filteredProspects.reduce((sum, p) => sum + p.estimatedMonthlyRevenue, 0);
+  const averageRevenue = filteredProspects.length > 0 ? totalRevenue / filteredProspects.length : 0;
+
+  return (
+    <div className="space-y-6">
+      {/* Header with Logo */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <Trophy className="h-8 w-8 text-orange-600 mr-3" />
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">High Revenue Prospects</h1>
+            <p className="text-gray-600">Businesses averaging $55,000+ monthly revenue</p>
+          </div>
+        </div>
+        <img 
+          src={traffikBoostersLogo} 
+          alt="Traffik Boosters" 
+          className="h-16 w-auto"
+          style={{ imageRendering: 'crisp-edges' }}
+        />
+      </div>
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <Building2 className="h-5 w-5 text-blue-600 mr-2" />
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Prospects</p>
+                <p className="text-2xl font-bold text-blue-900">{filteredProspects.length}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <DollarSign className="h-5 w-5 text-green-600 mr-2" />
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Revenue Potential</p>
+                <p className="text-2xl font-bold text-green-900">${totalRevenue.toLocaleString()}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <TrendingUp className="h-5 w-5 text-orange-600 mr-2" />
+              <div>
+                <p className="text-sm font-medium text-gray-600">Average Revenue</p>
+                <p className="text-2xl font-bold text-orange-900">${averageRevenue.toLocaleString()}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center">
+              <Target className="h-5 w-5 text-purple-600 mr-2" />
+              <div>
+                <p className="text-sm font-medium text-gray-600">High Priority</p>
+                <p className="text-2xl font-bold text-purple-900">
+                  {filteredProspects.filter(p => p.opportunityScore >= 85).length}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Filter className="h-5 w-5 mr-2" />
+            Search & Filter Prospects
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search companies, contacts, locations..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            <Select value={industryFilter} onValueChange={setIndustryFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Industries" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Industries</SelectItem>
+                <SelectItem value="Healthcare">Healthcare</SelectItem>
+                <SelectItem value="Construction">Construction</SelectItem>
+                <SelectItem value="Technology">Technology</SelectItem>
+                <SelectItem value="Real Estate">Real Estate</SelectItem>
+                <SelectItem value="Legal Services">Legal Services</SelectItem>
+                <SelectItem value="Manufacturing">Manufacturing</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={revenueFilter} onValueChange={setRevenueFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Revenue" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Revenue</SelectItem>
+                <SelectItem value="target">$55K+ Target</SelectItem>
+                <SelectItem value="medium">$75K - $100K</SelectItem>
+                <SelectItem value="high">$100K+</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="new">New</SelectItem>
+                <SelectItem value="contacted">Contacted</SelectItem>
+                <SelectItem value="interested">Interested</SelectItem>
+                <SelectItem value="qualified">Qualified</SelectItem>
+                <SelectItem value="proposal_sent">Proposal Sent</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button onClick={connectDataSource} className="bg-orange-600 hover:bg-orange-700">
+              <Database className="h-4 w-4 mr-2" />
+              Connect Data
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Empty State or Data Display */}
+      {filteredProspects.length === 0 ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <AlertCircle className="h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No Authentic Data Available
+            </h3>
+            <p className="text-gray-600 text-center max-w-md mb-6">
+              Connect authenticated business data sources to view high-revenue prospects. 
+              We only display real business information from verified sources.
+            </p>
+            <Button onClick={connectDataSource} className="bg-orange-600 hover:bg-orange-700">
+              <Database className="h-4 w-4 mr-2" />
+              Configure Data Sources
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {filteredProspects.map((prospect) => (
+            <Card key={prospect.id} className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-lg">{prospect.companyName}</CardTitle>
+                    <p className="text-gray-600">{prospect.industry}</p>
+                  </div>
+                  <Badge variant="outline" className="bg-green-50 text-green-800">
+                    ${prospect.estimatedMonthlyRevenue.toLocaleString()}/mo
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Users className="h-4 w-4 mr-2" />
+                    {prospect.employeeCount} employees
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    {prospect.location}
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Mail className="h-4 w-4 mr-2" />
+                    {prospect.contactPerson}
+                  </div>
+                  
+                  <div className="flex items-center justify-between pt-3 border-t">
+                    <div className="flex items-center">
+                      <Target className="h-4 w-4 mr-1 text-orange-600" />
+                      <span className="text-sm font-medium">Score: {prospect.opportunityScore}</span>
+                    </div>
+                    <Badge variant={prospect.status === 'new' ? 'default' : 'secondary'}>
+                      {prospect.status}
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
