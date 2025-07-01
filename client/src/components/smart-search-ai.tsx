@@ -1,649 +1,571 @@
-import { useState, useEffect, useRef } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import type { Contact } from "@shared/schema";
+import { useState, useEffect, useRef } from 'react';
 import { 
   Search, 
   Brain, 
   Zap, 
   Users, 
   Building2, 
-  Phone, 
-  Mail, 
-  MapPin,
-  DollarSign,
-  Calendar,
-  Target,
+  MapPin, 
+  Target, 
   TrendingUp,
+  Phone,
+  Mail,
+  Calendar,
+  DollarSign,
+  X,
   Clock,
   Star,
-  Filter,
-  X,
-  ArrowRight,
-  Sparkles,
-  History,
-  Lightbulb
-} from "lucide-react";
+  Filter
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useQuery } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
-interface SearchSuggestion {
+interface Contact {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  phone: string | null;
+  company: string | null;
+  position: string | null;
+  leadSource: string | null;
+  leadStatus: string | null;
+  priority: string | null;
+  dealValue: number | null;
+  createdAt: Date;
+}
+
+interface AISuggestion {
   id: string;
-  type: 'contact' | 'company' | 'location' | 'industry' | 'action' | 'insight' | 'recent';
-  text: string;
-  description?: string;
-  icon: any;
-  color: string;
-  priority: number;
-  matchScore: number;
-  category: string;
-  data?: any;
-}
-
-interface AISearchInsight {
-  suggestion: string;
-  reasoning: string;
+  type: 'contacts' | 'companies' | 'locations' | 'actions' | 'insights' | 'quick_filters';
+  icon: React.ReactNode;
+  label: string;
+  description: string;
   confidence: number;
-  actionable: boolean;
+  searchQuery?: string;
+  actionType?: string;
+  count?: number;
 }
 
-export function SmartSearchAI() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [aiInsights, setAiInsights] = useState<AISearchInsight[]>([]);
-  const [searchResults, setSearchResults] = useState<Contact[]>([]);
-  const [shouldSearch, setShouldSearch] = useState(false);
-  const [searchFilter, setSearchFilter] = useState('');
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
+interface SmartSearchAIProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onNavigate?: (path: string) => void;
+}
 
-  // Fetch all contacts for searching
-  const { data: allContacts = [], isLoading: contactsLoading } = useQuery<Contact[]>({
+export default function SmartSearchAI({ isOpen, onClose, onNavigate }: SmartSearchAIProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [searchResults, setSearchResults] = useState<Contact[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const { toast } = useToast();
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Get contacts data for AI analysis
+  const { data: contacts = [] } = useQuery({
     queryKey: ['/api/contacts'],
-    enabled: true
+    enabled: isOpen
   });
 
-  // Smart suggestion categories with AI-powered recommendations
-  const intelligentSuggestions = {
-    contacts: [
-      { text: "High-value prospects", icon: Target, color: "bg-red-100 text-red-800 border-red-200" },
-      { text: "Recent leads", icon: Clock, color: "bg-blue-100 text-blue-800 border-blue-200" },
-      { text: "Uncontacted leads", icon: Users, color: "bg-yellow-100 text-yellow-800 border-yellow-200" },
-      { text: "Qualified prospects", icon: Star, color: "bg-green-100 text-green-800 border-green-200" },
-      { text: "Follow-up needed", icon: Calendar, color: "bg-purple-100 text-purple-800 border-purple-200" }
-    ],
-    companies: [
-      { text: "HVAC companies", icon: Building2, color: "bg-orange-100 text-orange-800 border-orange-200" },
-      { text: "Healthcare practices", icon: Building2, color: "bg-teal-100 text-teal-800 border-teal-200" },
-      { text: "Legal firms", icon: Building2, color: "bg-indigo-100 text-indigo-800 border-indigo-200" },
-      { text: "Construction companies", icon: Building2, color: "bg-amber-100 text-amber-800 border-amber-200" }
-    ],
-    locations: [
-      { text: "Texas leads", icon: MapPin, color: "bg-cyan-100 text-cyan-800 border-cyan-200" },
-      { text: "Austin area", icon: MapPin, color: "bg-lime-100 text-lime-800 border-lime-200" },
-      { text: "Dallas prospects", icon: MapPin, color: "bg-pink-100 text-pink-800 border-pink-200" },
-      { text: "Houston clients", icon: MapPin, color: "bg-violet-100 text-violet-800 border-violet-200" }
-    ],
-    actions: [
-      { text: "Schedule follow-up", icon: Calendar, color: "bg-blue-100 text-blue-800 border-blue-200" },
-      { text: "Send proposal", icon: Mail, color: "bg-green-100 text-green-800 border-green-200" },
-      { text: "Make call", icon: Phone, color: "bg-orange-100 text-orange-800 border-orange-200" },
-      { text: "Update status", icon: TrendingUp, color: "bg-purple-100 text-purple-800 border-purple-200" }
-    ],
-    insights: [
-      { text: "Revenue > $50K/month", icon: DollarSign, color: "bg-emerald-100 text-emerald-800 border-emerald-200" },
-      { text: "Marketing gaps", icon: Target, color: "bg-red-100 text-red-800 border-red-200" },
-      { text: "Conversion opportunities", icon: TrendingUp, color: "bg-blue-100 text-blue-800 border-blue-200" },
-      { text: "Hot prospects", icon: Zap, color: "bg-yellow-100 text-yellow-800 border-yellow-200" }
-    ]
-  };
-
-  // Load recent searches from localStorage
+  // Focus search input when dialog opens
   useEffect(() => {
-    const saved = localStorage.getItem('starz-recent-searches');
-    if (saved) {
-      setRecentSearches(JSON.parse(saved));
+    if (isOpen && searchInputRef.current) {
+      setTimeout(() => searchInputRef.current?.focus(), 100);
     }
-  }, []);
+  }, [isOpen]);
 
-  // Generate AI-powered suggestions based on search query
+  // Generate AI suggestions based on current data
   useEffect(() => {
-    if (searchQuery.length > 0) {
-      generateSmartSuggestions(searchQuery);
-    } else {
-      setShowSuggestions(false);
-      setSuggestions([]);
-    }
-  }, [searchQuery]);
+    if (!isOpen || !contacts.length) return;
 
-  const generateSmartSuggestions = async (query: string) => {
-    setIsLoading(true);
-    setShowSuggestions(true);
+    const generateSuggestions = () => {
+      const aiSuggestions: AISuggestion[] = [];
 
-    try {
-      // Simulate AI-powered suggestion generation
-      const allSuggestions: SearchSuggestion[] = [];
-      let priority = 100;
+      // Analyze contact data for intelligent suggestions
+      const highValueContacts = contacts.filter((c: Contact) => 
+        c.dealValue && c.dealValue > 5000
+      ).length;
 
-      // Analyze query intent and generate contextual suggestions
-      const queryLower = query.toLowerCase();
-      
+      const newContacts = contacts.filter((c: Contact) => {
+        const daysSinceCreated = Math.floor(
+          (Date.now() - new Date(c.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+        );
+        return daysSinceCreated <= 1;
+      }).length;
+
+      const companies = new Set(
+        contacts.map((c: Contact) => c.company).filter(Boolean)
+      ).size;
+
+      const locations = new Set(
+        contacts.map((c: Contact) => {
+          // Extract location from notes or other fields
+          return 'Various Locations'; // Simplified for now
+        }).filter(Boolean)
+      ).size;
+
       // Contact-based suggestions
-      if (queryLower.includes('lead') || queryLower.includes('contact') || queryLower.includes('prospect')) {
-        intelligentSuggestions.contacts.forEach(suggestion => {
-          const matchScore = calculateMatchScore(suggestion.text, query);
-          if (matchScore > 0.3) {
-            allSuggestions.push({
-              id: `contact-${suggestion.text}`,
-              type: 'contact',
-              text: suggestion.text,
-              description: `Find ${suggestion.text.toLowerCase()} in your CRM`,
-              icon: suggestion.icon,
-              color: suggestion.color,
-              priority: priority--,
-              matchScore,
-              category: 'Contacts'
-            });
-          }
-        });
+      aiSuggestions.push(
+        {
+          id: 'high-value-leads',
+          type: 'contacts',
+          icon: <DollarSign className="h-4 w-4" />,
+          label: 'High-Value Prospects',
+          description: `${highValueContacts} leads with deals over $5,000`,
+          confidence: 0.9,
+          searchQuery: 'dealValue:>5000',
+          count: highValueContacts
+        },
+        {
+          id: 'new-leads',
+          type: 'contacts',
+          icon: <Star className="h-4 w-4" />,
+          label: 'Fresh Leads',
+          description: `${newContacts} leads added in last 24 hours`,
+          confidence: 0.95,
+          searchQuery: 'createdAt:24h',
+          count: newContacts
+        }
+      );
+
+      // Company insights
+      aiSuggestions.push({
+        id: 'companies',
+        type: 'companies',
+        icon: <Building2 className="h-4 w-4" />,
+        label: 'Company Directory',
+        description: `Search across ${companies} unique companies`,
+        confidence: 0.8,
+        searchQuery: 'companies',
+        count: companies
+      });
+
+      // Location intelligence
+      aiSuggestions.push({
+        id: 'locations',
+        type: 'locations',
+        icon: <MapPin className="h-4 w-4" />,
+        label: 'Geographic Analysis',
+        description: 'Find leads by location and region',
+        confidence: 0.85,
+        searchQuery: 'location'
+      });
+
+      // Quick action suggestions
+      aiSuggestions.push(
+        {
+          id: 'call-ready',
+          type: 'actions',
+          icon: <Phone className="h-4 w-4" />,
+          label: 'Ready to Call',
+          description: 'Contacts with verified phone numbers',
+          confidence: 0.7,
+          actionType: 'filter_phone'
+        },
+        {
+          id: 'follow-up',
+          type: 'actions',
+          icon: <Calendar className="h-4 w-4" />,
+          label: 'Follow-up Required',
+          description: 'Contacts needing immediate attention',
+          confidence: 0.8,
+          actionType: 'filter_followup'
+        }
+      );
+
+      // Insights and analytics
+      aiSuggestions.push(
+        {
+          id: 'conversion-analysis',
+          type: 'insights',
+          icon: <TrendingUp className="h-4 w-4" />,
+          label: 'Conversion Insights',
+          description: 'Analyze lead performance and patterns',
+          confidence: 0.75,
+          actionType: 'analytics'
+        },
+        {
+          id: 'priority-leads',
+          type: 'insights',
+          icon: <Target className="h-4 w-4" />,
+          label: 'Priority Assessment',
+          description: 'AI-scored leads by conversion probability',
+          confidence: 0.88,
+          actionType: 'priority_analysis'
+        }
+      );
+
+      // Quick filters based on current query
+      if (searchQuery) {
+        const queryLower = searchQuery.toLowerCase();
+        
+        if (queryLower.includes('phone') || queryLower.includes('call')) {
+          aiSuggestions.unshift({
+            id: 'phone-filter',
+            type: 'quick_filters',
+            icon: <Phone className="h-4 w-4" />,
+            label: 'Phone Numbers',
+            description: 'Filter contacts with phone numbers',
+            confidence: 0.95,
+            searchQuery: 'has:phone'
+          });
+        }
+
+        if (queryLower.includes('email') || queryLower.includes('mail')) {
+          aiSuggestions.unshift({
+            id: 'email-filter',
+            type: 'quick_filters',
+            icon: <Mail className="h-4 w-4" />,
+            label: 'Email Contacts',
+            description: 'Filter contacts with email addresses',
+            confidence: 0.95,
+            searchQuery: 'has:email'
+          });
+        }
+
+        if (queryLower.includes('high') || queryLower.includes('value')) {
+          aiSuggestions.unshift({
+            id: 'value-filter',
+            type: 'quick_filters',
+            icon: <DollarSign className="h-4 w-4" />,
+            label: 'High-Value Leads',
+            description: 'Contacts with significant deal potential',
+            confidence: 0.9,
+            searchQuery: 'dealValue:>1000'
+          });
+        }
       }
 
-      // Company/Industry suggestions
-      if (queryLower.includes('company') || queryLower.includes('business') || queryLower.includes('hvac') || 
-          queryLower.includes('dental') || queryLower.includes('legal') || queryLower.includes('construction')) {
-        intelligentSuggestions.companies.forEach(suggestion => {
-          const matchScore = calculateMatchScore(suggestion.text, query);
-          if (matchScore > 0.2) {
-            allSuggestions.push({
-              id: `company-${suggestion.text}`,
-              type: 'company',
-              text: suggestion.text,
-              description: `Search for ${suggestion.text.toLowerCase()}`,
-              icon: suggestion.icon,
-              color: suggestion.color,
-              priority: priority--,
-              matchScore,
-              category: 'Industries'
-            });
-          }
-        });
+      setSuggestions(aiSuggestions.slice(0, 8)); // Limit to 8 suggestions
+    };
+
+    generateSuggestions();
+  }, [contacts, searchQuery, isOpen]);
+
+  // Perform intelligent search
+  const performSearch = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    
+    try {
+      // Smart search logic - search across multiple fields
+      const filtered = contacts.filter((contact: Contact) => {
+        const searchTerms = query.toLowerCase().split(' ');
+        const searchableText = [
+          contact.firstName,
+          contact.lastName,
+          contact.email,
+          contact.phone,
+          contact.company,
+          contact.position,
+          contact.leadSource,
+          contact.leadStatus
+        ].join(' ').toLowerCase();
+
+        return searchTerms.every(term => searchableText.includes(term));
+      });
+
+      setSearchResults(filtered);
+
+      // Add to recent searches
+      if (!recentSearches.includes(query)) {
+        setRecentSearches(prev => [query, ...prev.slice(0, 4)]);
       }
 
-      // Location-based suggestions
-      if (queryLower.includes('texas') || queryLower.includes('austin') || queryLower.includes('dallas') || 
-          queryLower.includes('houston') || queryLower.includes('location') || queryLower.includes('area')) {
-        intelligentSuggestions.locations.forEach(suggestion => {
-          const matchScore = calculateMatchScore(suggestion.text, query);
-          if (matchScore > 0.2) {
-            allSuggestions.push({
-              id: `location-${suggestion.text}`,
-              type: 'location',
-              text: suggestion.text,
-              description: `Filter by ${suggestion.text.toLowerCase()}`,
-              icon: suggestion.icon,
-              color: suggestion.color,
-              priority: priority--,
-              matchScore,
-              category: 'Locations'
-            });
-          }
-        });
-      }
-
-      // Action suggestions
-      if (queryLower.includes('call') || queryLower.includes('email') || queryLower.includes('schedule') || 
-          queryLower.includes('follow') || queryLower.includes('send')) {
-        intelligentSuggestions.actions.forEach(suggestion => {
-          const matchScore = calculateMatchScore(suggestion.text, query);
-          if (matchScore > 0.3) {
-            allSuggestions.push({
-              id: `action-${suggestion.text}`,
-              type: 'action',
-              text: suggestion.text,
-              description: `Quick action: ${suggestion.text.toLowerCase()}`,
-              icon: suggestion.icon,
-              color: suggestion.color,
-              priority: priority--,
-              matchScore,
-              category: 'Actions'
-            });
-          }
-        });
-      }
-
-      // Revenue and insights suggestions
-      if (queryLower.includes('revenue') || queryLower.includes('money') || queryLower.includes('profit') || 
-          queryLower.includes('opportunity') || queryLower.includes('high') || queryLower.includes('value')) {
-        intelligentSuggestions.insights.forEach(suggestion => {
-          const matchScore = calculateMatchScore(suggestion.text, query);
-          if (matchScore > 0.2) {
-            allSuggestions.push({
-              id: `insight-${suggestion.text}`,
-              type: 'insight',
-              text: suggestion.text,
-              description: `Search for ${suggestion.text.toLowerCase()}`,
-              icon: suggestion.icon,
-              color: suggestion.color,
-              priority: priority--,
-              matchScore,
-              category: 'Insights'
-            });
-          }
-        });
-      }
-
-      // Add AI-generated contextual suggestions
-      const contextualSuggestions = generateContextualSuggestions(query);
-      allSuggestions.push(...contextualSuggestions);
-
-      // Sort by priority and match score
-      const sortedSuggestions = allSuggestions
-        .sort((a, b) => (b.matchScore * b.priority) - (a.matchScore * a.priority))
-        .slice(0, 8);
-
-      setSuggestions(sortedSuggestions);
-
-      // Generate AI insights for the search
-      const insights = await generateAIInsights(query);
-      setAiInsights(insights);
+      toast({
+        title: "Search Complete",
+        description: `Found ${filtered.length} matching contacts`,
+      });
 
     } catch (error) {
-      console.error('Error generating suggestions:', error);
+      toast({
+        title: "Search Error",
+        description: "Failed to search contacts",
+        variant: "destructive"
+      });
     } finally {
-      setIsLoading(false);
+      setIsSearching(false);
     }
   };
 
-  const calculateMatchScore = (text: string, query: string): number => {
-    const textLower = text.toLowerCase();
-    const queryLower = query.toLowerCase();
-    
-    // Exact match
-    if (textLower.includes(queryLower)) return 1.0;
-    
-    // Word overlap
-    const textWords = textLower.split(' ');
-    const queryWords = queryLower.split(' ');
-    const overlap = queryWords.filter(word => textWords.some(textWord => textWord.includes(word))).length;
-    
-    return overlap / queryWords.length;
-  };
-
-  const generateContextualSuggestions = (query: string): SearchSuggestion[] => {
-    const contextual: SearchSuggestion[] = [];
-    
-    // Smart phone number detection
-    if (/\d{3}[\s\-]?\d{3}[\s\-]?\d{4}/.test(query)) {
-      contextual.push({
-        id: 'phone-search',
-        type: 'contact',
-        text: `Search by phone: ${query}`,
-        description: 'Find contact with this phone number',
-        icon: Phone,
-        color: 'bg-blue-100 text-blue-800 border-blue-200',
-        priority: 200,
-        matchScore: 1.0,
-        category: 'Smart Detection'
-      });
+  // Handle suggestion click
+  const handleSuggestionClick = (suggestion: AISuggestion) => {
+    if (suggestion.searchQuery) {
+      setSearchQuery(suggestion.searchQuery);
+      performSearch(suggestion.searchQuery);
+    } else if (suggestion.actionType) {
+      // Handle different action types
+      switch (suggestion.actionType) {
+        case 'filter_phone':
+          const phoneContacts = contacts.filter((c: Contact) => c.phone);
+          setSearchResults(phoneContacts);
+          break;
+        case 'filter_followup':
+          // Filter contacts that need follow-up
+          const followUpContacts = contacts.filter((c: Contact) => 
+            c.leadStatus === 'contacted' || c.leadStatus === 'qualified'
+          );
+          setSearchResults(followUpContacts);
+          break;
+        case 'analytics':
+          onNavigate?.('/analytics');
+          onClose();
+          break;
+        case 'priority_analysis':
+          // Show high-priority contacts
+          const priorityContacts = contacts.filter((c: Contact) => 
+            c.priority === 'high' || (c.dealValue && c.dealValue > 3000)
+          );
+          setSearchResults(priorityContacts);
+          break;
+      }
     }
-
-    // Email detection
-    if (query.includes('@')) {
-      contextual.push({
-        id: 'email-search',
-        type: 'contact',
-        text: `Search by email: ${query}`,
-        description: 'Find contact with this email',
-        icon: Mail,
-        color: 'bg-green-100 text-green-800 border-green-200',
-        priority: 200,
-        matchScore: 1.0,
-        category: 'Smart Detection'
-      });
-    }
-
-    // Revenue amount detection
-    if (/\$[\d,]+/.test(query)) {
-      contextual.push({
-        id: 'revenue-search',
-        type: 'insight',
-        text: `Revenue filter: ${query}`,
-        description: 'Find prospects with this revenue range',
-        icon: DollarSign,
-        color: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-        priority: 180,
-        matchScore: 1.0,
-        category: 'Smart Detection'
-      });
-    }
-
-    return contextual;
-  };
-
-  const generateAIInsights = async (query: string): Promise<AISearchInsight[]> => {
-    // Simulate AI-powered insights generation
-    const insights: AISearchInsight[] = [];
-    
-    const queryLower = query.toLowerCase();
-    
-    if (queryLower.includes('hvac') || queryLower.includes('heating') || queryLower.includes('cooling')) {
-      insights.push({
-        suggestion: "HVAC companies typically have highest conversion rates in fall/winter seasons",
-        reasoning: "Historical data shows increased demand during temperature extremes",
-        confidence: 0.87,
-        actionable: true
-      });
-    }
-    
-    if (queryLower.includes('high') && queryLower.includes('revenue')) {
-      insights.push({
-        suggestion: "Focus on companies with $75K+ monthly revenue for better ROI",
-        reasoning: "These prospects have larger marketing budgets and decision-making authority",
-        confidence: 0.92,
-        actionable: true
-      });
-    }
-    
-    if (queryLower.includes('follow') || queryLower.includes('call')) {
-      insights.push({
-        suggestion: "Best calling times: Tuesdays-Thursdays, 10 AM - 12 PM local time",
-        reasoning: "Analysis of 500+ successful calls shows optimal connection rates",
-        confidence: 0.84,
-        actionable: true
-      });
-    }
-
-    return insights;
-  };
-
-  const handleSuggestionClick = (suggestion: SearchSuggestion) => {
-    setSearchQuery(suggestion.text);
-    executeSearch(suggestion.text, suggestion);
-    addToRecentSearches(suggestion.text);
-    setShowSuggestions(false);
 
     toast({
-      title: "Smart Search Applied",
-      description: `Searching for: ${suggestion.text}`,
+      title: "AI Suggestion Applied",
+      description: `Applied: ${suggestion.label}`,
     });
   };
 
-  const executeSearch = (query: string, suggestion?: SearchSuggestion) => {
-    setIsLoading(true);
-    
-    try {
-      // Client-side search through contacts
-      const queryLower = query.toLowerCase();
-      let filteredResults: Contact[] = [];
-      
-      if (suggestion?.type === 'contact') {
-        // Search contacts by name, email, phone
-        filteredResults = allContacts.filter(contact => 
-          contact.firstName?.toLowerCase().includes(queryLower) ||
-          contact.lastName?.toLowerCase().includes(queryLower) ||
-          contact.email?.toLowerCase().includes(queryLower) ||
-          contact.phone?.includes(queryLower) ||
-          contact.notes?.toLowerCase().includes(queryLower)
-        );
-      } else if (suggestion?.type === 'company') {
-        // Search by company/industry
-        filteredResults = allContacts.filter(contact => 
-          contact.company?.toLowerCase().includes(queryLower) ||
-          contact.position?.toLowerCase().includes(queryLower) ||
-          contact.notes?.toLowerCase().includes(queryLower)
-        );
-      } else if (suggestion?.type === 'location') {
-        // Search by location
-        filteredResults = allContacts.filter(contact => 
-          contact.notes?.toLowerCase().includes(queryLower) ||
-          contact.company?.toLowerCase().includes(queryLower)
-        );
-      } else if (suggestion?.type === 'insight') {
-        // Revenue-based filtering
-        if (queryLower.includes('revenue') || queryLower.includes('50k') || queryLower.includes('$')) {
-          filteredResults = allContacts.filter(contact => 
-            contact.dealValue && contact.dealValue > 50000
-          );
-        } else {
-          filteredResults = allContacts.filter(contact => 
-            contact.notes?.toLowerCase().includes(queryLower)
-          );
-        }
-      } else {
-        // General search
-        filteredResults = allContacts.filter(contact => 
-          contact.firstName?.toLowerCase().includes(queryLower) ||
-          contact.lastName?.toLowerCase().includes(queryLower) ||
-          contact.email?.toLowerCase().includes(queryLower) ||
-          contact.phone?.includes(queryLower) ||
-          contact.company?.toLowerCase().includes(queryLower) ||
-          contact.position?.toLowerCase().includes(queryLower) ||
-          contact.notes?.toLowerCase().includes(queryLower)
-        );
-      }
-      
-      setSearchResults(filteredResults);
-    } catch (error) {
-      console.error('Search error:', error);
-      toast({
-        title: "Search Error",
-        description: "Failed to execute search. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const addToRecentSearches = (search: string) => {
-    const updated = [search, ...recentSearches.filter(s => s !== search)].slice(0, 5);
-    setRecentSearches(updated);
-    localStorage.setItem('starz-recent-searches', JSON.stringify(updated));
-  };
-
-  const clearSearch = () => {
-    setSearchQuery('');
-    setShowSuggestions(false);
-    setSuggestions([]);
-    setSearchResults([]);
-    setAiInsights([]);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && searchQuery.trim()) {
-      executeSearch(searchQuery);
-      addToRecentSearches(searchQuery);
-      setShowSuggestions(false);
-    } else if (e.key === 'Escape') {
-      setShowSuggestions(false);
+  // Get suggestion type color
+  const getSuggestionTypeColor = (type: string) => {
+    switch (type) {
+      case 'contacts': return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'companies': return 'bg-green-100 text-green-700 border-green-200';
+      case 'locations': return 'bg-purple-100 text-purple-700 border-purple-200';
+      case 'actions': return 'bg-orange-100 text-orange-700 border-orange-200';
+      case 'insights': return 'bg-pink-100 text-pink-700 border-pink-200';
+      case 'quick_filters': return 'bg-indigo-100 text-indigo-700 border-indigo-200';
+      default: return 'bg-gray-100 text-gray-700 border-gray-200';
     }
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-4">
-      {/* Smart Search Input */}
-      <Card className="border-2 border-orange-200">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Brain className="h-6 w-6 text-orange-600" />
-            <h2 className="text-xl font-bold text-gray-900">AI-Powered Smart Search</h2>
-            <Sparkles className="h-5 w-5 text-yellow-500" />
-          </div>
-          
-          <div className="relative">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-              <Input
-                ref={searchInputRef}
-                type="text"
-                placeholder="Search contacts, companies, or ask for insights..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={handleKeyPress}
-                onFocus={() => searchQuery && setShowSuggestions(true)}
-                className="pl-10 pr-12 h-12 text-lg border-gray-300 focus:border-orange-500"
-              />
-              {searchQuery && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Brain className="h-5 w-5 text-blue-600" />
+            Smart Search with AI Suggestions
+            <Zap className="h-4 w-4 text-yellow-500" />
+          </DialogTitle>
+        </DialogHeader>
+
+        {/* Search Input */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            ref={searchInputRef}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                performSearch(searchQuery);
+              }
+            }}
+            placeholder="Search contacts, companies, or ask AI for insights..."
+            className="pl-10 pr-10 h-12 text-lg"
+          />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearchQuery('');
+                setSearchResults([]);
+              }}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+
+        {/* AI Suggestions */}
+        {suggestions.length > 0 && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Brain className="h-4 w-4 text-blue-600" />
+              <span className="text-sm font-medium">AI-Powered Suggestions</span>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {suggestions.map((suggestion) => (
+                <Button
+                  key={suggestion.id}
+                  variant="outline"
+                  onClick={() => handleSuggestionClick(suggestion)}
+                  className={`h-auto p-3 flex flex-col items-start gap-1 ${getSuggestionTypeColor(suggestion.type)}`}
                 >
-                  <X className="h-5 w-5" />
-                </button>
-              )}
-            </div>
-
-            {/* AI Suggestions Dropdown */}
-            {showSuggestions && (suggestions.length > 0 || isLoading) && (
-              <Card className="absolute top-full left-0 right-0 mt-2 z-50 shadow-xl border-2 border-orange-100">
-                <CardContent className="p-4">
-                  {isLoading ? (
-                    <div className="flex items-center justify-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-600"></div>
-                      <span className="ml-2 text-gray-600">Generating smart suggestions...</span>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {/* Grouped Suggestions */}
-                      {['Smart Detection', 'Contacts', 'Industries', 'Locations', 'Actions', 'Insights'].map(category => {
-                        const categorySuggestions = suggestions.filter(s => s.category === category);
-                        if (categorySuggestions.length === 0) return null;
-                        
-                        return (
-                          <div key={category}>
-                            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-                              {category}
-                            </h4>
-                            <div className="space-y-1">
-                              {categorySuggestions.map((suggestion) => {
-                                const IconComponent = suggestion.icon;
-                                return (
-                                  <button
-                                    key={suggestion.id}
-                                    onClick={() => handleSuggestionClick(suggestion)}
-                                    className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors text-left group"
-                                  >
-                                    <div className={`p-1.5 rounded-md ${suggestion.color}`}>
-                                      <IconComponent className="h-4 w-4" />
-                                    </div>
-                                    <div className="flex-1">
-                                      <div className="font-medium text-gray-900 group-hover:text-orange-600">
-                                        {suggestion.text}
-                                      </div>
-                                      {suggestion.description && (
-                                        <div className="text-xs text-gray-500">
-                                          {suggestion.description}
-                                        </div>
-                                      )}
-                                    </div>
-                                    <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-orange-600" />
-                                  </button>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* AI Insights */}
-      {aiInsights.length > 0 && (
-        <Card className="border border-blue-200 bg-blue-50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Lightbulb className="h-5 w-5 text-blue-600" />
-              <h3 className="font-semibold text-blue-900">AI Insights</h3>
-            </div>
-            <div className="space-y-3">
-              {aiInsights.map((insight, index) => (
-                <div key={index} className="bg-white p-3 rounded-lg border border-blue-200">
-                  <div className="flex items-start justify-between mb-2">
-                    <p className="text-sm font-medium text-gray-900">{insight.suggestion}</p>
-                    <Badge className="bg-blue-100 text-blue-800 text-xs">
-                      {Math.round(insight.confidence * 100)}% confident
-                    </Badge>
+                  <div className="flex items-center gap-2 w-full">
+                    {suggestion.icon}
+                    <span className="text-xs font-medium truncate">
+                      {suggestion.label}
+                    </span>
+                    {suggestion.count !== undefined && (
+                      <Badge variant="secondary" className="text-xs">
+                        {suggestion.count}
+                      </Badge>
+                    )}
                   </div>
-                  <p className="text-xs text-gray-600 mb-2">{insight.reasoning}</p>
-                  {insight.actionable && (
-                    <Badge className="bg-green-100 text-green-800 text-xs">
-                      Actionable Insight
-                    </Badge>
-                  )}
-                </div>
+                  <span className="text-xs opacity-70 text-left line-clamp-2">
+                    {suggestion.description}
+                  </span>
+                  <div className="flex items-center gap-1 mt-1">
+                    <div className="w-1 h-1 bg-current rounded-full opacity-50" />
+                    <span className="text-xs opacity-50">
+                      {Math.round(suggestion.confidence * 100)}% match
+                    </span>
+                  </div>
+                </Button>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
 
-      {/* Recent Searches */}
-      {recentSearches.length > 0 && !showSuggestions && (
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <History className="h-4 w-4 text-gray-500" />
-              <h3 className="text-sm font-medium text-gray-700">Recent Searches</h3>
+        {/* Recent Searches */}
+        {recentSearches.length > 0 && !searchQuery && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-gray-500" />
+              <span className="text-sm font-medium">Recent Searches</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {recentSearches.map((search, index) => (
-                <Badge
+                <Button
                   key={index}
-                  variant="secondary"
-                  className="cursor-pointer hover:bg-orange-100 hover:text-orange-800"
+                  variant="outline"
+                  size="sm"
                   onClick={() => {
                     setSearchQuery(search);
-                    executeSearch(search);
+                    performSearch(search);
                   }}
+                  className="text-xs"
                 >
                   {search}
-                </Badge>
+                </Button>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
 
-      {/* Search Results */}
-      {searchResults.length > 0 && (
-        <Card>
-          <CardContent className="p-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Search Results ({searchResults.length})
-            </h3>
-            <div className="space-y-3">
-              {searchResults.slice(0, 5).map((result, index) => (
-                <div key={index} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50">
-                  <Users className="h-5 w-5 text-gray-400" />
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900">
-                      {result.firstName} {result.lastName}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {result.company} • {result.email}
-                    </div>
-                  </div>
-                  <Button size="sm" variant="outline">
-                    View Contact
-                  </Button>
-                </div>
-              ))}
+        {/* Search Results */}
+        {(searchResults.length > 0 || isSearching) && (
+          <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium">
+                {isSearching ? 'Searching...' : `${searchResults.length} Results Found`}
+              </span>
+              {searchResults.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    // Export or view all results
+                    toast({
+                      title: "Results Ready",
+                      description: `${searchResults.length} contacts ready for export`,
+                    });
+                  }}
+                >
+                  Export Results
+                </Button>
+              )}
             </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+
+            <div className="grid gap-2">
+              {searchResults.slice(0, 10).map((contact) => (
+                <Card key={contact.id} className="p-3">
+                  <CardContent className="p-0">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-medium">
+                          {contact.firstName} {contact.lastName}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {contact.company && (
+                            <span>{contact.company} • </span>
+                          )}
+                          {contact.position}
+                        </div>
+                        <div className="text-xs text-gray-500 flex items-center gap-2">
+                          {contact.phone && (
+                            <span className="flex items-center gap-1">
+                              <Phone className="h-3 w-3" />
+                              {contact.phone}
+                            </span>
+                          )}
+                          {contact.email && (
+                            <span className="flex items-center gap-1">
+                              <Mail className="h-3 w-3" />
+                              {contact.email}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        {contact.leadStatus && (
+                          <Badge variant="outline" className="text-xs">
+                            {contact.leadStatus}
+                          </Badge>
+                        )}
+                        {contact.dealValue && (
+                          <Badge variant="secondary" className="text-xs">
+                            ${contact.dealValue.toLocaleString()}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              
+              {searchResults.length > 10 && (
+                <Card className="p-3 text-center">
+                  <CardContent className="p-0">
+                    <span className="text-sm text-gray-600">
+                      +{searchResults.length - 10} more results
+                    </span>
+                    <Button
+                      variant="link"
+                      size="sm"
+                      onClick={() => {
+                        // Show all results or navigate to full view
+                        onNavigate?.('/crm');
+                        onClose();
+                      }}
+                    >
+                      View All in CRM
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {searchQuery && !isSearching && searchResults.length === 0 && (
+          <div className="text-center py-8">
+            <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600 mb-2">No results found for "{searchQuery}"</p>
+            <p className="text-sm text-gray-500">
+              Try adjusting your search terms or use AI suggestions above
+            </p>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }

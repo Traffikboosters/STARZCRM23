@@ -51,7 +51,7 @@ import MoodTracker from "@/components/mood-tracker";
 import SalesRepDashboard from "@/components/sales-rep-dashboard";
 import { HighRevenueProspects } from "@/components/high-revenue-prospects-clean";
 import { DepartmentManagement } from "@/components/department-management";
-import { SmartSearchAI } from "@/components/smart-search-ai";
+import SmartSearchAI from "@/components/smart-search-ai";
 import SoldLeadsView from "@/components/sold-leads-view";
 import WhatsAppBusiness from "@/components/whatsapp-business-clean";
 import { LiveExtractionHistory } from "@/components/live-extraction-history";

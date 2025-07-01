@@ -2716,6 +2716,149 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  // Smart Search AI Suggestions API
+  app.get("/api/smart-search/suggestions", async (req, res) => {
+    try {
+      const { query } = req.query as { query?: string };
+      const contacts = await storage.getAllContacts();
+      
+      // Generate AI-powered search suggestions based on query
+      const suggestions = [];
+      
+      if (query && query.length > 0) {
+        const queryLower = query.toLowerCase();
+        
+        // Contact suggestions
+        const matchingContacts = contacts.filter((c: any) => 
+          c.firstName?.toLowerCase().includes(queryLower) ||
+          c.lastName?.toLowerCase().includes(queryLower) ||
+          c.company?.toLowerCase().includes(queryLower) ||
+          c.email?.toLowerCase().includes(queryLower)
+        ).slice(0, 5);
+        
+        matchingContacts.forEach((contact: any) => {
+          suggestions.push({
+            id: `contact-${contact.id}`,
+            type: 'contacts',
+            icon: 'User',
+            label: `${contact.firstName} ${contact.lastName}`,
+            description: `${contact.company || 'Unknown Company'} - ${contact.phone || 'No phone'}`,
+            confidence: 0.9,
+            searchQuery: `${contact.firstName} ${contact.lastName}`,
+            actionType: 'view_contact',
+            count: 1
+          });
+        });
+        
+        // Company suggestions
+        const companies = [...new Set(contacts.map((c: any) => c.company).filter(Boolean))];
+        const matchingCompanies = companies.filter((company: string) => 
+          company.toLowerCase().includes(queryLower)
+        ).slice(0, 3);
+        
+        matchingCompanies.forEach((company: string) => {
+          const companyContacts = contacts.filter((c: any) => c.company === company);
+          suggestions.push({
+            id: `company-${company}`,
+            type: 'companies',
+            icon: 'Building',
+            label: company,
+            description: `${companyContacts.length} contact${companyContacts.length !== 1 ? 's' : ''}`,
+            confidence: 0.8,
+            searchQuery: company,
+            actionType: 'filter_company',
+            count: companyContacts.length
+          });
+        });
+        
+        // Location suggestions
+        const locations = [...new Set(contacts.map((c: any) => {
+          if (c.notes) {
+            const locationMatch = c.notes.match(/([A-Z][a-z]+,?\s*[A-Z]{2})/);
+            return locationMatch ? locationMatch[1] : null;
+          }
+          return null;
+        }).filter(Boolean))];
+        
+        const matchingLocations = locations.filter((location: string) => 
+          location.toLowerCase().includes(queryLower)
+        ).slice(0, 3);
+        
+        matchingLocations.forEach((location: string) => {
+          suggestions.push({
+            id: `location-${location}`,
+            type: 'locations',
+            icon: 'MapPin',
+            label: location,
+            description: `Leads in this area`,
+            confidence: 0.7,
+            searchQuery: location,
+            actionType: 'filter_location',
+            count: 1
+          });
+        });
+      }
+      
+      // Add general action suggestions
+      suggestions.push({
+        id: 'action-new-leads',
+        type: 'actions',
+        icon: 'UserPlus',
+        label: 'View Recent Leads',
+        description: 'Show leads from last 24 hours',
+        confidence: 0.6,
+        actionType: 'filter_recent',
+        count: contacts.filter((c: any) => {
+          const createdAt = new Date(c.createdAt);
+          const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+          return createdAt > dayAgo;
+        }).length
+      });
+      
+      suggestions.push({
+        id: 'action-high-value',
+        type: 'actions',
+        icon: 'DollarSign',
+        label: 'High-Value Prospects',
+        description: 'Leads with deal value > $5,000',
+        confidence: 0.6,
+        actionType: 'filter_high_value',
+        count: contacts.filter((c: any) => (c.dealValue || 0) > 5000).length
+      });
+      
+      // Add insights
+      const totalContacts = contacts.length;
+      const newLeads = contacts.filter((c: any) => c.leadStatus === 'new').length;
+      const highPriority = contacts.filter((c: any) => c.priority === 'high').length;
+      
+      suggestions.push({
+        id: 'insight-summary',
+        type: 'insights',
+        icon: 'BarChart3',
+        label: 'Lead Overview',
+        description: `${totalContacts} total, ${newLeads} new, ${highPriority} high priority`,
+        confidence: 1.0,
+        actionType: 'show_dashboard',
+        count: totalContacts
+      });
+      
+      res.json({
+        suggestions: suggestions.slice(0, 8), // Limit to 8 suggestions
+        totalResults: suggestions.length,
+        query: query || '',
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      console.error('Smart search error:', error);
+      res.status(500).json({ 
+        suggestions: [],
+        totalResults: 0,
+        error: 'Failed to generate search suggestions'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // Set up WebSocket server with proper connection handling

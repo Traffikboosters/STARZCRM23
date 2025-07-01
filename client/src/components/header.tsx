@@ -22,6 +22,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import SmartSearchAI from "@/components/smart-search-ai";
 
 interface HeaderProps {
   onTabChange?: (tab: string) => void;
@@ -33,6 +34,7 @@ export default function Header({ onTabChange }: HeaderProps) {
   const [isCompanyOpen, setIsCompanyOpen] = useState(false);
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
+  const [showSmartSearch, setShowSmartSearch] = useState(false);
   const { toast } = useToast();
 
   const { data: user } = useQuery({
@@ -142,88 +144,38 @@ export default function Header({ onTabChange }: HeaderProps) {
         </div>
         
         <div className="flex items-center space-x-2 md:space-x-4 flex-shrink min-w-0">
-          {/* Smart Search functionality */}
+          {/* AI-Powered Smart Search */}
           <div className="relative flex-shrink min-w-0 hidden md:block">
-            <Input
-              type="text"
-              placeholder="AI Smart Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setShowSearchSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && searchQuery.trim()) {
-                  if (onTabChange) {
-                    onTabChange('smart-search');
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="AI Smart Search with suggestions..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setShowSmartSearch(true)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && searchQuery.trim()) {
+                    setShowSmartSearch(true);
                   }
-                  toast({
-                    title: "Smart Search Activated",
-                    description: `Searching for: ${searchQuery}`,
-                  });
-                }
-              }}
-              className="w-32 lg:w-48 pl-10 pr-8 text-sm border-orange-200 focus:border-orange-500"
-            />
-            <Brain className="absolute left-3 top-3 h-4 w-4 text-orange-500" />
-            {searchQuery && (
-              <Zap className="absolute right-3 top-3 h-4 w-4 text-yellow-500" />
-            )}
-            
-            {/* Search Suggestions Dropdown */}
-            {showSearchSuggestions && searchQuery.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-orange-200 rounded-lg shadow-lg z-50">
-                <div className="p-3">
-                  <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
-                    <Brain className="h-3 w-3" />
-                    <span>AI Suggestions</span>
-                  </div>
-                  <div className="space-y-1">
-                    <button
-                      onClick={() => {
-                        if (onTabChange) {
-                          onTabChange('smart-search');
-                        }
-                        setShowSearchSuggestions(false);
-                      }}
-                      className="w-full text-left p-2 hover:bg-orange-50 rounded text-sm flex items-center gap-2"
-                    >
-                      <Search className="h-3 w-3 text-orange-500" />
-                      <span>Search for "{searchQuery}"</span>
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (onTabChange) {
-                          onTabChange('crm');
-                        }
-                        setShowSearchSuggestions(false);
-                      }}
-                      className="w-full text-left p-2 hover:bg-orange-50 rounded text-sm flex items-center gap-2"
-                    >
-                      <User className="h-3 w-3 text-blue-500" />
-                      <span>Find contacts matching "{searchQuery}"</span>
-                    </button>
-                  </div>
-                </div>
+                }}
+                className="pl-10 pr-20 w-60 bg-gray-50 border-gray-300 focus:bg-white"
+              />
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                <Brain className="h-4 w-4 text-blue-500" />
+                <Zap className="h-3 w-3 text-yellow-500" />
               </div>
-            )}
+            </div>
           </div>
           
-          {/* Mobile smart search button */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="md:hidden"
-            onClick={() => {
-              if (onTabChange) {
-                onTabChange('smart-search');
-              }
-              toast({
-                title: "Smart Search",
-                description: "Opening AI-powered search interface...",
-              });
-            }}
+          {/* Mobile Search Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="md:hidden p-2"
+            onClick={() => setShowSmartSearch(true)}
           >
-            <Brain className="h-5 w-5 text-orange-500" />
+            <Search className="h-4 w-4" />
           </Button>
           
           {/* Notifications */}
@@ -509,6 +461,16 @@ export default function Header({ onTabChange }: HeaderProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Smart Search AI Modal */}
+      <SmartSearchAI
+        isOpen={showSmartSearch}
+        onClose={() => setShowSmartSearch(false)}
+        onNavigate={(path) => {
+          onTabChange?.(path.replace('/', ''));
+          setShowSmartSearch(false);
+        }}
+      />
     </header>
   );
 }
