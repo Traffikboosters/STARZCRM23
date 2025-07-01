@@ -1,4 +1,5 @@
 import { db } from "./db";
+import { eq, and, or, like, gte, lte, desc } from "drizzle-orm";
 import { 
   users, companies, contacts, events, files, automations, scrapingJobs, 
   chatMessages, chatConversations, callLogs, campaigns, leadAllocations,
@@ -6,7 +7,8 @@ import {
   contactNotes, leadIntakes, leadEnrichments, enrichmentHistory, extractionHistory,
   technicalProjects, technicalTasks, timeEntries, callRecordings, voiceToneAnalysis,
   callInsights, keyCallMoments, callParticipants, voiceTrendAnalysis,
-  servicePackages, costStructures, profitabilityAnalysis
+  servicePackages, costStructures, profitabilityAnalysis,
+  moodEntries, teamMoodSummaries, moodPerformanceCorrelations
 } from "../shared/schema";
 import type { 
   User, Company, Contact, Event, File, Automation, ScrapingJob,
@@ -15,12 +17,14 @@ import type {
   ContactNote, LeadIntake, LeadEnrichment, EnrichmentHistory, ExtractionHistory,
   TechnicalProject, TechnicalTask, TimeEntry, CallRecording, VoiceToneAnalysis,
   CallInsight, KeyCallMoment, CallParticipant, VoiceTrendAnalysis,
+  MoodEntry, TeamMoodSummary, MoodPerformanceCorrelation,
   InsertUser, InsertCompany, InsertContact, InsertEvent, InsertFile, InsertAutomation, InsertScrapingJob,
   InsertChatMessage, InsertChatConversation, InsertCallLog, InsertCampaign, InsertLeadAllocation,
   InsertDocumentTemplate, InsertSigningRequest, InsertUserInvitation,
   InsertContactNote, InsertLeadIntake, InsertLeadEnrichment, InsertEnrichmentHistory, InsertExtractionHistory,
   InsertTechnicalProject, InsertTechnicalTask, InsertTimeEntry, InsertCallRecording, InsertVoiceToneAnalysis,
-  InsertCallInsight, InsertKeyCallMoment, InsertCallParticipant, InsertVoiceTrendAnalysis
+  InsertCallInsight, InsertKeyCallMoment, InsertCallParticipant, InsertVoiceTrendAnalysis,
+  InsertMoodEntry, InsertTeamMoodSummary, InsertMoodPerformanceCorrelation
 } from "../shared/schema";
 import { eq, like, or, and, gte, lte, desc } from "drizzle-orm";
 
@@ -87,6 +91,17 @@ export interface IStorage {
   // Pricing and proposals
   getPricingProposals(): Promise<any[]>;
   createPricingProposal(proposal: any): Promise<any>;
+  
+  // Mood tracking
+  createMoodEntry(entry: InsertMoodEntry): Promise<MoodEntry>;
+  getMoodEntriesByUser(userId: number, limit?: number): Promise<MoodEntry[]>;
+  getMoodEntriesByDateRange(startDate: Date, endDate: Date): Promise<MoodEntry[]>;
+  getTeamMoodSummary(date: Date): Promise<TeamMoodSummary | undefined>;
+  createTeamMoodSummary(summary: InsertTeamMoodSummary): Promise<TeamMoodSummary>;
+  createMoodPerformanceCorrelation(correlation: InsertMoodPerformanceCorrelation): Promise<MoodPerformanceCorrelation>;
+  getMoodPerformanceCorrelations(userId: number): Promise<MoodPerformanceCorrelation[]>;
+  getAverageMoodByUser(userId: number, days: number): Promise<number>;
+  getTeamMoodTrends(days: number): Promise<TeamMoodSummary[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -292,6 +307,91 @@ export class DatabaseStorage implements IStorage {
   
   async getPricingProposals(): Promise<any[]> { return []; }
   async createPricingProposal(proposal: any): Promise<any> { return { id: Date.now(), ...proposal, createdAt: new Date() }; }
+  
+  // Mood tracking implementation
+  async createMoodEntry(entry: InsertMoodEntry): Promise<MoodEntry> {
+    const [moodEntry] = await db
+      .insert(moodEntries)
+      .values(entry)
+      .returning();
+    return moodEntry;
+  }
+
+  async getMoodEntriesByUser(userId: number, limit = 30): Promise<MoodEntry[]> {
+    return await db
+      .select()
+      .from(moodEntries)
+      .where(eq(moodEntries.userId, userId))
+      .orderBy(desc(moodEntries.entryDate))
+      .limit(limit);
+  }
+
+  async getMoodEntriesByDateRange(startDate: Date, endDate: Date): Promise<MoodEntry[]> {
+    return await db
+      .select()
+      .from(moodEntries)
+      .where(and(
+        gte(moodEntries.entryDate, startDate),
+        lte(moodEntries.entryDate, endDate)
+      ))
+      .orderBy(desc(moodEntries.entryDate));
+  }
+
+  async getTeamMoodSummary(date: Date): Promise<TeamMoodSummary | undefined> {
+    const [summary] = await db
+      .select()
+      .from(teamMoodSummaries)
+      .where(eq(teamMoodSummaries.summaryDate, date));
+    return summary || undefined;
+  }
+
+  async createTeamMoodSummary(summary: InsertTeamMoodSummary): Promise<TeamMoodSummary> {
+    const [teamSummary] = await db
+      .insert(teamMoodSummaries)
+      .values(summary)
+      .returning();
+    return teamSummary;
+  }
+
+  async createMoodPerformanceCorrelation(correlation: InsertMoodPerformanceCorrelation): Promise<MoodPerformanceCorrelation> {
+    const [moodCorrelation] = await db
+      .insert(moodPerformanceCorrelations)
+      .values(correlation)
+      .returning();
+    return moodCorrelation;
+  }
+
+  async getMoodPerformanceCorrelations(userId: number): Promise<MoodPerformanceCorrelation[]> {
+    return await db
+      .select()
+      .from(moodPerformanceCorrelations)
+      .where(eq(moodPerformanceCorrelations.userId, userId))
+      .orderBy(desc(moodPerformanceCorrelations.correlationDate));
+  }
+
+  async getAverageMoodByUser(userId: number, days: number): Promise<number> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    
+    const entries = await this.getMoodEntriesByDateRange(startDate, new Date());
+    const userEntries = entries.filter(entry => entry.userId === userId);
+    
+    if (userEntries.length === 0) return 5; // Default neutral mood
+    
+    const total = userEntries.reduce((sum, entry) => sum + entry.moodScore, 0);
+    return Math.round((total / userEntries.length) * 10) / 10; // Round to 1 decimal
+  }
+
+  async getTeamMoodTrends(days: number): Promise<TeamMoodSummary[]> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    
+    return await db
+      .select()
+      .from(teamMoodSummaries)
+      .where(gte(teamMoodSummaries.summaryDate, startDate))
+      .orderBy(desc(teamMoodSummaries.summaryDate));
+  }
 }
 
 export const storage = new DatabaseStorage();

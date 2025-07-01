@@ -2325,6 +2325,96 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  // Mood tracking endpoints
+  app.post("/api/mood-entries", async (req, res) => {
+    try {
+      const moodEntry = await storage.createMoodEntry(req.body);
+      res.json(moodEntry);
+    } catch (error) {
+      console.error('Error creating mood entry:', error);
+      res.status(500).json({ message: "Failed to create mood entry" });
+    }
+  });
+
+  app.get("/api/mood-entries/user/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      const entries = await storage.getMoodEntriesByUser(userId, limit);
+      res.json(entries);
+    } catch (error) {
+      console.error('Error getting mood entries:', error);
+      res.status(500).json({ message: "Failed to get mood entries" });
+    }
+  });
+
+  app.get("/api/mood-entries/date-range", async (req, res) => {
+    try {
+      const startDate = new Date(req.query.startDate as string);
+      const endDate = new Date(req.query.endDate as string);
+      const entries = await storage.getMoodEntriesByDateRange(startDate, endDate);
+      res.json(entries);
+    } catch (error) {
+      console.error('Error getting mood entries by date range:', error);
+      res.status(500).json({ message: "Failed to get mood entries" });
+    }
+  });
+
+  app.get("/api/team-mood-summary/:date", async (req, res) => {
+    try {
+      const date = new Date(req.params.date);
+      const summary = await storage.getTeamMoodSummary(date);
+      res.json(summary);
+    } catch (error) {
+      console.error('Error getting team mood summary:', error);
+      res.status(500).json({ message: "Failed to get team mood summary" });
+    }
+  });
+
+  app.post("/api/team-mood-summary", async (req, res) => {
+    try {
+      const summary = await storage.createTeamMoodSummary(req.body);
+      res.json(summary);
+    } catch (error) {
+      console.error('Error creating team mood summary:', error);
+      res.status(500).json({ message: "Failed to create team mood summary" });
+    }
+  });
+
+  app.get("/api/mood-analytics/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const days = req.query.days ? parseInt(req.query.days as string) : 30;
+      
+      const averageMood = await storage.getAverageMoodByUser(userId, days);
+      const correlations = await storage.getMoodPerformanceCorrelations(userId);
+      const recentEntries = await storage.getMoodEntriesByUser(userId, 7);
+      
+      res.json({
+        averageMood,
+        correlations,
+        recentEntries,
+        moodTrend: recentEntries.length > 1 ? 
+          (recentEntries[0].moodScore > recentEntries[recentEntries.length - 1].moodScore ? 'improving' : 'declining') : 
+          'stable'
+      });
+    } catch (error) {
+      console.error('Error getting mood analytics:', error);
+      res.status(500).json({ message: "Failed to get mood analytics" });
+    }
+  });
+
+  app.get("/api/team-mood-trends", async (req, res) => {
+    try {
+      const days = req.query.days ? parseInt(req.query.days as string) : 30;
+      const trends = await storage.getTeamMoodTrends(days);
+      res.json(trends);
+    } catch (error) {
+      console.error('Error getting team mood trends:', error);
+      res.status(500).json({ message: "Failed to get team mood trends" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

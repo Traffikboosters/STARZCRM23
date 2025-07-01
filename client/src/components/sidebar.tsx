@@ -98,6 +98,7 @@ export default function Sidebar({
     { id: "voice-analysis", label: "Voice Tone Analysis", icon: Mic },
     { id: "hr", label: "HR Portal", icon: UserPlus },
     { id: "departments", label: "Department Management", icon: Building2 },
+    { id: "mood-tracker", label: "Mood Tracker", icon: Activity },
     { id: "dual-onboarding", label: "Employee Onboarding", icon: UserCheck },
   ];
 

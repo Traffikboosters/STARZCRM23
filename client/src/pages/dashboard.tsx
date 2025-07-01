@@ -47,6 +47,7 @@ import EmailNotificationTest from "@/components/email-notification-test";
 import TechnicalPortal from "@/components/technical-portal";
 import { VoiceToneAnalysis } from "@/components/voice-tone-analysis";
 import VoiceToneAnalysisEnhanced from "@/components/voice-tone-analysis-enhanced";
+import MoodTracker from "@/components/mood-tracker";
 import SalesRepDashboard from "@/components/sales-rep-dashboard";
 import { HighRevenueProspectsComplete } from "@/components/high-revenue-prospects-complete";
 import { DepartmentManagement } from "@/components/department-management";
@@ -171,6 +172,8 @@ export default function Dashboard() {
         return <DualOnboardingPortal />;
       case "voice-analysis":
         return <VoiceToneAnalysisEnhanced />;
+      case "mood-tracker":
+        return currentUser ? <MoodTracker currentUserId={currentUser.id} /> : <div>Loading...</div>;
       case "whatsapp":
         return <WhatsAppBusiness />;
       case "real-leads":

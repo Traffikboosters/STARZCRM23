@@ -982,6 +982,59 @@ export const paymentMethods = pgTable("payment_methods", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Emoji-based mood tracking for sales performance
+export const moodEntries = pgTable("mood_entries", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  moodEmoji: text("mood_emoji").notNull(), // 😊, 😐, 😟, 😎, 💪, 🔥, 😴, 😤
+  moodLabel: text("mood_label").notNull(), // "Great", "Good", "Okay", "Stressed", "Motivated", etc.
+  moodScore: integer("mood_score").notNull(), // 1-10 numeric scale
+  energyLevel: integer("energy_level").notNull(), // 1-10 scale
+  motivationLevel: integer("motivation_level").notNull(), // 1-10 scale
+  stressLevel: integer("stress_level").notNull(), // 1-10 scale
+  confidenceLevel: integer("confidence_level").notNull(), // 1-10 scale
+  notes: text("notes"), // optional mood notes/context
+  tags: text("tags").array(), // ["morning_slump", "post_sale_high", "rejection_blues", etc.]
+  entryDate: timestamp("entry_date").defaultNow().notNull(),
+  shift: text("shift").notNull(), // "morning", "afternoon", "evening"
+  entryType: text("entry_type").notNull().default("daily"), // "daily", "pre_call", "post_call", "weekly"
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const teamMoodSummaries = pgTable("team_mood_summaries", {
+  id: serial("id").primaryKey(),
+  summaryDate: timestamp("summary_date").notNull(),
+  averageMoodScore: text("average_mood_score").notNull(), // decimal as text
+  averageEnergyLevel: text("average_energy_level").notNull(), // decimal as text
+  averageMotivationLevel: text("average_motivation_level").notNull(), // decimal as text
+  averageStressLevel: text("average_stress_level").notNull(), // decimal as text
+  averageConfidenceLevel: text("average_confidence_level").notNull(), // decimal as text
+  topMoodEmoji: text("top_mood_emoji").notNull(), // most frequent emoji
+  totalEntries: integer("total_entries").notNull(),
+  activeUsers: integer("active_users").notNull(),
+  moodDistribution: json("mood_distribution"), // {emoji: count} pairs
+  trendDirection: text("trend_direction"), // "improving", "declining", "stable"
+  alertLevel: text("alert_level").default("normal"), // "normal", "attention", "concern"
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const moodPerformanceCorrelations = pgTable("mood_performance_correlations", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  moodEntryId: integer("mood_entry_id").references(() => moodEntries.id).notNull(),
+  callsAttempted: integer("calls_attempted").default(0),
+  callsConnected: integer("calls_connected").default(0),
+  appointmentsSet: integer("appointments_set").default(0),
+  salesMade: integer("sales_made").default(0),
+  revenueGenerated: integer("revenue_generated").default(0), // in cents
+  callConnectRate: text("call_connect_rate"), // percentage as text
+  appointmentRate: text("appointment_rate"), // percentage as text
+  salesClosingRate: text("sales_closing_rate"), // percentage as text
+  performanceScore: integer("performance_score"), // 1-100 calculated score
+  correlationDate: timestamp("correlation_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const workOrders = pgTable("work_orders", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
@@ -1144,6 +1197,23 @@ export const insertCallParticipantsSchema = createInsertSchema(callParticipants)
 });
 
 export const insertVoiceTrendAnalysisSchema = createInsertSchema(voiceTrendAnalysis).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Mood tracking insert schemas and types
+export const insertMoodEntrySchema = createInsertSchema(moodEntries).omit({
+  id: true,
+  entryDate: true,
+  createdAt: true,
+});
+
+export const insertTeamMoodSummarySchema = createInsertSchema(teamMoodSummaries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertMoodPerformanceCorrelationSchema = createInsertSchema(moodPerformanceCorrelations).omit({
   id: true,
   createdAt: true,
 });
@@ -1315,6 +1385,14 @@ export type CallParticipants = typeof callParticipants.$inferSelect;
 export type InsertCallParticipants = z.infer<typeof insertCallParticipantsSchema>;
 export type VoiceTrendAnalysis = typeof voiceTrendAnalysis.$inferSelect;
 export type InsertVoiceTrendAnalysis = z.infer<typeof insertVoiceTrendAnalysisSchema>;
+
+// Mood tracking types
+export type MoodEntry = typeof moodEntries.$inferSelect;
+export type InsertMoodEntry = z.infer<typeof insertMoodEntrySchema>;
+export type TeamMoodSummary = typeof teamMoodSummaries.$inferSelect;
+export type InsertTeamMoodSummary = z.infer<typeof insertTeamMoodSummarySchema>;
+export type MoodPerformanceCorrelation = typeof moodPerformanceCorrelations.$inferSelect;
+export type InsertMoodPerformanceCorrelation = z.infer<typeof insertMoodPerformanceCorrelationSchema>;
 
 export const customerTestimonials = pgTable("customer_testimonials", {
   id: serial("id").primaryKey(),
