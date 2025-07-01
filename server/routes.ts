@@ -669,6 +669,96 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  // STARZ Dialer MightyCall API endpoint for actual outbound calls
+  app.post('/api/mightycall/starz-call', async (req, res) => {
+    try {
+      const { phoneNumber, contactName, userId, dialerType } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ error: 'Phone number is required' });
+      }
+
+      // Generate unique call ID
+      const callId = `starz_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      // Clean phone number for dialing
+      const cleanNumber = phoneNumber.replace(/\D/g, '');
+      let formattedNumber = cleanNumber;
+      
+      // Add country code if missing (US numbers)
+      if (cleanNumber.length === 10) {
+        formattedNumber = `1${cleanNumber}`;
+      }
+      
+      // Log the call attempt with enhanced details
+      console.log(`🔥 STARZ DIALER: Outbound call initiated to ${phoneNumber} (${contactName}) - Call ID: ${callId}`);
+      console.log(`📞 MightyCall Account: 4f917f13-aae1-401d-8241-010db91da5b2`);
+      console.log(`📱 Formatted Number: +${formattedNumber}`);
+      
+      // Try to make actual MightyCall API call
+      const mightyCallResponse = await mightyCallCoreFixed.initiateOutboundCall({
+        phoneNumber: cleanNumber,
+        contactName: contactName || 'Unknown Contact',
+        userId: userId || 1,
+        extension: '501' // Default extension
+      });
+
+      if (mightyCallResponse.success) {
+        console.log(`✅ MightyCall API Success: ${mightyCallResponse.message}`);
+        
+        // Log successful call attempt
+        console.log(`📋 Call logged: ${callId} - ${contactName || 'Unknown Contact'} at ${cleanNumber}`);
+
+        res.json({
+          success: true,
+          callId: callId,
+          phoneNumber: cleanNumber,
+          contactName: contactName || 'Unknown Contact',
+          sipUrl: mightyCallResponse.sipUrl,
+          webDialerUrl: mightyCallResponse.webDialerUrl,
+          dialString: mightyCallResponse.dialString,
+          message: 'Call initiated through MightyCall API',
+          timestamp: new Date().toISOString(),
+          method: mightyCallResponse.method || 'api_call'
+        });
+      } else {
+        // Fallback to device dialer if API fails
+        console.log(`⚠️ MightyCall API failed, using device dialer fallback`);
+        
+        res.json({
+          success: true,
+          callId: callId,
+          phoneNumber: cleanNumber,
+          contactName: contactName || 'Unknown Contact',
+          dialString: `tel:+${formattedNumber}`,
+          message: 'Using device dialer (MightyCall API unavailable)',
+          timestamp: new Date().toISOString(),
+          method: 'device_dialer',
+          fallback: true
+        });
+      }
+
+    } catch (error) {
+      console.error('STARZ Dialer API error:', error);
+      
+      // Always provide fallback response
+      const callId = `fallback_${Date.now()}`;
+      const cleanNumber = req.body.phoneNumber?.replace(/\D/g, '') || '';
+      
+      res.json({
+        success: true,
+        callId: callId,
+        phoneNumber: cleanNumber,
+        contactName: req.body.contactName || 'Unknown Contact',
+        dialString: `tel:+1${cleanNumber}`,
+        message: 'Using device dialer (Error in primary system)',
+        timestamp: new Date().toISOString(),
+        method: 'device_dialer_fallback',
+        error: (error as Error).message
+      });
+    }
+  });
+
   // Lead Source Analytics API
   app.get('/api/analytics/lead-sources/:timeframe?', async (req, res) => {
     try {

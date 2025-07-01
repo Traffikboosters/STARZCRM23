@@ -237,15 +237,19 @@ export default function STARZMightyCallDialer({ contact, onCallEnd }: STARZMight
           });
         }, 1500);
 
+        // For actual outbound calling, also open device dialer
+        const deviceDialString = `tel:+1${dialNumber}`;
+        window.location.href = deviceDialString;
+
         // Simulate call connection with audio
         setTimeout(() => {
           setCurrentCall(prev => prev ? { ...prev, status: 'connected' } : null);
           playCallTone('connect');
           toast({
             title: "Call Connected",
-            description: `Audio channel active with ${contactName}`,
+            description: `Device dialer opened for ${contactName}`,
           });
-        }, 4500);
+        }, 3000);
 
       } else {
         throw new Error('STARZ MightyCall integration failed');
