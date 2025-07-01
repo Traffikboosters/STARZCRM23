@@ -26,6 +26,7 @@ import ContextualSalesCoaching from "@/components/contextual-sales-coaching";
 import AISalesTipGenerator from "@/components/ai-sales-tip-generator";
 import DataTypeFilter from "@/components/data-type-filter";
 import STARZMightyCallDialer from "@/components/starz-mightycall-dialer";
+import RealTimeLeadManager from "@/components/real-time-lead-manager";
 
 
 
@@ -923,6 +924,9 @@ export default function CRMView() {
         Showing {filteredContacts.length} of {contacts.length} contacts
         {hasActiveFilters && " (filtered)"}
       </div>
+
+      {/* Real-Time Lead Manager */}
+      <RealTimeLeadManager />
 
       {/* Enhanced Contact Cards */}
       {isLoading ? (
