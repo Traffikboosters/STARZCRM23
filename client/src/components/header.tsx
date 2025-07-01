@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Bell, ChevronDown, Calendar, User, Building, Settings, LogOut } from "lucide-react";
+import { Search, Bell, ChevronDown, Calendar, User, Building, Settings, LogOut, Brain, Zap } from "lucide-react";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -23,11 +23,16 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
-export default function Header() {
+interface HeaderProps {
+  onTabChange?: (tab: string) => void;
+}
+
+export default function Header({ onTabChange }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isCompanyOpen, setIsCompanyOpen] = useState(false);
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const { toast } = useToast();
 
   const { data: user } = useQuery({
@@ -137,21 +142,88 @@ export default function Header() {
         </div>
         
         <div className="flex items-center space-x-2 md:space-x-4 flex-shrink min-w-0">
-          {/* Search functionality */}
+          {/* Smart Search functionality */}
           <div className="relative flex-shrink min-w-0 hidden md:block">
             <Input
               type="text"
-              placeholder="Search contacts, events..."
+              placeholder="AI Smart Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-32 lg:w-48 pl-10 text-sm"
+              onFocus={() => setShowSearchSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 200)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && searchQuery.trim()) {
+                  if (onTabChange) {
+                    onTabChange('smart-search');
+                  }
+                  toast({
+                    title: "Smart Search Activated",
+                    description: `Searching for: ${searchQuery}`,
+                  });
+                }
+              }}
+              className="w-32 lg:w-48 pl-10 pr-8 text-sm border-orange-200 focus:border-orange-500"
             />
-            <Search className="absolute left-3 top-3 h-4 w-4 text-neutral-light" />
+            <Brain className="absolute left-3 top-3 h-4 w-4 text-orange-500" />
+            {searchQuery && (
+              <Zap className="absolute right-3 top-3 h-4 w-4 text-yellow-500" />
+            )}
+            
+            {/* Search Suggestions Dropdown */}
+            {showSearchSuggestions && searchQuery.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-orange-200 rounded-lg shadow-lg z-50">
+                <div className="p-3">
+                  <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
+                    <Brain className="h-3 w-3" />
+                    <span>AI Suggestions</span>
+                  </div>
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => {
+                        if (onTabChange) {
+                          onTabChange('smart-search');
+                        }
+                        setShowSearchSuggestions(false);
+                      }}
+                      className="w-full text-left p-2 hover:bg-orange-50 rounded text-sm flex items-center gap-2"
+                    >
+                      <Search className="h-3 w-3 text-orange-500" />
+                      <span>Search for "{searchQuery}"</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (onTabChange) {
+                          onTabChange('crm');
+                        }
+                        setShowSearchSuggestions(false);
+                      }}
+                      className="w-full text-left p-2 hover:bg-orange-50 rounded text-sm flex items-center gap-2"
+                    >
+                      <User className="h-3 w-3 text-blue-500" />
+                      <span>Find contacts matching "{searchQuery}"</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           
-          {/* Mobile search button */}
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Search className="h-5 w-5 text-neutral-medium" />
+          {/* Mobile smart search button */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="md:hidden"
+            onClick={() => {
+              if (onTabChange) {
+                onTabChange('smart-search');
+              }
+              toast({
+                title: "Smart Search",
+                description: "Opening AI-powered search interface...",
+              });
+            }}
+          >
+            <Brain className="h-5 w-5 text-orange-500" />
           </Button>
           
           {/* Notifications */}

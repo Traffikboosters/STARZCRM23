@@ -50,6 +50,7 @@ import VoiceToneAnalysisEnhanced from "@/components/voice-tone-analysis-enhanced
 import SalesRepDashboard from "@/components/sales-rep-dashboard";
 import { HighRevenueProspectsComplete } from "@/components/high-revenue-prospects-complete";
 import { DepartmentManagement } from "@/components/department-management";
+import { SmartSearchAI } from "@/components/smart-search-ai";
 import SoldLeadsView from "@/components/sold-leads-view";
 import WhatsAppBusiness from "@/components/whatsapp-business-clean";
 import { LiveExtractionHistory } from "@/components/live-extraction-history";
@@ -76,6 +77,8 @@ export default function Dashboard() {
 
   const renderMainContent = () => {
     switch (activeTab) {
+      case "smart-search":
+        return <SmartSearchAI />;
       case "calendar":
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
       case "crm":
@@ -181,7 +184,7 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-neutral-lightest">
-      <Header />
+      <Header onTabChange={setActiveTab} />
       
       <div className="flex flex-col lg:flex-row min-h-screen">
         <Sidebar 
