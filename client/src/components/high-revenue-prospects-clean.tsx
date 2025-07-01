@@ -34,6 +34,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
+import ClickToCallButton from '@/components/click-to-call-button';
 import traffikBoostersLogo from '@assets/TRAFIC BOOSTERS3 copy_1751060321835.png';
 
 interface Contact {
@@ -474,15 +475,15 @@ export function HighRevenueProspects() {
 
                   {/* Action Buttons */}
                   <div className="grid grid-cols-4 gap-2 pt-4">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-16 flex-col gap-1"
-                      onClick={() => window.open(`tel:${contact.phone}`, '_self')}
-                    >
-                      <Phone className="h-4 w-4" />
-                      <span className="text-xs">Call</span>
-                    </Button>
+                    <div className="h-16 flex flex-col justify-center">
+                      <ClickToCallButton
+                        phoneNumber={contact.phone || ''}
+                        contactName={`${contact.firstName} ${contact.lastName}`}
+                        variant="outline"
+                        size="sm"
+                        showText={true}
+                      />
+                    </div>
                     
                     <Button
                       size="sm"
