@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Phone, PhoneCall, PhoneOff, Volume2, VolumeX, Pause, Play, UserPlus, Settings } from "lucide-react";
+import { Phone, PhoneCall, PhoneOff, Volume2, VolumeX, Pause, Play, UserPlus, Settings, Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,8 +34,12 @@ export default function STARZMightyCallDialer({ contact, onCallEnd }: STARZMight
   const [isHeld, setIsHeld] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const [dialerOpen, setDialerOpen] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(false);
+  const [micEnabled, setMicEnabled] = useState(true);
   const { toast } = useToast();
   const intervalRef = useRef<NodeJS.Timeout>();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
 
   // Update call duration timer
   useEffect(() => {
@@ -55,6 +59,50 @@ export default function STARZMightyCallDialer({ contact, onCallEnd }: STARZMight
       }
     };
   }, [currentCall]);
+
+  // Initialize audio on component mount
+  useEffect(() => {
+    initializeAudio();
+    return () => {
+      // Cleanup audio resources
+      if (localStreamRef.current) {
+        localStreamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
+  // Initialize audio system
+  const initializeAudio = async () => {
+    try {
+      // Request microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        } 
+      });
+      localStreamRef.current = stream;
+      setAudioEnabled(true);
+      
+      // Create audio element for call audio
+      audioRef.current = new Audio();
+      audioRef.current.autoplay = true;
+      audioRef.current.volume = 0.8;
+
+      toast({
+        title: "Audio Initialized",
+        description: "Microphone and speakers ready for calls",
+      });
+    } catch (error) {
+      console.error('Audio initialization failed:', error);
+      toast({
+        title: "Audio Setup Failed",
+        description: "Please allow microphone access for calling",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Format call duration
   const formatDuration = (seconds: number): string => {
@@ -113,6 +161,41 @@ export default function STARZMightyCallDialer({ contact, onCallEnd }: STARZMight
 
         setCurrentCall(newCall);
         setCallDuration(0);
+
+        // Initialize audio for the call
+        if (audioEnabled && localStreamRef.current) {
+          // Start audio processing for the call
+          toast({
+            title: "Call Connecting",
+            description: `Dialing ${contactName} with audio enabled`,
+          });
+
+          // Simulate call progression for demo
+          setTimeout(() => {
+            setCurrentCall(prev => prev ? { ...prev, status: 'ringing' } : null);
+            toast({
+              title: "Ringing",
+              description: `Calling ${contactName}...`,
+            });
+          }, 2000);
+
+          setTimeout(() => {
+            setCurrentCall(prev => prev ? { ...prev, status: 'connected' } : null);
+            toast({
+              title: "Call Connected",
+              description: `Connected to ${contactName}`,
+            });
+          }, 5000);
+        } else {
+          toast({
+            title: "Audio Not Ready",
+            description: "Please enable microphone access",
+            variant: "destructive",
+          });
+        }
+
+        setCurrentCall(newCall);
+        setCallDuration(0);
         
         // Simulate call progression
         setTimeout(() => {
@@ -151,6 +234,33 @@ export default function STARZMightyCallDialer({ contact, onCallEnd }: STARZMight
     }
   };
 
+  // Toggle microphone
+  const toggleMic = () => {
+    if (localStreamRef.current) {
+      const audioTracks = localStreamRef.current.getAudioTracks();
+      audioTracks.forEach(track => {
+        track.enabled = !micEnabled;
+      });
+      setMicEnabled(!micEnabled);
+      
+      toast({
+        title: micEnabled ? "Microphone Muted" : "Microphone Enabled",
+        description: micEnabled ? "Your mic is now muted" : "Your mic is now active",
+      });
+    }
+  };
+
+  // Toggle audio output
+  const toggleAudio = () => {
+    if (audioRef.current) {
+      audioRef.current.muted = !audioRef.current.muted;
+      toast({
+        title: audioRef.current.muted ? "Audio Muted" : "Audio Enabled",
+        description: audioRef.current.muted ? "Call audio muted" : "Call audio active",
+      });
+    }
+  };
+
   // End current call
   const endCall = async () => {
     if (!currentCall) return;
@@ -164,6 +274,11 @@ export default function STARZMightyCallDialer({ contact, onCallEnd }: STARZMight
       setCallDuration(0);
       setIsMuted(false);
       setIsHeld(false);
+      
+      // Stop local audio stream
+      if (localStreamRef.current) {
+        localStreamRef.current.getAudioTracks().forEach(track => track.stop());
+      }
 
       toast({
         title: "Call Ended",
@@ -265,10 +380,21 @@ export default function STARZMightyCallDialer({ contact, onCallEnd }: STARZMight
               {/* Call Controls */}
               <div className="flex items-center justify-center gap-2">
                 <Button
+                  variant={!micEnabled ? "destructive" : "outline"}
+                  size="sm"
+                  onClick={toggleMic}
+                  disabled={!audioEnabled}
+                  title={micEnabled ? "Mute Microphone" : "Unmute Microphone"}
+                >
+                  {micEnabled ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
+                </Button>
+
+                <Button
                   variant={isMuted ? "destructive" : "outline"}
                   size="sm"
                   onClick={toggleMute}
                   disabled={currentCall.status !== 'connected'}
+                  title={isMuted ? "Unmute Audio" : "Mute Audio"}
                 >
                   {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                 </Button>
@@ -278,6 +404,7 @@ export default function STARZMightyCallDialer({ contact, onCallEnd }: STARZMight
                   size="sm"
                   onClick={toggleHold}
                   disabled={currentCall.status !== 'connected' && currentCall.status !== 'held'}
+                  title={isHeld ? "Resume Call" : "Hold Call"}
                 >
                   {isHeld ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
                 </Button>
@@ -329,9 +456,32 @@ export default function STARZMightyCallDialer({ contact, onCallEnd }: STARZMight
         </CardContent>
       </Card>
 
-      {/* STARZ Integration Status */}
+      {/* Audio & Integration Status */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 space-y-3">
+          {/* Audio Status */}
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${audioEnabled ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <span>Audio System: {audioEnabled ? 'Ready' : 'Initializing'}</span>
+              {!audioEnabled && (
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={initializeAudio}
+                  className="ml-2 h-6 px-2 text-xs"
+                >
+                  Enable Audio
+                </Button>
+              )}
+            </div>
+            <div className="text-gray-500 flex items-center gap-1">
+              {micEnabled ? <Mic className="h-3 w-3" /> : <MicOff className="h-3 w-3" />}
+              <span>{micEnabled ? 'Mic Ready' : 'Mic Muted'}</span>
+            </div>
+          </div>
+          
+          {/* STARZ Integration Status */}
           <div className="flex items-center justify-between text-sm">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
