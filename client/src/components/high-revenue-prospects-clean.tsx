@@ -502,8 +502,16 @@ export function HighRevenueProspects() {
                     {prospect.location}
                   </div>
                   <div className="flex items-center text-sm text-gray-600">
-                    <Mail className="h-4 w-4 mr-2" />
+                    <Users className="h-4 w-4 mr-2" />
                     {prospect.contactPerson}
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Phone className="h-4 w-4 mr-2" />
+                    {prospect.phone}
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Mail className="h-4 w-4 mr-2" />
+                    {prospect.email}
                   </div>
                   
                   <div className="flex items-center justify-between pt-3 border-t">
