@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Lead Card Phone System</title>
+</head>
+<body>
+    <h2>Testing Lead Card Phone Functionality</h2>
+    <button onclick="testPhoneCall()">Test Call to Kevin Williams</button>
+    
+    <script>
+        async function testPhoneCall() {
+            console.log("🔄 Testing lead card phone call functionality...");
+            
+            try {
+                const response = await fetch('/api/mightycall/call', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        phoneNumber: "1498284300",
+                        contactName: "Kevin Williams",
+                        userId: 1
+                    }),
+                });
+                
+                if (response.ok) {
+                    const callData = await response.json();
+                    console.log("✅ MightyCall API Response:", callData);
+                    
+                    if (callData.webDialerUrl) {
+                        console.log("🌐 Opening MightyCall Pro web dialer:", callData.webDialerUrl);
+                        window.open(callData.webDialerUrl, 'MightyCallDialer', 'width=800,height=600');
+                        alert("MightyCall Pro dialer opened for Kevin Williams");
+                    } else {
+                        alert("Using device dialer fallback");
+                        window.location.href = `tel:1498284300`;
+                    }
+                } else {
+                    throw new Error('API call failed');
+                }
+            } catch (error) {
+                console.error("❌ Phone call test failed:", error);
+                alert("Phone test failed - check console for details");
+            }
+        }
+    </script>
+</body>
+</html>

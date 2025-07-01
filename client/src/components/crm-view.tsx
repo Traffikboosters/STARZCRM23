@@ -598,6 +598,7 @@ export default function CRMView() {
       const contactName = `${contact.firstName} ${contact.lastName}`;
       
       // Show initial call setup message
+      console.log(`🔄 LEAD CARD CALL: Initiating call to ${contactName} (${dialNumber})`);
       toast({
         title: "Initiating Call",
         description: `Setting up call to ${contactName}...`,
@@ -652,11 +653,12 @@ export default function CRMView() {
           });
         }
         
-        console.log(`MightyCall Call Initiated:`, {
+        console.log(`✅ LEAD CARD SUCCESS: MightyCall Call Initiated:`, {
           callId: callData.callId,
           contact: contactName,
           number: dialNumber,
-          method: callData.method || 'web_dialer'
+          method: callData.method || 'web_dialer',
+          webDialerUrl: callData.webDialerUrl
         });
         
       } else {
@@ -664,7 +666,7 @@ export default function CRMView() {
       }
       
     } catch (error) {
-      console.error('Call setup error:', error);
+      console.error('❌ LEAD CARD ERROR: Call setup failed:', error);
       
       // Emergency fallback: Direct device dialer
       const cleanNumber = contact.phone.replace(/\D/g, '');
@@ -674,6 +676,7 @@ export default function CRMView() {
         finalNumber = cleanNumber.substring(1);
       }
       
+      console.log(`🔄 LEAD CARD FALLBACK: Using device dialer for ${finalNumber}`);
       window.location.href = `tel:${finalNumber}`;
       
       toast({
