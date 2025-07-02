@@ -2026,6 +2026,26 @@ export default function CRMView() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* AI Sales Tip Generator Modal */}
+      {selectedContact && isAITipGeneratorOpen && (
+        <AISalesTipGenerator
+          contact={selectedContact}
+          currentAction={currentAction}
+          isOpen={isAITipGeneratorOpen}
+          onClose={() => {
+            setIsAITipGeneratorOpen(false);
+            setSelectedContact(null);
+            setCurrentAction(undefined);
+          }}
+          onApplyTip={(tipId) => {
+            toast({
+              title: "Tip Applied",
+              description: "Sales tip has been applied successfully",
+            });
+          }}
+        />
+      )}
     </div>
   );
 }
