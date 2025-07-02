@@ -49,6 +49,7 @@ import VoiceToneAnalysisEnhanced from "@/components/voice-tone-analysis-enhanced
 import MoodTracker from "@/components/mood-tracker";
 import SalesRepDashboard from "@/components/sales-rep-dashboard";
 import EmployeeTimeClock from "@/components/employee-time-clock";
+import EmailManagement from "./email-management";
 import { HighRevenueProspects } from "@/components/high-revenue-prospects-clean";
 import { DepartmentManagement } from "@/components/department-management";
 import SmartSearchAI from "@/components/smart-search-ai";
@@ -189,6 +190,8 @@ export default function Dashboard() {
         return <LiveExtractionHistory />;
       case "time-clock":
         return <EmployeeTimeClock />;
+      case "email-management":
+        return <EmailManagement />;
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
     }

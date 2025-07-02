@@ -1702,3 +1702,51 @@ export type ProposalCommunication = typeof proposalCommunication.$inferSelect;
 export type InsertProposalCommunication = z.infer<typeof insertProposalCommunicationSchema>;
 export type ProposalTemplate = typeof proposalTemplates.$inferSelect;
 export type InsertProposalTemplate = z.infer<typeof insertProposalTemplateSchema>;
+
+// Email Accounts
+export const emailAccounts = pgTable('email_accounts', {
+  id: serial('id').primaryKey(),
+  employeeId: integer('employee_id').notNull().references(() => users.id),
+  emailAddress: text('email_address').notNull(),
+  firstName: text('first_name').notNull(),
+  lastName: text('last_name').notNull(),
+  department: text('department').notNull(),
+  status: text('status').default('active'), // active, suspended, pending
+  storageUsed: integer('storage_used').default(0), // in MB
+  storageLimit: integer('storage_limit').default(5000), // in MB
+  forwardingEnabled: boolean('forwarding_enabled').default(false),
+  autoReplyEnabled: boolean('auto_reply_enabled').default(false),
+  lastLogin: timestamp('last_login'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Email Templates
+export const emailTemplates = pgTable('email_templates', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  subject: text('subject').notNull(),
+  body: text('body').notNull(),
+  type: text('type').notNull(), // welcome, credentials, policy, suspension
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+});
+
+// Insert schemas for email management
+export const insertEmailAccountSchema = createInsertSchema(emailAccounts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertEmailTemplateSchema = createInsertSchema(emailTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Types for email management
+export type EmailAccount = typeof emailAccounts.$inferSelect;
+export type InsertEmailAccount = z.infer<typeof insertEmailAccountSchema>;
+export type EmailTemplate = typeof emailTemplates.$inferSelect;
+export type InsertEmailTemplate = z.infer<typeof insertEmailTemplateSchema>;

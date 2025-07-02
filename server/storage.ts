@@ -9,7 +9,8 @@ import {
   callInsights, keyCallMoments, callParticipants, voiceTrendAnalysis,
   servicePackages, costStructure, profitabilityAnalysis,
   moodEntries, teamMoodSummaries, moodPerformanceCorrelations,
-  timeClockEntries, timeClockSchedules, timeOffRequests
+  timeClockEntries, timeClockSchedules, timeOffRequests,
+  emailAccounts, emailTemplates
 } from "../shared/schema";
 import type { 
   User, Company, Contact, Event, File, Automation, ScrapingJob,
@@ -20,6 +21,7 @@ import type {
   CallInsights, KeyCallMoments, CallParticipants, VoiceTrendAnalysis,
   MoodEntry, TeamMoodSummary, MoodPerformanceCorrelation,
   TimeClockEntry, TimeClockSchedule, TimeOffRequest,
+  EmailAccount, EmailTemplate,
   InsertUser, InsertCompany, InsertContact, InsertEvent, InsertFile, InsertAutomation, InsertScrapingJob,
   InsertChatMessage, InsertChatConversation, InsertCallLog, InsertCampaign, InsertLeadAllocation,
   InsertDocumentTemplate, InsertSigningRequest, InsertUserInvitation,
@@ -27,7 +29,8 @@ import type {
   InsertTechnicalProject, InsertTechnicalTask, InsertTimeEntry, InsertTechnicalProposal, InsertCallRecording, InsertVoiceToneAnalysis,
   InsertCallInsights, InsertKeyCallMoments, InsertCallParticipants, InsertVoiceTrendAnalysis,
   InsertMoodEntry, InsertTeamMoodSummary, InsertMoodPerformanceCorrelation,
-  InsertTimeClockEntry, InsertTimeClockSchedule, InsertTimeOffRequest
+  InsertTimeClockEntry, InsertTimeClockSchedule, InsertTimeOffRequest,
+  InsertEmailAccount, InsertEmailTemplate
 } from "../shared/schema";
 
 // Complete interface implementation
@@ -138,6 +141,25 @@ export interface IStorage {
   getTimeOffRequestsForUser(userId: number): Promise<TimeOffRequest[]>;
   getAllTimeOffRequests(): Promise<TimeOffRequest[]>;
   getPendingTimeOffRequests(): Promise<TimeOffRequest[]>;
+  
+  // Email Account Management
+  getAllEmailAccounts(): Promise<EmailAccount[]>;
+  getEmailAccountById(id: number): Promise<EmailAccount | undefined>;
+  getEmailAccountsByEmployee(employeeId: number): Promise<EmailAccount[]>;
+  createEmailAccount(account: InsertEmailAccount): Promise<EmailAccount>;
+  updateEmailAccount(id: number, updates: Partial<InsertEmailAccount>): Promise<EmailAccount | undefined>;
+  deleteEmailAccount(id: number): Promise<boolean>;
+  updateEmailAccountStatus(id: number, status: string): Promise<EmailAccount | undefined>;
+  
+  // Email Templates
+  getAllEmailTemplates(): Promise<EmailTemplate[]>;
+  getEmailTemplateById(id: number): Promise<EmailTemplate | undefined>;
+  createEmailTemplate(template: InsertEmailTemplate): Promise<EmailTemplate>;
+  updateEmailTemplate(id: number, updates: Partial<InsertEmailTemplate>): Promise<EmailTemplate | undefined>;
+  deleteEmailTemplate(id: number): Promise<boolean>;
+  
+  // Employee helpers
+  getEmployeesWithoutEmail(): Promise<User[]>;
 }
 
 export class DatabaseStorage implements IStorage {
