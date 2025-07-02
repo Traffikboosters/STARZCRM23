@@ -20,6 +20,7 @@ import LandingPage from "@/pages/landing";
 import Payments from "@/pages/payments";
 import DownloadPlugin from "@/pages/download-plugin";
 import STARZLandingPage from "@/components/starz-landing-page";
+import VendorSelectorPage from "@/pages/vendor-selector";
 
 function Router() {
   return (
@@ -39,6 +40,7 @@ function Router() {
       <Route path="/sales-funnels" component={SalesFunnelsPage} />
       <Route path="/competitive-pricing" component={CompetitivePricingPage} />
       <Route path="/payments" component={Payments} />
+      <Route path="/vendor-selector" component={VendorSelectorPage} />
       <Route path="/accept-invitation" component={AcceptInvitation} />
       <Route path="/download-plugin" component={DownloadPlugin} />
       <Route component={NotFound} />
