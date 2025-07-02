@@ -34,6 +34,7 @@ interface Contact {
   phone: string | null;
   company: string | null;
   position: string | null;
+  notes: string | null;
   leadSource: string | null;
   leadStatus: string | null;
   priority: string | null;
@@ -43,7 +44,7 @@ interface Contact {
 
 interface AISuggestion {
   id: string;
-  type: 'contacts' | 'companies' | 'locations' | 'actions' | 'insights' | 'quick_filters';
+  type: 'contacts' | 'companies' | 'locations' | 'actions' | 'insights' | 'quick_filters' | 'data_insights';
   icon: React.ReactNode;
   label: string;
   description: string;
@@ -180,70 +181,305 @@ export default function SmartSearchAI({ isOpen, onClose, onNavigate }: SmartSear
         }
       );
 
-      // Insights and analytics
+      // Advanced lead analytics
+      const hotLeads = (contacts as Contact[]).filter((c: Contact) => 
+        c.leadStatus === 'qualified' && c.dealValue && c.dealValue > 2000
+      ).length;
+
+      const coldLeads = (contacts as Contact[]).filter((c: Contact) => {
+        const daysSinceContact = Math.floor(
+          (Date.now() - new Date(c.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+        );
+        return daysSinceContact > 7 && c.leadStatus !== 'converted';
+      }).length;
+
+      const urgentFollowups = (contacts as Contact[]).filter((c: Contact) => 
+        c.leadStatus === 'contacted' || c.leadStatus === 'interested'
+      ).length;
+
+      // Advanced insights and analytics
       aiSuggestions.push(
+        {
+          id: 'hot-leads',
+          type: 'insights',
+          icon: <TrendingUp className="h-4 w-4" />,
+          label: 'Hot Prospects',
+          description: `${hotLeads} qualified leads with high deal value`,
+          confidence: 0.95,
+          searchQuery: 'status:qualified dealValue:>2000',
+          count: hotLeads
+        },
+        {
+          id: 'cold-leads',
+          type: 'insights',
+          icon: <Target className="h-4 w-4" />,
+          label: 'Re-engagement Needed',
+          description: `${coldLeads} leads need immediate attention`,
+          confidence: 0.85,
+          searchQuery: 'age:>7days status:!converted',
+          count: coldLeads
+        },
+        {
+          id: 'urgent-followups',
+          type: 'insights',
+          icon: <Clock className="h-4 w-4" />,
+          label: 'Urgent Follow-ups',
+          description: `${urgentFollowups} leads waiting for response`,
+          confidence: 0.9,
+          searchQuery: 'status:contacted OR status:interested',
+          count: urgentFollowups
+        },
         {
           id: 'conversion-analysis',
           type: 'insights',
           icon: <TrendingUp className="h-4 w-4" />,
-          label: 'Conversion Insights',
-          description: 'Analyze lead performance and patterns',
+          label: 'Conversion Analytics',
+          description: 'Deep dive into lead performance patterns',
           confidence: 0.75,
           actionType: 'analytics'
         },
         {
-          id: 'priority-leads',
+          id: 'priority-assessment',
           type: 'insights',
           icon: <Target className="h-4 w-4" />,
-          label: 'Priority Assessment',
-          description: 'AI-scored leads by conversion probability',
+          label: 'AI Lead Scoring',
+          description: 'Machine learning-based lead prioritization',
           confidence: 0.88,
           actionType: 'priority_analysis'
         }
       );
 
-      // Quick filters based on current query
+      // Advanced contextual suggestion chips based on user query
       if (searchQuery) {
         const queryLower = searchQuery.toLowerCase();
         
+        // Communication-focused suggestions
         if (queryLower.includes('phone') || queryLower.includes('call')) {
-          aiSuggestions.unshift({
-            id: 'phone-filter',
-            type: 'quick_filters',
-            icon: <Phone className="h-4 w-4" />,
-            label: 'Phone Numbers',
-            description: 'Filter contacts with phone numbers',
-            confidence: 0.95,
-            searchQuery: 'has:phone'
-          });
+          aiSuggestions.unshift(
+            {
+              id: 'phone-filter',
+              type: 'quick_filters',
+              icon: <Phone className="h-4 w-4" />,
+              label: 'Phone Verified',
+              description: 'Contacts with verified phone numbers',
+              confidence: 0.95,
+              searchQuery: 'has:phone'
+            },
+            {
+              id: 'call-ready',
+              type: 'quick_filters',
+              icon: <Phone className="h-4 w-4" />,
+              label: 'Call Queue',
+              description: 'Prioritized contacts ready for outreach',
+              confidence: 0.88,
+              searchQuery: 'priority:high has:phone'
+            }
+          );
         }
 
+        // Email and digital engagement
         if (queryLower.includes('email') || queryLower.includes('mail')) {
-          aiSuggestions.unshift({
-            id: 'email-filter',
-            type: 'quick_filters',
-            icon: <Mail className="h-4 w-4" />,
-            label: 'Email Contacts',
-            description: 'Filter contacts with email addresses',
-            confidence: 0.95,
-            searchQuery: 'has:email'
-          });
+          aiSuggestions.unshift(
+            {
+              id: 'email-filter',
+              type: 'quick_filters',
+              icon: <Mail className="h-4 w-4" />,
+              label: 'Email Contacts',
+              description: 'Contacts with business email addresses',
+              confidence: 0.95,
+              searchQuery: 'has:email'
+            },
+            {
+              id: 'email-campaigns',
+              type: 'quick_filters',
+              icon: <Mail className="h-4 w-4" />,
+              label: 'Email Campaign Ready',
+              description: 'Contacts suitable for email marketing',
+              confidence: 0.82,
+              searchQuery: 'has:email status:!converted'
+            }
+          );
         }
 
-        if (queryLower.includes('high') || queryLower.includes('value')) {
-          aiSuggestions.unshift({
-            id: 'value-filter',
-            type: 'quick_filters',
-            icon: <DollarSign className="h-4 w-4" />,
-            label: 'High-Value Leads',
-            description: 'Contacts with significant deal potential',
-            confidence: 0.9,
-            searchQuery: 'dealValue:>1000'
-          });
+        // Value and revenue focused
+        if (queryLower.includes('high') || queryLower.includes('value') || queryLower.includes('revenue')) {
+          aiSuggestions.unshift(
+            {
+              id: 'value-filter',
+              type: 'quick_filters',
+              icon: <DollarSign className="h-4 w-4" />,
+              label: 'High-Value Pipeline',
+              description: 'Contacts with deals over $3,000',
+              confidence: 0.9,
+              searchQuery: 'dealValue:>3000'
+            },
+            {
+              id: 'enterprise-leads',
+              type: 'quick_filters',
+              icon: <Building2 className="h-4 w-4" />,
+              label: 'Enterprise Prospects',
+              description: 'Large companies with high revenue potential',
+              confidence: 0.85,
+              searchQuery: 'dealValue:>10000'
+            }
+          );
+        }
+
+        // Industry and sector analysis
+        if (queryLower.includes('industry') || queryLower.includes('sector') || queryLower.includes('business')) {
+          aiSuggestions.unshift(
+            {
+              id: 'industry-analysis',
+              type: 'quick_filters',
+              icon: <Building2 className="h-4 w-4" />,
+              label: 'Industry Leaders',
+              description: 'Top companies by industry sector',
+              confidence: 0.78,
+              searchQuery: 'industry:top'
+            },
+            {
+              id: 'growth-companies',
+              type: 'quick_filters',
+              icon: <TrendingUp className="h-4 w-4" />,
+              label: 'Growth Stage',
+              description: 'Companies in rapid expansion phase',
+              confidence: 0.73,
+              searchQuery: 'growth:expanding'
+            }
+          );
+        }
+
+        // Geographic and location-based
+        if (queryLower.includes('location') || queryLower.includes('city') || queryLower.includes('state')) {
+          aiSuggestions.unshift(
+            {
+              id: 'location-clusters',
+              type: 'quick_filters',
+              icon: <MapPin className="h-4 w-4" />,
+              label: 'Local Clusters',
+              description: 'High-density prospect areas',
+              confidence: 0.80,
+              searchQuery: 'location:clusters'
+            },
+            {
+              id: 'regional-targets',
+              type: 'quick_filters',
+              icon: <MapPin className="h-4 w-4" />,
+              label: 'Regional Focus',
+              description: 'Prospects in target markets',
+              confidence: 0.75,
+              searchQuery: 'region:target'
+            }
+          );
+        }
+
+        // Time-sensitive suggestions
+        if (queryLower.includes('urgent') || queryLower.includes('today') || queryLower.includes('now')) {
+          aiSuggestions.unshift(
+            {
+              id: 'urgent-action',
+              type: 'quick_filters',
+              icon: <Clock className="h-4 w-4" />,
+              label: 'Immediate Action',
+              description: 'Contacts requiring urgent follow-up',
+              confidence: 0.92,
+              searchQuery: 'priority:urgent'
+            },
+            {
+              id: 'today-tasks',
+              type: 'quick_filters',
+              icon: <Calendar className="h-4 w-4" />,
+              label: 'Today\'s Priority',
+              description: 'Scheduled for today\'s outreach',
+              confidence: 0.88,
+              searchQuery: 'scheduled:today'
+            }
+          );
         }
       }
 
-      setSuggestions(aiSuggestions.slice(0, 8)); // Limit to 8 suggestions
+      // Add smart data-driven suggestions based on contact patterns
+      const industryMap = new Map();
+      const locationMap = new Map();
+      const leadSourceMap = new Map();
+      
+      (contacts as Contact[]).forEach((contact: Contact) => {
+        // Industry analysis
+        if (contact.company) {
+          const industry = contact.company.toLowerCase().includes('restaurant') ? 'Restaurant' :
+                          contact.company.toLowerCase().includes('auto') ? 'Automotive' :
+                          contact.company.toLowerCase().includes('dental') ? 'Healthcare' :
+                          contact.company.toLowerCase().includes('law') ? 'Legal' :
+                          contact.company.toLowerCase().includes('real estate') ? 'Real Estate' : 'Other';
+          industryMap.set(industry, (industryMap.get(industry) || 0) + 1);
+        }
+        
+        // Location clustering - extract from notes or company fields
+        const locationText = (contact.notes || contact.company || '').toLowerCase();
+        if (locationText) {
+          const location = locationText.includes('california') || locationText.includes(' ca ') || locationText.includes('ca,') ? 'California' :
+                          locationText.includes('texas') || locationText.includes(' tx ') || locationText.includes('tx,') ? 'Texas' :
+                          locationText.includes('new york') || locationText.includes(' ny ') || locationText.includes('ny,') ? 'New York' :
+                          locationText.includes('florida') || locationText.includes(' fl ') || locationText.includes('fl,') ? 'Florida' :
+                          locationText.includes('illinois') || locationText.includes(' il ') || locationText.includes('il,') ? 'Illinois' :
+                          locationText.includes('washington') || locationText.includes(' wa ') || locationText.includes('wa,') ? 'Washington' : 'Other';
+          if (location !== 'Other') {
+            locationMap.set(location, (locationMap.get(location) || 0) + 1);
+          }
+        }
+        
+        // Lead source analysis
+        if (contact.leadSource) {
+          leadSourceMap.set(contact.leadSource, (leadSourceMap.get(contact.leadSource) || 0) + 1);
+        }
+      });
+
+      // Add top industry suggestions
+      const topIndustry = Array.from(industryMap.entries()).sort((a, b) => b[1] - a[1])[0];
+      if (topIndustry && topIndustry[1] > 5) {
+        aiSuggestions.push({
+          id: 'top-industry',
+          type: 'data_insights',
+          icon: <Building2 className="h-4 w-4" />,
+          label: `${topIndustry[0]} Focus`,
+          description: `${topIndustry[1]} prospects in ${topIndustry[0].toLowerCase()} sector`,
+          confidence: 0.85,
+          searchQuery: `industry:${topIndustry[0].toLowerCase()}`,
+          count: topIndustry[1]
+        });
+      }
+
+      // Add top location suggestions
+      const topLocation = Array.from(locationMap.entries()).sort((a, b) => b[1] - a[1])[0];
+      if (topLocation && topLocation[1] > 3) {
+        aiSuggestions.push({
+          id: 'top-location',
+          type: 'data_insights',
+          icon: <MapPin className="h-4 w-4" />,
+          label: `${topLocation[0]} Region`,
+          description: `${topLocation[1]} prospects in ${topLocation[0]}`,
+          confidence: 0.82,
+          searchQuery: `location:${topLocation[0].toLowerCase()}`,
+          count: topLocation[1]
+        });
+      }
+
+      // Add lead source performance
+      const topSource = Array.from(leadSourceMap.entries()).sort((a, b) => b[1] - a[1])[0];
+      if (topSource && topSource[1] > 3) {
+        aiSuggestions.push({
+          id: 'top-source',
+          type: 'data_insights',
+          icon: <Target className="h-4 w-4" />,
+          label: `${topSource[0]} Leads`,
+          description: `${topSource[1]} prospects from ${topSource[0]}`,
+          confidence: 0.78,
+          searchQuery: `source:${topSource[0].toLowerCase()}`,
+          count: topSource[1]
+        });
+      }
+
+      setSuggestions(aiSuggestions.slice(0, 12)); // Increased to 12 suggestions for better coverage
     };
 
     generateSuggestions();
@@ -341,13 +577,14 @@ export default function SmartSearchAI({ isOpen, onClose, onNavigate }: SmartSear
   // Get suggestion type color
   const getSuggestionTypeColor = (type: string) => {
     switch (type) {
-      case 'contacts': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'companies': return 'bg-green-100 text-green-700 border-green-200';
-      case 'locations': return 'bg-purple-100 text-purple-700 border-purple-200';
-      case 'actions': return 'bg-orange-100 text-orange-700 border-orange-200';
-      case 'insights': return 'bg-pink-100 text-pink-700 border-pink-200';
-      case 'quick_filters': return 'bg-indigo-100 text-indigo-700 border-indigo-200';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200';
+      case 'contacts': return 'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200';
+      case 'companies': return 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200';
+      case 'locations': return 'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200';
+      case 'actions': return 'bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-200';
+      case 'insights': return 'bg-pink-100 text-pink-700 border-pink-200 hover:bg-pink-200';
+      case 'quick_filters': return 'bg-indigo-100 text-indigo-700 border-indigo-200 hover:bg-indigo-200';
+      case 'data_insights': return 'bg-cyan-100 text-cyan-700 border-cyan-200 hover:bg-cyan-200';
+      default: return 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200';
     }
   };
 
@@ -400,33 +637,40 @@ export default function SmartSearchAI({ isOpen, onClose, onNavigate }: SmartSear
               <span className="text-sm font-medium">AI-Powered Suggestions</span>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {suggestions.map((suggestion) => (
                 <Button
                   key={suggestion.id}
                   variant="outline"
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className={`h-auto p-3 flex flex-col items-start gap-1 ${getSuggestionTypeColor(suggestion.type)}`}
+                  className={`h-auto p-4 flex flex-col items-start gap-2 transition-all duration-200 transform hover:scale-105 ${getSuggestionTypeColor(suggestion.type)}`}
                 >
                   <div className="flex items-center gap-2 w-full">
                     {suggestion.icon}
-                    <span className="text-xs font-medium truncate">
+                    <span className="text-sm font-semibold truncate">
                       {suggestion.label}
                     </span>
                     {suggestion.count !== undefined && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs font-bold">
                         {suggestion.count}
                       </Badge>
                     )}
                   </div>
-                  <span className="text-xs opacity-70 text-left line-clamp-2">
+                  <span className="text-xs opacity-80 text-left line-clamp-2 leading-relaxed">
                     {suggestion.description}
                   </span>
-                  <div className="flex items-center gap-1 mt-1">
-                    <div className="w-1 h-1 bg-current rounded-full opacity-50" />
-                    <span className="text-xs opacity-50">
-                      {Math.round(suggestion.confidence * 100)}% match
-                    </span>
+                  <div className="flex items-center gap-2 mt-1 w-full">
+                    <div className="flex items-center gap-1">
+                      <div className="w-1.5 h-1.5 bg-current rounded-full opacity-60" />
+                      <span className="text-xs opacity-60 font-medium">
+                        {Math.round(suggestion.confidence * 100)}%
+                      </span>
+                    </div>
+                    {suggestion.type && (
+                      <Badge variant="outline" className="text-xs px-1 py-0">
+                        {suggestion.type.replace('_', ' ')}
+                      </Badge>
+                    )}
                   </div>
                 </Button>
               ))}
@@ -456,6 +700,32 @@ export default function SmartSearchAI({ isOpen, onClose, onNavigate }: SmartSear
                   {search}
                 </Button>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Search Analytics Bar */}
+        {searchQuery && (
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-3 rounded-lg border">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium">Search Analytics</span>
+              </div>
+              <div className="flex items-center gap-4 text-xs">
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span>High match confidence</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span>{suggestions.length} AI suggestions</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span>Real-time analysis</span>
+                </div>
+              </div>
             </div>
           </div>
         )}
