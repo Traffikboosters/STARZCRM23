@@ -1044,6 +1044,67 @@ export const moodPerformanceCorrelations = pgTable("mood_performance_correlation
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Employee Time Clock Tables
+export const timeClockEntries = pgTable("time_clock_entries", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  clockInTime: timestamp("clock_in_time").notNull(),
+  clockOutTime: timestamp("clock_out_time"),
+  breakStartTime: timestamp("break_start_time"),
+  breakEndTime: timestamp("break_end_time"),
+  totalHours: text("total_hours"), // calculated hours as decimal string
+  totalBreakMinutes: integer("total_break_minutes").default(0),
+  shiftType: text("shift_type").notNull().default("regular"), // regular, overtime, holiday
+  department: text("department").notNull(),
+  location: text("location").default("office"), // office, remote, field
+  ipAddress: text("ip_address"), // for security tracking
+  clockInDevice: text("clock_in_device"), // web, mobile, kiosk
+  clockOutDevice: text("clock_out_device"),
+  notes: text("notes"), // employee notes about the shift
+  managerNotes: text("manager_notes"), // supervisor notes
+  status: text("status").default("active"), // active, completed, pending_approval
+  isApproved: boolean("is_approved").default(false),
+  approvedBy: integer("approved_by").references(() => users.id),
+  approvedAt: timestamp("approved_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const timeClockSchedules = pgTable("time_clock_schedules", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  dayOfWeek: integer("day_of_week").notNull(), // 0=Sunday, 1=Monday, etc.
+  startTime: text("start_time").notNull(), // "09:00"
+  endTime: text("end_time").notNull(), // "17:00"
+  isWorkDay: boolean("is_work_day").default(true),
+  department: text("department").notNull(),
+  shiftName: text("shift_name"), // "Morning Shift", "Evening Shift", etc.
+  expectedHours: text("expected_hours").notNull(), // "8.0"
+  breakDuration: integer("break_duration").default(30), // minutes
+  isActive: boolean("is_active").default(true),
+  effectiveDate: timestamp("effective_date").notNull(),
+  endDate: timestamp("end_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const timeOffRequests = pgTable("time_off_requests", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  requestType: text("request_type").notNull(), // vacation, sick, personal, bereavement
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  totalDays: text("total_days").notNull(), // decimal as string
+  reason: text("reason"),
+  status: text("status").default("pending"), // pending, approved, denied, cancelled
+  requestedAt: timestamp("requested_at").defaultNow().notNull(),
+  reviewedBy: integer("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewNotes: text("review_notes"),
+  isEmergency: boolean("is_emergency").default(false),
+  attachments: text("attachments").array(), // file URLs
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const workOrders = pgTable("work_orders", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
@@ -1437,6 +1498,34 @@ export const insertCustomerTestimonialSchema = createInsertSchema(customerTestim
 
 export type CustomerTestimonial = typeof customerTestimonials.$inferSelect;
 export type InsertCustomerTestimonial = z.infer<typeof insertCustomerTestimonialSchema>;
+
+// Time Clock insert schemas
+export const insertTimeClockEntrySchema = createInsertSchema(timeClockEntries).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  approvedAt: true,
+});
+
+export const insertTimeClockScheduleSchema = createInsertSchema(timeClockSchedules).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertTimeOffRequestSchema = createInsertSchema(timeOffRequests).omit({
+  id: true,
+  createdAt: true,
+  requestedAt: true,
+  reviewedAt: true,
+});
+
+// Time Clock types
+export type TimeClockEntry = typeof timeClockEntries.$inferSelect;
+export type InsertTimeClockEntry = z.infer<typeof insertTimeClockEntrySchema>;
+export type TimeClockSchedule = typeof timeClockSchedules.$inferSelect;
+export type InsertTimeClockSchedule = z.infer<typeof insertTimeClockScheduleSchema>;
+export type TimeOffRequest = typeof timeOffRequests.$inferSelect;
+export type InsertTimeOffRequest = z.infer<typeof insertTimeOffRequestSchema>;
 
 // WhatsApp Messages Table
 export const whatsappMessages = pgTable("whatsapp_messages", {

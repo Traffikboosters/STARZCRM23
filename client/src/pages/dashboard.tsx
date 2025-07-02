@@ -48,6 +48,7 @@ import { VoiceToneAnalysis } from "@/components/voice-tone-analysis";
 import VoiceToneAnalysisEnhanced from "@/components/voice-tone-analysis-enhanced";
 import MoodTracker from "@/components/mood-tracker";
 import SalesRepDashboard from "@/components/sales-rep-dashboard";
+import EmployeeTimeClock from "@/components/employee-time-clock";
 import { HighRevenueProspects } from "@/components/high-revenue-prospects-clean";
 import { DepartmentManagement } from "@/components/department-management";
 import SmartSearchAI from "@/components/smart-search-ai";
@@ -186,6 +187,8 @@ export default function Dashboard() {
         return <ZoomInfoScraper />;
       case "extraction-history":
         return <LiveExtractionHistory />;
+      case "time-clock":
+        return <EmployeeTimeClock />;
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
     }

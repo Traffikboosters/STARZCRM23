@@ -3652,6 +3652,206 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  // Time Clock API endpoints
+  app.post("/api/timeclock/clock-in", async (req, res) => {
+    try {
+      const { userId, department, location, notes } = req.body;
+      
+      // Check if user already has an active clock-in
+      const activeEntry = await storage.getActiveTimeClockEntry(userId);
+      if (activeEntry) {
+        return res.status(400).json({ error: "User already clocked in" });
+      }
+
+      const clockInEntry = await storage.createTimeClockEntry({
+        userId,
+        clockInTime: new Date(),
+        department: department || "sales",
+        location: location || "office",
+        notes,
+        ipAddress: req.ip,
+        clockInDevice: "web",
+        status: "active"
+      });
+
+      res.json(clockInEntry);
+    } catch (error) {
+      console.error("Clock-in error:", error);
+      res.status(500).json({ error: "Failed to clock in" });
+    }
+  });
+
+  app.post("/api/timeclock/clock-out", async (req, res) => {
+    try {
+      const { userId, notes } = req.body;
+      
+      const activeEntry = await storage.getActiveTimeClockEntry(userId);
+      if (!activeEntry) {
+        return res.status(400).json({ error: "No active clock-in found" });
+      }
+
+      const clockOutTime = new Date();
+      const hoursWorked = (clockOutTime.getTime() - activeEntry.clockInTime.getTime()) / (1000 * 60 * 60);
+      
+      const updatedEntry = await storage.updateTimeClockEntry(activeEntry.id, {
+        clockOutTime,
+        totalHours: hoursWorked.toFixed(2),
+        notes: notes || activeEntry.notes,
+        clockOutDevice: "web",
+        status: "completed"
+      });
+
+      res.json(updatedEntry);
+    } catch (error) {
+      console.error("Clock-out error:", error);
+      res.status(500).json({ error: "Failed to clock out" });
+    }
+  });
+
+  app.post("/api/timeclock/break-start", async (req, res) => {
+    try {
+      const { userId } = req.body;
+      
+      const activeEntry = await storage.getActiveTimeClockEntry(userId);
+      if (!activeEntry) {
+        return res.status(400).json({ error: "No active clock-in found" });
+      }
+
+      const updatedEntry = await storage.updateTimeClockEntry(activeEntry.id, {
+        breakStartTime: new Date()
+      });
+
+      res.json(updatedEntry);
+    } catch (error) {
+      console.error("Break start error:", error);
+      res.status(500).json({ error: "Failed to start break" });
+    }
+  });
+
+  app.post("/api/timeclock/break-end", async (req, res) => {
+    try {
+      const { userId } = req.body;
+      
+      const activeEntry = await storage.getActiveTimeClockEntry(userId);
+      if (!activeEntry || !activeEntry.breakStartTime) {
+        return res.status(400).json({ error: "No active break found" });
+      }
+
+      const breakEndTime = new Date();
+      const breakMinutes = Math.round((breakEndTime.getTime() - activeEntry.breakStartTime.getTime()) / (1000 * 60));
+      
+      const updatedEntry = await storage.updateTimeClockEntry(activeEntry.id, {
+        breakEndTime,
+        totalBreakMinutes: (activeEntry.totalBreakMinutes || 0) + breakMinutes
+      });
+
+      res.json(updatedEntry);
+    } catch (error) {
+      console.error("Break end error:", error);
+      res.status(500).json({ error: "Failed to end break" });
+    }
+  });
+
+  app.get("/api/timeclock/status/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const activeEntry = await storage.getActiveTimeClockEntry(userId);
+      
+      res.json({
+        isClockedIn: !!activeEntry,
+        activeEntry: activeEntry || null,
+        isOnBreak: activeEntry?.breakStartTime && !activeEntry?.breakEndTime
+      });
+    } catch (error) {
+      console.error("Time clock status error:", error);
+      res.status(500).json({ error: "Failed to get time clock status" });
+    }
+  });
+
+  app.get("/api/timeclock/entries/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { startDate, endDate } = req.query;
+      
+      const entries = await storage.getTimeClockEntriesForUser(
+        userId,
+        startDate ? new Date(startDate as string) : undefined,
+        endDate ? new Date(endDate as string) : undefined
+      );
+      
+      res.json(entries);
+    } catch (error) {
+      console.error("Get time entries error:", error);
+      res.status(500).json({ error: "Failed to get time entries" });
+    }
+  });
+
+  app.get("/api/timeclock/entries", async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      
+      const entries = await storage.getAllTimeClockEntries(
+        startDate ? new Date(startDate as string) : undefined,
+        endDate ? new Date(endDate as string) : undefined
+      );
+      
+      res.json(entries);
+    } catch (error) {
+      console.error("Get all time entries error:", error);
+      res.status(500).json({ error: "Failed to get time entries" });
+    }
+  });
+
+  // Time Off Requests
+  app.post("/api/timeoff/request", async (req, res) => {
+    try {
+      const timeOffRequest = await storage.createTimeOffRequest(req.body);
+      res.json(timeOffRequest);
+    } catch (error) {
+      console.error("Time off request error:", error);
+      res.status(500).json({ error: "Failed to create time off request" });
+    }
+  });
+
+  app.get("/api/timeoff/requests/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const requests = await storage.getTimeOffRequestsForUser(userId);
+      res.json(requests);
+    } catch (error) {
+      console.error("Get time off requests error:", error);
+      res.status(500).json({ error: "Failed to get time off requests" });
+    }
+  });
+
+  app.get("/api/timeoff/pending", async (req, res) => {
+    try {
+      const requests = await storage.getPendingTimeOffRequests();
+      res.json(requests);
+    } catch (error) {
+      console.error("Get pending requests error:", error);
+      res.status(500).json({ error: "Failed to get pending requests" });
+    }
+  });
+
+  app.patch("/api/timeoff/approve/:id", async (req, res) => {
+    try {
+      const requestId = parseInt(req.params.id);
+      const { reviewNotes, reviewedBy } = req.body;
+      
+      const updatedRequest = await storage.updateTimeOffRequest(requestId, {
+        status: "approved",
+        reviewedBy,
+        reviewNotes
+      });
+      
+      res.json(updatedRequest);
+    } catch (error) {
+      console.error("Approve time off error:", error);
+      res.status(500).json({ error: "Failed to approve time off request" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // Set up WebSocket server with proper connection handling

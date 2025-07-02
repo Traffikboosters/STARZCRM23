@@ -21,6 +21,7 @@ import Payments from "@/pages/payments";
 import DownloadPlugin from "@/pages/download-plugin";
 import STARZLandingPage from "@/components/starz-landing-page";
 import VendorSelectorPage from "@/pages/vendor-selector";
+import TimeClockPage from "@/pages/time-clock";
 
 function Router() {
   return (
@@ -41,6 +42,7 @@ function Router() {
       <Route path="/competitive-pricing" component={CompetitivePricingPage} />
       <Route path="/payments" component={Payments} />
       <Route path="/vendor-selector" component={VendorSelectorPage} />
+      <Route path="/time-clock" component={TimeClockPage} />
       <Route path="/accept-invitation" component={AcceptInvitation} />
       <Route path="/download-plugin" component={DownloadPlugin} />
       <Route component={NotFound} />

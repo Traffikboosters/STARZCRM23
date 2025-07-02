@@ -104,6 +104,7 @@ export default function Sidebar({
     { id: "departments", label: "Department Management", icon: Building2 },
     { id: "mood-tracker", label: "Mood Tracker", icon: Activity },
     { id: "dual-onboarding", label: "Employee Onboarding", icon: UserCheck },
+    { id: "time-clock", label: "Employee Time Clock", icon: Clock },
   ];
 
   return (

@@ -8,7 +8,8 @@ import {
   technicalProjects, technicalTasks, timeEntries, technicalProposals, callRecordings, voiceToneAnalysis,
   callInsights, keyCallMoments, callParticipants, voiceTrendAnalysis,
   servicePackages, costStructure, profitabilityAnalysis,
-  moodEntries, teamMoodSummaries, moodPerformanceCorrelations
+  moodEntries, teamMoodSummaries, moodPerformanceCorrelations,
+  timeClockEntries, timeClockSchedules, timeOffRequests
 } from "../shared/schema";
 import type { 
   User, Company, Contact, Event, File, Automation, ScrapingJob,
@@ -18,13 +19,15 @@ import type {
   TechnicalProject, TechnicalTask, TimeEntry, TechnicalProposal, CallRecording, VoiceToneAnalysis,
   CallInsights, KeyCallMoments, CallParticipants, VoiceTrendAnalysis,
   MoodEntry, TeamMoodSummary, MoodPerformanceCorrelation,
+  TimeClockEntry, TimeClockSchedule, TimeOffRequest,
   InsertUser, InsertCompany, InsertContact, InsertEvent, InsertFile, InsertAutomation, InsertScrapingJob,
   InsertChatMessage, InsertChatConversation, InsertCallLog, InsertCampaign, InsertLeadAllocation,
   InsertDocumentTemplate, InsertSigningRequest, InsertUserInvitation,
   InsertContactNote, InsertLeadIntake, InsertLeadEnrichment, InsertEnrichmentHistory, InsertExtractionHistory,
   InsertTechnicalProject, InsertTechnicalTask, InsertTimeEntry, InsertTechnicalProposal, InsertCallRecording, InsertVoiceToneAnalysis,
   InsertCallInsights, InsertKeyCallMoments, InsertCallParticipants, InsertVoiceTrendAnalysis,
-  InsertMoodEntry, InsertTeamMoodSummary, InsertMoodPerformanceCorrelation
+  InsertMoodEntry, InsertTeamMoodSummary, InsertMoodPerformanceCorrelation,
+  InsertTimeClockEntry, InsertTimeClockSchedule, InsertTimeOffRequest
 } from "../shared/schema";
 
 // Complete interface implementation
@@ -113,6 +116,28 @@ export interface IStorage {
   // Extraction History
   createExtractionHistory(history: InsertExtractionHistory): Promise<ExtractionHistory>;
   getExtractionHistory(): Promise<ExtractionHistory[]>;
+  
+  // Time Clock
+  createTimeClockEntry(entry: InsertTimeClockEntry): Promise<TimeClockEntry>;
+  updateTimeClockEntry(id: number, updates: Partial<InsertTimeClockEntry>): Promise<TimeClockEntry | undefined>;
+  getTimeClockEntry(id: number): Promise<TimeClockEntry | undefined>;
+  getActiveTimeClockEntry(userId: number): Promise<TimeClockEntry | undefined>;
+  getTimeClockEntriesForUser(userId: number, startDate?: Date, endDate?: Date): Promise<TimeClockEntry[]>;
+  getAllTimeClockEntries(startDate?: Date, endDate?: Date): Promise<TimeClockEntry[]>;
+  
+  // Time Clock Schedules
+  createTimeClockSchedule(schedule: InsertTimeClockSchedule): Promise<TimeClockSchedule>;
+  updateTimeClockSchedule(id: number, updates: Partial<InsertTimeClockSchedule>): Promise<TimeClockSchedule | undefined>;
+  getTimeClockSchedulesForUser(userId: number): Promise<TimeClockSchedule[]>;
+  getAllTimeClockSchedules(): Promise<TimeClockSchedule[]>;
+  
+  // Time Off Requests
+  createTimeOffRequest(request: InsertTimeOffRequest): Promise<TimeOffRequest>;
+  updateTimeOffRequest(id: number, updates: Partial<InsertTimeOffRequest>): Promise<TimeOffRequest | undefined>;
+  getTimeOffRequest(id: number): Promise<TimeOffRequest | undefined>;
+  getTimeOffRequestsForUser(userId: number): Promise<TimeOffRequest[]>;
+  getAllTimeOffRequests(): Promise<TimeOffRequest[]>;
+  getPendingTimeOffRequests(): Promise<TimeOffRequest[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -471,6 +496,166 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(extractionHistory)
       .orderBy(desc(extractionHistory.extractionTime));
+  }
+
+  // Time Clock Entries
+  async createTimeClockEntry(entry: InsertTimeClockEntry): Promise<TimeClockEntry> {
+    const [timeClockEntry] = await db
+      .insert(timeClockEntries)
+      .values(entry)
+      .returning();
+    return timeClockEntry;
+  }
+
+  async updateTimeClockEntry(id: number, updates: Partial<InsertTimeClockEntry>): Promise<TimeClockEntry | undefined> {
+    const [timeClockEntry] = await db
+      .update(timeClockEntries)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(timeClockEntries.id, id))
+      .returning();
+    return timeClockEntry || undefined;
+  }
+
+  async getTimeClockEntry(id: number): Promise<TimeClockEntry | undefined> {
+    const [entry] = await db
+      .select()
+      .from(timeClockEntries)
+      .where(eq(timeClockEntries.id, id));
+    return entry || undefined;
+  }
+
+  async getActiveTimeClockEntry(userId: number): Promise<TimeClockEntry | undefined> {
+    const [entry] = await db
+      .select()
+      .from(timeClockEntries)
+      .where(and(
+        eq(timeClockEntries.userId, userId),
+        eq(timeClockEntries.status, 'active')
+      ));
+    return entry || undefined;
+  }
+
+  async getTimeClockEntriesForUser(userId: number, startDate?: Date, endDate?: Date): Promise<TimeClockEntry[]> {
+    if (startDate && endDate) {
+      return await db
+        .select()
+        .from(timeClockEntries)
+        .where(and(
+          eq(timeClockEntries.userId, userId),
+          gte(timeClockEntries.clockInTime, startDate),
+          lte(timeClockEntries.clockInTime, endDate)
+        ))
+        .orderBy(desc(timeClockEntries.clockInTime));
+    }
+
+    return await db
+      .select()
+      .from(timeClockEntries)
+      .where(eq(timeClockEntries.userId, userId))
+      .orderBy(desc(timeClockEntries.clockInTime));
+  }
+
+  async getAllTimeClockEntries(startDate?: Date, endDate?: Date): Promise<TimeClockEntry[]> {
+    if (startDate && endDate) {
+      return await db
+        .select()
+        .from(timeClockEntries)
+        .where(and(
+          gte(timeClockEntries.clockInTime, startDate),
+          lte(timeClockEntries.clockInTime, endDate)
+        ))
+        .orderBy(desc(timeClockEntries.clockInTime));
+    }
+
+    return await db
+      .select()
+      .from(timeClockEntries)
+      .orderBy(desc(timeClockEntries.clockInTime));
+  }
+
+  // Time Clock Schedules
+  async createTimeClockSchedule(schedule: InsertTimeClockSchedule): Promise<TimeClockSchedule> {
+    const [timeClockSchedule] = await db
+      .insert(timeClockSchedules)
+      .values(schedule)
+      .returning();
+    return timeClockSchedule;
+  }
+
+  async updateTimeClockSchedule(id: number, updates: Partial<InsertTimeClockSchedule>): Promise<TimeClockSchedule | undefined> {
+    const [schedule] = await db
+      .update(timeClockSchedules)
+      .set(updates)
+      .where(eq(timeClockSchedules.id, id))
+      .returning();
+    return schedule || undefined;
+  }
+
+  async getTimeClockSchedulesForUser(userId: number): Promise<TimeClockSchedule[]> {
+    return await db
+      .select()
+      .from(timeClockSchedules)
+      .where(and(
+        eq(timeClockSchedules.userId, userId),
+        eq(timeClockSchedules.isActive, true)
+      ));
+  }
+
+  async getAllTimeClockSchedules(): Promise<TimeClockSchedule[]> {
+    return await db
+      .select()
+      .from(timeClockSchedules)
+      .where(eq(timeClockSchedules.isActive, true))
+      .orderBy(timeClockSchedules.userId, timeClockSchedules.dayOfWeek);
+  }
+
+  // Time Off Requests
+  async createTimeOffRequest(request: InsertTimeOffRequest): Promise<TimeOffRequest> {
+    const [timeOffRequest] = await db
+      .insert(timeOffRequests)
+      .values(request)
+      .returning();
+    return timeOffRequest;
+  }
+
+  async updateTimeOffRequest(id: number, updates: Partial<InsertTimeOffRequest>): Promise<TimeOffRequest | undefined> {
+    const [request] = await db
+      .update(timeOffRequests)
+      .set(updates)
+      .where(eq(timeOffRequests.id, id))
+      .returning();
+    return request || undefined;
+  }
+
+  async getTimeOffRequest(id: number): Promise<TimeOffRequest | undefined> {
+    const [request] = await db
+      .select()
+      .from(timeOffRequests)
+      .where(eq(timeOffRequests.id, id));
+    return request || undefined;
+  }
+
+  async getTimeOffRequestsForUser(userId: number): Promise<TimeOffRequest[]> {
+    return await db
+      .select()
+      .from(timeOffRequests)
+      .where(eq(timeOffRequests.userId, userId))
+      .orderBy(desc(timeOffRequests.requestedAt));
+  }
+
+  async getAllTimeOffRequests(): Promise<TimeOffRequest[]> {
+    return await db
+      .select()
+      .from(timeOffRequests)
+      .orderBy(desc(timeOffRequests.requestedAt));
+  }
+
+  async getPendingTimeOffRequests(): Promise<TimeOffRequest[]> {
+    return await db
+      .select()
+      .from(timeOffRequests)
+      .where(eq(timeOffRequests.status, 'pending'))
+      .orderBy(desc(timeOffRequests.requestedAt));
   }
 }
 
