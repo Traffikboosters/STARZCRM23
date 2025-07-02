@@ -4,10 +4,10 @@ import {
   users, companies, contacts, events, files, automations, scrapingJobs, 
   chatMessages, chatConversations, callLogs, campaigns, leadAllocations,
   documentTemplates, signingRequests, userInvitations, userSessions,
-  contactNotes, leadIntakes, leadEnrichments, enrichmentHistory, extractionHistory,
-  technicalProjects, technicalTasks, timeEntries, callRecordings, voiceToneAnalysis,
+  contactNotes, leadIntakes, leadEnrichment, enrichmentHistory, extractionHistory,
+  technicalProjects, technicalTasks, timeEntries, technicalProposals, callRecordings, voiceToneAnalysis,
   callInsights, keyCallMoments, callParticipants, voiceTrendAnalysis,
-  servicePackages, costStructures, profitabilityAnalysis,
+  servicePackages, costStructure, profitabilityAnalysis,
   moodEntries, teamMoodSummaries, moodPerformanceCorrelations
 } from "../shared/schema";
 import type { 
@@ -15,18 +15,17 @@ import type {
   ChatMessage, ChatConversation, CallLog, Campaign, LeadAllocation,
   DocumentTemplate, SigningRequest, UserInvitation,
   ContactNote, LeadIntake, LeadEnrichment, EnrichmentHistory, ExtractionHistory,
-  TechnicalProject, TechnicalTask, TimeEntry, CallRecording, VoiceToneAnalysis,
-  CallInsight, KeyCallMoment, CallParticipant, VoiceTrendAnalysis,
+  TechnicalProject, TechnicalTask, TimeEntry, TechnicalProposal, CallRecording, VoiceToneAnalysis,
+  CallInsights, KeyCallMoments, CallParticipants, VoiceTrendAnalysis,
   MoodEntry, TeamMoodSummary, MoodPerformanceCorrelation,
   InsertUser, InsertCompany, InsertContact, InsertEvent, InsertFile, InsertAutomation, InsertScrapingJob,
   InsertChatMessage, InsertChatConversation, InsertCallLog, InsertCampaign, InsertLeadAllocation,
   InsertDocumentTemplate, InsertSigningRequest, InsertUserInvitation,
   InsertContactNote, InsertLeadIntake, InsertLeadEnrichment, InsertEnrichmentHistory, InsertExtractionHistory,
-  InsertTechnicalProject, InsertTechnicalTask, InsertTimeEntry, InsertCallRecording, InsertVoiceToneAnalysis,
-  InsertCallInsight, InsertKeyCallMoment, InsertCallParticipant, InsertVoiceTrendAnalysis,
+  InsertTechnicalProject, InsertTechnicalTask, InsertTimeEntry, InsertTechnicalProposal, InsertCallRecording, InsertVoiceToneAnalysis,
+  InsertCallInsights, InsertKeyCallMoments, InsertCallParticipants, InsertVoiceTrendAnalysis,
   InsertMoodEntry, InsertTeamMoodSummary, InsertMoodPerformanceCorrelation
 } from "../shared/schema";
-import { eq, like, or, and, gte, lte, desc } from "drizzle-orm";
 
 // Complete interface implementation
 export interface IStorage {
@@ -102,6 +101,14 @@ export interface IStorage {
   getMoodPerformanceCorrelations(userId: number): Promise<MoodPerformanceCorrelation[]>;
   getAverageMoodByUser(userId: number, days: number): Promise<number>;
   getTeamMoodTrends(days: number): Promise<TeamMoodSummary[]>;
+  
+  // Technical Proposals
+  createTechnicalProposal(proposal: InsertTechnicalProposal): Promise<TechnicalProposal>;
+  getTechnicalProposals(): Promise<TechnicalProposal[]>;
+  getTechnicalProposalById(id: number): Promise<TechnicalProposal | undefined>;
+  updateTechnicalProposal(id: number, updates: Partial<InsertTechnicalProposal>): Promise<TechnicalProposal | undefined>;
+  getTechnicalProposalsByContact(contactId: number): Promise<TechnicalProposal[]>;
+  getTechnicalProposalsByTechnician(technicianId: number): Promise<TechnicalProposal[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -401,6 +408,52 @@ export class DatabaseStorage implements IStorage {
       .from(teamMoodSummaries)
       .where(gte(teamMoodSummaries.summaryDate, startDate))
       .orderBy(desc(teamMoodSummaries.summaryDate));
+  }
+
+  // Technical Proposals
+  async createTechnicalProposal(proposal: InsertTechnicalProposal): Promise<TechnicalProposal> {
+    const [newProposal] = await db
+      .insert(technicalProposals)
+      .values(proposal)
+      .returning();
+    return newProposal;
+  }
+
+  async getTechnicalProposals(): Promise<TechnicalProposal[]> {
+    return await db.select().from(technicalProposals).orderBy(desc(technicalProposals.createdAt));
+  }
+
+  async getTechnicalProposalById(id: number): Promise<TechnicalProposal | undefined> {
+    const [proposal] = await db
+      .select()
+      .from(technicalProposals)
+      .where(eq(technicalProposals.id, id));
+    return proposal || undefined;
+  }
+
+  async updateTechnicalProposal(id: number, updates: Partial<InsertTechnicalProposal>): Promise<TechnicalProposal | undefined> {
+    const [proposal] = await db
+      .update(technicalProposals)
+      .set(updates)
+      .where(eq(technicalProposals.id, id))
+      .returning();
+    return proposal || undefined;
+  }
+
+  async getTechnicalProposalsByContact(contactId: number): Promise<TechnicalProposal[]> {
+    return await db
+      .select()
+      .from(technicalProposals)
+      .where(eq(technicalProposals.contactId, contactId))
+      .orderBy(desc(technicalProposals.createdAt));
+  }
+
+  async getTechnicalProposalsByTechnician(technicianId: number): Promise<TechnicalProposal[]> {
+    return await db
+      .select()
+      .from(technicalProposals)
+      .where(eq(technicalProposals.assignedTechnician, technicianId))
+      .orderBy(desc(technicalProposals.createdAt));
   }
 }
 

@@ -16,11 +16,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Search, Filter, User, Mail, Phone, Building, MapPin, Calendar, Star, MessageCircle, X, Clock, DollarSign, FileText, ExternalLink, CreditCard, Users, Target, Edit, Send, Video, MoreVertical, CheckCircle, AlertCircle, Briefcase, TrendingUp, Bot, Zap, ClipboardList, StickyNote, Copy, TestTube, Settings } from "lucide-react";
+import { Plus, Search, Filter, User, Mail, Phone, Building, MapPin, Calendar, Star, MessageCircle, X, Clock, DollarSign, FileText, ExternalLink, CreditCard, Users, Target, Edit, Send, Video, MoreVertical, CheckCircle, AlertCircle, Briefcase, TrendingUp, Bot, Zap, ClipboardList, StickyNote, Copy, TestTube, Settings, FileUp } from "lucide-react";
 import { format } from "date-fns";
 import type { Contact, User as UserType } from "@shared/schema";
 import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
 import ContactDetailsModal from "@/components/contact-details-modal";
+import TechnicalProposalForm from "@/components/technical-proposal-form";
 import LeadSourceBadge from "@/components/lead-source-badge";
 import ContextualSalesCoaching from "@/components/contextual-sales-coaching";
 import AISalesTipGenerator from "@/components/ai-sales-tip-generator";
@@ -458,6 +459,7 @@ export default function CRMView() {
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isCoachingModalOpen, setIsCoachingModalOpen] = useState(false);
   const [isAITipGeneratorOpen, setIsAITipGeneratorOpen] = useState(false);
+  const [isTechnicalProposalModalOpen, setIsTechnicalProposalModalOpen] = useState(false);
   const [showSTARZDialer, setShowSTARZDialer] = useState(false);
 
   const [isLeadAllocationModalOpen, setIsLeadAllocationModalOpen] = useState(false);
@@ -1327,7 +1329,7 @@ export default function CRMView() {
                   </div>
 
                   {/* Enhanced Action Buttons */}
-                  <div className="grid grid-cols-4 gap-2 mt-4">
+                  <div className="grid grid-cols-5 gap-2 mt-4">
                     {/* Call Button */}
                     <Button
                       variant="outline"
@@ -1441,54 +1443,20 @@ export default function CRMView() {
                       <span className="leading-none text-center">AI Tips</span>
                     </Button>
 
-                    {/* More Actions */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[65px] px-2"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <MoreVertical className="h-4 w-4 mb-1 flex-shrink-0" />
-                          <span className="leading-none text-center">More</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => {
-                          setSelectedContact(contact);
-                          setIsWorkOrderModalOpen(true);
-                        }}>
-                          <FileText className="h-4 w-4 mr-2" />
-                          Create Work Order
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => {
-                          setSelectedContactForDetails(contact);
-                          setIsDetailsModalOpen(true);
-                        }}>
-                          <User className="h-4 w-4 mr-2" />
-                          View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => {
-                          toast({
-                            title: "Status Updated",
-                            description: `${contact.firstName} marked as contacted`,
-                          });
-                        }}>
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Mark as Contacted
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => {
-                          toast({
-                            title: "Priority Set",
-                            description: `${contact.firstName} marked as high priority`,
-                          });
-                        }}>
-                          <AlertCircle className="h-4 w-4 mr-2" />
-                          Set High Priority
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {/* Send to Technical Button */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[65px] px-2 border-orange-300 hover:bg-orange-50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedContact(contact);
+                        setIsTechnicalProposalModalOpen(true);
+                      }}
+                    >
+                      <FileUp className="h-4 w-4 mb-1 text-orange-600 flex-shrink-0" />
+                      <span className="leading-none text-center">Send to Tech</span>
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -1956,6 +1924,63 @@ export default function CRMView() {
                   description: "STARZ dialer session ended",
                 });
               }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Technical Proposal Modal */}
+      <Dialog open={isTechnicalProposalModalOpen} onOpenChange={setIsTechnicalProposalModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileUp className="h-5 w-5 text-orange-600" />
+              Send to Technical Team
+              <div className="ml-auto flex items-center gap-3">
+                <img 
+                  src={traffikBoostersLogo}
+                  alt="Traffik Boosters" 
+                  className="h-8 w-8"
+                />
+                <div className="text-right">
+                  <div className="text-sm font-semibold text-black">Technical Portal</div>
+                  <div className="text-xs text-black">More Traffik! More Sales!</div>
+                </div>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedContact && (
+            <TechnicalProposalForm
+              contact={selectedContact}
+              currentUser={currentUser}
+              technicians={allUsers.filter(user => user.department === 'technical' || user.role === 'admin')}
+              onSubmit={async (proposalData) => {
+                try {
+                  const response = await apiRequest('POST', '/api/technical-proposals', {
+                    ...proposalData,
+                    contactId: selectedContact.id,
+                    assignedSalesRep: currentUser?.id,
+                    requestedBy: currentUser?.id,
+                    status: 'pending'
+                  });
+                  
+                  toast({
+                    title: "Proposal Request Sent!",
+                    description: `Technical proposal request sent for ${selectedContact.firstName} ${selectedContact.lastName}`,
+                  });
+                  
+                  setIsTechnicalProposalModalOpen(false);
+                  queryClient.invalidateQueries({ queryKey: ["/api/technical-proposals"] });
+                } catch (error) {
+                  toast({
+                    title: "Error",
+                    description: "Failed to send technical proposal request",
+                    variant: "destructive",
+                  });
+                }
+              }}
+              onCancel={() => setIsTechnicalProposalModalOpen(false)}
             />
           )}
         </DialogContent>

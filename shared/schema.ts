@@ -1497,3 +1497,118 @@ export type InsertWhatsappConversation = z.infer<typeof insertWhatsappConversati
 
 export type ExtractionHistory = typeof extractionHistory.$inferSelect;
 export type InsertExtractionHistory = z.infer<typeof insertExtractionHistorySchema>;
+
+// Technical Proposals System
+export const technicalProposals = pgTable("technical_proposals", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  assignedSalesRep: integer("assigned_sales_rep").references(() => users.id).notNull(),
+  assignedTechnician: integer("assigned_technician").references(() => users.id),
+  requestedBy: integer("requested_by").references(() => users.id).notNull(),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  serviceType: text("service_type").notNull(), // seo, web_development, ppc, content_marketing, social_media, etc.
+  serviceScope: text("service_scope").array(), // detailed scope items
+  clientRequirements: text("client_requirements"),
+  budgetRange: text("budget_range"),
+  timeline: text("timeline"), // expected delivery timeline
+  priority: text("priority").default("medium"), // low, medium, high, urgent
+  status: text("status").default("pending"), // pending, in_progress, completed, delivered, rejected
+  proposalContent: text("proposal_content"), // comprehensive proposal from technician
+  technicalSpecifications: json("technical_specifications"), // detailed tech specs
+  deliverables: text("deliverables").array(), // list of deliverables
+  estimatedHours: integer("estimated_hours"),
+  proposedPrice: integer("proposed_price"), // price in cents
+  revisionRequests: text("revision_requests"),
+  revisionCount: integer("revision_count").default(0),
+  clientFeedback: text("client_feedback"),
+  internalNotes: text("internal_notes"),
+  attachments: text("attachments").array(), // file URLs or paths
+  submittedAt: timestamp("submitted_at"),
+  acceptedAt: timestamp("accepted_at"),
+  completedAt: timestamp("completed_at"),
+  deliveredAt: timestamp("delivered_at"),
+  dueDate: timestamp("due_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Proposal Revisions for tracking changes
+export const proposalRevisions = pgTable("proposal_revisions", {
+  id: serial("id").primaryKey(),
+  proposalId: integer("proposal_id").references(() => technicalProposals.id).notNull(),
+  revisionNumber: integer("revision_number").notNull(),
+  revisedBy: integer("revised_by").references(() => users.id).notNull(),
+  revisionType: text("revision_type").notNull(), // content, pricing, timeline, scope
+  previousContent: text("previous_content"),
+  newContent: text("new_content"),
+  revisionNotes: text("revision_notes"),
+  requestedBy: integer("requested_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Proposal Communication between sales rep and technician
+export const proposalCommunication = pgTable("proposal_communication", {
+  id: serial("id").primaryKey(),
+  proposalId: integer("proposal_id").references(() => technicalProposals.id).notNull(),
+  senderId: integer("sender_id").references(() => users.id).notNull(),
+  recipientId: integer("recipient_id").references(() => users.id).notNull(),
+  messageType: text("message_type").default("note"), // note, question, update, approval_request
+  subject: text("subject"),
+  message: text("message").notNull(),
+  priority: text("priority").default("normal"), // low, normal, high, urgent
+  isRead: boolean("is_read").default(false),
+  attachments: text("attachments").array(),
+  requiresResponse: boolean("requires_response").default(false),
+  responseDeadline: timestamp("response_deadline"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Proposal Templates for common services
+export const proposalTemplates = pgTable("proposal_templates", {
+  id: serial("id").primaryKey(),
+  templateName: text("template_name").notNull(),
+  serviceType: text("service_type").notNull(),
+  templateContent: text("template_content").notNull(),
+  defaultSpecs: json("default_specs"),
+  estimatedHours: integer("estimated_hours"),
+  basePrice: integer("base_price"), // base price in cents
+  deliverables: text("deliverables").array(),
+  isActive: boolean("is_active").default(true),
+  createdBy: integer("created_by").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Insert schemas for technical proposals
+export const insertTechnicalProposalSchema = createInsertSchema(technicalProposals).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertProposalRevisionSchema = createInsertSchema(proposalRevisions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertProposalCommunicationSchema = createInsertSchema(proposalCommunication).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertProposalTemplateSchema = createInsertSchema(proposalTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Types for technical proposals
+export type TechnicalProposal = typeof technicalProposals.$inferSelect;
+export type InsertTechnicalProposal = z.infer<typeof insertTechnicalProposalSchema>;
+export type ProposalRevision = typeof proposalRevisions.$inferSelect;
+export type InsertProposalRevision = z.infer<typeof insertProposalRevisionSchema>;
+export type ProposalCommunication = typeof proposalCommunication.$inferSelect;
+export type InsertProposalCommunication = z.infer<typeof insertProposalCommunicationSchema>;
+export type ProposalTemplate = typeof proposalTemplates.$inferSelect;
+export type InsertProposalTemplate = z.infer<typeof insertProposalTemplateSchema>;

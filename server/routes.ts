@@ -2859,6 +2859,78 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  // Technical Proposals API endpoints
+  app.post("/api/technical-proposals", async (req, res) => {
+    try {
+      const proposal = await storage.createTechnicalProposal(req.body);
+      
+      // Broadcast real-time notification
+      if (wss) {
+        wss.clients.forEach(client => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+              type: 'technical_proposal_created',
+              proposal: proposal,
+              timestamp: new Date().toISOString()
+            }));
+          }
+        });
+      }
+      
+      res.json(proposal);
+    } catch (error) {
+      console.error('Error creating technical proposal:', error);
+      res.status(500).json({ message: "Error creating technical proposal" });
+    }
+  });
+
+  app.get("/api/technical-proposals", async (req, res) => {
+    try {
+      const proposals = await storage.getTechnicalProposals();
+      res.json(proposals);
+    } catch (error) {
+      console.error('Error fetching technical proposals:', error);
+      res.status(500).json({ message: "Error fetching technical proposals" });
+    }
+  });
+
+  app.get("/api/technical-proposals/:id", async (req, res) => {
+    try {
+      const proposal = await storage.getTechnicalProposalById(parseInt(req.params.id));
+      if (!proposal) {
+        return res.status(404).json({ message: "Technical proposal not found" });
+      }
+      res.json(proposal);
+    } catch (error) {
+      console.error('Error fetching technical proposal:', error);
+      res.status(500).json({ message: "Error fetching technical proposal" });
+    }
+  });
+
+  app.patch("/api/technical-proposals/:id", async (req, res) => {
+    try {
+      const proposal = await storage.updateTechnicalProposal(parseInt(req.params.id), req.body);
+      
+      // Broadcast real-time notification
+      if (wss) {
+        wss.clients.forEach(client => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+              type: 'technical_proposal_updated',
+              proposal: proposal,
+              timestamp: new Date().toISOString()
+            }));
+          }
+        });
+      }
+      
+      res.json(proposal);
+    } catch (error) {
+      console.error('Error updating technical proposal:', error);
+      res.status(500).json({ message: "Error updating technical proposal" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // Set up WebSocket server with proper connection handling
