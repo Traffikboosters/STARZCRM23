@@ -193,6 +193,20 @@ const platforms: VendorPlatform[] = [
     category: 'directory',
     color: 'bg-green-100 border-green-300',
     features: ['Verified Reviews', 'Home Services', 'Licensed Pros']
+  },
+  {
+    id: 'usdirectory',
+    name: 'USDirectory',
+    description: 'Comprehensive US business directory with professional services',
+    icon: <Building2 className="h-6 w-6" />,
+    endpoint: '/api/scraping-jobs/usdirectory',
+    leadCount: '20-27',
+    leadType: 'Professional Businesses',
+    avgRevenue: '$75K-$300K/year',
+    successRate: '90%',
+    category: 'directory',
+    color: 'bg-indigo-100 border-indigo-300',
+    features: ['Professional Services', 'Established Businesses', 'Verified Directory']
   }
 ];
 
@@ -403,7 +417,7 @@ export default function UnifiedVendorSelector() {
               <p className="text-sm text-gray-600">Total Platforms</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-orange-600">183-267</p>
+              <p className="text-2xl font-bold text-orange-600">203-294</p>
               <p className="text-sm text-gray-600">Leads per Cycle</p>
             </div>
             <div>

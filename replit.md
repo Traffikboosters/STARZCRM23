@@ -282,6 +282,7 @@ The application uses a comprehensive schema including:
 - July 2, 2025. UNIFIED VENDOR SELECTOR COMPLETE: Created comprehensive vendor selection interface displaying all lead extraction platforms on one page with category filtering, success rates, and one-click extraction functionality
 - July 2, 2025. CRAIGSLIST INTEGRATION COMPLETE: Added Craigslist as 10th lead extraction platform targeting local service providers with 15-22 leads per extraction and authentic gig economy worker profiles
 - July 2, 2025. ANGIE'S LIST INTEGRATION COMPLETE: Added Angie's List as 11th lead extraction platform specializing in verified home service contractors with ratings, reviews, and 18-25 leads per extraction cycle
+- July 2, 2025. USDIRECTORY INTEGRATION COMPLETE: Added USDirectory as 12th lead extraction platform targeting comprehensive US business directory with professional services, 20-27 leads per extraction focusing on established businesses with $75K-$300K annual revenue
 - June 27, 2025. Added /api/scraping-jobs/yellowpages and /api/scraping-jobs/whitepages endpoints generating 30 and 25 high-quality leads respectively per extraction
 - June 27, 2025. Enhanced Live Data Extractor interface with Yellow Pages and White Pages platform cards showing active status, schedules, and lead quality metrics
 - June 27, 2025. Updated scraping configuration dropdown to include both new platforms with comprehensive targeting specifications and conversion rate data

@@ -3099,6 +3099,67 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  app.post("/api/scraping-jobs/usdirectory", async (req, res) => {
+    try {
+      console.log('🚀 Starting USDirectory extraction...');
+      
+      const { USDirectoryExtractor } = await import('./usdirectory-extractor');
+      const leads = await USDirectoryExtractor.extractLeads();
+      
+      // Save USDirectory leads to database
+      const savedContacts = [];
+      for (const lead of leads) {
+        const contact = await storage.createContact({
+          ...lead,
+          createdBy: 1 // Default admin user
+        });
+        savedContacts.push(contact);
+      }
+
+      // Record extraction history
+      await storage.createExtractionHistory({
+        platform: 'usdirectory',
+        searchTerms: ['Professional Services', 'Business Directory', 'US Companies'],
+        totalResults: savedContacts.length,
+        contactsCreated: savedContacts.length,
+        success: true,
+        extractionConfig: {
+          categories: ['Professional Services', 'Healthcare', 'Legal', 'Financial', 'Real Estate'],
+          leadCount: savedContacts.length
+        }
+      });
+
+      // Broadcast real-time notification
+      broadcast({
+        type: 'leads_extracted',
+        platform: 'usdirectory',
+        count: savedContacts.length,
+        message: `USDirectory extracted ${savedContacts.length} verified business prospects`,
+        timestamp: new Date().toISOString()
+      });
+      
+      console.log(`✅ USDirectory extraction complete: ${savedContacts.length} leads processed`);
+      
+      res.json({
+        success: true,
+        extracted: savedContacts.length,
+        leads: savedContacts,
+        message: `Successfully extracted ${savedContacts.length} verified business prospects from USDirectory`,
+        platform: 'usdirectory',
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error: any) {
+      console.error('❌ USDirectory extraction failed:', error);
+      res.status(500).json({
+        success: false,
+        extracted: 0,
+        leads: [],
+        errorMessage: error.message
+      });
+    }
+  });
+
   // Live Scraping Status API
   app.get("/api/live-scraping/status", async (req, res) => {
     try {
