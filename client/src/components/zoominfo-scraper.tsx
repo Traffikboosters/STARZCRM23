@@ -44,7 +44,7 @@ export default function ZoomInfoScraper() {
     onSuccess: (data) => {
       toast({
         title: "ZoomInfo Industry Extraction Complete",
-        description: `Successfully extracted ${data.extracted} leads from ${searchParams.industry}`,
+        description: `Successfully extracted ${data.contacts?.length || 0} leads from ${searchParams.industry}`,
       });
     },
     onError: (error: any) => {
@@ -64,7 +64,7 @@ export default function ZoomInfoScraper() {
     onSuccess: (data) => {
       toast({
         title: "ZoomInfo Revenue Extraction Complete",
-        description: `Successfully extracted ${data.extracted} high-revenue prospects`,
+        description: `Successfully extracted ${data.contacts?.length || 0} high-revenue prospects`,
       });
     },
     onError: (error: any) => {
@@ -84,7 +84,7 @@ export default function ZoomInfoScraper() {
     onSuccess: (data) => {
       toast({
         title: "ZoomInfo Location Extraction Complete",
-        description: `Successfully extracted ${data.extracted} leads from ${searchParams.city}, ${searchParams.state}`,
+        description: `Successfully extracted ${data.contacts?.length || 0} leads from ${searchParams.city}, ${searchParams.state}`,
       });
     },
     onError: (error: any) => {

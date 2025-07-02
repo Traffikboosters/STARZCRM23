@@ -2729,18 +2729,21 @@ a=ssrc:1001 msid:stream track`
       // Save contacts to database
       const savedContacts = [];
       for (const contactData of contacts) {
-        const contact = await storage.createContact(contactData);
+        const contact = await storage.createContact({
+          ...contactData,
+          createdBy: 1 // Default admin user
+        });
         savedContacts.push(contact);
       }
 
       // Record extraction history
       await storage.createExtractionHistory({
         platform: 'zoominfo',
-        searchTerms: `Industry: ${industry}${location ? `, Location: ${location}` : ''}`,
+        searchTerms: [`Industry: ${industry}${location ? `, Location: ${location}` : ''}`],
         totalResults: savedContacts.length,
-        successfulExtractions: savedContacts.length,
-        extractedAt: new Date(),
-        extractionData: zoomInfoData
+        contactsCreated: savedContacts.length,
+        success: true,
+        extractionConfig: zoomInfoData
       });
 
       // Broadcast real-time notification
@@ -2776,18 +2779,21 @@ a=ssrc:1001 msid:stream track`
       // Save contacts to database
       const savedContacts = [];
       for (const contactData of contacts) {
-        const contact = await storage.createContact(contactData);
+        const contact = await storage.createContact({
+          ...contactData,
+          createdBy: 1 // Default admin user
+        });
         savedContacts.push(contact);
       }
 
       // Record extraction history
       await storage.createExtractionHistory({
         platform: 'zoominfo',
-        searchTerms: `Revenue: ${minRevenue}-${maxRevenue}`,
+        searchTerms: [`Revenue: ${minRevenue}-${maxRevenue}`],
         totalResults: savedContacts.length,
-        successfulExtractions: savedContacts.length,
-        extractedAt: new Date(),
-        extractionData: zoomInfoData
+        contactsCreated: savedContacts.length,
+        success: true,
+        extractionConfig: zoomInfoData
       });
 
       // Broadcast real-time notification
@@ -2823,18 +2829,21 @@ a=ssrc:1001 msid:stream track`
       // Save contacts to database
       const savedContacts = [];
       for (const contactData of contacts) {
-        const contact = await storage.createContact(contactData);
+        const contact = await storage.createContact({
+          ...contactData,
+          createdBy: 1 // Default admin user
+        });
         savedContacts.push(contact);
       }
 
       // Record extraction history
       await storage.createExtractionHistory({
         platform: 'zoominfo',
-        searchTerms: `Location: ${city}, ${state}`,
+        searchTerms: [`Location: ${city}, ${state}`],
         totalResults: savedContacts.length,
-        successfulExtractions: savedContacts.length,
-        extractedAt: new Date(),
-        extractionData: zoomInfoData
+        contactsCreated: savedContacts.length,
+        success: true,
+        extractionConfig: zoomInfoData
       });
 
       // Broadcast real-time notification

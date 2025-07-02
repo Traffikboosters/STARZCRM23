@@ -109,6 +109,10 @@ export interface IStorage {
   updateTechnicalProposal(id: number, updates: Partial<InsertTechnicalProposal>): Promise<TechnicalProposal | undefined>;
   getTechnicalProposalsByContact(contactId: number): Promise<TechnicalProposal[]>;
   getTechnicalProposalsByTechnician(technicianId: number): Promise<TechnicalProposal[]>;
+  
+  // Extraction History
+  createExtractionHistory(history: InsertExtractionHistory): Promise<ExtractionHistory>;
+  getExtractionHistory(): Promise<ExtractionHistory[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -298,8 +302,8 @@ export class DatabaseStorage implements IStorage {
   async getEventsByDateRange(startDate: Date, endDate: Date): Promise<Event[]> {
     return await db.select().from(events)
       .where(and(
-        gte(events.startTime, startDate),
-        lte(events.startTime, endDate)
+        gte(events.startDate, startDate),
+        lte(events.startDate, endDate)
       ));
   }
 
@@ -454,6 +458,19 @@ export class DatabaseStorage implements IStorage {
       .from(technicalProposals)
       .where(eq(technicalProposals.assignedTechnician, technicianId))
       .orderBy(desc(technicalProposals.createdAt));
+  }
+
+  // Extraction History
+  async createExtractionHistory(history: InsertExtractionHistory): Promise<ExtractionHistory> {
+    const [result] = await db.insert(extractionHistory).values(history).returning();
+    return result;
+  }
+
+  async getExtractionHistory(): Promise<ExtractionHistory[]> {
+    return await db
+      .select()
+      .from(extractionHistory)
+      .orderBy(desc(extractionHistory.extractionTime));
   }
 }
 
