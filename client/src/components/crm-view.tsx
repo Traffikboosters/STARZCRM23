@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Search, Filter, User, Mail, Phone, Building, MapPin, Calendar, Star, MessageCircle, X, Clock, DollarSign, FileText, ExternalLink, CreditCard, Users, Target, Edit, Send, Video, MoreVertical, CheckCircle, AlertCircle, Briefcase, TrendingUp, Bot, Zap, ClipboardList, StickyNote, Copy, TestTube } from "lucide-react";
+import { Plus, Search, Filter, User, Mail, Phone, Building, MapPin, Calendar, Star, MessageCircle, X, Clock, DollarSign, FileText, ExternalLink, CreditCard, Users, Target, Edit, Send, Video, MoreVertical, CheckCircle, AlertCircle, Briefcase, TrendingUp, Bot, Zap, ClipboardList, StickyNote, Copy, TestTube, Settings } from "lucide-react";
 import { format } from "date-fns";
 import type { Contact, User as UserType } from "@shared/schema";
 import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
@@ -1032,6 +1032,59 @@ export default function CRMView() {
                       )}
                     </div>
                   </div>
+
+                  {/* Service Interest Information */}
+                  {(contact.primaryServiceNeed || (contact.servicesInterested && contact.servicesInterested.length > 0)) && (
+                    <div className="pt-2 border-t border-gray-100 space-y-1">
+                      <div className="flex items-center text-xs text-gray-600 mb-1">
+                        <Target className="h-3 w-3 mr-1" />
+                        <span className="font-medium">Service Interest</span>
+                      </div>
+                      {contact.primaryServiceNeed && (
+                        <div className="text-sm font-medium text-blue-600">
+                          {contact.primaryServiceNeed}
+                        </div>
+                      )}
+                      {contact.servicesInterested && contact.servicesInterested.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {contact.servicesInterested.slice(0, 3).map((service, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs px-1 py-0">
+                              {service}
+                            </Badge>
+                          ))}
+                          {contact.servicesInterested.length > 3 && (
+                            <Badge variant="outline" className="text-xs px-1 py-0">
+                              +{contact.servicesInterested.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                      {contact.serviceDescription && (
+                        <div className="text-xs text-gray-600 truncate">
+                          {contact.serviceDescription}
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between text-xs">
+                        {contact.serviceUrgency && (
+                          <Badge 
+                            variant={
+                              contact.serviceUrgency === 'urgent' ? 'destructive' : 
+                              contact.serviceUrgency === 'high' ? 'default' : 
+                              'secondary'
+                            } 
+                            className="text-xs px-1 py-0"
+                          >
+                            {contact.serviceUrgency.toUpperCase()}
+                          </Badge>
+                        )}
+                        {contact.serviceBudget && (
+                          <span className="text-green-600 font-medium">
+                            ${(contact.serviceBudget / 100).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Lead Source Badge */}
                   {contact.leadSource && (

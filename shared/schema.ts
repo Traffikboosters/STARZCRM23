@@ -140,6 +140,14 @@ export const contacts = pgTable("contacts", {
   engagementScore: integer("engagement_score").default(0), // based on interactions
   qualificationScore: integer("qualification_score").default(0), // BANT qualification score
   lastScoreUpdate: timestamp("last_score_update"),
+  // Service Interest fields
+  servicesInterested: text("services_interested").array(), // array of services prospect is interested in
+  primaryServiceNeed: text("primary_service_need"), // main service they're seeking
+  serviceDescription: text("service_description"), // detailed description of their service needs
+  currentProvider: text("current_provider"), // who they currently use for services
+  serviceUrgency: text("service_urgency").default("medium"), // low, medium, high, urgent
+  serviceBudget: integer("service_budget"), // budget specifically for services in cents
+  serviceTimeline: text("service_timeline"), // when they need service delivered
   importedAt: timestamp("imported_at").defaultNow().notNull(), // exact time when lead was imported into Starz
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
