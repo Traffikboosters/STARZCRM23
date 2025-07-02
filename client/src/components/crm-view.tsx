@@ -1970,62 +1970,76 @@ export default function CRMView() {
         </DialogContent>
       </Dialog>
 
-      {/* Technical Proposal Modal */}
-      <Dialog open={isTechnicalProposalModalOpen} onOpenChange={setIsTechnicalProposalModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileUp className="h-5 w-5 text-orange-600" />
-              Send to Technical Team
-              <div className="ml-auto flex items-center gap-3">
-                <img 
-                  src={traffikBoostersLogo}
-                  alt="Traffik Boosters" 
-                  className="h-8 w-8"
-                />
-                <div className="text-right">
-                  <div className="text-sm font-semibold text-black">Technical Portal</div>
-                  <div className="text-xs text-black">More Traffik! More Sales!</div>
+      {/* Technical Proposal Modal - Fixed Overlapping Issue */}
+      {isTechnicalProposalModalOpen && (
+        <div className="fixed inset-0 z-[9999] bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[95vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileUp className="h-5 w-5 text-orange-600" />
+                  <h2 className="text-lg font-semibold">Send to Technical Team</h2>
+                </div>
+                <div className="flex items-center gap-3">
+                  <img 
+                    src={traffikBoostersLogo}
+                    alt="Traffik Boosters" 
+                    className="h-8 w-8"
+                  />
+                  <div className="text-right">
+                    <div className="text-sm font-semibold text-black">Technical Portal</div>
+                    <div className="text-xs text-black">More Traffik! More Sales!</div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsTechnicalProposalModalOpen(false)}
+                    className="ml-2"
+                  >
+                    ✕
+                  </Button>
                 </div>
               </div>
-            </DialogTitle>
-          </DialogHeader>
-          
-          {selectedContact && (
-            <TechnicalProposalForm
-              contact={selectedContact}
-              currentUser={currentUser as any}
-              technicians={allUsers.filter(user => user.department === 'technical' || user.role === 'admin')}
-              onSubmit={async (proposalData) => {
-                try {
-                  const response = await apiRequest('POST', '/api/technical-proposals', {
-                    ...proposalData,
-                    contactId: selectedContact.id,
-                    assignedSalesRep: currentUser?.id,
-                    requestedBy: currentUser?.id,
-                    status: 'pending'
-                  });
-                  
-                  toast({
-                    title: "Proposal Request Sent!",
-                    description: `Technical proposal request sent for ${selectedContact.firstName} ${selectedContact.lastName}`,
-                  });
-                  
-                  setIsTechnicalProposalModalOpen(false);
-                  queryClient.invalidateQueries({ queryKey: ["/api/technical-proposals"] });
-                } catch (error) {
-                  toast({
-                    title: "Error",
-                    description: "Failed to send technical proposal request",
-                    variant: "destructive",
-                  });
-                }
-              }}
-              onCancel={() => setIsTechnicalProposalModalOpen(false)}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+            </div>
+            
+            <div className="p-6">
+              {selectedContact && (
+                <TechnicalProposalForm
+                  contact={selectedContact}
+                  currentUser={currentUser as any}
+                  technicians={allUsers.filter(user => user.department === 'technical' || user.role === 'admin')}
+                  onSubmit={async (proposalData) => {
+                    try {
+                      const response = await apiRequest('POST', '/api/technical-proposals', {
+                        ...proposalData,
+                        contactId: selectedContact.id,
+                        assignedSalesRep: currentUser?.id,
+                        requestedBy: currentUser?.id,
+                        status: 'pending'
+                      });
+                      
+                      toast({
+                        title: "Proposal Request Sent!",
+                        description: `Technical proposal request sent for ${selectedContact.firstName} ${selectedContact.lastName}`,
+                      });
+                      
+                      setIsTechnicalProposalModalOpen(false);
+                      queryClient.invalidateQueries({ queryKey: ["/api/technical-proposals"] });
+                    } catch (error) {
+                      toast({
+                        title: "Error",
+                        description: "Failed to send technical proposal request",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  onCancel={() => setIsTechnicalProposalModalOpen(false)}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* AI Sales Tip Generator Modal */}
       {selectedContact && isAITipGeneratorOpen && (
