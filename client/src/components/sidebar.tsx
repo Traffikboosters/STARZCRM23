@@ -221,7 +221,7 @@ export default function Sidebar({
                       "w-full space-x-3",
                       isCollapsed ? "justify-center px-2" : "justify-start",
                       isActive 
-                        ? "bg-brand-primary text-white hover:bg-brand-secondary" 
+                        ? "bg-green-600 text-white hover:bg-green-700" 
                         : "text-neutral-medium hover:bg-neutral-lightest"
                     )}
                     onClick={() => onTabChange(item.id)}
