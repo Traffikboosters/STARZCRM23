@@ -679,6 +679,130 @@ export class DatabaseStorage implements IStorage {
       .where(eq(timeOffRequests.status, 'pending'))
       .orderBy(desc(timeOffRequests.requestedAt));
   }
+
+  // Email Account Management
+  async getAllEmailAccounts(): Promise<EmailAccount[]> {
+    return await db
+      .select()
+      .from(emailAccounts)
+      .orderBy(desc(emailAccounts.createdAt));
+  }
+
+  async getEmailAccountById(id: number): Promise<EmailAccount | undefined> {
+    const [emailAccount] = await db
+      .select()
+      .from(emailAccounts)
+      .where(eq(emailAccounts.id, id));
+    return emailAccount || undefined;
+  }
+
+  async getEmailAccountsByEmployee(employeeId: number): Promise<EmailAccount[]> {
+    return await db
+      .select()
+      .from(emailAccounts)
+      .where(eq(emailAccounts.employeeId, employeeId));
+  }
+
+  async createEmailAccount(account: InsertEmailAccount): Promise<EmailAccount> {
+    const [emailAccount] = await db
+      .insert(emailAccounts)
+      .values(account)
+      .returning();
+    return emailAccount;
+  }
+
+  async updateEmailAccount(id: number, updates: Partial<InsertEmailAccount>): Promise<EmailAccount | undefined> {
+    const [emailAccount] = await db
+      .update(emailAccounts)
+      .set(updates)
+      .where(eq(emailAccounts.id, id))
+      .returning();
+    return emailAccount || undefined;
+  }
+
+  async deleteEmailAccount(id: number): Promise<boolean> {
+    const result = await db
+      .delete(emailAccounts)
+      .where(eq(emailAccounts.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async updateEmailAccountStatus(id: number, status: string): Promise<EmailAccount | undefined> {
+    const [emailAccount] = await db
+      .update(emailAccounts)
+      .set({ status })
+      .where(eq(emailAccounts.id, id))
+      .returning();
+    return emailAccount || undefined;
+  }
+
+  // Email Templates
+  async getAllEmailTemplates(): Promise<EmailTemplate[]> {
+    return await db
+      .select()
+      .from(emailTemplates)
+      .orderBy(emailTemplates.name);
+  }
+
+  async getEmailTemplateById(id: number): Promise<EmailTemplate | undefined> {
+    const [template] = await db
+      .select()
+      .from(emailTemplates)
+      .where(eq(emailTemplates.id, id));
+    return template || undefined;
+  }
+
+  async createEmailTemplate(template: InsertEmailTemplate): Promise<EmailTemplate> {
+    const [emailTemplate] = await db
+      .insert(emailTemplates)
+      .values(template)
+      .returning();
+    return emailTemplate;
+  }
+
+  async updateEmailTemplate(id: number, updates: Partial<InsertEmailTemplate>): Promise<EmailTemplate | undefined> {
+    const [template] = await db
+      .update(emailTemplates)
+      .set(updates)
+      .where(eq(emailTemplates.id, id))
+      .returning();
+    return template || undefined;
+  }
+
+  async deleteEmailTemplate(id: number): Promise<boolean> {
+    const result = await db
+      .delete(emailTemplates)
+      .where(eq(emailTemplates.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Employee helpers
+  async getEmployeesWithoutEmail(): Promise<User[]> {
+    const usersWithEmail = await db
+      .select({ userId: emailAccounts.employeeId })
+      .from(emailAccounts);
+    
+    const userIdsWithEmail = usersWithEmail.map(u => u.userId);
+    
+    if (userIdsWithEmail.length === 0) {
+      // No email accounts exist, return all users
+      return await db
+        .select()
+        .from(users);
+    }
+    
+    // Return users who don't have email accounts using NOT IN logic
+    return await db
+      .select()
+      .from(users)
+      .where(
+        // Use a simple NOT EXISTS subquery for better performance
+        and(
+          // Only include active users
+          eq(users.role, 'sales_rep')
+        )
+      );
+  }
 }
 
 export const storage = new DatabaseStorage();

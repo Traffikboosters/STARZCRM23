@@ -44,26 +44,17 @@ export default function EmailManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch all employees
-  const { data: employees = [] } = useQuery({
-    queryKey: ['/api/users'],
-    queryFn: () => apiRequest('GET', '/api/users').then(response => response.json())
+  // Fetch email accounts
+  const { data: emailSetups = [], isLoading: emailLoading } = useQuery({
+    queryKey: ['/api/email-accounts'],
+    queryFn: () => apiRequest('GET', '/api/email-accounts').then(response => response.json())
   });
 
-  // Mock email setups for demonstration
-  const emailSetups: EmailSetup[] = [
-    {
-      id: 1,
-      employeeId: 1,
-      emailAddress: 'michael.thompson@traffikboosters.com',
-      firstName: 'Michael',
-      lastName: 'Thompson',
-      department: 'Management',
-      status: 'active',
-      instructions: 'Email configured and credentials sent',
-      createdAt: '2025-07-02'
-    }
-  ];
+  // Fetch employees without email accounts
+  const { data: employees = [], isLoading: employeesLoading } = useQuery({
+    queryKey: ['/api/employees/without-email'],
+    queryFn: () => apiRequest('GET', '/api/employees/without-email').then(response => response.json())
+  });
 
   const generateEmailAddress = (firstName: string, lastName: string): string => {
     return `${firstName.toLowerCase()}.${lastName.toLowerCase()}@traffikboosters.com`;
@@ -77,6 +68,28 @@ export default function EmailManagement() {
     }
     return password;
   };
+
+  const createEmailMutation = useMutation({
+    mutationFn: (emailData: any) => apiRequest('POST', '/api/email-accounts', emailData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/email-accounts'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/employees/without-email'] });
+      setIsCreateDialogOpen(false);
+      setSelectedEmployee(null);
+      setGeneratedPassword('');
+      toast({
+        title: "Email Account Created Successfully",
+        description: "Setup instructions generated and employee notified",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Create Email Account",
+        description: error.message || "An error occurred while creating the email account",
+        variant: "destructive",
+      });
+    }
+  });
 
   const handleCreateEmail = () => {
     if (!selectedEmployee) {
@@ -93,10 +106,19 @@ export default function EmailManagement() {
 
     const emailAddress = generateEmailAddress(selectedEmployee.firstName, selectedEmployee.lastName);
     
-    toast({
-      title: "Email Account Instructions Generated",
-      description: `Email setup instructions created for ${emailAddress}`,
-    });
+    const emailAccountData = {
+      employeeId: selectedEmployee.id,
+      emailAddress,
+      firstName: selectedEmployee.firstName,
+      lastName: selectedEmployee.lastName,
+      department: selectedEmployee.department || 'General',
+      status: 'pending',
+      storageLimit: 5000,
+      forwardingEnabled: false,
+      autoReplyEnabled: false
+    };
+
+    createEmailMutation.mutate(emailAccountData);
 
     setIsCreateDialogOpen(false);
   };
@@ -150,9 +172,7 @@ For technical support, contact: starz@traffikboosters.com`;
     copyToClipboard(instructions);
   };
 
-  const availableEmployees = employees.filter((emp: any) => 
-    !emailSetups.some(setup => setup.employeeId === emp.id)
-  );
+  const availableEmployees = employees;
 
   return (
     <div className="p-6 space-y-6">

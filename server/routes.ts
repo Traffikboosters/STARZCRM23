@@ -3802,6 +3802,85 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  // Email Management API endpoints
+  app.get("/api/email-accounts", async (req, res) => {
+    try {
+      const emailAccounts = await storage.getAllEmailAccounts();
+      res.json(emailAccounts);
+    } catch (error) {
+      console.error("Get email accounts error:", error);
+      res.status(500).json({ error: "Failed to get email accounts" });
+    }
+  });
+
+  app.get("/api/email-accounts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const emailAccount = await storage.getEmailAccountById(id);
+      
+      if (!emailAccount) {
+        return res.status(404).json({ error: "Email account not found" });
+      }
+      
+      res.json(emailAccount);
+    } catch (error) {
+      console.error("Get email account error:", error);
+      res.status(500).json({ error: "Failed to get email account" });
+    }
+  });
+
+  app.post("/api/email-accounts", async (req, res) => {
+    try {
+      const emailAccount = await storage.createEmailAccount(req.body);
+      res.json(emailAccount);
+    } catch (error) {
+      console.error("Create email account error:", error);
+      res.status(500).json({ error: "Failed to create email account" });
+    }
+  });
+
+  app.patch("/api/email-accounts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const emailAccount = await storage.updateEmailAccount(id, req.body);
+      
+      if (!emailAccount) {
+        return res.status(404).json({ error: "Email account not found" });
+      }
+      
+      res.json(emailAccount);
+    } catch (error) {
+      console.error("Update email account error:", error);
+      res.status(500).json({ error: "Failed to update email account" });
+    }
+  });
+
+  app.delete("/api/email-accounts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteEmailAccount(id);
+      
+      if (!success) {
+        return res.status(404).json({ error: "Email account not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Delete email account error:", error);
+      res.status(500).json({ error: "Failed to delete email account" });
+    }
+  });
+
+  app.get("/api/employees/without-email", async (req, res) => {
+    try {
+      const employees = await storage.getEmployeesWithoutEmail();
+      res.json(employees);
+    } catch (error) {
+      console.error("Get employees without email error:", error);
+      res.status(500).json({ error: "Failed to get employees without email" });
+    }
+  });
+
   // Time Off Requests
   app.post("/api/timeoff/request", async (req, res) => {
     try {
