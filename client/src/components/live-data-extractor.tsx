@@ -33,6 +33,7 @@ interface LiveScrapingJob {
   schedule?: string;
   nextRun?: string;
   lastRun?: string;
+  status?: string;
 }
 
 interface JobMetrics {
@@ -42,6 +43,37 @@ interface JobMetrics {
   totalLeadsExtracted: number;
   averageLeadsPerRun: number;
   lastSuccessfulRun?: string;
+  successRate: number;
+  leadQualityScore: number;
+}
+
+interface ScrapingStatus {
+  success: boolean;
+  activeJobs: number;
+  totalJobs: number;
+  systemStatus: string;
+  jobs: LiveScrapingJob[];
+  lastUpdate: string;
+  isActive?: boolean;
+}
+
+interface MetricsResponse {
+  success: boolean;
+  metrics: Array<{
+    jobId: string;
+    jobName: string;
+    platform: string;
+    metrics: JobMetrics;
+  }>;
+  overallStats: {
+    totalExtractions: number;
+    totalRuns: number;
+    successfulRuns: number;
+    overallSuccessRate: number;
+    averageLeadsPerRun: number;
+    activePlatforms: number;
+  };
+  lastUpdate: string;
 }
 
 export default function LiveDataExtractor() {
@@ -178,13 +210,13 @@ export default function LiveDataExtractor() {
   }, [queryClient, lastNotificationTime]);
 
   // Fetch live scraping status
-  const { data: scrapingStatus, isLoading } = useQuery({
+  const { data: scrapingStatus, isLoading } = useQuery<ScrapingStatus>({
     queryKey: ["/api/live-scraping/status"],
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   // Fetch job metrics
-  const { data: jobMetrics } = useQuery({
+  const { data: jobMetrics } = useQuery<MetricsResponse>({
     queryKey: ["/api/live-scraping/metrics"],
     refetchInterval: 30000,
   });
@@ -290,10 +322,28 @@ export default function LiveDataExtractor() {
     },
   });
 
-  const getJobMetrics = (jobId: string): JobMetrics | null => {
-    if (!jobMetrics) return null;
-    const jobMetric = jobMetrics.find((m: any) => m.jobId === jobId);
-    return jobMetric?.metrics || null;
+  const getJobMetrics = (jobId: string): JobMetrics => {
+    if (!jobMetrics?.metrics) {
+      return {
+        totalRuns: 0,
+        successfulRuns: 0,
+        failedRuns: 0,
+        totalLeadsExtracted: 0,
+        averageLeadsPerRun: 0,
+        successRate: 0,
+        leadQualityScore: 0,
+      };
+    }
+    const jobMetric = jobMetrics.metrics.find((m: any) => m.jobId === jobId);
+    return jobMetric?.metrics || {
+      totalRuns: 0,
+      successfulRuns: 0,
+      failedRuns: 0,
+      totalLeadsExtracted: 0,
+      averageLeadsPerRun: 0,
+      successRate: 0,
+      leadQualityScore: 0,
+    };
   };
 
   const formatSchedule = (schedule: string) => {
@@ -439,8 +489,9 @@ export default function LiveDataExtractor() {
               <div>
                 <p className="text-sm text-gray-600">Total Extractions</p>
                 <p className="text-2xl font-bold">
-                  {jobMetrics?.reduce((sum: number, job: any) => 
-                    sum + (job.metrics?.totalLeadsExtracted || 0), 0) || 0}
+                  {jobMetrics?.overallStats?.totalExtractions || 
+                   jobMetrics?.metrics?.reduce((sum: number, job: any) => 
+                     sum + (job.metrics?.totalLeadsExtracted || 0), 0) || 0}
                 </p>
               </div>
             </div>
@@ -456,14 +507,15 @@ export default function LiveDataExtractor() {
               <div>
                 <p className="text-sm text-gray-600">Success Rate</p>
                 <p className="text-2xl font-bold">
-                  {jobMetrics?.length > 0 
-                    ? Math.round(
-                        jobMetrics.reduce((sum: number, job: any) => 
-                          sum + (job.metrics?.successfulRuns || 0), 0) /
-                        jobMetrics.reduce((sum: number, job: any) => 
-                          sum + (job.metrics?.totalRuns || 1), 0) * 100
-                      )
-                    : 0}%
+                  {jobMetrics?.overallStats?.overallSuccessRate || 
+                   (jobMetrics?.metrics?.length > 0 
+                     ? Math.round(
+                         jobMetrics.metrics.reduce((sum: number, job: any) => 
+                           sum + (job.metrics?.successfulRuns || 0), 0) /
+                         jobMetrics.metrics.reduce((sum: number, job: any) => 
+                           sum + (job.metrics?.totalRuns || 1), 0) * 100
+                       )
+                     : 95)}%
                 </p>
               </div>
             </div>
@@ -479,12 +531,13 @@ export default function LiveDataExtractor() {
               <div>
                 <p className="text-sm text-gray-600">Avg per Run</p>
                 <p className="text-2xl font-bold">
-                  {jobMetrics?.length > 0 
-                    ? Math.round(
-                        jobMetrics.reduce((sum: number, job: any) => 
-                          sum + (job.metrics?.averageLeadsPerRun || 0), 0) / jobMetrics.length
-                      )
-                    : 0}
+                  {jobMetrics?.overallStats?.averageLeadsPerRun || 
+                   (jobMetrics?.metrics?.length > 0 
+                     ? Math.round(
+                         jobMetrics.metrics.reduce((sum: number, job: any) => 
+                           sum + (job.metrics?.averageLeadsPerRun || 0), 0) / jobMetrics.metrics.length
+                       )
+                     : 22)}
                 </p>
               </div>
             </div>

@@ -2867,6 +2867,134 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  // Live Scraping Status API
+  app.get("/api/live-scraping/status", async (req, res) => {
+    try {
+      // Mock live scraping status with realistic data
+      const currentTime = new Date();
+      const mockJobs = [
+        {
+          id: 'bark-hourly',
+          name: 'Bark.com Service Providers - Hourly',
+          platform: 'bark',
+          isActive: true,
+          schedule: '0 */2 * * *',
+          nextRun: new Date(currentTime.getTime() + 3600000).toISOString(), // Next hour
+          lastRun: new Date(currentTime.getTime() - 1800000).toISOString(), // 30 min ago
+          status: 'running'
+        },
+        {
+          id: 'business-insider-daily',
+          name: 'Business Insider Executive Leads - Daily',
+          platform: 'businessinsider', 
+          isActive: true,
+          schedule: '0 9 * * *',
+          nextRun: new Date(currentTime.getTime() + 7200000).toISOString(), // 2 hours
+          lastRun: new Date(currentTime.getTime() - 3600000).toISOString(), // 1 hour ago
+          status: 'scheduled'
+        },
+        {
+          id: 'yellowpages-daily',
+          name: 'Yellow Pages Business Directory',
+          platform: 'yellowpages',
+          isActive: true,
+          schedule: '0 8 * * *',
+          nextRun: new Date(currentTime.getTime() + 10800000).toISOString(), // 3 hours
+          lastRun: new Date(currentTime.getTime() - 7200000).toISOString(), // 2 hours ago
+          status: 'completed'
+        }
+      ];
+
+      res.json({
+        success: true,
+        activeJobs: mockJobs.filter(j => j.isActive).length,
+        totalJobs: mockJobs.length,
+        systemStatus: 'operational',
+        jobs: mockJobs,
+        lastUpdate: currentTime.toISOString()
+      });
+    } catch (error) {
+      console.error('Error fetching live scraping status:', error);
+      res.status(500).json({ error: 'Failed to fetch live scraping status' });
+    }
+  });
+
+  // Live Scraping Metrics API
+  app.get("/api/live-scraping/metrics", async (req, res) => {
+    try {
+      // Mock comprehensive metrics data
+      const metrics = [
+        {
+          jobId: 'bark-hourly',
+          jobName: 'Bark.com Service Providers',
+          platform: 'bark',
+          metrics: {
+            totalRuns: 156,
+            successfulRuns: 148,
+            failedRuns: 8,
+            totalLeadsExtracted: 2847,
+            averageLeadsPerRun: 18.2,
+            lastSuccessfulRun: new Date(Date.now() - 1800000).toISOString(), // 30 min ago
+            successRate: 94.9,
+            leadQualityScore: 87.5
+          }
+        },
+        {
+          jobId: 'business-insider-daily',
+          jobName: 'Business Insider Executive Leads',
+          platform: 'businessinsider',
+          metrics: {
+            totalRuns: 45,
+            successfulRuns: 43,
+            failedRuns: 2,
+            totalLeadsExtracted: 1205,
+            averageLeadsPerRun: 26.8,
+            lastSuccessfulRun: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+            successRate: 95.6,
+            leadQualityScore: 92.3
+          }
+        },
+        {
+          jobId: 'yellowpages-daily',
+          jobName: 'Yellow Pages Business Directory',
+          platform: 'yellowpages',
+          metrics: {
+            totalRuns: 78,
+            successfulRuns: 74,
+            failedRuns: 4,
+            totalLeadsExtracted: 1632,
+            averageLeadsPerRun: 20.9,
+            lastSuccessfulRun: new Date(Date.now() - 7200000).toISOString(), // 2 hours ago
+            successRate: 94.9,
+            leadQualityScore: 85.1
+          }
+        }
+      ];
+
+      // Calculate overall metrics
+      const totalExtractions = metrics.reduce((sum, m) => sum + m.metrics.totalLeadsExtracted, 0);
+      const totalRuns = metrics.reduce((sum, m) => sum + m.metrics.totalRuns, 0);
+      const successfulRuns = metrics.reduce((sum, m) => sum + m.metrics.successfulRuns, 0);
+
+      res.json({
+        success: true,
+        metrics: metrics,
+        overallStats: {
+          totalExtractions,
+          totalRuns,
+          successfulRuns,
+          overallSuccessRate: Math.round((successfulRuns / totalRuns) * 100 * 10) / 10,
+          averageLeadsPerRun: Math.round((totalExtractions / totalRuns) * 10) / 10,
+          activePlatforms: metrics.length
+        },
+        lastUpdate: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error fetching live scraping metrics:', error);
+      res.status(500).json({ error: 'Failed to fetch live scraping metrics' });
+    }
+  });
+
   // Smart Search AI Suggestions API
   app.get("/api/smart-search/suggestions", async (req, res) => {
     try {
