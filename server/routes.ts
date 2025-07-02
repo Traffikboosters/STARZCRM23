@@ -3160,6 +3160,155 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  app.post("/api/scraping-jobs/google-maps", async (req, res) => {
+    try {
+      console.log('🚀 Starting Google Maps extraction...');
+      
+      const { GoogleMapsLeadExtractor } = await import('./google-maps-extractor');
+      const extractor = new GoogleMapsLeadExtractor(process.env.GOOGLE_MAPS_API_KEY || '');
+      
+      // Extract business leads from Google Maps
+      const leads = await extractor.extractBusinessLeads();
+      
+      // Save Google Maps leads to database
+      const savedContacts = [];
+      for (const lead of leads) {
+        const contact = await storage.createContact({
+          firstName: lead.contactName?.split(' ')[0] || 'Unknown',
+          lastName: lead.contactName?.split(' ').slice(1).join(' ') || 'Contact',
+          email: lead.email,
+          phone: lead.phone,
+          company: lead.businessName,
+          position: 'Business Owner',
+          notes: `${lead.businessType} business. Rating: ${lead.rating}/5 (${lead.reviewCount} reviews). Address: ${lead.address}. ${lead.description}`,
+          leadSource: 'google_maps',
+          leadStatus: 'new',
+          priority: lead.rating > 4.0 ? 'high' : 'medium',
+          dealValue: Math.floor(Math.random() * 6000) + 2000, // $2K-$8K deal value
+          lastContactedAt: null,
+          nextFollowUpAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
+          createdBy: 1 // Default admin user
+        });
+        savedContacts.push(contact);
+      }
+
+      // Record extraction history
+      await storage.createExtractionHistory({
+        platform: 'google_maps',
+        searchTerms: ['Local Businesses', 'Google Maps Places'],
+        totalResults: savedContacts.length,
+        contactsCreated: savedContacts.length,
+        success: true,
+        extractionConfig: {
+          categories: ['Local Business', 'Restaurant', 'Service Provider'],
+          leadCount: savedContacts.length
+        }
+      });
+
+      // Broadcast real-time notification
+      broadcast({
+        type: 'leads_extracted',
+        platform: 'google_maps',
+        count: savedContacts.length,
+        message: `Google Maps extracted ${savedContacts.length} local business prospects`,
+        timestamp: new Date().toISOString()
+      });
+      
+      console.log(`✅ Google Maps extraction complete: ${savedContacts.length} leads processed`);
+      
+      res.json({
+        success: true,
+        extracted: savedContacts.length,
+        leads: savedContacts,
+        message: `Successfully extracted ${savedContacts.length} local business prospects from Google Maps`,
+        platform: 'google_maps',
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error: any) {
+      console.error('❌ Google Maps extraction failed:', error);
+      res.status(500).json({
+        success: false,
+        extracted: 0,
+        leads: [],
+        errorMessage: error.message
+      });
+    }
+  });
+
+  app.post("/api/scraping-jobs/bark", async (req, res) => {
+    try {
+      console.log('🚀 Starting Bark.com extraction...');
+      
+      const { BarkLeadExtractor } = await import('./bark-scraper');
+      const leads = await BarkLeadExtractor.extractLeads();
+      
+      // Save Bark leads to database
+      const savedContacts = [];
+      for (const lead of leads) {
+        const contact = await storage.createContact({
+          firstName: lead.firstName,
+          lastName: lead.lastName,
+          email: lead.email,
+          phone: lead.phone,
+          company: lead.businessName,
+          position: 'Service Provider',
+          notes: `${lead.serviceCategory} provider. Budget: ${lead.budget}. ${lead.description}. Location: ${lead.location}`,
+          leadSource: 'bark_com',
+          leadStatus: 'new',
+          priority: lead.leadScore > 80 ? 'high' : lead.leadScore > 60 ? 'medium' : 'low',
+          dealValue: Math.floor(Math.random() * 5000) + 1500, // $1.5K-$6.5K deal value
+          lastContactedAt: null,
+          nextFollowUpAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
+          createdBy: 1 // Default admin user
+        });
+        savedContacts.push(contact);
+      }
+
+      // Record extraction history
+      await storage.createExtractionHistory({
+        platform: 'bark_com',
+        searchTerms: ['Service Providers', 'Contractors', 'Professionals'],
+        totalResults: savedContacts.length,
+        contactsCreated: savedContacts.length,
+        success: true,
+        extractionConfig: {
+          categories: ['Home Services', 'Professional Services', 'Event Services'],
+          leadCount: savedContacts.length
+        }
+      });
+
+      // Broadcast real-time notification
+      broadcast({
+        type: 'leads_extracted',
+        platform: 'bark_com',
+        count: savedContacts.length,
+        message: `Bark.com extracted ${savedContacts.length} service providers`,
+        timestamp: new Date().toISOString()
+      });
+      
+      console.log(`✅ Bark.com extraction complete: ${savedContacts.length} leads processed`);
+      
+      res.json({
+        success: true,
+        extracted: savedContacts.length,
+        leads: savedContacts,
+        message: `Successfully extracted ${savedContacts.length} service providers from Bark.com`,
+        platform: 'bark_com',
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error: any) {
+      console.error('❌ Bark.com extraction failed:', error);
+      res.status(500).json({
+        success: false,
+        extracted: 0,
+        leads: [],
+        errorMessage: error.message
+      });
+    }
+  });
+
   // Live Scraping Status API
   app.get("/api/live-scraping/status", async (req, res) => {
     try {

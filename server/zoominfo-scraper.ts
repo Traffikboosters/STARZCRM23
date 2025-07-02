@@ -419,11 +419,22 @@ export class ZoomInfoScraper {
     return `${minRevenue}-${maxRevenue}`;
   }
 
-  private static getEmployeeCountForRevenue(minRevenue: string): string {
-    if (minRevenue.includes('$100M')) return '501-1000';
-    if (minRevenue.includes('$500M')) return '1001-5000';
-    if (minRevenue.includes('$1B')) return '5001-10000';
-    return '201-500';
+  private static getEmployeeCountForRevenue(minRevenue: string | number): string {
+    const revenueStr = typeof minRevenue === 'number' ? `$${minRevenue}` : minRevenue.toString();
+    
+    if (revenueStr.includes('$100M') || (typeof minRevenue === 'number' && minRevenue >= 100000000)) {
+      return '501-1000';
+    }
+    if (revenueStr.includes('$500M') || (typeof minRevenue === 'number' && minRevenue >= 500000000)) {
+      return '1001-5000';
+    }
+    if (revenueStr.includes('$1B') || (typeof minRevenue === 'number' && minRevenue >= 1000000000)) {
+      return '5001-10000';
+    }
+    if (typeof minRevenue === 'number' && minRevenue >= 50000000) {
+      return '201-500';
+    }
+    return '51-200';
   }
 
   private static getRandomFirstName(): string {
