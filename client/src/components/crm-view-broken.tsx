@@ -889,7 +889,7 @@ export default function CRMView() {
                           e.stopPropagation();
                           if (!contact.phone) return;
                           try {
-                            const response = await apiRequest("POST", "/api/mightycall/call", {
+                            const response = await apiRequest("POST", "/api/powerdials/call", {
                               phoneNumber: contact.phone,
                               contactName: `${contact.firstName} ${contact.lastName}`
                             });

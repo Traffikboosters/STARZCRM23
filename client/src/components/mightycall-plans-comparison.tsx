@@ -33,11 +33,11 @@ const FeatureIcon = ({ supported }: { supported: boolean }) => (
     <X className="h-4 w-4 text-gray-400" />
 );
 
-export default function MightyCallPlansComparison() {
+export default function POWERDIALSPlansComparison() {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold mb-2">MightyCall Plans Comparison</h2>
+        <h2 className="text-2xl font-bold mb-2">POWERDIALS Plans Comparison</h2>
         <p className="text-muted-foreground">
           Current plan: <Badge variant="outline">Core Plan</Badge> - Upgrade for automated calling
         </p>
@@ -96,7 +96,7 @@ export default function MightyCallPlansComparison() {
             <div className="pt-4">
               <Button 
                 className="w-full" 
-                onClick={() => window.open('https://my.mightycall.com/billing', '_blank')}
+                onClick={() => window.open('https://my.powerdials.com/billing', '_blank')}
               >
                 <Phone className="h-4 w-4 mr-2" />
                 Upgrade to Business
@@ -154,13 +154,13 @@ export default function MightyCallPlansComparison() {
 
       <div className="text-center">
         <p className="text-sm text-muted-foreground mb-4">
-          Contact MightyCall sales: <strong>traffikboosters@gmail.com</strong>
+          Contact POWERDIALS sales: <strong>traffikboosters@gmail.com</strong>
         </p>
         <Button 
           variant="outline" 
-          onClick={() => window.open('https://my.mightycall.com', '_blank')}
+          onClick={() => window.open('https://my.powerdials.com', '_blank')}
         >
-          Manage MightyCall Account
+          Manage POWERDIALS Account
         </Button>
       </div>
     </div>

@@ -27,7 +27,7 @@ import LeadSourceBadge from "@/components/lead-source-badge";
 import ContextualSalesCoaching from "@/components/contextual-sales-coaching";
 import AISalesTipGenerator from "@/components/ai-sales-tip-generator";
 import DataTypeFilter from "@/components/data-type-filter";
-import STARZMightyCallDialer from "@/components/starz-mightycall-dialer";
+import STARZPOWERDIALSDialer from "@/components/starz-mightycall-dialer";
 import RealTimeLeadManager from "@/components/real-time-lead-manager";
 
 
@@ -586,7 +586,7 @@ export default function CRMView() {
   // Filter to get only actual employees (users with sales_rep or admin role)
   const salesReps = allUsers.filter(user => user.role === 'sales_rep' || user.role === 'admin');
 
-  // STARZ MightyCall Dialer Integration
+  // STARZ POWERDIALS Dialer Integration
   const handleCallContact = async (contact: Contact) => {
     if (!contact.phone) {
       toast({
@@ -1929,13 +1929,13 @@ export default function CRMView() {
         />
       )}
 
-      {/* STARZ MightyCall Dialer Modal */}
+      {/* STARZ POWERDIALS Dialer Modal */}
       <Dialog open={showSTARZDialer} onOpenChange={setShowSTARZDialer}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Phone className="h-5 w-5" />
-              STARZ MightyCall Dialer
+              STARZ POWERDIALS Dialer
               <div className="ml-auto flex items-center gap-3">
                 <img 
                   src={traffikBoostersLogo}
@@ -1951,7 +1951,7 @@ export default function CRMView() {
           </DialogHeader>
           
           {selectedContact && (
-            <STARZMightyCallDialer
+            <STARZPOWERDIALSDialer
               contact={{
                 firstName: selectedContact.firstName,
                 lastName: selectedContact.lastName,

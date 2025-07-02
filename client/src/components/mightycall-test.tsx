@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
-export default function MightyCallTest() {
+export default function POWERDIALSTest() {
   const [testNumber, setTestNumber] = useState("8778406250");
   const [testName, setTestName] = useState("Test Contact");
   const [isLoading, setIsLoading] = useState(false);
@@ -17,7 +17,7 @@ export default function MightyCallTest() {
     setIsLoading(true);
     
     try {
-      const response = await apiRequest("POST", "/api/mightycall/call", {
+      const response = await apiRequest("POST", "/api/powerdials/call", {
         phoneNumber: testNumber,
         contactName: testName,
         userId: 1
@@ -37,18 +37,18 @@ export default function MightyCallTest() {
         });
       } else {
         toast({
-          title: "❌ MightyCall Failed",
+          title: "❌ POWERDIALS Failed",
           description: result.message || "Unknown error",
           variant: "destructive",
         });
       }
       
     } catch (error) {
-      console.error("MightyCall test error:", error);
+      console.error("POWERDIALS test error:", error);
       setLastResult({ error: (error as Error).message });
       toast({
         title: "❌ API Error",
-        description: "Failed to connect to MightyCall API",
+        description: "Failed to connect to POWERDIALS API",
         variant: "destructive",
       });
     } finally {
@@ -61,7 +61,7 @@ export default function MightyCallTest() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Phone className="h-5 w-5" />
-          MightyCall Integration Test
+          POWERDIALS Integration Test
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -96,7 +96,7 @@ export default function MightyCallTest() {
           ) : (
             <>
               <Phone className="h-4 w-4 mr-2" />
-              Test MightyCall
+              Test POWERDIALS
             </>
           )}
         </Button>
@@ -139,7 +139,7 @@ export default function MightyCallTest() {
             <AlertCircle className="h-3 w-3" />
             Account: 4f917f13-aae1-401d-8241-010db91da5b2
           </div>
-          <div>Traffik Boosters MightyCall Pro Plan</div>
+          <div>Traffik Boosters POWERDIALS Pro Plan</div>
         </div>
       </CardContent>
     </Card>

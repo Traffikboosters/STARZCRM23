@@ -6,17 +6,17 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
-interface MightyCallWebDialerProps {
+interface POWERDIALSWebDialerProps {
   phoneNumber?: string;
   contactName?: string;
   onCallStatusChange?: (status: 'idle' | 'connecting' | 'ringing' | 'connected' | 'ended') => void;
 }
 
-export default function MightyCallWebDialer({ 
+export default function POWERDIALSWebDialer({ 
   phoneNumber = "",
   contactName = "",
   onCallStatusChange 
-}: MightyCallWebDialerProps) {
+}: POWERDIALSWebDialerProps) {
   const [dialNumber, setDialNumber] = useState(phoneNumber);
   const [callStatus, setCallStatus] = useState<'idle' | 'connecting' | 'ringing' | 'connected' | 'ended'>('idle');
   const [isMuted, setIsMuted] = useState(false);
@@ -93,7 +93,7 @@ export default function MightyCallWebDialer({
 
       // Log call attempt in background
       setTimeout(() => {
-        apiRequest("POST", "/api/mightycall/call", {
+        apiRequest("POST", "/api/powerdials/call", {
           phoneNumber: finalNumber,
           contactName: contactName || 'Contact',
           userId: 1
@@ -161,7 +161,7 @@ export default function MightyCallWebDialer({
       <CardHeader className="text-center">
         <CardTitle className="flex items-center justify-center gap-2">
           <Phone className="h-5 w-5" />
-          MightyCall Dialer
+          POWERDIALS Dialer
         </CardTitle>
         <CardDescription>
           Traffik Boosters Phone System
@@ -250,7 +250,7 @@ export default function MightyCallWebDialer({
               disabled={!dialNumber.trim()}
             >
               <PhoneCall className="h-5 w-5 mr-2" />
-              Call via MightyCall
+              Call via POWERDIALS
             </Button>
           </div>
         ) : (
@@ -291,7 +291,7 @@ export default function MightyCallWebDialer({
         {/* Connection Info */}
         <div className="text-xs text-center text-muted-foreground">
           Account: 4f917f13-aae1-401d-8241-010db91da5b2<br />
-          Status: MightyCall Pro Integration Active
+          Status: POWERDIALS Pro Integration Active
         </div>
       </CardContent>
     </Card>

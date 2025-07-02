@@ -18,16 +18,16 @@ interface CallLog {
   direction: 'inbound' | 'outbound';
 }
 
-interface MightyCallConfig {
+interface POWERDIALSConfig {
   apiKey: string;
   accountId: string;
   phoneNumber: string;
   isEnabled: boolean;
 }
 
-export default function MightyCallIntegration() {
-  const [config, setConfig] = useState<MightyCallConfig>({
-    apiKey: 'Your MightyCall API Key',
+export default function POWERDIALSIntegration() {
+  const [config, setConfig] = useState<POWERDIALSConfig>({
+    apiKey: 'Your POWERDIALS API Key',
     accountId: '4f917f13-aae1-401d-8241-010db91da5b2',
     phoneNumber: '+1-877-840-6250',
     isEnabled: true
@@ -75,8 +75,8 @@ export default function MightyCallIntegration() {
   const handleClickToCall = async (phoneNumber: string, contactName?: string) => {
     if (!config.isEnabled) {
       toast({
-        title: "MightyCall Disabled",
-        description: "Please enable MightyCall integration first.",
+        title: "POWERDIALS Disabled",
+        description: "Please enable POWERDIALS integration first.",
         variant: "destructive",
       });
       return;
@@ -85,7 +85,7 @@ export default function MightyCallIntegration() {
     setIsConnecting(true);
 
     try {
-      const response = await fetch('/api/mightycall/call', {
+      const response = await fetch('/api/powerdials/call', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -134,7 +134,7 @@ export default function MightyCallIntegration() {
         
         toast({
           title: "Call Ready",
-          description: `Opening dialer for ${contactName || phoneNumber}. Use your MightyCall app to complete the call.`,
+          description: `Opening dialer for ${contactName || phoneNumber}. Use your POWERDIALS app to complete the call.`,
         });
 
       } else {
@@ -143,7 +143,7 @@ export default function MightyCallIntegration() {
     } catch (error) {
       toast({
         title: "Call Setup Failed",
-        description: "Unable to prepare call. Check your MightyCall configuration.",
+        description: "Unable to prepare call. Check your POWERDIALS configuration.",
         variant: "destructive",
       });
     } finally {
@@ -190,10 +190,10 @@ export default function MightyCallIntegration() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Phone className="h-5 w-5 text-blue-600" />
-            MightyCall Integration
+            POWERDIALS Integration
           </CardTitle>
           <CardDescription>
-            Configure your MightyCall settings for click-to-call functionality
+            Configure your POWERDIALS settings for click-to-call functionality
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -203,7 +203,7 @@ export default function MightyCallIntegration() {
               <Input
                 id="apiKey"
                 type="password"
-                placeholder="Enter your MightyCall API key"
+                placeholder="Enter your POWERDIALS API key"
                 value={config.apiKey}
                 onChange={(e) => setConfig(prev => ({ ...prev, apiKey: e.target.value }))}
               />
@@ -212,7 +212,7 @@ export default function MightyCallIntegration() {
               <Label htmlFor="accountId">Account ID</Label>
               <Input
                 id="accountId"
-                placeholder="Enter your MightyCall Account ID"
+                placeholder="Enter your POWERDIALS Account ID"
                 value={config.accountId}
                 onChange={(e) => setConfig(prev => ({ ...prev, accountId: e.target.value }))}
               />
@@ -232,7 +232,7 @@ export default function MightyCallIntegration() {
                 checked={config.isEnabled}
                 onCheckedChange={(checked) => setConfig(prev => ({ ...prev, isEnabled: checked }))}
               />
-              <Label htmlFor="enabled">Enable MightyCall Integration</Label>
+              <Label htmlFor="enabled">Enable POWERDIALS Integration</Label>
             </div>
           </div>
         </CardContent>
@@ -319,7 +319,7 @@ export default function MightyCallIntegration() {
         <CardHeader>
           <CardTitle>Recent Calls</CardTitle>
           <CardDescription>
-            Your call history with MightyCall
+            Your call history with POWERDIALS
           </CardDescription>
         </CardHeader>
         <CardContent>

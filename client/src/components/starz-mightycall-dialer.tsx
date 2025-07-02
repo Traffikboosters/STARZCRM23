@@ -17,7 +17,7 @@ interface CallSession {
   direction: 'outbound' | 'inbound';
 }
 
-interface STARZMightyCallDialerProps {
+interface STARZPOWERDIALSDialerProps {
   contact?: {
     firstName: string;
     lastName: string;
@@ -26,7 +26,7 @@ interface STARZMightyCallDialerProps {
   onCallEnd?: () => void;
 }
 
-export default function STARZMightyCallDialer({ contact, onCallEnd }: STARZMightyCallDialerProps) {
+export default function STARZPOWERDIALSDialer({ contact, onCallEnd }: STARZPOWERDIALSDialerProps) {
   const [phoneNumber, setPhoneNumber] = useState(contact?.phone || "");
   const [currentCall, setCurrentCall] = useState<CallSession | null>(null);
   const [isDialing, setIsDialing] = useState(false);
@@ -168,7 +168,7 @@ export default function STARZMightyCallDialer({ contact, onCallEnd }: STARZMight
     oscillator.stop(audioContextRef.current.currentTime + duration / 1000);
   };
 
-  // Initiate call through STARZ MightyCall integration
+  // Initiate call through STARZ POWERDIALS integration
   const initiateCall = async () => {
     if (!phoneNumber) {
       toast({
@@ -197,8 +197,8 @@ export default function STARZMightyCallDialer({ contact, onCallEnd }: STARZMight
       // Play initial dial tone
       playCallTone('dial');
 
-      // Call STARZ MightyCall API
-      const response = await apiRequest("POST", "/api/mightycall/starz-call", {
+      // Call STARZ POWERDIALS API
+      const response = await apiRequest("POST", "/api/powerdials/starz-call", {
         phoneNumber: dialNumber,
         contactName: contactName,
         userId: 1,
@@ -252,7 +252,7 @@ export default function STARZMightyCallDialer({ contact, onCallEnd }: STARZMight
         }, 3000);
 
       } else {
-        throw new Error('STARZ MightyCall integration failed');
+        throw new Error('STARZ POWERDIALS integration failed');
       }
 
     } catch (error) {

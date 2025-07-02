@@ -44,8 +44,8 @@ export default function ClickToCallButton({
         dialNumber = cleanNumber.substring(1);
       }
       
-      // Call MightyCall API for enhanced calling experience
-      const response = await apiRequest("POST", "/api/mightycall/call", {
+      // Call POWERDIALS API for enhanced calling experience
+      const response = await apiRequest("POST", "/api/powerdials/call", {
         phoneNumber: dialNumber,
         contactName: contactName || "Unknown Contact",
         userId: 1
@@ -54,17 +54,17 @@ export default function ClickToCallButton({
       if (response.ok) {
         const callData = await response.json();
         
-        // Try MightyCall Pro web dialer first (if available)
+        // Try POWERDIALS Pro web dialer first (if available)
         if (callData.webDialerUrl) {
           const dialerWindow = window.open(
             callData.webDialerUrl,
-            'MightyCallDialer',
+            'POWERDIALSDialer',
             'width=800,height=600,scrollbars=yes,resizable=yes'
           );
           
           if (dialerWindow) {
             toast({
-              title: "MightyCall Pro",
+              title: "POWERDIALS Pro",
               description: `Professional dialer opened for ${contactName || dialNumber}`,
               duration: 4000,
             });
@@ -87,11 +87,11 @@ export default function ClickToCallButton({
           });
         }
       } else {
-        throw new Error('MightyCall API error');
+        throw new Error('POWERDIALS API error');
       }
       
     } catch (error) {
-      console.error("MightyCall error, using fallback:", error);
+      console.error("POWERDIALS error, using fallback:", error);
       
       // Fallback: Direct device dialer
       const cleanNumber = phoneNumber.replace(/\D/g, '');

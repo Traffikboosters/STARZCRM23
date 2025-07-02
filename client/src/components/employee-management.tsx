@@ -37,7 +37,7 @@ interface User {
   isActive: boolean;
 }
 
-interface MightyCallResponse {
+interface POWERDIALSResponse {
   success: boolean;
   callId?: string;
   message?: string;
@@ -159,14 +159,14 @@ export default function EmployeeManagement() {
     try {
       const callNumber = extension ? `${phoneNumber},${extension}` : phoneNumber;
       
-      const response = await apiRequest("POST", "/api/mightycall/call", {
+      const response = await apiRequest("POST", "/api/powerdials/call", {
         phoneNumber: callNumber,
         contactName: employeeName,
         callType: "employee",
         extension: extension || null
       });
       
-      const result: MightyCallResponse = await response.json();
+      const result: POWERDIALSResponse = await response.json();
       
       if (result.success) {
         const displayNumber = extension ? `${phoneNumber} ext. ${extension}` : phoneNumber;

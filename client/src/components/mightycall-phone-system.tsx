@@ -46,7 +46,7 @@ interface ActiveCall {
   isMuted: boolean;
 }
 
-export function MightyCallPhoneSystem() {
+export function POWERDIALSPhoneSystem() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [contactName, setContactName] = useState("");
   const [extension, setExtension] = useState("");
@@ -106,7 +106,7 @@ export function MightyCallPhoneSystem() {
 
     setIsDialing(true);
     try {
-      const response = await apiRequest("POST", "/api/mightycall/initiate-call", {
+      const response = await apiRequest("POST", "/api/powerdials/initiate-call", {
         phoneNumber: phoneNumber.replace(/\D/g, ''),
         contactName,
         extension
@@ -141,7 +141,7 @@ export function MightyCallPhoneSystem() {
           contactName,
           status: "initiated",
           startTime: new Date().toLocaleString(),
-          notes: `Call via MightyCall system`
+          notes: `Call via POWERDIALS system`
         };
         
         setCallLogs(prev => [newLog, ...prev]);
@@ -171,10 +171,10 @@ export function MightyCallPhoneSystem() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Phone className="h-5 w-5" />
-            MightyCall Dialer
+            POWERDIALS Dialer
           </CardTitle>
           <CardDescription>
-            Enter phone number to initiate call through your MightyCall system
+            Enter phone number to initiate call through your POWERDIALS system
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -218,7 +218,7 @@ export function MightyCallPhoneSystem() {
         </CardContent>
       </Card>
 
-      {/* MightyCall Status */}
+      {/* POWERDIALS Status */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -229,7 +229,7 @@ export function MightyCallPhoneSystem() {
         <CardContent>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm">MightyCall Account</span>
+              <span className="text-sm">POWERDIALS Account</span>
               <Badge variant="outline" className="flex items-center gap-1">
                 <CheckCircle className="h-3 w-3 text-green-500" />
                 Connected (traffikboosters@gmail.com)
@@ -253,7 +253,7 @@ export function MightyCallPhoneSystem() {
           
           <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
             <p className="text-sm text-blue-700 dark:text-blue-300">
-              <strong>Note:</strong> Your MightyCall account is configured but API access is limited. 
+              <strong>Note:</strong> Your POWERDIALS account is configured but API access is limited. 
               Calls are logged locally and will open your default phone app for dialing.
             </p>
           </div>

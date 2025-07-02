@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import MightyCallWebDialer from "@/components/mightycall-web-dialer";
+import POWERDIALSWebDialer from "@/components/powerdials-web-dialer";
 
 interface CallLog {
   id: string;
@@ -106,8 +106,8 @@ export function AdvancedPhoneSystem() {
     setIsDialing(true);
     
     try {
-      // MightyCall API integration
-      const response = await fetch('/api/mightycall/call', {
+      // POWERDIALS API integration
+      const response = await fetch('/api/powerdials/call', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -273,7 +273,7 @@ export function AdvancedPhoneSystem() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Phone System</h1>
-          <p className="text-muted-foreground">MightyCall Pro Integration - Traffik Boosters</p>
+          <p className="text-muted-foreground">POWERDIALS Pro Integration - Traffik Boosters</p>
         </div>
         <Badge variant="outline" className="bg-green-50 text-green-700">
           <Phone className="w-4 h-4 mr-2" />
@@ -358,9 +358,9 @@ export function AdvancedPhoneSystem() {
 
         <TabsContent value="dialer" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* MightyCall Web Dialer */}
+            {/* POWERDIALS Web Dialer */}
             <div>
-              <MightyCallWebDialer 
+              <POWERDIALSWebDialer 
                 phoneNumber={phoneNumber}
                 contactName={contactName}
                 onCallStatusChange={(status) => {
@@ -533,7 +533,7 @@ export function AdvancedPhoneSystem() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="w-5 h-5" />
-                MightyCall Contact Center Supervisor
+                POWERDIALS Contact Center Supervisor
               </CardTitle>
               <CardDescription>
                 Access your Contact Center supervisor dashboard for call monitoring, analytics, and team management
@@ -546,12 +546,12 @@ export function AdvancedPhoneSystem() {
                     <h4 className="font-medium text-blue-900">Account Information</h4>
                     <p className="text-sm text-blue-700">Account ID: 4f917f13-aae1-401d-8241-010db91da5b2</p>
                     <p className="text-sm text-blue-700">Main Number: 8778406250</p>
-                    <p className="text-sm text-blue-700">Domain: traffikboosters.mightycall.com</p>
+                    <p className="text-sm text-blue-700">Domain: traffikboosters.powerdials.com</p>
                   </div>
                   
                   <div className="p-3 bg-green-50 rounded-lg">
                     <h4 className="font-medium text-green-900">System Status</h4>
-                    <p className="text-sm text-green-700">✓ MightyCall Pro Plan Active</p>
+                    <p className="text-sm text-green-700">✓ POWERDIALS Pro Plan Active</p>
                     <p className="text-sm text-green-700">✓ Web Dialer Enabled</p>
                     <p className="text-sm text-green-700">✓ Call Recording Available</p>
                   </div>
@@ -559,7 +559,7 @@ export function AdvancedPhoneSystem() {
                 
                 <div className="space-y-3">
                   <Button 
-                    onClick={() => window.open('https://console.mightycall.com/ContactCenter/supervisor', '_blank')}
+                    onClick={() => window.open('https://console.powerdials.com/ContactCenter/supervisor', '_blank')}
                     className="w-full bg-blue-600 hover:bg-blue-700"
                   >
                     <Users className="w-4 h-4 mr-2" />
@@ -567,16 +567,16 @@ export function AdvancedPhoneSystem() {
                   </Button>
                   
                   <Button 
-                    onClick={() => window.open('https://panel.mightycall.com', '_blank')}
+                    onClick={() => window.open('https://panel.powerdials.com', '_blank')}
                     variant="outline"
                     className="w-full"
                   >
                     <Settings className="w-4 h-4 mr-2" />
-                    MightyCall Admin Panel
+                    POWERDIALS Admin Panel
                   </Button>
                   
                   <Button 
-                    onClick={() => window.open('https://traffikboosters.mightycall.com', '_blank')}
+                    onClick={() => window.open('https://traffikboosters.powerdials.com', '_blank')}
                     variant="outline"
                     className="w-full"
                   >
@@ -640,7 +640,7 @@ export function AdvancedPhoneSystem() {
                   Start Conference Call (Pro Feature)
                 </Button>
                 <p className="text-sm text-muted-foreground">
-                  Conference calling requires MightyCall Pro plan upgrade
+                  Conference calling requires POWERDIALS Pro plan upgrade
                 </p>
               </div>
             </CardContent>
@@ -652,7 +652,7 @@ export function AdvancedPhoneSystem() {
             <CardHeader>
               <CardTitle>Phone System Settings</CardTitle>
               <CardDescription>
-                Configure your MightyCall integration and preferences
+                Configure your POWERDIALS integration and preferences
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -686,7 +686,7 @@ export function AdvancedPhoneSystem() {
               <div className="space-y-2">
                 <Label>Plan Status</Label>
                 <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                  MightyCall Pro - Active
+                  POWERDIALS Pro - Active
                 </Badge>
               </div>
             </CardContent>

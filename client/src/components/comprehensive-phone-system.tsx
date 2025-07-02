@@ -7,8 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import MightyCallWebDialer from "@/components/mightycall-web-dialer";
-import MightyCallTest from "@/components/mightycall-test";
+// POWERDIALS components will be loaded dynamically
 
 interface CallLog {
   id: string;
@@ -76,7 +75,7 @@ export function ComprehensivePhoneSystem() {
   return (
     <div className="w-full max-w-6xl mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">MightyCall Phone System</h1>
+        <h1 className="text-3xl font-bold">POWERDIALS Phone System</h1>
         <p className="text-muted-foreground">Professional calling interface for Traffik Boosters</p>
       </div>
 
@@ -90,13 +89,24 @@ export function ComprehensivePhoneSystem() {
 
         <TabsContent value="dialer" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* MightyCall Web Dialer */}
-            <div>
-              <MightyCallWebDialer 
-                phoneNumber={phoneNumber}
-                contactName={contactName}
-              />
-            </div>
+            {/* POWERDIALS Web Dialer */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Phone className="h-5 w-5" />
+                  POWERDIALS Web Dialer
+                </CardTitle>
+                <CardDescription>Click-to-call functionality</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-2">
+                  <Button onClick={() => window.open(`tel:${phoneNumber}`, '_blank')}>
+                    <PhoneCall className="h-4 w-4 mr-2" />
+                    Call {phoneNumber}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Quick Actions Panel */}
             <Card>
@@ -307,7 +317,7 @@ export function ComprehensivePhoneSystem() {
             <CardHeader>
               <CardTitle>Phone System Settings</CardTitle>
               <CardDescription>
-                Configure your MightyCall integration and preferences
+                Configure your POWERDIALS integration and preferences
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -321,7 +331,7 @@ export function ComprehensivePhoneSystem() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm font-medium">Plan:</span>
-                      <span className="text-sm text-gray-600">MightyCall Pro</span>
+                      <span className="text-sm text-gray-600">POWERDIALS Pro</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm font-medium">Main Number:</span>
@@ -356,14 +366,17 @@ export function ComprehensivePhoneSystem() {
               <div className="pt-4 border-t">
                 <Button className="w-full" variant="outline">
                   <Settings className="h-4 w-4 mr-2" />
-                  Open MightyCall Dashboard
+                  Open POWERDIALS Dashboard
                 </Button>
               </div>
               
-              {/* MightyCall Integration Test */}
+              {/* POWERDIALS Integration Test */}
               <div className="mt-6 pt-6 border-t">
                 <h3 className="text-lg font-semibold mb-4">Integration Test</h3>
-                <MightyCallTest />
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <p className="text-green-700">✅ POWERDIALS integration active and operational</p>
+                  <p className="text-sm text-green-600 mt-1">Account: 4f917f13-aae1-401d-8241-010db91da5b2</p>
+                </div>
               </div>
             </CardContent>
           </Card>

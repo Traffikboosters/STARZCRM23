@@ -54,7 +54,7 @@ const onboardingSteps: OnboardingStep[] = [
   },
   {
     id: 'phone',
-    title: 'MightyCall Integration',
+    title: 'POWERDIALS Integration',
     description: 'Make professional calls with click-to-call functionality, call logging, and advanced phone system features.',
     target: '[data-nav="phone"]',
     position: 'right'

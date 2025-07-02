@@ -48,13 +48,13 @@ interface CallHistory {
   notes?: string;
 }
 
-interface MightyCallDialerProps {
+interface POWERDIALSDialerProps {
   contact?: Contact;
   onClose?: () => void;
   isFloating?: boolean;
 }
 
-export default function EnhancedMightyCallDialer({ contact, onClose, isFloating = false }: MightyCallDialerProps) {
+export default function EnhancedPOWERDIALSDialer({ contact, onClose, isFloating = false }: POWERDIALSDialerProps) {
   const [activeCall, setActiveCall] = useState<CallSession | null>(null);
   const [phoneNumber, setPhoneNumber] = useState(contact?.phone || "");
   const [isDialing, setIsDialing] = useState(false);
@@ -148,14 +148,14 @@ export default function EnhancedMightyCallDialer({ contact, onClose, isFloating 
       setActiveCall(callSession);
       setCallDuration(0);
 
-      // MightyCall Pro web dialer integration
+      // POWERDIALS Pro web dialer integration
       const cleanedNumber = targetNumber.replace(/\D/g, '');
-      const dialerUrl = `https://panel.mightycall.com/dialer?number=${cleanedNumber}&contact=${encodeURIComponent(contactName || 'Contact')}`;
+      const dialerUrl = `https://panel.powerdials.com/dialer?number=${cleanedNumber}&contact=${encodeURIComponent(contactName || 'Contact')}`;
       
-      // Open MightyCall Pro web dialer
+      // Open POWERDIALS Pro web dialer
       const dialerWindow = window.open(
         dialerUrl,
-        'mightycall_dialer',
+        'powerdials_dialer',
         'width=400,height=600,scrollbars=yes,resizable=yes'
       );
 
@@ -176,7 +176,7 @@ export default function EnhancedMightyCallDialer({ contact, onClose, isFloating 
       }, 3000);
 
       // Log call attempt
-      await apiRequest('POST', '/api/mightycall/log-call', {
+      await apiRequest('POST', '/api/powerdials/log-call', {
         phoneNumber: targetNumber,
         contactName: contactName || 'Unknown',
         callType: 'outbound',
@@ -202,7 +202,7 @@ export default function EnhancedMightyCallDialer({ contact, onClose, isFloating 
     
     try {
       // Log call completion
-      await apiRequest('POST', '/api/mightycall/log-call', {
+      await apiRequest('POST', '/api/powerdials/log-call', {
         callId: activeCall.callId,
         phoneNumber: activeCall.phoneNumber,
         contactName: activeCall.contactName,
@@ -412,10 +412,10 @@ export default function EnhancedMightyCallDialer({ contact, onClose, isFloating 
             </div>
           )}
 
-          {/* MightyCall Status */}
+          {/* POWERDIALS Status */}
           <div className="p-2 bg-blue-50 rounded border border-blue-200">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-blue-700 font-medium">MightyCall Pro</span>
+              <span className="text-blue-700 font-medium">POWERDIALS Pro</span>
               <Badge variant="default" className="bg-green-100 text-green-800">
                 Connected
               </Badge>
@@ -501,7 +501,7 @@ export default function EnhancedMightyCallDialer({ contact, onClose, isFloating 
               />
             </div>
             <div className="p-3 bg-orange-50 rounded border border-orange-200">
-              <p className="text-sm font-medium text-orange-800">MightyCall Account</p>
+              <p className="text-sm font-medium text-orange-800">POWERDIALS Account</p>
               <p className="text-xs text-orange-600">
                 Account: 4f917f13-aae1-401d-8241-010db91da5b2
               </p>

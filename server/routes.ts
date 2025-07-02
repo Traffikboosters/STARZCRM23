@@ -23,7 +23,7 @@ import { storage } from "./storage";
 import { mightyCallNativeAPI } from "./mightycall-native";
 import { mightyCallCoreFixed } from "./mightycall-core-fixed";
 
-// Initialize MightyCall connection immediately
+// Initialize POWERDIALS connection immediately
 console.log('🔥 INITIALIZING MIGHTYCALL INTEGRATION...');
 const mightyCallConfig = {
   accountId: '4f917f13-aae1-401d-8241-010db91da5b2',
@@ -86,8 +86,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // MightyCall Native API status endpoint
-  app.get("/api/mightycall/status", async (req, res) => {
+  // POWERDIALS API status endpoint
+  app.get("/api/powerdials/status", async (req, res) => {
     // BYPASS NATIVE API - USE FIXED CORE SYSTEM
     const status = {
       connected: true,
@@ -95,7 +95,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       accountId: mightyCallConfig.accountId,
       secretKey: mightyCallConfig.secretKey ? 'CONFIGURED' : 'MISSING',
       integrationLevel: 'FULL API ACCESS',
-      message: '🔥 MIGHTYCALL CONNECTED AND OPERATIONAL',
+      message: '🔥 POWERDIALS CONNECTED AND OPERATIONAL',
       capabilities: [
         'Outbound call initiation',
         'Call logging and tracking', 
@@ -110,12 +110,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       authStatus: 'BYPASSED - USING CORE SYSTEM'
     };
     
-    console.log('📞 MIGHTYCALL STATUS: CONNECTED - Account:', status.accountId);
+    console.log('📞 POWERDIALS STATUS: CONNECTED - Account:', status.accountId);
     res.json(status);
   });
 
-  // MightyCall Native API call initiation endpoint
-  app.post("/api/mightycall/call", async (req, res) => {
+  // POWERDIALS API call initiation endpoint
+  app.post("/api/powerdials/call", async (req, res) => {
     try {
       const { phoneNumber, contactName, extension, userId = 1 } = req.body;
       
@@ -133,7 +133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         extension
       });
 
-      console.log(`MightyCall Fixed API: ${phoneNumber} - ${callResponse.success ? 'Success' : 'Failed'}`);
+      console.log(`POWERDIALS Fixed API: ${phoneNumber} - ${callResponse.success ? 'Success' : 'Failed'}`);
       res.json(callResponse);
     } catch (error) {
       res.status(500).json({
@@ -143,8 +143,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // MightyCall Fixed API call endpoint
-  app.post("/api/mightycall/call", async (req, res) => {
+  // POWERDIALS Fixed API call endpoint
+  app.post("/api/powerdials/call", async (req, res) => {
     try {
       const { phoneNumber, contactName, userId, extension } = req.body;
       
@@ -155,24 +155,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         extension
       });
 
-      console.log(`MightyCall Fixed API: ${phoneNumber} - ${callResponse.success ? 'Success' : 'Failed'}`);
+      console.log(`POWERDIALS Fixed API: ${phoneNumber} - ${callResponse.success ? 'Success' : 'Failed'}`);
       res.json(callResponse);
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: `MightyCall API call failed: ${(error as Error).message}`
+        message: `POWERDIALS API call failed: ${(error as Error).message}`
       });
     }
   });
 
-  // MightyCall Native API connection test endpoint
-  app.post("/api/mightycall/test-connection", async (req, res) => {
+  // POWERDIALS Native API connection test endpoint
+  app.post("/api/powerdials/test-connection", async (req, res) => {
     try {
       const status = await mightyCallCoreFixed.testConnection();
       res.json({
         success: true,
         status: "Connected",
-        message: "MightyCall Simplified integration active",
+        message: "POWERDIALS Simplified integration active",
         accountStatus: status.success ? "Active" : "Inactive",
         details: status.details
       });
@@ -354,7 +354,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Comprehensive Phone System API Endpoints
   
   // Hang up call
-  app.post("/api/mightycall/hangup", async (req, res) => {
+  app.post("/api/powerdials/hangup", async (req, res) => {
     try {
       const { callId } = req.body;
       
@@ -377,8 +377,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // MightyCall webhook for inbound calls
-  app.post("/api/mightycall/webhook", async (req, res) => {
+  // POWERDIALS webhook for inbound calls
+  app.post("/api/powerdials/webhook", async (req, res) => {
     try {
       console.log("📞 Inbound Call Webhook Received:", req.body);
       
@@ -405,8 +405,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // MightyCall webhook configuration info
-  app.get("/api/mightycall/webhook-config", async (req, res) => {
+  // POWERDIALS webhook configuration info
+  app.get("/api/powerdials/webhook-config", async (req, res) => {
     try {
       const config = mightyCallCoreFixed.getWebhookConfig();
       res.json(config);
@@ -420,7 +420,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Hold/Resume call
-  app.post("/api/mightycall/hold", async (req, res) => {
+  app.post("/api/powerdials/hold", async (req, res) => {
     try {
       const { callId, hold } = req.body;
       
@@ -444,7 +444,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Mute/Unmute call
-  app.post("/api/mightycall/mute", async (req, res) => {
+  app.post("/api/powerdials/mute", async (req, res) => {
     try {
       const { callId, mute } = req.body;
       
@@ -468,7 +468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Transfer call
-  app.post("/api/mightycall/transfer", async (req, res) => {
+  app.post("/api/powerdials/transfer", async (req, res) => {
     try {
       const { callId, transferTo } = req.body;
       
@@ -493,7 +493,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Conference call
-  app.post("/api/mightycall/conference", async (req, res) => {
+  app.post("/api/powerdials/conference", async (req, res) => {
     try {
       const { callId, conferenceWith } = req.body;
       
@@ -527,8 +527,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // STARZ MightyCall Direct Integration
-  app.post('/api/mightycall/starz-call', async (req, res) => {
+  // STARZ POWERDIALS Direct Integration
+  app.post('/api/powerdials/starz-call', async (req, res) => {
     try {
       const { phoneNumber, contactName, userId, dialerType } = req.body;
       
@@ -545,7 +545,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Log the STARZ call attempt
       console.log(`📞 STARZ DIALER: Call to ${phoneNumber} (${contactName || 'Unknown Contact'}) - ID: ${callId}`);
       
-      // STARZ MightyCall integration response
+      // STARZ POWERDIALS integration response
       res.json({
         success: true,
         callId,
@@ -556,11 +556,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         integrationLevel: 'STARZ Direct',
         timestamp: new Date().toISOString(),
         account: '4f917f13-aae1-401d-8241-010db91da5b2',
-        message: 'STARZ MightyCall dialer initiated successfully'
+        message: 'STARZ POWERDIALS dialer initiated successfully'
       });
 
     } catch (error) {
-      console.error('STARZ MightyCall error:', error);
+      console.error('STARZ POWERDIALS error:', error);
       res.status(500).json({ 
         error: 'Failed to initiate STARZ call',
         details: (error as Error).message 
@@ -569,7 +569,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // End call endpoint for STARZ dialer
-  app.post('/api/mightycall/end-call', async (req, res) => {
+  app.post('/api/powerdials/end-call', async (req, res) => {
     try {
       const { callId } = req.body;
       
@@ -593,7 +593,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Mute/unmute call endpoint for STARZ dialer
-  app.post('/api/mightycall/mute', async (req, res) => {
+  app.post('/api/powerdials/mute', async (req, res) => {
     try {
       const { callId, mute } = req.body;
       
@@ -617,7 +617,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Hold/resume call endpoint for STARZ dialer
-  app.post('/api/mightycall/hold', async (req, res) => {
+  app.post('/api/powerdials/hold', async (req, res) => {
     try {
       const { callId, hold } = req.body;
       
@@ -641,7 +641,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // SIP WebRTC connection endpoint for STARZ dialer
-  app.post('/api/mightycall/sip-connect', async (req, res) => {
+  app.post('/api/powerdials/sip-connect', async (req, res) => {
     try {
       const { callId, sdp, type } = req.body;
       
@@ -706,8 +706,8 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
-  // MightyCall API integration
-  app.post('/api/mightycall/call', async (req, res) => {
+  // POWERDIALS API integration
+  app.post('/api/powerdials/call', async (req, res) => {
     try {
       const { phoneNumber, contactName } = req.body;
       
@@ -734,7 +734,7 @@ a=ssrc:1001 msid:stream track`
       });
 
     } catch (error) {
-      console.error('MightyCall API error:', error);
+      console.error('POWERDIALS API error:', error);
       res.status(500).json({ 
         error: 'Failed to initiate call',
         details: (error as Error).message 
@@ -742,8 +742,8 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
-  // MightyCall initiate-call endpoint (used by phone system component)
-  app.post('/api/mightycall/initiate-call', async (req, res) => {
+  // POWERDIALS initiate-call endpoint (used by phone system component)
+  app.post('/api/powerdials/initiate-call', async (req, res) => {
     try {
       const { phoneNumber, contactName, extension } = req.body;
       
@@ -771,7 +771,7 @@ a=ssrc:1001 msid:stream track`
       });
 
     } catch (error) {
-      console.error('MightyCall initiate-call API error:', error);
+      console.error('POWERDIALS initiate-call API error:', error);
       res.status(500).json({ 
         error: 'Failed to initiate call',
         details: (error as Error).message 
@@ -779,8 +779,8 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
-  // STARZ Dialer MightyCall API endpoint for actual outbound calls
-  app.post('/api/mightycall/starz-call', async (req, res) => {
+  // STARZ Dialer POWERDIALS API endpoint for actual outbound calls
+  app.post('/api/powerdials/starz-call', async (req, res) => {
     try {
       const { phoneNumber, contactName, userId, dialerType } = req.body;
       
@@ -802,10 +802,10 @@ a=ssrc:1001 msid:stream track`
       
       // Log the call attempt with enhanced details
       console.log(`🔥 STARZ DIALER: Outbound call initiated to ${phoneNumber} (${contactName}) - Call ID: ${callId}`);
-      console.log(`📞 MightyCall Account: 4f917f13-aae1-401d-8241-010db91da5b2`);
+      console.log(`📞 POWERDIALS Account: 4f917f13-aae1-401d-8241-010db91da5b2`);
       console.log(`📱 Formatted Number: +${formattedNumber}`);
       
-      // Try to make actual MightyCall API call
+      // Try to make actual POWERDIALS API call
       const mightyCallResponse = await mightyCallCoreFixed.initiateOutboundCall({
         phoneNumber: cleanNumber,
         contactName: contactName || 'Unknown Contact',
@@ -814,7 +814,7 @@ a=ssrc:1001 msid:stream track`
       });
 
       if (mightyCallResponse.success) {
-        console.log(`✅ MightyCall API Success: ${mightyCallResponse.message}`);
+        console.log(`✅ POWERDIALS API Success: ${mightyCallResponse.message}`);
         
         // Log successful call attempt
         console.log(`📋 Call logged: ${callId} - ${contactName || 'Unknown Contact'} at ${cleanNumber}`);
@@ -827,13 +827,13 @@ a=ssrc:1001 msid:stream track`
           sipUrl: mightyCallResponse.sipUrl,
           webDialerUrl: mightyCallResponse.webDialerUrl,
           dialString: mightyCallResponse.dialString,
-          message: 'Call initiated through MightyCall API',
+          message: 'Call initiated through POWERDIALS API',
           timestamp: new Date().toISOString(),
           method: mightyCallResponse.method || 'api_call'
         });
       } else {
         // Fallback to device dialer if API fails
-        console.log(`⚠️ MightyCall API failed, using device dialer fallback`);
+        console.log(`⚠️ POWERDIALS API failed, using device dialer fallback`);
         
         res.json({
           success: true,
@@ -841,7 +841,7 @@ a=ssrc:1001 msid:stream track`
           phoneNumber: cleanNumber,
           contactName: contactName || 'Unknown Contact',
           dialString: `tel:+${formattedNumber}`,
-          message: 'Using device dialer (MightyCall API unavailable)',
+          message: 'Using device dialer (POWERDIALS API unavailable)',
           timestamp: new Date().toISOString(),
           method: 'device_dialer',
           fallback: true

@@ -11,7 +11,6 @@ import CRMAnalyticsDashboard from "@/components/crm-analytics-dashboard";
 import AutomationsView from "@/components/automations-view";
 import Payments from "@/pages/payments";
 import LegalDocumentsView from "@/components/legal-documents-view";
-import MightyCallIntegration from "@/components/mightycall-integration";
 import { ComprehensivePhoneSystem } from "@/components/comprehensive-phone-system";
 import WorkOrders from "@/pages/work-orders";
 import SecureFileManager from "@/components/secure-file-manager";

@@ -6,7 +6,7 @@ import { ComprehensivePhoneSystem } from "@/components/comprehensive-phone-syste
 import Sidebar from "@/components/sidebar";
 import Header from "@/components/header";
 
-interface MightyCallStatus {
+interface POWERDIALSStatus {
   connected: boolean;
   apiAccess: boolean;
   accountId: string;
@@ -14,7 +14,7 @@ interface MightyCallStatus {
   message: string;
 }
 
-export default function MightyCallPage() {
+export default function POWERDIALSPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   
   const { data: user } = useQuery({
@@ -27,8 +27,8 @@ export default function MightyCallPage() {
 
   const company = Array.isArray(companies) ? companies[0] : null;
 
-  const { data: status } = useQuery<MightyCallStatus>({
-    queryKey: ["/api/mightycall/status"],
+  const { data: status } = useQuery<POWERDIALSStatus>({
+    queryKey: ["/api/powerdials/status"],
   });
 
   return (

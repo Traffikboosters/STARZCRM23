@@ -6,17 +6,17 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
-interface MightyCallCoreInstructionsProps {
+interface POWERDIALSCoreInstructionsProps {
   phoneNumber: string;
   contactName?: string;
   onCallInitiated?: () => void;
 }
 
-export default function MightyCallCoreInstructions({
+export default function POWERDIALSCoreInstructions({
   phoneNumber,
   contactName,
   onCallInitiated
-}: MightyCallCoreInstructionsProps) {
+}: POWERDIALSCoreInstructionsProps) {
   const [isPreparingCall, setIsPreparingCall] = useState(false);
   const [callPrepared, setCallPrepared] = useState(false);
   const { toast } = useToast();
@@ -25,7 +25,7 @@ export default function MightyCallCoreInstructions({
     setIsPreparingCall(true);
     
     try {
-      const response = await apiRequest("POST", "/api/mightycall/call", {
+      const response = await apiRequest("POST", "/api/powerdials/call", {
         phoneNumber,
         contactName
       });
@@ -38,7 +38,7 @@ export default function MightyCallCoreInstructions({
 
         toast({
           title: "Call Ready",
-          description: `Calling ${contactName || phoneNumber} via MightyCall`,
+          description: `Calling ${contactName || phoneNumber} via POWERDIALS`,
         });
 
         // Open the phone dialer
@@ -51,7 +51,7 @@ export default function MightyCallCoreInstructions({
     } catch (error) {
       toast({
         title: "Call Error",
-        description: "Unable to connect to MightyCall system.",
+        description: "Unable to connect to POWERDIALS system.",
         variant: "destructive",
       });
     } finally {
@@ -63,11 +63,11 @@ export default function MightyCallCoreInstructions({
     <Card className="w-full max-w-md">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">MightyCall Integration</CardTitle>
+          <CardTitle className="text-lg">POWERDIALS Integration</CardTitle>
           <Badge variant="outline" className="text-xs">Core Plan</Badge>
         </div>
         <CardDescription>
-          Connected to Traffik Boosters MightyCall account
+          Connected to Traffik Boosters POWERDIALS account
         </CardDescription>
       </CardHeader>
       
@@ -116,7 +116,7 @@ export default function MightyCallCoreInstructions({
 
           {callPrepared && (
             <div className="text-xs text-center text-muted-foreground">
-              Call logged in CRM. Use your phone or MightyCall app to complete the call.
+              Call logged in CRM. Use your phone or POWERDIALS app to complete the call.
             </div>
           )}
         </div>
@@ -126,10 +126,10 @@ export default function MightyCallCoreInstructions({
             variant="outline"
             size="sm"
             className="w-full text-xs"
-            onClick={() => window.open('https://my.mightycall.com', '_blank')}
+            onClick={() => window.open('https://my.powerdials.com', '_blank')}
           >
             <ExternalLink className="h-3 w-3 mr-2" />
-            Open MightyCall Dashboard
+            Open POWERDIALS Dashboard
           </Button>
         </div>
       </CardContent>
