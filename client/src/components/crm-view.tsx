@@ -19,6 +19,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Plus, Search, Filter, User, Mail, Phone, Building, MapPin, Calendar, Star, MessageCircle, X, Clock, DollarSign, FileText, ExternalLink, CreditCard, Users, Target, Edit, Send, Video, MoreVertical, CheckCircle, AlertCircle, Briefcase, TrendingUp, Bot, Zap, ClipboardList, StickyNote, Copy, TestTube, Settings, FileUp, Globe } from "lucide-react";
 import { format } from "date-fns";
 import type { Contact, User as UserType } from "@shared/schema";
+import { authService } from "@/lib/auth";
 import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
 import ContactDetailsModal from "@/components/contact-details-modal";
 import TechnicalProposalForm from "@/components/technical-proposal-form";
@@ -415,6 +416,10 @@ export default function CRMView() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  // User authentication and role checking
+  const currentUser = authService.getCurrentUser();
+  const isManagement = currentUser?.role === 'admin' || currentUser?.role === 'manager';
+  
   // WebSocket connection for real-time Lead Card updates
   useEffect(() => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -572,9 +577,7 @@ export default function CRMView() {
     gcTime: 300000, // Keep in cache for 5 minutes (renamed from cacheTime in v5)
   });
 
-  const { data: currentUser } = useQuery<UserType>({
-    queryKey: ["/api/user"],
-  });
+  // Current user already defined above using authService
 
   const { data: allUsers = [] } = useQuery<UserType[]>({
     queryKey: ["/api/users"],
@@ -1023,16 +1026,18 @@ export default function CRMView() {
                     )}
                   </div>
 
-                  {/* Import Timestamp */}
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                    <div className="flex items-center text-xs text-gray-500">
-                      <Clock className="h-3 w-3 mr-1" />
-                      <span>Imported: {formatImportTimestamp(contact.importedAt || contact.createdAt)}</span>
+                  {/* Import Timestamp - Management Only */}
+                  {isManagement && (
+                    <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                      <div className="flex items-center text-xs text-gray-500">
+                        <Clock className="h-3 w-3 mr-1" />
+                        <span>Imported: {formatImportTimestamp(contact.importedAt || contact.createdAt)}</span>
+                      </div>
+                      <div className="text-xs text-blue-600 font-medium">
+                        {getTimeSinceImport(contact.importedAt || contact.createdAt)}
+                      </div>
                     </div>
-                    <div className="text-xs text-blue-600 font-medium">
-                      {getTimeSinceImport(contact.importedAt || contact.createdAt)}
-                    </div>
-                  </div>
+                  )}
 
                   {/* Lead Status & Priority */}
                   <div className="flex items-center justify-between pt-2 border-t border-gray-100">
@@ -1979,7 +1984,7 @@ export default function CRMView() {
           {selectedContact && (
             <TechnicalProposalForm
               contact={selectedContact}
-              currentUser={currentUser}
+              currentUser={currentUser as any}
               technicians={allUsers.filter(user => user.department === 'technical' || user.role === 'admin')}
               onSubmit={async (proposalData) => {
                 try {
