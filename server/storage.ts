@@ -778,30 +778,26 @@ export class DatabaseStorage implements IStorage {
 
   // Employee helpers
   async getEmployeesWithoutEmail(): Promise<User[]> {
+    // Get all users who already have email accounts
     const usersWithEmail = await db
-      .select({ userId: emailAccounts.employeeId })
+      .select({ employeeId: emailAccounts.employeeId })
       .from(emailAccounts);
     
-    const userIdsWithEmail = usersWithEmail.map(u => u.userId);
+    const userIdsWithEmail = usersWithEmail.map(u => u.employeeId);
     
+    // Get all users
+    const allUsers = await db
+      .select()
+      .from(users);
+    
+    // Filter out users who already have email accounts
     if (userIdsWithEmail.length === 0) {
       // No email accounts exist, return all users
-      return await db
-        .select()
-        .from(users);
+      return allUsers;
     }
     
-    // Return users who don't have email accounts using NOT IN logic
-    return await db
-      .select()
-      .from(users)
-      .where(
-        // Use a simple NOT EXISTS subquery for better performance
-        and(
-          // Only include active users
-          eq(users.role, 'sales_rep')
-        )
-      );
+    // Return users who don't have email accounts
+    return allUsers.filter(user => !userIdsWithEmail.includes(user.id));
   }
 }
 
