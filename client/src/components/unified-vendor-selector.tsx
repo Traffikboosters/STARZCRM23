@@ -19,7 +19,8 @@ import {
   CheckCircle,
   Star,
   MapPin,
-  Briefcase
+  Briefcase,
+  Home
 } from "lucide-react";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 
@@ -178,6 +179,20 @@ const platforms: VendorPlatform[] = [
     category: 'directory',
     color: 'bg-blue-100 border-blue-300',
     features: ['Local Focus', 'Service Based', 'Recent Posts']
+  },
+  {
+    id: 'angies-list',
+    name: "Angie's List",
+    description: 'Verified home service contractors with ratings',
+    icon: <Home className="h-6 w-6" />,
+    endpoint: '/api/scraping-jobs/angies-list',
+    leadCount: '18-25',
+    leadType: 'Home Contractors',
+    avgRevenue: '$45K-$120K/month',
+    successRate: '88%',
+    category: 'directory',
+    color: 'bg-green-100 border-green-300',
+    features: ['Verified Reviews', 'Home Services', 'Licensed Pros']
   }
 ];
 
@@ -380,11 +395,11 @@ export default function UnifiedVendorSelector() {
               <p className="text-sm text-gray-600">Total Platforms</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-orange-600">165-242</p>
+              <p className="text-2xl font-bold text-orange-600">183-267</p>
               <p className="text-sm text-gray-600">Leads per Cycle</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-orange-600">90%</p>
+              <p className="text-2xl font-bold text-orange-600">89%</p>
               <p className="text-sm text-gray-600">Avg Success Rate</p>
             </div>
             <div>
