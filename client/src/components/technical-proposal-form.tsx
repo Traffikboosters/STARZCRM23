@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { User, Building, DollarSign, Clock, Users, FileText, Target, Zap, Calendar, Star, CheckCircle } from "lucide-react";
 import type { Contact, User as UserType } from "@shared/schema";
+import { canViewFinancialInfo, isTechnician } from "@/lib/auth";
 
 const technicalProposalSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -80,6 +81,10 @@ export default function TechnicalProposalForm({
   const { toast } = useToast();
   const [selectedScope, setSelectedScope] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Check if current user can view financial information
+  const showFinancialInfo = canViewFinancialInfo();
+  const userIsTechnician = isTechnician();
 
   const form = useForm<TechnicalProposalFormData>({
     resolver: zodResolver(technicalProposalSchema),
@@ -87,11 +92,13 @@ export default function TechnicalProposalForm({
       title: `${contact.primaryServiceNeed || 'Digital Marketing'} Proposal for ${contact.company || contact.firstName + ' ' + contact.lastName}`,
       serviceType: contact.primaryServiceNeed?.toLowerCase().replace(' ', '_') || "seo",
       description: `Comprehensive ${contact.primaryServiceNeed || 'digital marketing'} proposal for ${contact.company || contact.firstName + ' ' + contact.lastName}. Based on initial consultation, client is looking for ${contact.serviceDescription || 'improved online presence and lead generation'}.`,
-      budgetRange: contact.serviceBudget || (contact.dealValue ? contact.dealValue.toString() : undefined) || "5000-15000",
+      // Only include budget information if user can view financial data
+      budgetRange: showFinancialInfo ? (contact.serviceBudget || (contact.dealValue ? String(contact.dealValue) : undefined) || "5000-15000") : undefined,
       timeline: contact.serviceTimeline || contact.timeline || "4-6 weeks",
       priority: contact.urgencyLevel === 'high' ? 'high' : contact.urgencyLevel === 'critical' ? 'urgent' : 'medium',
       serviceScope: [],
-      clientRequirements: contact.notes || `Client Requirements:\n• Service Type: ${contact.primaryServiceNeed || 'Digital Marketing'}\n• Budget Range: ${contact.serviceBudget || 'TBD'}\n• Timeline: ${contact.serviceTimeline || 'TBD'}\n• Company Size: ${contact.companySize || 'Unknown'}\n• Current Provider: ${contact.currentProvider || 'None'}`,
+      // Exclude budget information from client requirements if user is technician
+      clientRequirements: contact.notes || `Client Requirements:\n• Service Type: ${contact.primaryServiceNeed || 'Digital Marketing'}\n${showFinancialInfo ? `• Budget Range: ${contact.serviceBudget || 'TBD'}\n` : ''}• Timeline: ${contact.serviceTimeline || 'TBD'}\n• Company Size: ${contact.companySize || 'Unknown'}\n• Current Provider: ${contact.currentProvider || 'None'}`,
     },
   });
 
@@ -125,6 +132,20 @@ export default function TechnicalProposalForm({
 
   return (
     <div className="space-y-6">
+      {/* Role-based notification for technicians */}
+      {userIsTechnician && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4 text-blue-600" />
+            <strong className="text-blue-700">Technical Team Access</strong>
+          </div>
+          <p className="text-sm text-blue-700 mt-1">
+            Financial information (budget ranges and pricing) is restricted for technical team members. 
+            Focus on delivering high-quality technical solutions while the sales team handles financial discussions.
+          </p>
+        </div>
+      )}
+
       {/* Contact Summary */}
       <Card>
         <CardHeader>
@@ -148,7 +169,9 @@ export default function TechnicalProposalForm({
             <div>
               <Label className="text-sm font-medium">Service Interest</Label>
               <p className="text-sm">{contact.primaryServiceNeed || 'Digital Marketing'}</p>
-              <p className="text-xs text-gray-500">Budget: {contact.serviceBudget || 'TBD'}</p>
+              {showFinancialInfo && (
+                <p className="text-xs text-gray-500">Budget: {contact.serviceBudget || 'TBD'}</p>
+              )}
             </div>
             <div>
               <Label className="text-sm font-medium">Timeline</Label>
@@ -300,20 +323,23 @@ export default function TechnicalProposalForm({
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="budgetRange"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Budget Range</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="$5,000 - $15,000" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <div className={`grid ${showFinancialInfo ? 'grid-cols-3' : 'grid-cols-2'} gap-4`}>
+                {/* Only show budget range if user can view financial information */}
+                {showFinancialInfo && (
+                  <FormField
+                    control={form.control}
+                    name="budgetRange"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Budget Range</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="$5,000 - $15,000" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
 
                 <FormField
                   control={form.control}

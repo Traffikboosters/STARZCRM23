@@ -171,6 +171,31 @@ class AuthService {
   canManageCompanySettings(): boolean {
     return this.hasRole('admin');
   }
+
+  // Check if user is in technical department - should not see financial information
+  isTechnician(): boolean {
+    const user = this.getCurrentUser();
+    return user?.department === 'technical' || user?.role === 'technician';
+  }
+
+  // Check if user can view financial information (budget, pricing, deal values)
+  canViewFinancialInfo(): boolean {
+    const user = this.getCurrentUser();
+    // Only sales, admin, and management roles can view financial information
+    return user?.role === 'admin' || 
+           user?.role === 'manager' || 
+           user?.role === 'sales_rep' ||
+           user?.department === 'sales' ||
+           user?.department === 'management';
+  }
+
+  // Check if user can edit financial information
+  canEditFinancialInfo(): boolean {
+    const user = this.getCurrentUser();
+    return user?.role === 'admin' || 
+           user?.role === 'manager' || 
+           (user?.role === 'sales_rep' && user?.department === 'sales');
+  }
 }
 
 export const authService = new AuthService();
@@ -195,4 +220,7 @@ export const {
   canAccessDataScraping,
   canManageUsers,
   canManageCompanySettings,
+  isTechnician,
+  canViewFinancialInfo,
+  canEditFinancialInfo,
 } = authService;
