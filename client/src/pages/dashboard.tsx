@@ -78,7 +78,7 @@ export default function Dashboard() {
   const renderMainContent = () => {
     switch (activeTab) {
       case "smart-search":
-        return <SmartSearchAI />;
+        return <SmartSearchAI isOpen={true} onClose={() => setActiveTab("dashboard")} onNavigate={(path) => console.log('Navigate to:', path)} />;
       case "calendar":
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
       case "crm":

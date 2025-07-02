@@ -69,7 +69,7 @@ export default function SmartSearchAI({ isOpen, onClose, onNavigate }: SmartSear
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Get contacts data for AI analysis
-  const { data: contacts = [] } = useQuery({
+  const { data: contacts = [] } = useQuery<Contact[]>({
     queryKey: ['/api/contacts'],
     enabled: isOpen
   });
@@ -89,11 +89,11 @@ export default function SmartSearchAI({ isOpen, onClose, onNavigate }: SmartSear
       const aiSuggestions: AISuggestion[] = [];
 
       // Analyze contact data for intelligent suggestions
-      const highValueContacts = contacts.filter((c: Contact) => 
+      const highValueContacts = (contacts as Contact[]).filter((c: Contact) => 
         c.dealValue && c.dealValue > 5000
       ).length;
 
-      const newContacts = contacts.filter((c: Contact) => {
+      const newContacts = (contacts as Contact[]).filter((c: Contact) => {
         const daysSinceCreated = Math.floor(
           (Date.now() - new Date(c.createdAt).getTime()) / (1000 * 60 * 60 * 24)
         );
@@ -101,11 +101,11 @@ export default function SmartSearchAI({ isOpen, onClose, onNavigate }: SmartSear
       }).length;
 
       const companies = new Set(
-        contacts.map((c: Contact) => c.company).filter(Boolean)
+        (contacts as Contact[]).map((c: Contact) => c.company).filter(Boolean)
       ).size;
 
       const locations = new Set(
-        contacts.map((c: Contact) => {
+        (contacts as Contact[]).map((c: Contact) => {
           // Extract location from notes or other fields
           return 'Various Locations'; // Simplified for now
         }).filter(Boolean)
@@ -260,7 +260,7 @@ export default function SmartSearchAI({ isOpen, onClose, onNavigate }: SmartSear
     
     try {
       // Smart search logic - search across multiple fields
-      const filtered = contacts.filter((contact: Contact) => {
+      const filtered = (contacts as Contact[]).filter((contact: Contact) => {
         const searchTerms = query.toLowerCase().split(' ');
         const searchableText = [
           contact.firstName,
@@ -308,12 +308,12 @@ export default function SmartSearchAI({ isOpen, onClose, onNavigate }: SmartSear
       // Handle different action types
       switch (suggestion.actionType) {
         case 'filter_phone':
-          const phoneContacts = contacts.filter((c: Contact) => c.phone);
+          const phoneContacts = (contacts as Contact[]).filter((c: Contact) => c.phone);
           setSearchResults(phoneContacts);
           break;
         case 'filter_followup':
           // Filter contacts that need follow-up
-          const followUpContacts = contacts.filter((c: Contact) => 
+          const followUpContacts = (contacts as Contact[]).filter((c: Contact) => 
             c.leadStatus === 'contacted' || c.leadStatus === 'qualified'
           );
           setSearchResults(followUpContacts);
@@ -324,7 +324,7 @@ export default function SmartSearchAI({ isOpen, onClose, onNavigate }: SmartSear
           break;
         case 'priority_analysis':
           // Show high-priority contacts
-          const priorityContacts = contacts.filter((c: Contact) => 
+          const priorityContacts = (contacts as Contact[]).filter((c: Contact) => 
             c.priority === 'high' || (c.dealValue && c.dealValue > 3000)
           );
           setSearchResults(priorityContacts);
