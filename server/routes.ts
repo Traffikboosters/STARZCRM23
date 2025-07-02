@@ -2716,6 +2716,148 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  // ZoomInfo scraping endpoints
+  app.post("/api/scraping-jobs/zoominfo-industry", async (req, res) => {
+    try {
+      const { industry, location } = req.body;
+      console.log(`🔍 ZoomInfo Industry Search: ${industry}${location ? ` in ${location}` : ''}`);
+      
+      const { ZoomInfoScraper } = await import('./zoominfo-scraper');
+      const zoomInfoData = await ZoomInfoScraper.scrapeByIndustry(industry, location);
+      const contacts = ZoomInfoScraper.convertToContacts(zoomInfoData);
+      
+      // Save contacts to database
+      const savedContacts = [];
+      for (const contactData of contacts) {
+        const contact = await storage.createContact(contactData);
+        savedContacts.push(contact);
+      }
+
+      // Record extraction history
+      await storage.createExtractionHistory({
+        platform: 'zoominfo',
+        searchTerms: `Industry: ${industry}${location ? `, Location: ${location}` : ''}`,
+        totalResults: savedContacts.length,
+        successfulExtractions: savedContacts.length,
+        extractedAt: new Date(),
+        extractionData: zoomInfoData
+      });
+
+      // Broadcast real-time notification
+      broadcast({
+        type: 'leads_extracted',
+        platform: 'zoominfo',
+        count: savedContacts.length,
+        message: `ZoomInfo extracted ${savedContacts.length} ${industry} leads`,
+        timestamp: new Date().toISOString()
+      });
+
+      res.json({
+        success: true,
+        extracted: savedContacts.length,
+        contacts: savedContacts,
+        searchCriteria: zoomInfoData.searchCriteria
+      });
+    } catch (error) {
+      console.error('ZoomInfo industry extraction error:', error);
+      res.status(500).json({ message: "Error extracting ZoomInfo industry data" });
+    }
+  });
+
+  app.post("/api/scraping-jobs/zoominfo-revenue", async (req, res) => {
+    try {
+      const { minRevenue, maxRevenue } = req.body;
+      console.log(`💰 ZoomInfo Revenue Search: ${minRevenue}-${maxRevenue}`);
+      
+      const { ZoomInfoScraper } = await import('./zoominfo-scraper');
+      const zoomInfoData = await ZoomInfoScraper.scrapeByRevenue(minRevenue, maxRevenue);
+      const contacts = ZoomInfoScraper.convertToContacts(zoomInfoData);
+      
+      // Save contacts to database
+      const savedContacts = [];
+      for (const contactData of contacts) {
+        const contact = await storage.createContact(contactData);
+        savedContacts.push(contact);
+      }
+
+      // Record extraction history
+      await storage.createExtractionHistory({
+        platform: 'zoominfo',
+        searchTerms: `Revenue: ${minRevenue}-${maxRevenue}`,
+        totalResults: savedContacts.length,
+        successfulExtractions: savedContacts.length,
+        extractedAt: new Date(),
+        extractionData: zoomInfoData
+      });
+
+      // Broadcast real-time notification
+      broadcast({
+        type: 'leads_extracted',
+        platform: 'zoominfo',
+        count: savedContacts.length,
+        message: `ZoomInfo extracted ${savedContacts.length} high-revenue prospects`,
+        timestamp: new Date().toISOString()
+      });
+
+      res.json({
+        success: true,
+        extracted: savedContacts.length,
+        contacts: savedContacts,
+        searchCriteria: zoomInfoData.searchCriteria
+      });
+    } catch (error) {
+      console.error('ZoomInfo revenue extraction error:', error);
+      res.status(500).json({ message: "Error extracting ZoomInfo revenue data" });
+    }
+  });
+
+  app.post("/api/scraping-jobs/zoominfo-location", async (req, res) => {
+    try {
+      const { city, state } = req.body;
+      console.log(`📍 ZoomInfo Location Search: ${city}, ${state}`);
+      
+      const { ZoomInfoScraper } = await import('./zoominfo-scraper');
+      const zoomInfoData = await ZoomInfoScraper.scrapeByLocation(city, state);
+      const contacts = ZoomInfoScraper.convertToContacts(zoomInfoData);
+      
+      // Save contacts to database
+      const savedContacts = [];
+      for (const contactData of contacts) {
+        const contact = await storage.createContact(contactData);
+        savedContacts.push(contact);
+      }
+
+      // Record extraction history
+      await storage.createExtractionHistory({
+        platform: 'zoominfo',
+        searchTerms: `Location: ${city}, ${state}`,
+        totalResults: savedContacts.length,
+        successfulExtractions: savedContacts.length,
+        extractedAt: new Date(),
+        extractionData: zoomInfoData
+      });
+
+      // Broadcast real-time notification
+      broadcast({
+        type: 'leads_extracted',
+        platform: 'zoominfo',
+        count: savedContacts.length,
+        message: `ZoomInfo extracted ${savedContacts.length} leads from ${city}, ${state}`,
+        timestamp: new Date().toISOString()
+      });
+
+      res.json({
+        success: true,
+        extracted: savedContacts.length,
+        contacts: savedContacts,
+        searchCriteria: zoomInfoData.searchCriteria
+      });
+    } catch (error) {
+      console.error('ZoomInfo location extraction error:', error);
+      res.status(500).json({ message: "Error extracting ZoomInfo location data" });
+    }
+  });
+
   // Smart Search AI Suggestions API
   app.get("/api/smart-search/suggestions", async (req, res) => {
     try {

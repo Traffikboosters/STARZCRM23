@@ -73,6 +73,7 @@ export default function Sidebar({
     { id: "live-extraction", label: "Live Data Extractor", icon: Activity },
     { id: "extraction-history", label: "Live Extraction History", icon: Clock },
     { id: "real-leads", label: "Lead Card Research", icon: Search },
+    { id: "zoominfo", label: "ZoomInfo Scraping", icon: Building2 },
     { id: "dial-tracking", label: "Dial Tracking", icon: Timer },
     { id: "pricing", label: "Pricing & Profit", icon: DollarSign },
     { id: "competitive-pricing", label: "Competitive Pricing", icon: Calculator },
