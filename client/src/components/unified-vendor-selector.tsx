@@ -311,7 +311,7 @@ export default function UnifiedVendorSelector() {
           return (
             <Card key={platform.id} className={`transition-all hover:shadow-lg ${platform.color}`}>
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
                     <div className={`p-2 rounded-lg ${categoryColors[platform.category]}`}>
                       {platform.icon}
@@ -323,9 +323,17 @@ export default function UnifiedVendorSelector() {
                       </Badge>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                    <span className="text-sm font-semibold">{platform.successRate}</span>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                      <span className="text-sm font-semibold">{platform.successRate}</span>
+                    </div>
+                    <img 
+                      src={traffikBoostersLogo} 
+                      alt="Traffik Boosters" 
+                      className="h-8 w-auto object-contain"
+                      style={{ imageRendering: 'crisp-edges' }}
+                    />
                   </div>
                 </div>
                 <CardDescription className="text-sm">
