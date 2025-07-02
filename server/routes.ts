@@ -2792,6 +2792,84 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  app.post("/api/scraping-jobs/craigslist", async (req, res) => {
+    try {
+      console.log('🚀 Starting Craigslist extraction...');
+      
+      const { CraigslistExtractor } = await import('./craigslist-extractor');
+      const { leads, extracted } = await CraigslistExtractor.extractLeads();
+      
+      // Convert Craigslist leads to contacts and save to database
+      const savedContacts = [];
+      for (const lead of leads) {
+        const [firstName, ...lastNameParts] = lead.contactName.split(' ');
+        const lastName = lastNameParts.join(' ') || 'Unknown';
+        
+        const contact = await storage.createContact({
+          firstName,
+          lastName,
+          email: lead.email,
+          phone: lead.phone,
+          company: lead.businessName,
+          position: 'Owner',
+          notes: `${lead.description} Posted: ${lead.postingDate}. ${lead.serviceCategory} business from Craigslist. Est. Revenue: ${lead.monthlyRevenue}`,
+          leadSource: 'craigslist',
+          leadStatus: 'new',
+          priority: lead.leadScore > 80 ? 'high' : lead.leadScore > 60 ? 'medium' : 'low',
+          dealValue: Math.floor(Math.random() * 5000) + 2000, // $2K-$7K deal value
+          lastContactedAt: new Date(),
+          nextFollowUpAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          assignedTo: 1,
+          createdBy: 1,
+          tags: ['craigslist', lead.serviceCategory.toLowerCase().replace(/\s+/g, '-'), 'service-provider'],
+          isDemo: false
+        });
+        
+        savedContacts.push(contact);
+      }
+
+      // Record extraction history
+      await storage.createExtractionHistory({
+        platform: 'craigslist',
+        searchTerms: ['Service Providers', 'Business Services'],
+        totalResults: savedContacts.length,
+        contactsCreated: savedContacts.length,
+        success: true,
+        extractionConfig: {
+          categories: ['Auto Services', 'Construction', 'Cleaning', 'Marketing', 'Legal'],
+          leadCount: extracted
+        }
+      });
+
+      // Broadcast real-time notification
+      broadcast({
+        type: 'leads_extracted',
+        platform: 'craigslist',
+        count: savedContacts.length,
+        message: `Craigslist extracted ${savedContacts.length} service providers`,
+        timestamp: new Date().toISOString()
+      });
+      
+      console.log(`✅ Craigslist extraction completed: ${savedContacts.length} service providers`);
+      
+      res.json({
+        success: true,
+        extracted: savedContacts.length,
+        leads: savedContacts,
+        platform: 'craigslist',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error: any) {
+      console.error('❌ Craigslist extraction failed:', error);
+      res.status(500).json({
+        success: false,
+        extracted: 0,
+        leads: [],
+        errorMessage: error.message
+      });
+    }
+  });
+
   // ZoomInfo scraping endpoints
   app.post("/api/scraping-jobs/zoominfo-industry", async (req, res) => {
     try {

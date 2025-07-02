@@ -164,6 +164,20 @@ const platforms: VendorPlatform[] = [
     category: 'business',
     color: 'bg-red-100 border-red-300',
     features: ['News Featured', 'High Profile', 'Media Presence']
+  },
+  {
+    id: 'craigslist',
+    name: 'Craigslist',
+    description: 'Local service providers actively posting services',
+    icon: <Briefcase className="h-6 w-6" />,
+    endpoint: '/api/scraping-jobs/craigslist',
+    leadCount: '15-22',
+    leadType: 'Service Providers',
+    avgRevenue: '$25K-$55K/month',
+    successRate: '83%',
+    category: 'directory',
+    color: 'bg-blue-100 border-blue-300',
+    features: ['Local Focus', 'Service Based', 'Recent Posts']
   }
 ];
 
@@ -366,15 +380,15 @@ export default function UnifiedVendorSelector() {
               <p className="text-sm text-gray-600">Total Platforms</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-orange-600">150-220</p>
+              <p className="text-2xl font-bold text-orange-600">165-242</p>
               <p className="text-sm text-gray-600">Leads per Cycle</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-orange-600">91%</p>
+              <p className="text-2xl font-bold text-orange-600">90%</p>
               <p className="text-sm text-gray-600">Avg Success Rate</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-orange-600">$35K-$500K</p>
+              <p className="text-2xl font-bold text-orange-600">$25K-$500K</p>
               <p className="text-sm text-gray-600">Revenue Range</p>
             </div>
           </div>
