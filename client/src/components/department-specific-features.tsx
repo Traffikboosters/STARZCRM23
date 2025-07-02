@@ -178,6 +178,92 @@ export function DepartmentSpecificFeatures({ department, employees }: Department
         </Card>
       </div>
 
+      {/* Advertising Platform Credentials */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Advertising Platform Access
+          </CardTitle>
+          <CardDescription>Authenticated advertising platform credentials for marketing campaigns</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Paramount Ads Manager */}
+            <div className="p-4 border rounded-lg bg-gradient-to-r from-blue-50 to-purple-50">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">P</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Paramount Ads Manager</h4>
+                    <p className="text-sm text-gray-600">Premium advertising platform</p>
+                  </div>
+                </div>
+                <Badge variant="default" className="bg-green-100 text-green-800">Active</Badge>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">URL:</span>
+                  <a href="https://adsmanager.paramount.com/" target="_blank" rel="noopener noreferrer" 
+                     className="text-blue-600 hover:underline">adsmanager.paramount.com</a>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Username:</span>
+                  <span className="font-mono bg-gray-100 px-2 py-1 rounded">traffikboostres@gmail.com</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Password:</span>
+                  <span className="font-mono bg-gray-100 px-2 py-1 rounded">Sau954793*</span>
+                </div>
+              </div>
+            </div>
+
+            {/* TikTok Ads */}
+            <div className="p-4 border rounded-lg bg-gradient-to-r from-pink-50 to-red-50">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">T</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">TikTok Ads Manager</h4>
+                    <p className="text-sm text-gray-600">Social media advertising platform</p>
+                  </div>
+                </div>
+                <Badge variant="default" className="bg-green-100 text-green-800">Active</Badge>
+              </div>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">URL:</span>
+                  <a href="https://ads.tiktok.com/i18n/login/" target="_blank" rel="noopener noreferrer" 
+                     className="text-blue-600 hover:underline">ads.tiktok.com</a>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Username:</span>
+                  <span className="font-mono bg-gray-100 px-2 py-1 rounded">traffikboosters@gmail.com</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Password:</span>
+                  <span className="font-mono bg-gray-100 px-2 py-1 rounded">Gn954793*</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="h-5 w-5 text-blue-600 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium text-blue-800">Security Notice</p>
+                <p className="text-blue-700">These credentials are for authorized marketing team members only. Always use secure connections and log out after sessions.</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Campaign Performance */}
       <Card>
         <CardHeader>
