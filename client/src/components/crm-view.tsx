@@ -1101,36 +1101,165 @@ export default function CRMView() {
                     </div>
                   )}
 
-                  {/* Budget & Deal Value */}
-                  {(contact.budget || contact.dealValue) && (
-                    <div className="flex items-center gap-4 text-sm">
-                      {contact.budget && (
-                        <div className="flex items-center text-green-600">
-                          <DollarSign className="h-4 w-4 mr-1" />
-                          <span className="font-medium">${(contact.budget / 100).toLocaleString()}</span>
+                  {/* Business Intelligence Section */}
+                  <div className="pt-2 border-t border-gray-100 space-y-2">
+                    <div className="flex items-center text-xs text-gray-600 mb-2">
+                      <Building className="h-3 w-3 mr-1" />
+                      <span className="font-medium">Business Details</span>
+                    </div>
+                    
+                    {/* Company Size & Industry */}
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      {contact.companySize && (
+                        <div>
+                          <span className="text-gray-500">Size:</span>
+                          <Badge variant="outline" className="ml-1 text-xs px-1 py-0">
+                            {contact.companySize.replace('_', ' ').toUpperCase()}
+                          </Badge>
                         </div>
                       )}
-                      {contact.dealValue && (
-                        <div className="flex items-center text-blue-600">
-                          <TrendingUp className="h-4 w-4 mr-1" />
-                          <span className="font-medium">${(contact.dealValue / 100).toLocaleString()}</span>
+                      {contact.position && (
+                        <div>
+                          <span className="text-gray-500">Role:</span>
+                          <span className="ml-1 font-medium">{contact.position}</span>
                         </div>
                       )}
                     </div>
-                  )}
 
-                  {/* Last Contact & Next Follow-up */}
-                  <div className="text-xs text-gray-500 space-y-1">
-                    {contact.lastContactedAt && (
-                      <div className="flex items-center">
-                        <Clock className="h-3 w-3 mr-1" />
-                        <span>Last: {format(new Date(contact.lastContactedAt), 'MMM d, yyyy')}</span>
+                    {/* Budget & Timeline */}
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      {(contact.budget || contact.serviceBudget) && (
+                        <div className="flex items-center text-green-600">
+                          <DollarSign className="h-3 w-3 mr-1" />
+                          <span className="font-medium">
+                            ${((contact.serviceBudget || contact.budget) / 100).toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                      {(contact.timeline || contact.serviceTimeline) && (
+                        <div className="flex items-center text-blue-600">
+                          <Calendar className="h-3 w-3 mr-1" />
+                          <span className="font-medium">
+                            {(contact.serviceTimeline || contact.timeline)?.replace('_', ' ') || 'TBD'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Deal Value & Probability */}
+                    {contact.dealValue && (
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center text-purple-600">
+                          <TrendingUp className="h-3 w-3 mr-1" />
+                          <span className="font-medium">${(contact.dealValue / 100).toLocaleString()}</span>
+                          <span className="text-xs text-gray-500 ml-1">deal value</span>
+                        </div>
+                        {contact.pipelineStage && (
+                          <Badge 
+                            variant={
+                              contact.pipelineStage === 'closed_won' ? 'default' :
+                              contact.pipelineStage === 'negotiation' ? 'secondary' :
+                              'outline'
+                            }
+                            className="text-xs px-1 py-0"
+                          >
+                            {contact.pipelineStage.replace('_', ' ').toUpperCase()}
+                          </Badge>
+                        )}
                       </div>
                     )}
-                    {contact.nextFollowUpAt && (
-                      <div className="flex items-center">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        <span>Next: {format(new Date(contact.nextFollowUpAt), 'MMM d, yyyy')}</span>
+                  </div>
+
+                  {/* Contact Activity Timeline */}
+                  <div className="pt-2 border-t border-gray-100 space-y-1">
+                    <div className="flex items-center text-xs text-gray-600 mb-1">
+                      <Clock className="h-3 w-3 mr-1" />
+                      <span className="font-medium">Activity Timeline</span>
+                    </div>
+                    
+                    <div className="text-xs text-gray-500 space-y-1">
+                      {contact.lastContactedAt && (
+                        <div className="flex items-center justify-between">
+                          <span>Last Contact:</span>
+                          <span className="font-medium">{format(new Date(contact.lastContactedAt), 'MMM d')}</span>
+                        </div>
+                      )}
+                      {contact.nextFollowUpAt && (
+                        <div className="flex items-center justify-between">
+                          <span>Next Follow-up:</span>
+                          <span className="font-medium text-orange-600">
+                            {format(new Date(contact.nextFollowUpAt), 'MMM d, h:mm a')}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Qualification & Notes Section */}
+                  <div className="pt-2 border-t border-gray-100 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-xs text-gray-600">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        <span className="font-medium">Qualification Status</span>
+                      </div>
+                      {contact.qualificationScore && contact.qualificationScore > 0 && (
+                        <div className="flex items-center">
+                          <Star className="h-3 w-3 mr-1 text-yellow-500" />
+                          <span className="text-xs font-medium">{contact.qualificationScore}/100</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Current Provider & Competition */}
+                    {contact.currentProvider && (
+                      <div className="text-xs">
+                        <span className="text-gray-500">Current Provider:</span>
+                        <span className="ml-1 font-medium text-red-600">{contact.currentProvider}</span>
+                      </div>
+                    )}
+
+                    {/* Disposition & Interest Level */}
+                    {contact.disposition && (
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="flex items-center">
+                          <span className="text-gray-500">Status:</span>
+                          <Badge 
+                            variant={
+                              contact.disposition === 'interested' ? 'default' :
+                              contact.disposition === 'callback' ? 'secondary' :
+                              contact.disposition === 'not_interested' ? 'destructive' :
+                              'outline'
+                            }
+                            className="ml-1 text-xs px-1 py-0"
+                          >
+                            {contact.disposition.replace('_', ' ').toUpperCase()}
+                          </Badge>
+                        </div>
+                        {contact.urgencyLevel && (
+                          <Badge 
+                            variant={
+                              contact.urgencyLevel === 'critical' ? 'destructive' :
+                              contact.urgencyLevel === 'high' ? 'default' :
+                              'secondary'
+                            }
+                            className="text-xs px-1 py-0"
+                          >
+                            {contact.urgencyLevel.toUpperCase()}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Key Notes Preview */}
+                    {contact.notes && (
+                      <div className="text-xs">
+                        <span className="text-gray-500">Notes:</span>
+                        <div className="mt-1 p-2 bg-yellow-50 rounded text-xs text-gray-700 border-l-2 border-yellow-300">
+                          {contact.notes.length > 100 ? 
+                            `${contact.notes.substring(0, 100)}...` : 
+                            contact.notes
+                          }
+                        </div>
                       </div>
                     )}
                   </div>
