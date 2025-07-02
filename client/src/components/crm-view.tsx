@@ -1174,7 +1174,7 @@ export default function CRMView() {
                             <DollarSign className="h-4 w-4 mr-2" />
                             <div>
                               <div className="text-lg font-bold">
-                                ${(contact.dealValue / 100).toLocaleString()}
+                                ${contact.dealValue.toLocaleString()}
                               </div>
                               <div className="text-xs text-green-600">Prospect Deal Value</div>
                             </div>
