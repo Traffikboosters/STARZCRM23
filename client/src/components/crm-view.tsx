@@ -957,7 +957,7 @@ export default function CRMView() {
               return (
                 <Card 
                   key={contact.id} 
-                  className={`hover:shadow-md transition-all duration-300 border-l-4 border-l-orange-500 ${ageStatus.bgColor} min-h-[200px]`}
+                  className={`hover:shadow-md transition-all duration-300 border-l-4 border-l-orange-500 ${ageStatus.bgColor} min-h-[200px] lead-card-content`}
                 >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between mb-3">
@@ -992,23 +992,23 @@ export default function CRMView() {
                     </CardTitle>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-4 lead-card-section">
                   {/* Contact Information */}
-                  <div className="space-y-2">
-                    <div className="flex items-center text-sm text-gray-600 min-h-[20px]">
+                  <div className="space-y-3 lead-card-text">
+                    <div className="flex items-center text-sm text-gray-600 min-h-[24px] leading-tight">
                       <User className="h-4 w-4 mr-2 flex-shrink-0" />
                       <span className="truncate font-medium">{contact.firstName} {contact.lastName}</span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600 min-h-[20px]">
+                    <div className="flex items-center text-sm text-gray-600 min-h-[24px] leading-tight">
                       <Phone className="h-4 w-4 mr-2 flex-shrink-0" />
                       <span className="truncate font-medium">{formatPhoneNumber(contact.phone) || 'No phone'}</span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600 min-h-[20px]">
+                    <div className="flex items-center text-sm text-gray-600 min-h-[24px] leading-tight">
                       <Mail className="h-4 w-4 mr-2 flex-shrink-0" />
                       <span className="truncate font-medium">{contact.email || 'No email'}</span>
                     </div>
                     {contact.website && (
-                      <div className="flex items-center text-sm text-gray-600 min-h-[20px]">
+                      <div className="flex items-center text-sm text-gray-600 min-h-[24px] leading-tight">
                         <ExternalLink className="h-4 w-4 mr-2 flex-shrink-0" />
                         <a href={contact.website.startsWith('http') ? contact.website : `https://${contact.website}`} 
                            target="_blank" 
@@ -1019,7 +1019,7 @@ export default function CRMView() {
                       </div>
                     )}
                     {contact.position && (
-                      <div className="flex items-center text-sm text-gray-600 min-h-[20px]">
+                      <div className="flex items-center text-sm text-gray-600 min-h-[24px] leading-tight">
                         <Briefcase className="h-4 w-4 mr-2 flex-shrink-0" />
                         <span className="truncate font-medium">{contact.position}</span>
                       </div>
@@ -1028,7 +1028,7 @@ export default function CRMView() {
 
                   {/* Import Timestamp - Management Only */}
                   {isManagement && (
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                       <div className="flex items-center text-xs text-gray-500">
                         <Clock className="h-3 w-3 mr-1" />
                         <span>Imported: {formatImportTimestamp(contact.importedAt || contact.createdAt)}</span>
@@ -1040,7 +1040,7 @@ export default function CRMView() {
                   )}
 
                   {/* Lead Status & Priority */}
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                  <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className="text-xs">
                         {contact.leadStatus?.replace('_', ' ').toUpperCase() || 'NEW'}
@@ -1055,18 +1055,18 @@ export default function CRMView() {
 
                   {/* Service Interest Information */}
                   {(contact.primaryServiceNeed || (contact.servicesInterested && contact.servicesInterested.length > 0)) && (
-                    <div className="pt-2 border-t border-gray-100 space-y-1">
-                      <div className="flex items-center text-xs text-gray-600 mb-1">
+                    <div className="pt-3 border-t border-gray-100 space-y-2">
+                      <div className="flex items-center text-xs text-gray-600 mb-2">
                         <Target className="h-3 w-3 mr-1" />
                         <span className="font-medium">Service Interest</span>
                       </div>
                       {contact.primaryServiceNeed && (
-                        <div className="text-sm font-medium text-blue-600">
+                        <div className="text-sm font-medium text-blue-600 mb-2">
                           {contact.primaryServiceNeed}
                         </div>
                       )}
                       {contact.servicesInterested && contact.servicesInterested.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1 mb-2">
                           {contact.servicesInterested.slice(0, 3).map((service, idx) => (
                             <Badge key={idx} variant="outline" className="text-xs px-1 py-0">
                               {service}
@@ -1080,7 +1080,7 @@ export default function CRMView() {
                         </div>
                       )}
                       {contact.serviceDescription && (
-                        <div className="text-xs text-gray-600 truncate">
+                        <div className="text-xs text-gray-600 truncate mb-2">
                           {contact.serviceDescription}
                         </div>
                       )}
@@ -1108,7 +1108,7 @@ export default function CRMView() {
 
                   {/* Lead Source Badge */}
                   {contact.leadSource && (
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                       <LeadSourceBadge 
                         source={contact.leadSource} 
                         timestamp={contact.createdAt}
@@ -1121,77 +1121,81 @@ export default function CRMView() {
                     </div>
                   )}
 
+                  {/* Deal Value - Prominently Displayed */}
+                  {contact.dealValue && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center text-green-700">
+                          <DollarSign className="h-4 w-4 mr-2" />
+                          <div>
+                            <div className="text-lg font-bold">
+                              ${contact.dealValue.toLocaleString()}
+                            </div>
+                            <div className="text-xs text-green-600">Prospect Deal Value</div>
+                          </div>
+                        </div>
+                        {contact.pipelineStage && (
+                          <Badge 
+                            variant={
+                              contact.pipelineStage === 'closed_won' ? 'default' :
+                              contact.pipelineStage === 'negotiation' ? 'secondary' :
+                              'outline'
+                            }
+                            className="text-xs px-2 py-1"
+                          >
+                            {contact.pipelineStage.replace('_', ' ').toUpperCase()}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Business Intelligence Section */}
-                  <div className="pt-2 border-t border-gray-100 space-y-2">
+                  <div className="pt-3 border-t border-gray-100 space-y-3">
                     <div className="flex items-center text-xs text-gray-600 mb-2">
                       <Building className="h-3 w-3 mr-1" />
                       <span className="font-medium">Business Details</span>
                     </div>
                     
                     {/* Company Size & Industry */}
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      {contact.companySize && (
-                        <div>
-                          <span className="text-gray-500">Size:</span>
-                          <Badge variant="outline" className="ml-1 text-xs px-1 py-0">
-                            {contact.companySize.replace('_', ' ').toUpperCase()}
-                          </Badge>
-                        </div>
-                      )}
-                      {contact.position && (
-                        <div>
-                          <span className="text-gray-500">Role:</span>
-                          <span className="ml-1 font-medium">{contact.position}</span>
-                        </div>
-                      )}
-                    </div>
+                    {(contact.companySize || contact.position) && (
+                      <div className="grid grid-cols-2 gap-3 text-xs">
+                        {contact.companySize && (
+                          <div>
+                            <span className="text-gray-500">Size:</span>
+                            <Badge variant="outline" className="ml-1 text-xs px-1 py-0">
+                              {contact.companySize.replace('_', ' ').toUpperCase()}
+                            </Badge>
+                          </div>
+                        )}
+                        {contact.position && (
+                          <div>
+                            <span className="text-gray-500">Role:</span>
+                            <span className="ml-1 font-medium truncate">{contact.position}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Budget & Timeline */}
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      {(contact.budget || contact.serviceBudget) && (
-                        <div className="flex items-center text-green-600">
-                          <DollarSign className="h-3 w-3 mr-1" />
-                          <span className="font-medium">
-                            ${((contact.serviceBudget || contact.budget) / 100).toLocaleString()}
-                          </span>
-                        </div>
-                      )}
-                      {(contact.timeline || contact.serviceTimeline) && (
-                        <div className="flex items-center text-blue-600">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          <span className="font-medium">
-                            {(contact.serviceTimeline || contact.timeline)?.replace('_', ' ') || 'TBD'}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Deal Value - Prominently Displayed */}
-                    {contact.dealValue && (
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center text-green-700">
-                            <DollarSign className="h-4 w-4 mr-2" />
-                            <div>
-                              <div className="text-lg font-bold">
-                                ${contact.dealValue.toLocaleString()}
-                              </div>
-                              <div className="text-xs text-green-600">Prospect Deal Value</div>
-                            </div>
+                    {((contact.budget || contact.serviceBudget) || (contact.timeline || contact.serviceTimeline)) && (
+                      <div className="grid grid-cols-2 gap-3 text-xs">
+                        {(contact.budget || contact.serviceBudget) && (
+                          <div className="flex items-center text-green-600">
+                            <DollarSign className="h-3 w-3 mr-1" />
+                            <span className="font-medium">
+                              ${((contact.serviceBudget || contact.budget) / 100).toLocaleString()}
+                            </span>
                           </div>
-                          {contact.pipelineStage && (
-                            <Badge 
-                              variant={
-                                contact.pipelineStage === 'closed_won' ? 'default' :
-                                contact.pipelineStage === 'negotiation' ? 'secondary' :
-                                'outline'
-                              }
-                              className="text-xs px-2 py-1"
-                            >
-                              {contact.pipelineStage.replace('_', ' ').toUpperCase()}
-                            </Badge>
-                          )}
-                        </div>
+                        )}
+                        {(contact.timeline || contact.serviceTimeline) && (
+                          <div className="flex items-center text-blue-600">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            <span className="font-medium truncate">
+                              {(contact.serviceTimeline || contact.timeline)?.replace('_', ' ') || 'TBD'}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

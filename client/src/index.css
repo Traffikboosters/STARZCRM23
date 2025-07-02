@@ -334,4 +334,28 @@
   .event-accent {
     background-color: var(--brand-accent);
   }
+
+  /* Lead card text spacing fixes to prevent overlapping */
+  .lead-card-content {
+    line-height: 1.5;
+  }
+  
+  .lead-card-section {
+    margin-bottom: 16px;
+  }
+  
+  .lead-card-text {
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+
+  .lead-card-divider {
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+
+  .lead-card-badge-container {
+    margin-top: 8px;
+    margin-bottom: 8px;
+  }
 }
