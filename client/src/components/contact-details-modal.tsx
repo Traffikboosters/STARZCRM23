@@ -48,7 +48,8 @@ import {
   Clock,
   DollarSign,
   Target,
-  AlertCircle
+  AlertCircle,
+  ExternalLink
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { formatPhoneNumber } from "@/lib/utils";
@@ -343,6 +344,19 @@ export default function ContactDetailsModal({
                     <Building className="h-4 w-4 text-muted-foreground" />
                     <span>{contact.company || "No company"}</span>
                   </div>
+                  {contact.website && (
+                    <div className="flex items-center gap-2">
+                      <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                      <a 
+                        href={contact.website.startsWith('http') ? contact.website : `https://${contact.website}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 underline"
+                      >
+                        {contact.website}
+                      </a>
+                    </div>
+                  )}
                   {contact.position && (
                     <div className="flex items-center gap-2">
                       <Target className="h-4 w-4 text-muted-foreground" />

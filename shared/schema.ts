@@ -112,6 +112,7 @@ export const contacts = pgTable("contacts", {
   lastName: text("last_name").notNull(),
   email: text("email"),
   phone: text("phone"),
+  website: text("website"),
   company: text("company"),
   position: text("position"),
   avatar: text("avatar"),

@@ -16,7 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Plus, Search, Filter, User, Mail, Phone, Building, MapPin, Calendar, Star, MessageCircle, X, Clock, DollarSign, FileText, ExternalLink, CreditCard, Users, Target, Edit, Send, Video, MoreVertical, CheckCircle, AlertCircle, Briefcase, TrendingUp, Bot, Zap, ClipboardList, StickyNote, Copy, TestTube, Settings, FileUp } from "lucide-react";
+import { Plus, Search, Filter, User, Mail, Phone, Building, MapPin, Calendar, Star, MessageCircle, X, Clock, DollarSign, FileText, ExternalLink, CreditCard, Users, Target, Edit, Send, Video, MoreVertical, CheckCircle, AlertCircle, Briefcase, TrendingUp, Bot, Zap, ClipboardList, StickyNote, Copy, TestTube, Settings, FileUp, Globe } from "lucide-react";
 import { format } from "date-fns";
 import type { Contact, User as UserType } from "@shared/schema";
 import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
@@ -40,6 +40,7 @@ const contactFormSchema = z.object({
   lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Valid email is required").optional().or(z.literal("")),
   phone: z.string().optional(),
+  website: z.string().optional(),
   company: z.string().optional(),
   position: z.string().optional(),
   leadSource: z.string().optional(),
@@ -548,6 +549,7 @@ export default function CRMView() {
       lastName: "",
       email: "",
       phone: "",
+      website: "",
       company: "",
       position: "",
       leadSource: "",
@@ -1002,6 +1004,17 @@ export default function CRMView() {
                       <Mail className="h-4 w-4 mr-2 flex-shrink-0" />
                       <span className="truncate font-medium">{contact.email || 'No email'}</span>
                     </div>
+                    {contact.website && (
+                      <div className="flex items-center text-sm text-gray-600 min-h-[20px]">
+                        <ExternalLink className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <a href={contact.website.startsWith('http') ? contact.website : `https://${contact.website}`} 
+                           target="_blank" 
+                           rel="noopener noreferrer" 
+                           className="truncate font-medium text-blue-600 hover:underline">
+                          {contact.website}
+                        </a>
+                      </div>
+                    )}
                     {contact.position && (
                       <div className="flex items-center text-sm text-gray-600 min-h-[20px]">
                         <Briefcase className="h-4 w-4 mr-2 flex-shrink-0" />
@@ -1632,6 +1645,19 @@ export default function CRMView() {
                       <FormLabel>Phone</FormLabel>
                       <FormControl>
                         <Input placeholder="(555) 123-4567" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="website"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Website</FormLabel>
+                      <FormControl>
+                        <Input placeholder="www.example.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
