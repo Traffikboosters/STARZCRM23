@@ -1166,26 +1166,32 @@ export default function CRMView() {
                       )}
                     </div>
 
-                    {/* Deal Value & Probability */}
+                    {/* Deal Value - Prominently Displayed */}
                     {contact.dealValue && (
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center text-purple-600">
-                          <TrendingUp className="h-3 w-3 mr-1" />
-                          <span className="font-medium">${(contact.dealValue / 100).toLocaleString()}</span>
-                          <span className="text-xs text-gray-500 ml-1">deal value</span>
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center text-green-700">
+                            <DollarSign className="h-4 w-4 mr-2" />
+                            <div>
+                              <div className="text-lg font-bold">
+                                ${(contact.dealValue / 100).toLocaleString()}
+                              </div>
+                              <div className="text-xs text-green-600">Prospect Deal Value</div>
+                            </div>
+                          </div>
+                          {contact.pipelineStage && (
+                            <Badge 
+                              variant={
+                                contact.pipelineStage === 'closed_won' ? 'default' :
+                                contact.pipelineStage === 'negotiation' ? 'secondary' :
+                                'outline'
+                              }
+                              className="text-xs px-2 py-1"
+                            >
+                              {contact.pipelineStage.replace('_', ' ').toUpperCase()}
+                            </Badge>
+                          )}
                         </div>
-                        {contact.pipelineStage && (
-                          <Badge 
-                            variant={
-                              contact.pipelineStage === 'closed_won' ? 'default' :
-                              contact.pipelineStage === 'negotiation' ? 'secondary' :
-                              'outline'
-                            }
-                            className="text-xs px-1 py-0"
-                          >
-                            {contact.pipelineStage.replace('_', ' ').toUpperCase()}
-                          </Badge>
-                        )}
                       </div>
                     )}
                   </div>
