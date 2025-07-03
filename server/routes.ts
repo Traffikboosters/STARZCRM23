@@ -12,12 +12,18 @@ import {
   insertScrapingJobSchema,
   insertCallLogSchema,
   insertWorkOrderSchema,
+  insertCancellationMetricSchema,
+  insertRetentionAttemptSchema,
+  insertCancellationTrendSchema,
   type User,
   type Contact,
   type Event,
   type File,
   type CallLog,
-  type WorkOrder
+  type WorkOrder,
+  type CancellationMetric,
+  type RetentionAttempt,
+  type CancellationTrend
 } from "../shared/schema";
 import { storage } from "./storage";
 import { mightyCallNativeAPI } from "./mightycall-native";
@@ -3928,6 +3934,153 @@ a=ssrc:1001 msid:stream track`
     } catch (error) {
       console.error("Approve time off error:", error);
       res.status(500).json({ error: "Failed to approve time off request" });
+    }
+  });
+
+  // Cancellation Metrics API Routes
+  app.get("/api/cancellation-metrics", async (req, res) => {
+    try {
+      const metrics = await storage.getAllCancellationMetrics();
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error fetching cancellation metrics:", error);
+      res.status(500).json({ error: "Failed to fetch cancellation metrics" });
+    }
+  });
+
+  app.get("/api/cancellation-metrics/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const metric = await storage.getCancellationMetricById(id);
+      
+      if (!metric) {
+        return res.status(404).json({ error: "Cancellation metric not found" });
+      }
+      
+      res.json(metric);
+    } catch (error) {
+      console.error("Error fetching cancellation metric:", error);
+      res.status(500).json({ error: "Failed to fetch cancellation metric" });
+    }
+  });
+
+  app.get("/api/cancellation-metrics/contact/:contactId", async (req, res) => {
+    try {
+      const contactId = parseInt(req.params.contactId);
+      const metrics = await storage.getCancellationMetricsByContact(contactId);
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error fetching cancellation metrics by contact:", error);
+      res.status(500).json({ error: "Failed to fetch cancellation metrics by contact" });
+    }
+  });
+
+  app.post("/api/cancellation-metrics", async (req, res) => {
+    try {
+      const validatedData = insertCancellationMetricSchema.parse(req.body);
+      const newMetric = await storage.createCancellationMetric(validatedData);
+      res.json(newMetric);
+    } catch (error) {
+      console.error("Error creating cancellation metric:", error);
+      res.status(500).json({ error: "Failed to create cancellation metric" });
+    }
+  });
+
+  app.patch("/api/cancellation-metrics/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const updatedMetric = await storage.updateCancellationMetric(id, updates);
+      
+      if (!updatedMetric) {
+        return res.status(404).json({ error: "Cancellation metric not found" });
+      }
+      
+      res.json(updatedMetric);
+    } catch (error) {
+      console.error("Error updating cancellation metric:", error);
+      res.status(500).json({ error: "Failed to update cancellation metric" });
+    }
+  });
+
+  app.delete("/api/cancellation-metrics/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteCancellationMetric(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Cancellation metric not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting cancellation metric:", error);
+      res.status(500).json({ error: "Failed to delete cancellation metric" });
+    }
+  });
+
+  // Retention Attempts API Routes
+  app.get("/api/retention-attempts", async (req, res) => {
+    try {
+      const attempts = await storage.getAllRetentionAttempts();
+      res.json(attempts);
+    } catch (error) {
+      console.error("Error fetching retention attempts:", error);
+      res.status(500).json({ error: "Failed to fetch retention attempts" });
+    }
+  });
+
+  app.get("/api/retention-attempts/metric/:metricId", async (req, res) => {
+    try {
+      const metricId = parseInt(req.params.metricId);
+      const attempts = await storage.getRetentionAttemptsByMetric(metricId);
+      res.json(attempts);
+    } catch (error) {
+      console.error("Error fetching retention attempts by metric:", error);
+      res.status(500).json({ error: "Failed to fetch retention attempts by metric" });
+    }
+  });
+
+  app.post("/api/retention-attempts", async (req, res) => {
+    try {
+      const validatedData = insertRetentionAttemptSchema.parse(req.body);
+      const newAttempt = await storage.createRetentionAttempt(validatedData);
+      res.json(newAttempt);
+    } catch (error) {
+      console.error("Error creating retention attempt:", error);
+      res.status(500).json({ error: "Failed to create retention attempt" });
+    }
+  });
+
+  // Cancellation Trends API Routes
+  app.get("/api/cancellation-trends", async (req, res) => {
+    try {
+      const trends = await storage.getAllCancellationTrends();
+      res.json(trends);
+    } catch (error) {
+      console.error("Error fetching cancellation trends:", error);
+      res.status(500).json({ error: "Failed to fetch cancellation trends" });
+    }
+  });
+
+  app.get("/api/cancellation-trends/latest", async (req, res) => {
+    try {
+      const latestTrend = await storage.getLatestCancellationTrend();
+      res.json(latestTrend);
+    } catch (error) {
+      console.error("Error fetching latest cancellation trend:", error);
+      res.status(500).json({ error: "Failed to fetch latest cancellation trend" });
+    }
+  });
+
+  app.post("/api/cancellation-trends", async (req, res) => {
+    try {
+      const validatedData = insertCancellationTrendSchema.parse(req.body);
+      const newTrend = await storage.createCancellationTrend(validatedData);
+      res.json(newTrend);
+    } catch (error) {
+      console.error("Error creating cancellation trend:", error);
+      res.status(500).json({ error: "Failed to create cancellation trend" });
     }
   });
 

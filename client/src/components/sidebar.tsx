@@ -35,7 +35,8 @@ import {
   Mic,
   Clock,
   Lightbulb,
-  Building2
+  Building2,
+  UserX
 } from "lucide-react";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { Button } from "@/components/ui/button";
@@ -105,6 +106,7 @@ export default function Sidebar({
     { id: "mood-tracker", label: "Mood Tracker", icon: Activity },
     { id: "dual-onboarding", label: "Employee Onboarding", icon: UserCheck },
     { id: "time-clock", label: "Employee Time Clock", icon: Clock },
+    { id: "cancellation-metrics", label: "Cancellation Metrics", icon: UserX },
 
   ];
 

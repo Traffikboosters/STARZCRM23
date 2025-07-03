@@ -10,7 +10,7 @@ import {
   servicePackages, costStructure, profitabilityAnalysis,
   moodEntries, teamMoodSummaries, moodPerformanceCorrelations,
   timeClockEntries, timeClockSchedules, timeOffRequests,
-  emailAccounts, emailTemplates
+  emailAccounts, emailTemplates, cancellationMetrics, retentionAttempts, cancellationTrends
 } from "../shared/schema";
 import type { 
   User, Company, Contact, Event, File, Automation, ScrapingJob,
@@ -21,7 +21,7 @@ import type {
   CallInsights, KeyCallMoments, CallParticipants, VoiceTrendAnalysis,
   MoodEntry, TeamMoodSummary, MoodPerformanceCorrelation,
   TimeClockEntry, TimeClockSchedule, TimeOffRequest,
-  EmailAccount, EmailTemplate,
+  EmailAccount, EmailTemplate, CancellationMetric, RetentionAttempt, CancellationTrend,
   InsertUser, InsertCompany, InsertContact, InsertEvent, InsertFile, InsertAutomation, InsertScrapingJob,
   InsertChatMessage, InsertChatConversation, InsertCallLog, InsertCampaign, InsertLeadAllocation,
   InsertDocumentTemplate, InsertSigningRequest, InsertUserInvitation,
@@ -30,7 +30,7 @@ import type {
   InsertCallInsights, InsertKeyCallMoments, InsertCallParticipants, InsertVoiceTrendAnalysis,
   InsertMoodEntry, InsertTeamMoodSummary, InsertMoodPerformanceCorrelation,
   InsertTimeClockEntry, InsertTimeClockSchedule, InsertTimeOffRequest,
-  InsertEmailAccount, InsertEmailTemplate
+  InsertEmailAccount, InsertEmailTemplate, InsertCancellationMetric, InsertRetentionAttempt, InsertCancellationTrend
 } from "../shared/schema";
 
 // Complete interface implementation
@@ -160,6 +160,35 @@ export interface IStorage {
   
   // Employee helpers
   getEmployeesWithoutEmail(): Promise<User[]>;
+  
+  // Cancellation Metrics
+  getAllCancellationMetrics(): Promise<CancellationMetric[]>;
+  getCancellationMetricById(id: number): Promise<CancellationMetric | undefined>;
+  getCancellationMetricsByContact(contactId: number): Promise<CancellationMetric[]>;
+  createCancellationMetric(metric: InsertCancellationMetric): Promise<CancellationMetric>;
+  updateCancellationMetric(id: number, updates: Partial<InsertCancellationMetric>): Promise<CancellationMetric | undefined>;
+  deleteCancellationMetric(id: number): Promise<boolean>;
+  getCancellationMetricsByDateRange(startDate: Date, endDate: Date): Promise<CancellationMetric[]>;
+  getCancellationMetricsByServiceDuration(minMonths: number): Promise<CancellationMetric[]>;
+  getCancellationsByIndustry(industry: string): Promise<CancellationMetric[]>;
+  
+  // Retention Attempts
+  getAllRetentionAttempts(): Promise<RetentionAttempt[]>;
+  getRetentionAttemptById(id: number): Promise<RetentionAttempt | undefined>;
+  getRetentionAttemptsByMetric(cancellationMetricId: number): Promise<RetentionAttempt[]>;
+  getRetentionAttemptsByContact(contactId: number): Promise<RetentionAttempt[]>;
+  createRetentionAttempt(attempt: InsertRetentionAttempt): Promise<RetentionAttempt>;
+  updateRetentionAttempt(id: number, updates: Partial<InsertRetentionAttempt>): Promise<RetentionAttempt | undefined>;
+  deleteRetentionAttempt(id: number): Promise<boolean>;
+  
+  // Cancellation Trends
+  getAllCancellationTrends(): Promise<CancellationTrend[]>;
+  getCancellationTrendById(id: number): Promise<CancellationTrend | undefined>;
+  getLatestCancellationTrend(): Promise<CancellationTrend | undefined>;
+  createCancellationTrend(trend: InsertCancellationTrend): Promise<CancellationTrend>;
+  updateCancellationTrend(id: number, updates: Partial<InsertCancellationTrend>): Promise<CancellationTrend | undefined>;
+  deleteCancellationTrend(id: number): Promise<boolean>;
+  getCancellationTrendsByPeriod(startDate: Date, endDate: Date): Promise<CancellationTrend[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -798,6 +827,157 @@ export class DatabaseStorage implements IStorage {
     
     // Return users who don't have email accounts
     return allUsers.filter(user => !userIdsWithEmail.includes(user.id));
+  }
+
+  // Cancellation Metrics
+  async getAllCancellationMetrics(): Promise<CancellationMetric[]> {
+    return await db.select().from(cancellationMetrics).orderBy(desc(cancellationMetrics.cancellationDate));
+  }
+
+  async getCancellationMetricById(id: number): Promise<CancellationMetric | undefined> {
+    const [metric] = await db.select().from(cancellationMetrics).where(eq(cancellationMetrics.id, id));
+    return metric || undefined;
+  }
+
+  async getCancellationMetricsByContact(contactId: number): Promise<CancellationMetric[]> {
+    return await db.select().from(cancellationMetrics).where(eq(cancellationMetrics.contactId, contactId));
+  }
+
+  async createCancellationMetric(metric: InsertCancellationMetric): Promise<CancellationMetric> {
+    const [newMetric] = await db.insert(cancellationMetrics).values(metric).returning();
+    return newMetric;
+  }
+
+  async updateCancellationMetric(id: number, updates: Partial<InsertCancellationMetric>): Promise<CancellationMetric | undefined> {
+    const [updatedMetric] = await db
+      .update(cancellationMetrics)
+      .set(updates)
+      .where(eq(cancellationMetrics.id, id))
+      .returning();
+    return updatedMetric || undefined;
+  }
+
+  async deleteCancellationMetric(id: number): Promise<boolean> {
+    const result = await db.delete(cancellationMetrics).where(eq(cancellationMetrics.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getCancellationMetricsByDateRange(startDate: Date, endDate: Date): Promise<CancellationMetric[]> {
+    return await db
+      .select()
+      .from(cancellationMetrics)
+      .where(and(
+        gte(cancellationMetrics.cancellationDate, startDate),
+        lte(cancellationMetrics.cancellationDate, endDate)
+      ))
+      .orderBy(desc(cancellationMetrics.cancellationDate));
+  }
+
+  async getCancellationMetricsByServiceDuration(minMonths: number): Promise<CancellationMetric[]> {
+    return await db
+      .select()
+      .from(cancellationMetrics)
+      .where(gte(cancellationMetrics.serviceDuration, minMonths * 30)) // convert months to days
+      .orderBy(desc(cancellationMetrics.serviceDuration));
+  }
+
+  async getCancellationsByIndustry(industry: string): Promise<CancellationMetric[]> {
+    return await db
+      .select()
+      .from(cancellationMetrics)
+      .where(eq(cancellationMetrics.industryCategory, industry));
+  }
+
+  // Retention Attempts
+  async getAllRetentionAttempts(): Promise<RetentionAttempt[]> {
+    return await db.select().from(retentionAttempts).orderBy(desc(retentionAttempts.attemptDate));
+  }
+
+  async getRetentionAttemptById(id: number): Promise<RetentionAttempt | undefined> {
+    const [attempt] = await db.select().from(retentionAttempts).where(eq(retentionAttempts.id, id));
+    return attempt || undefined;
+  }
+
+  async getRetentionAttemptsByMetric(cancellationMetricId: number): Promise<RetentionAttempt[]> {
+    return await db
+      .select()
+      .from(retentionAttempts)
+      .where(eq(retentionAttempts.cancellationMetricId, cancellationMetricId));
+  }
+
+  async getRetentionAttemptsByContact(contactId: number): Promise<RetentionAttempt[]> {
+    return await db
+      .select()
+      .from(retentionAttempts)
+      .where(eq(retentionAttempts.contactId, contactId));
+  }
+
+  async createRetentionAttempt(attempt: InsertRetentionAttempt): Promise<RetentionAttempt> {
+    const [newAttempt] = await db.insert(retentionAttempts).values(attempt).returning();
+    return newAttempt;
+  }
+
+  async updateRetentionAttempt(id: number, updates: Partial<InsertRetentionAttempt>): Promise<RetentionAttempt | undefined> {
+    const [updatedAttempt] = await db
+      .update(retentionAttempts)
+      .set(updates)
+      .where(eq(retentionAttempts.id, id))
+      .returning();
+    return updatedAttempt || undefined;
+  }
+
+  async deleteRetentionAttempt(id: number): Promise<boolean> {
+    const result = await db.delete(retentionAttempts).where(eq(retentionAttempts.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  // Cancellation Trends
+  async getAllCancellationTrends(): Promise<CancellationTrend[]> {
+    return await db.select().from(cancellationTrends).orderBy(desc(cancellationTrends.periodEnd));
+  }
+
+  async getCancellationTrendById(id: number): Promise<CancellationTrend | undefined> {
+    const [trend] = await db.select().from(cancellationTrends).where(eq(cancellationTrends.id, id));
+    return trend || undefined;
+  }
+
+  async getLatestCancellationTrend(): Promise<CancellationTrend | undefined> {
+    const [latestTrend] = await db
+      .select()
+      .from(cancellationTrends)
+      .orderBy(desc(cancellationTrends.periodEnd))
+      .limit(1);
+    return latestTrend || undefined;
+  }
+
+  async createCancellationTrend(trend: InsertCancellationTrend): Promise<CancellationTrend> {
+    const [newTrend] = await db.insert(cancellationTrends).values(trend).returning();
+    return newTrend;
+  }
+
+  async updateCancellationTrend(id: number, updates: Partial<InsertCancellationTrend>): Promise<CancellationTrend | undefined> {
+    const [updatedTrend] = await db
+      .update(cancellationTrends)
+      .set(updates)
+      .where(eq(cancellationTrends.id, id))
+      .returning();
+    return updatedTrend || undefined;
+  }
+
+  async deleteCancellationTrend(id: number): Promise<boolean> {
+    const result = await db.delete(cancellationTrends).where(eq(cancellationTrends.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getCancellationTrendsByPeriod(startDate: Date, endDate: Date): Promise<CancellationTrend[]> {
+    return await db
+      .select()
+      .from(cancellationTrends)
+      .where(and(
+        gte(cancellationTrends.periodStart, startDate),
+        lte(cancellationTrends.periodEnd, endDate)
+      ))
+      .orderBy(desc(cancellationTrends.periodEnd));
   }
 }
 

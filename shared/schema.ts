@@ -1298,6 +1298,91 @@ export const insertWorkOrderSchema = createInsertSchema(workOrders).omit({
   approveRequestId: true,
 });
 
+// Cancellation Metrics Tables for Customer Churn Tracking (3+ months)
+export const cancellationMetrics = pgTable("cancellation_metrics", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  subscriptionId: integer("subscription_id").references(() => subscriptions.id),
+  serviceStartDate: timestamp("service_start_date").notNull(),
+  cancellationDate: timestamp("cancellation_date").notNull(),
+  serviceDuration: integer("service_duration").notNull(), // in days
+  serviceDurationMonths: text("service_duration_months").notNull(), // decimal months (e.g., "3.5")
+  cancellationReason: text("cancellation_reason").notNull(), // primary reason
+  secondaryReasons: text("secondary_reasons").array(), // additional reasons
+  cancellationType: text("cancellation_type").notNull(), // voluntary, involuntary, non_payment, competition
+  wasRetentionAttempted: boolean("was_retention_attempted").default(false),
+  retentionOfferMade: text("retention_offer_made"), // discount, free month, upgrade, etc.
+  retentionResponse: text("retention_response"), // accepted, declined, no_response
+  finalMonthlyValue: integer("final_monthly_value").notNull(), // in cents
+  totalLifetimeValue: integer("total_lifetime_value").notNull(), // in cents
+  refundAmount: integer("refund_amount").default(0), // in cents
+  customerSatisfactionScore: integer("customer_satisfaction_score"), // 1-10 scale
+  likelyToRecommend: integer("likely_to_recommend"), // 1-10 NPS scale
+  competitorMentioned: text("competitor_mentioned"),
+  priceComplaint: boolean("price_complaint").default(false),
+  serviceComplaint: boolean("service_complaint").default(false),
+  supportComplaint: boolean("support_complaint").default(false),
+  resultsSatisfaction: text("results_satisfaction"), // very_satisfied, satisfied, neutral, dissatisfied, very_dissatisfied
+  communicationRating: integer("communication_rating"), // 1-10 scale
+  responseTimeRating: integer("response_time_rating"), // 1-10 scale
+  projectDeliveryRating: integer("project_delivery_rating"), // 1-10 scale
+  exitSurveyCompleted: boolean("exit_survey_completed").default(false),
+  exitSurveyResponses: json("exit_survey_responses"), // structured survey data
+  followUpScheduled: boolean("follow_up_scheduled").default(false),
+  followUpDate: timestamp("follow_up_date"),
+  reactivationProbability: text("reactivation_probability"), // high, medium, low, none
+  industryCategory: text("industry_category").notNull(),
+  businessSize: text("business_size"), // small, medium, large, enterprise
+  servicesUsed: text("services_used").array().notNull(), // SEO, PPC, web_design, etc.
+  accountManagerId: integer("account_manager_id").references(() => users.id),
+  lastContactAttempt: timestamp("last_contact_attempt"),
+  cancellationProcessedBy: integer("cancellation_processed_by").references(() => users.id).notNull(),
+  internalNotes: text("internal_notes"),
+  isWinback: boolean("is_winback").default(false), // if customer later returned
+  winbackDate: timestamp("winback_date"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const retentionAttempts = pgTable("retention_attempts", {
+  id: serial("id").primaryKey(),
+  cancellationMetricId: integer("cancellation_metric_id").references(() => cancellationMetrics.id).notNull(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  attemptDate: timestamp("attempt_date").defaultNow().notNull(),
+  attemptType: text("attempt_type").notNull(), // call, email, meeting, text
+  attemptedBy: integer("attempted_by").references(() => users.id).notNull(),
+  offerMade: text("offer_made"), // specific retention offer
+  offerValue: integer("offer_value"), // monetary value in cents
+  customerResponse: text("customer_response").notNull(), // interested, declined, considering, no_response
+  followUpRequired: boolean("follow_up_required").default(false),
+  followUpDate: timestamp("follow_up_date"),
+  notes: text("notes"),
+  duration: integer("duration"), // call/meeting duration in minutes
+  outcome: text("outcome").notNull(), // retained, lost, pending, escalated
+  escalatedTo: integer("escalated_to").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const cancellationTrends = pgTable("cancellation_trends", {
+  id: serial("id").primaryKey(),
+  periodStart: timestamp("period_start").notNull(),
+  periodEnd: timestamp("period_end").notNull(),
+  totalCancellations: integer("total_cancellations").notNull(),
+  totalActiveCustomers: integer("total_active_customers").notNull(),
+  churnRate: text("churn_rate").notNull(), // percentage as decimal string
+  averageServiceDuration: text("average_service_duration").notNull(), // in months
+  totalLostRevenue: integer("total_lost_revenue").notNull(), // in cents
+  averageLTV: integer("average_ltv").notNull(), // average lifetime value in cents
+  topCancellationReason: text("top_cancellation_reason").notNull(),
+  retentionSuccessRate: text("retention_success_rate"), // percentage
+  industryBreakdown: json("industry_breakdown"), // {industry: count} pairs
+  serviceBreakdown: json("service_breakdown"), // {service: count} pairs
+  monthlyComparison: json("monthly_comparison"), // month-over-month data
+  seasonalTrends: json("seasonal_trends"), // quarterly patterns
+  competitorLosses: json("competitor_losses"), // {competitor: count} pairs
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const insertExtractionHistorySchema = createInsertSchema(extractionHistory).omit({
   id: true,
   extractionTime: true,
@@ -1744,6 +1829,32 @@ export const insertEmailTemplateSchema = createInsertSchema(emailTemplates).omit
   createdAt: true,
   updatedAt: true,
 });
+
+// Insert schemas for cancellation metrics
+export const insertCancellationMetricSchema = createInsertSchema(cancellationMetrics).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertRetentionAttemptSchema = createInsertSchema(retentionAttempts).omit({
+  id: true,
+  attemptDate: true,
+  createdAt: true,
+});
+
+export const insertCancellationTrendSchema = createInsertSchema(cancellationTrends).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Types for cancellation metrics
+export type CancellationMetric = typeof cancellationMetrics.$inferSelect;
+export type InsertCancellationMetric = z.infer<typeof insertCancellationMetricSchema>;
+export type RetentionAttempt = typeof retentionAttempts.$inferSelect;
+export type InsertRetentionAttempt = z.infer<typeof insertRetentionAttemptSchema>;
+export type CancellationTrend = typeof cancellationTrends.$inferSelect;
+export type InsertCancellationTrend = z.infer<typeof insertCancellationTrendSchema>;
 
 // Types for email management
 export type EmailAccount = typeof emailAccounts.$inferSelect;

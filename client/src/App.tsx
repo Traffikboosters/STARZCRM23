@@ -23,6 +23,7 @@ import STARZLandingPage from "@/components/starz-landing-page";
 import VendorSelectorPage from "@/pages/vendor-selector";
 import TimeClockPage from "@/pages/time-clock";
 import HRPortal from "@/pages/hr-portal";
+import CancellationMetrics from "@/components/cancellation-metrics";
 
 function Router() {
   return (
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/vendor-selector" component={VendorSelectorPage} />
       <Route path="/time-clock" component={TimeClockPage} />
       <Route path="/hr-portal" component={HRPortal} />
+      <Route path="/cancellation-metrics" component={CancellationMetrics} />
       <Route path="/accept-invitation" component={AcceptInvitation} />
       <Route path="/download-plugin" component={DownloadPlugin} />
       <Route component={NotFound} />

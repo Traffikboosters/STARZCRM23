@@ -60,6 +60,7 @@ import RealLeadExtractor from "@/components/real-lead-extractor";
 import { PersonalizedDashboardWidgets } from "@/components/personalized-dashboard-widgets";
 import ZoomInfoScraper from "@/components/zoominfo-scraper";
 import UnifiedVendorSelector from "@/components/unified-vendor-selector";
+import CancellationMetrics from "@/components/cancellation-metrics";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -190,6 +191,8 @@ export default function Dashboard() {
         return <LiveExtractionHistory />;
       case "time-clock":
         return <EmployeeTimeClock />;
+      case "cancellation-metrics":
+        return <CancellationMetrics />;
 
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
