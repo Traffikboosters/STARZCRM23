@@ -11,7 +11,9 @@ import {
   moodEntries, teamMoodSummaries, moodPerformanceCorrelations,
   timeClockEntries, timeClockSchedules, timeOffRequests,
   emailAccounts, emailTemplates, cancellationMetrics, retentionAttempts, cancellationTrends,
-  marketingStrategies, jobPostings, jobApplications, interviewSchedules, careerSettings
+  marketingStrategies, jobPostings, jobApplications, interviewSchedules, careerSettings,
+  userPoints, pointActivities, achievements, userAchievements, dailyChallenges, userChallenges,
+  leaderboards, pointMultipliers, badgeCategories, userBadges, engagementMetrics
 } from "../shared/schema";
 import type { 
   User, Company, Contact, Event, File, Automation, ScrapingJob,
@@ -228,6 +230,37 @@ export interface IStorage {
   
   getCareerSettings(): Promise<CareerSettings | undefined>;
   updateCareerSettings(settings: InsertCareerSettings): Promise<CareerSettings>;
+
+  // Gamification System
+  getUserPoints(userId: number): Promise<any>;
+  createUserPoints(points: any): Promise<any>;
+  updateUserPoints(userId: number, updates: any): Promise<any>;
+  awardPoints(userId: number, activityType: string, points: number, description: string): Promise<any>;
+  getPointActivities(userId: number): Promise<any[]>;
+  createPointActivity(activity: any): Promise<any>;
+  
+  // Achievements
+  getAchievements(): Promise<any[]>;
+  createAchievement(achievement: any): Promise<any>;
+  getUserAchievements(userId: number): Promise<any[]>;
+  awardAchievement(userId: number, achievementId: number): Promise<any>;
+  checkAchievementProgress(userId: number, achievementId: number): Promise<void>;
+  
+  // Daily Challenges
+  getDailyChallenges(date: Date): Promise<any[]>;
+  createDailyChallenge(challenge: any): Promise<any>;
+  getUserChallenges(userId: number, date: Date): Promise<any[]>;
+  updateChallengeProgress(userId: number, challengeId: number, progress: number): Promise<any>;
+  
+  // Leaderboards
+  getLeaderboard(type: string, category: string, period: string): Promise<any[]>;
+  updateLeaderboard(userId: number, type: string, category: string, score: number, period: string): Promise<any>;
+  
+  // Badges and Engagement
+  getUserBadges(userId: number): Promise<any[]>;
+  awardBadge(userId: number, badge: any): Promise<any>;
+  getEngagementMetrics(userId: number, date: Date): Promise<any>;
+  updateEngagementMetrics(userId: number, metrics: any): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1252,6 +1285,323 @@ export class DatabaseStorage implements IStorage {
         .values({ ...settings, updatedAt: new Date() })
         .returning();
       return newSettings;
+    }
+  }
+
+  // Gamification System Implementation
+  async getUserPoints(userId: number): Promise<any> {
+    const results = await db.select().from(userPoints).where(eq(userPoints.userId, userId));
+    if (results.length > 0) {
+      return results[0];
+    }
+    
+    // Create initial user points if doesn't exist
+    const [newUserPoints] = await db.insert(userPoints).values({
+      userId,
+      totalPoints: 0,
+      currentLevel: 1,
+      pointsToNextLevel: 100,
+      dailyStreak: 0,
+      weeklyStreak: 0,
+      monthlyStreak: 0,
+      lifetimeEarnings: 0,
+      currentRank: "Bronze"
+    }).returning();
+    
+    return newUserPoints;
+  }
+
+  async createUserPoints(points: any): Promise<any> {
+    const [created] = await db.insert(userPoints).values(points).returning();
+    return created;
+  }
+
+  async updateUserPoints(userId: number, updates: any): Promise<any> {
+    const [updated] = await db.update(userPoints)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(userPoints.userId, userId))
+      .returning();
+    return updated;
+  }
+
+  async awardPoints(userId: number, activityType: string, points: number, description: string): Promise<any> {
+    // Create point activity record
+    const [activity] = await db.insert(pointActivities).values({
+      userId,
+      activityType,
+      pointsEarned: points,
+      description,
+      source: "platform"
+    }).returning();
+
+    // Update user points
+    const userPointsData = await this.getUserPoints(userId);
+    const newTotalPoints = userPointsData.totalPoints + points;
+    const newLifetimeEarnings = userPointsData.lifetimeEarnings + points;
+    
+    // Calculate level progression
+    let newLevel = userPointsData.currentLevel;
+    let pointsToNextLevel = userPointsData.pointsToNextLevel - points;
+    
+    if (pointsToNextLevel <= 0) {
+      newLevel += 1;
+      pointsToNextLevel = newLevel * 150; // Next level requires more points
+    }
+
+    // Determine rank based on total points
+    let newRank = "Bronze";
+    if (newTotalPoints >= 10000) newRank = "Diamond";
+    else if (newTotalPoints >= 5000) newRank = "Platinum";
+    else if (newTotalPoints >= 2500) newRank = "Gold";
+    else if (newTotalPoints >= 1000) newRank = "Silver";
+
+    await this.updateUserPoints(userId, {
+      totalPoints: newTotalPoints,
+      currentLevel: newLevel,
+      pointsToNextLevel,
+      lifetimeEarnings: newLifetimeEarnings,
+      currentRank: newRank,
+      lastActivityDate: new Date()
+    });
+
+    return activity;
+  }
+
+  async getPointActivities(userId: number): Promise<any[]> {
+    return db.select().from(pointActivities)
+      .where(eq(pointActivities.userId, userId))
+      .orderBy(desc(pointActivities.createdAt))
+      .limit(50);
+  }
+
+  async createPointActivity(activity: any): Promise<any> {
+    const [created] = await db.insert(pointActivities).values(activity).returning();
+    return created;
+  }
+
+  // Achievements
+  async getAchievements(): Promise<any[]> {
+    return db.select().from(achievements).where(eq(achievements.isActive, true));
+  }
+
+  async createAchievement(achievement: any): Promise<any> {
+    const [created] = await db.insert(achievements).values(achievement).returning();
+    return created;
+  }
+
+  async getUserAchievements(userId: number): Promise<any[]> {
+    return db.select({
+      userAchievement: userAchievements,
+      achievement: achievements
+    })
+    .from(userAchievements)
+    .innerJoin(achievements, eq(userAchievements.achievementId, achievements.id))
+    .where(eq(userAchievements.userId, userId));
+  }
+
+  async awardAchievement(userId: number, achievementId: number): Promise<any> {
+    const achievement = await db.select().from(achievements).where(eq(achievements.id, achievementId)).limit(1);
+    if (achievement.length === 0) return null;
+
+    const [userAchievement] = await db.insert(userAchievements).values({
+      userId,
+      achievementId,
+      progress: achievement[0].requirements?.target || 1,
+      maxProgress: achievement[0].requirements?.target || 1,
+      isCompleted: true,
+      completedAt: new Date(),
+      pointsEarned: achievement[0].pointReward
+    }).returning();
+
+    // Award points for achievement
+    if (achievement[0].pointReward > 0) {
+      await this.awardPoints(userId, 'achievement_unlocked', achievement[0].pointReward, `Achievement: ${achievement[0].name}`);
+    }
+
+    return userAchievement;
+  }
+
+  async checkAchievementProgress(userId: number, achievementId: number): Promise<void> {
+    // Implementation for checking and updating achievement progress
+  }
+
+  // Daily Challenges
+  async getDailyChallenges(date: Date): Promise<any[]> {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    return db.select().from(dailyChallenges)
+      .where(
+        and(
+          eq(dailyChallenges.isActive, true),
+          gte(dailyChallenges.validDate, startOfDay),
+          lte(dailyChallenges.validDate, endOfDay)
+        )
+      );
+  }
+
+  async createDailyChallenge(challenge: any): Promise<any> {
+    const [created] = await db.insert(dailyChallenges).values(challenge).returning();
+    return created;
+  }
+
+  async getUserChallenges(userId: number, date: Date): Promise<any[]> {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    return db.select({
+      userChallenge: userChallenges,
+      challenge: dailyChallenges
+    })
+    .from(userChallenges)
+    .innerJoin(dailyChallenges, eq(userChallenges.challengeId, dailyChallenges.id))
+    .where(
+      and(
+        eq(userChallenges.userId, userId),
+        gte(userChallenges.challengeDate, startOfDay),
+        lte(userChallenges.challengeDate, endOfDay)
+      )
+    );
+  }
+
+  async updateChallengeProgress(userId: number, challengeId: number, progress: number): Promise<any> {
+    const challenge = await db.select().from(dailyChallenges).where(eq(dailyChallenges.id, challengeId)).limit(1);
+    const targetValue = challenge[0]?.targetValue || 1;
+    
+    const [updated] = await db.update(userChallenges)
+      .set({ 
+        progress,
+        isCompleted: progress >= targetValue,
+        completedAt: progress >= targetValue ? new Date() : null
+      })
+      .where(
+        and(
+          eq(userChallenges.userId, userId),
+          eq(userChallenges.challengeId, challengeId)
+        )
+      )
+      .returning();
+    
+    return updated;
+  }
+
+  // Leaderboards
+  async getLeaderboard(type: string, category: string, period: string): Promise<any[]> {
+    return db.select({
+      leaderboard: leaderboards,
+      user: {
+        id: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        avatar: users.avatar
+      }
+    })
+    .from(leaderboards)
+    .innerJoin(users, eq(leaderboards.userId, users.id))
+    .where(
+      and(
+        eq(leaderboards.leaderboardType, type),
+        eq(leaderboards.category, category),
+        eq(leaderboards.period, period)
+      )
+    )
+    .orderBy(leaderboards.rank);
+  }
+
+  async updateLeaderboard(userId: number, type: string, category: string, score: number, period: string): Promise<any> {
+    const existing = await db.select().from(leaderboards)
+      .where(
+        and(
+          eq(leaderboards.userId, userId),
+          eq(leaderboards.leaderboardType, type),
+          eq(leaderboards.category, category),
+          eq(leaderboards.period, period)
+        )
+      );
+
+    if (existing.length > 0) {
+      const [updated] = await db.update(leaderboards)
+        .set({ score, lastUpdated: new Date() })
+        .where(eq(leaderboards.id, existing[0].id))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db.insert(leaderboards).values({
+        userId,
+        leaderboardType: type,
+        category,
+        score,
+        rank: 1, // Will be recalculated
+        period,
+        lastUpdated: new Date()
+      }).returning();
+      return created;
+    }
+  }
+
+  // Badges and Engagement
+  async getUserBadges(userId: number): Promise<any[]> {
+    return db.select().from(userBadges)
+      .where(eq(userBadges.userId, userId))
+      .orderBy(userBadges.displayOrder, desc(userBadges.earnedAt));
+  }
+
+  async awardBadge(userId: number, badge: any): Promise<any> {
+    const [created] = await db.insert(userBadges).values({
+      userId,
+      ...badge,
+      earnedAt: new Date()
+    }).returning();
+    
+    // Award points for badge if specified
+    if (badge.pointsEarned > 0) {
+      await this.awardPoints(userId, 'badge_earned', badge.pointsEarned, `Badge Earned: ${badge.badgeName}`);
+    }
+    
+    return created;
+  }
+
+  async getEngagementMetrics(userId: number, date: Date): Promise<any> {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const results = await db.select().from(engagementMetrics)
+      .where(
+        and(
+          eq(engagementMetrics.userId, userId),
+          gte(engagementMetrics.metricDate, startOfDay),
+          lte(engagementMetrics.metricDate, endOfDay)
+        )
+      );
+
+    return results.length > 0 ? results[0] : null;
+  }
+
+  async updateEngagementMetrics(userId: number, metrics: any): Promise<any> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const existing = await this.getEngagementMetrics(userId, today);
+
+    if (existing) {
+      const [updated] = await db.update(engagementMetrics)
+        .set(metrics)
+        .where(eq(engagementMetrics.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db.insert(engagementMetrics).values({
+        userId,
+        metricDate: today,
+        ...metrics
+      }).returning();
+      return created;
     }
   }
 }

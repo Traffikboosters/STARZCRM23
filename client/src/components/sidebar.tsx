@@ -37,7 +37,8 @@ import {
   Lightbulb,
   Building2,
   UserX,
-  Briefcase
+  Briefcase,
+  Gamepad2
 } from "lucide-react";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { Button } from "@/components/ui/button";
@@ -110,6 +111,7 @@ export default function Sidebar({
     { id: "time-clock", label: "Employee Time Clock", icon: Clock },
     { id: "cancellation-metrics", label: "Cancellation Metrics", icon: UserX },
     { id: "career-management", label: "Career Management", icon: Briefcase },
+    { id: "gamification", label: "Gamification", icon: Gamepad2 },
 
   ];
 

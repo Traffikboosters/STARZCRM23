@@ -4791,6 +4791,210 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  // Gamification System API Routes
+  
+  // User Points Management
+  app.get("/api/gamification/user/:userId/points", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const userPoints = await storage.getUserPoints(userId);
+      res.json(userPoints);
+    } catch (error) {
+      console.error("Error fetching user points:", error);
+      res.status(500).json({ error: "Failed to fetch user points" });
+    }
+  });
+
+  app.post("/api/gamification/points/award", async (req, res) => {
+    try {
+      const { userId, activityType, points, description } = req.body;
+      const activity = await storage.awardPoints(userId, activityType, points, description);
+      
+      // Broadcast point award notification
+      broadcast({
+        type: 'points_awarded',
+        userId,
+        points,
+        description,
+        timestamp: new Date().toISOString()
+      });
+      
+      res.json(activity);
+    } catch (error) {
+      console.error("Error awarding points:", error);
+      res.status(500).json({ error: "Failed to award points" });
+    }
+  });
+
+  app.get("/api/gamification/user/:userId/activities", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const activities = await storage.getPointActivities(userId);
+      res.json(activities);
+    } catch (error) {
+      console.error("Error fetching point activities:", error);
+      res.status(500).json({ error: "Failed to fetch activities" });
+    }
+  });
+
+  // Achievements System
+  app.get("/api/gamification/achievements", async (req, res) => {
+    try {
+      const achievements = await storage.getAchievements();
+      res.json(achievements);
+    } catch (error) {
+      console.error("Error fetching achievements:", error);
+      res.status(500).json({ error: "Failed to fetch achievements" });
+    }
+  });
+
+  app.get("/api/gamification/user/:userId/achievements", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const userAchievements = await storage.getUserAchievements(userId);
+      res.json(userAchievements);
+    } catch (error) {
+      console.error("Error fetching user achievements:", error);
+      res.status(500).json({ error: "Failed to fetch user achievements" });
+    }
+  });
+
+  app.post("/api/gamification/achievements/award", async (req, res) => {
+    try {
+      const { userId, achievementId } = req.body;
+      const userAchievement = await storage.awardAchievement(userId, achievementId);
+      
+      if (userAchievement) {
+        broadcast({
+          type: 'achievement_unlocked',
+          userId,
+          achievementId,
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      res.json(userAchievement);
+    } catch (error) {
+      console.error("Error awarding achievement:", error);
+      res.status(500).json({ error: "Failed to award achievement" });
+    }
+  });
+
+  // Daily Challenges
+  app.get("/api/gamification/challenges/daily", async (req, res) => {
+    try {
+      const date = req.query.date ? new Date(req.query.date as string) : new Date();
+      const challenges = await storage.getDailyChallenges(date);
+      res.json(challenges);
+    } catch (error) {
+      console.error("Error fetching daily challenges:", error);
+      res.status(500).json({ error: "Failed to fetch daily challenges" });
+    }
+  });
+
+  app.get("/api/gamification/user/:userId/challenges", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const date = req.query.date ? new Date(req.query.date as string) : new Date();
+      const userChallenges = await storage.getUserChallenges(userId, date);
+      res.json(userChallenges);
+    } catch (error) {
+      console.error("Error fetching user challenges:", error);
+      res.status(500).json({ error: "Failed to fetch user challenges" });
+    }
+  });
+
+  app.post("/api/gamification/challenges/progress", async (req, res) => {
+    try {
+      const { userId, challengeId, progress } = req.body;
+      const updatedChallenge = await storage.updateChallengeProgress(userId, challengeId, progress);
+      
+      broadcast({
+        type: 'challenge_progress_updated',
+        userId,
+        challengeId,
+        progress,
+        timestamp: new Date().toISOString()
+      });
+      
+      res.json(updatedChallenge);
+    } catch (error) {
+      console.error("Error updating challenge progress:", error);
+      res.status(500).json({ error: "Failed to update challenge progress" });
+    }
+  });
+
+  // Leaderboards
+  app.get("/api/gamification/leaderboard", async (req, res) => {
+    try {
+      const { type, category, period } = req.query;
+      const leaderboard = await storage.getLeaderboard(
+        type as string || 'points',
+        category as string || 'all',
+        period as string || 'weekly'
+      );
+      res.json(leaderboard);
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      res.status(500).json({ error: "Failed to fetch leaderboard" });
+    }
+  });
+
+  // Badges System
+  app.get("/api/gamification/user/:userId/badges", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const badges = await storage.getUserBadges(userId);
+      res.json(badges);
+    } catch (error) {
+      console.error("Error fetching user badges:", error);
+      res.status(500).json({ error: "Failed to fetch user badges" });
+    }
+  });
+
+  app.post("/api/gamification/badges/award", async (req, res) => {
+    try {
+      const { userId, badge } = req.body;
+      const userBadge = await storage.awardBadge(userId, badge);
+      
+      broadcast({
+        type: 'badge_earned',
+        userId,
+        badge,
+        timestamp: new Date().toISOString()
+      });
+      
+      res.json(userBadge);
+    } catch (error) {
+      console.error("Error awarding badge:", error);
+      res.status(500).json({ error: "Failed to award badge" });
+    }
+  });
+
+  // Engagement Metrics
+  app.get("/api/gamification/user/:userId/engagement", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const date = req.query.date ? new Date(req.query.date as string) : new Date();
+      const metrics = await storage.getEngagementMetrics(userId, date);
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error fetching engagement metrics:", error);
+      res.status(500).json({ error: "Failed to fetch engagement metrics" });
+    }
+  });
+
+  app.post("/api/gamification/engagement/update", async (req, res) => {
+    try {
+      const { userId, metrics } = req.body;
+      const updatedMetrics = await storage.updateEngagementMetrics(userId, metrics);
+      res.json(updatedMetrics);
+    } catch (error) {
+      console.error("Error updating engagement metrics:", error);
+      res.status(500).json({ error: "Failed to update engagement metrics" });
+    }
+  });
+
   console.log('🚀 WebSocket Server initialized with optimized connection handling');
   return httpServer;
 }

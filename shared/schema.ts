@@ -1936,3 +1936,212 @@ export type InterviewSchedule = typeof interviewSchedules.$inferSelect;
 export type InsertInterviewSchedule = z.infer<typeof insertInterviewScheduleSchema>;
 export type CareerSettings = typeof careerSettings.$inferSelect;
 export type InsertCareerSettings = z.infer<typeof insertCareerSettingsSchema>;
+
+// Gamification System Tables
+export const userPoints = pgTable("user_points", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  totalPoints: integer("total_points").default(0).notNull(),
+  currentLevel: integer("current_level").default(1).notNull(),
+  pointsToNextLevel: integer("points_to_next_level").default(100).notNull(),
+  dailyStreak: integer("daily_streak").default(0).notNull(),
+  weeklyStreak: integer("weekly_streak").default(0).notNull(),
+  monthlyStreak: integer("monthly_streak").default(0).notNull(),
+  lastActivityDate: timestamp("last_activity_date"),
+  lifetimeEarnings: integer("lifetime_earnings").default(0).notNull(), // total points ever earned
+  currentRank: text("current_rank").default("Bronze"), // Bronze, Silver, Gold, Platinum, Diamond
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const pointActivities = pgTable("point_activities", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  activityType: text("activity_type").notNull(), // lead_contacted, deal_closed, call_made, appointment_scheduled, etc.
+  pointsEarned: integer("points_earned").notNull(),
+  description: text("description").notNull(),
+  relatedEntityType: text("related_entity_type"), // contact, deal, call, appointment
+  relatedEntityId: integer("related_entity_id"),
+  multiplier: integer("multiplier").default(1), // for bonus events
+  source: text("source").default("platform"), // platform, bonus, achievement
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const achievements = pgTable("achievements", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(), // sales, engagement, consistency, milestone
+  icon: text("icon").notNull(),
+  pointReward: integer("point_reward").default(0).notNull(),
+  badgeColor: text("badge_color").default("blue"), // blue, green, orange, red, purple, gold
+  rarity: text("rarity").default("common"), // common, rare, epic, legendary
+  requirements: json("requirements"), // flexible JSON for different requirement types
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const userAchievements = pgTable("user_achievements", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  achievementId: integer("achievement_id").references(() => achievements.id).notNull(),
+  progress: integer("progress").default(0).notNull(),
+  maxProgress: integer("max_progress").notNull(),
+  isCompleted: boolean("is_completed").default(false).notNull(),
+  completedAt: timestamp("completed_at"),
+  pointsEarned: integer("points_earned").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const dailyChallenges = pgTable("daily_challenges", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  challengeType: text("challenge_type").notNull(), // calls, appointments, deals, logins
+  targetValue: integer("target_value").notNull(),
+  pointReward: integer("point_reward").notNull(),
+  bonusMultiplier: integer("bonus_multiplier").default(1),
+  icon: text("icon").default("target"),
+  difficulty: text("difficulty").default("medium"), // easy, medium, hard, expert
+  isActive: boolean("is_active").default(true).notNull(),
+  validDate: timestamp("valid_date").notNull(), // date this challenge is valid for
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const userChallenges = pgTable("user_challenges", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  challengeId: integer("challenge_id").references(() => dailyChallenges.id).notNull(),
+  progress: integer("progress").default(0).notNull(),
+  isCompleted: boolean("is_completed").default(false).notNull(),
+  completedAt: timestamp("completed_at"),
+  pointsEarned: integer("points_earned").default(0).notNull(),
+  challengeDate: timestamp("challenge_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const leaderboards = pgTable("leaderboards", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  leaderboardType: text("leaderboard_type").notNull(), // daily, weekly, monthly, all_time
+  category: text("category").notNull(), // points, deals, calls, revenue
+  score: integer("score").notNull(),
+  rank: integer("rank").notNull(),
+  period: text("period").notNull(), // 2025-01-01, 2025-W01, 2025-01, all_time
+  lastUpdated: timestamp("last_updated").defaultNow().notNull(),
+});
+
+export const pointMultipliers = pgTable("point_multipliers", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  multiplier: integer("multiplier").notNull(), // 2x, 3x, etc.
+  activityTypes: text("activity_types").array(), // which activities get the multiplier
+  isActive: boolean("is_active").default(true).notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const badgeCategories = pgTable("badge_categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  icon: text("icon").notNull(),
+  color: text("color").default("blue").notNull(),
+  sortOrder: integer("sort_order").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+});
+
+export const userBadges = pgTable("user_badges", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  badgeName: text("badge_name").notNull(),
+  badgeDescription: text("badge_description").notNull(),
+  badgeIcon: text("badge_icon").notNull(),
+  badgeColor: text("badge_color").default("blue").notNull(),
+  rarity: text("rarity").default("common").notNull(),
+  pointsEarned: integer("points_earned").default(0).notNull(),
+  earnedAt: timestamp("earned_at").defaultNow().notNull(),
+  displayOrder: integer("display_order").default(0).notNull(),
+});
+
+export const engagementMetrics = pgTable("engagement_metrics", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  metricDate: timestamp("metric_date").notNull(),
+  loginCount: integer("login_count").default(0).notNull(),
+  timeSpent: integer("time_spent").default(0).notNull(), // minutes
+  actionsPerformed: integer("actions_performed").default(0).notNull(),
+  pointsEarned: integer("points_earned").default(0).notNull(),
+  challengesCompleted: integer("challenges_completed").default(0).notNull(),
+  achievementsUnlocked: integer("achievements_unlocked").default(0).notNull(),
+  streakMaintained: boolean("streak_maintained").default(false).notNull(),
+  engagementScore: integer("engagement_score").default(0).notNull(), // calculated score 0-100
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Insert schemas for gamification
+export const insertUserPointsSchema = createInsertSchema(userPoints).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertPointActivitySchema = createInsertSchema(pointActivities).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAchievementSchema = createInsertSchema(achievements).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserAchievementSchema = createInsertSchema(userAchievements).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertDailyChallengeSchema = createInsertSchema(dailyChallenges).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserChallengeSchema = createInsertSchema(userChallenges).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertLeaderboardSchema = createInsertSchema(leaderboards).omit({
+  id: true,
+});
+
+export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({
+  id: true,
+});
+
+export const insertEngagementMetricSchema = createInsertSchema(engagementMetrics).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Types for gamification system
+export type UserPoints = typeof userPoints.$inferSelect;
+export type InsertUserPoints = z.infer<typeof insertUserPointsSchema>;
+export type PointActivity = typeof pointActivities.$inferSelect;
+export type InsertPointActivity = z.infer<typeof insertPointActivitySchema>;
+export type Achievement = typeof achievements.$inferSelect;
+export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
+export type UserAchievement = typeof userAchievements.$inferSelect;
+export type InsertUserAchievement = z.infer<typeof insertUserAchievementSchema>;
+export type DailyChallenge = typeof dailyChallenges.$inferSelect;
+export type InsertDailyChallenge = z.infer<typeof insertDailyChallengeSchema>;
+export type UserChallenge = typeof userChallenges.$inferSelect;
+export type InsertUserChallenge = z.infer<typeof insertUserChallengeSchema>;
+export type Leaderboard = typeof leaderboards.$inferSelect;
+export type InsertLeaderboard = z.infer<typeof insertLeaderboardSchema>;
+export type UserBadge = typeof userBadges.$inferSelect;
+export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
+export type EngagementMetric = typeof engagementMetrics.$inferSelect;
+export type InsertEngagementMetric = z.infer<typeof insertEngagementMetricSchema>;
