@@ -283,27 +283,27 @@ export default function HighVolumeLeadExtractor() {
         <CardContent>
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <h4 className="font-semibold text-green-700 dark:text-green-400 mb-2">🎯 Customer Leads (Hot Prospects)</h4>
+              <h4 className="font-semibold text-green-700 dark:text-green-400 mb-2">🎯 High-Value Business Prospects</h4>
               <ul className="space-y-1 text-sm">
-                <li><strong>Bark.com:</strong> Customers actively seeking services</li>
-                <li><strong>Angie's List:</strong> Homeowners looking for contractors</li>
-                <li><strong>Craigslist:</strong> People posting service requests</li>
+                <li><strong>Bark.com:</strong> Service providers seeking marketing help</li>
+                <li><strong>Google Maps:</strong> Local businesses needing optimization</li>
+                <li><strong>Yelp:</strong> Service businesses wanting more reviews</li>
+                <li><strong>ZoomInfo:</strong> Enterprise companies for B2B services</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold text-blue-700 dark:text-blue-400 mb-2">🏢 Business Leads (Service Providers)</h4>
+              <h4 className="font-semibold text-blue-700 dark:text-blue-400 mb-2">🏢 Directory & Database Sources</h4>
               <ul className="space-y-1 text-sm">
-                <li><strong>Google Maps:</strong> Local businesses offering services</li>
                 <li><strong>Yellow Pages:</strong> Established business directories</li>
-                <li><strong>ZoomInfo:</strong> Enterprise business intelligence</li>
-                <li><strong>Yelp:</strong> Service businesses with reviews</li>
+                <li><strong>White Pages:</strong> Professional contact databases</li>
+                <li><strong>Angie's List:</strong> Contractor business listings</li>
+                <li><strong>Craigslist:</strong> Local service providers</li>
               </ul>
             </div>
           </div>
-          <div className="mt-4 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
-            <p className="text-sm text-orange-800 dark:text-orange-200">
-              <strong>Pro Tip:</strong> Bark.com leads are customers actively looking for services - these are your hottest prospects! 
-              Use different sales approaches for customers vs. businesses.
+          <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
+            <p className="text-sm text-green-800 dark:text-green-200">
+              <strong>Marketing Opportunity:</strong> Bark.com businesses are actively advertising their services - they're already investing in marketing and looking for better results! Perfect prospects for SEO, web development, and lead generation services.
             </p>
           </div>
         </CardContent>
