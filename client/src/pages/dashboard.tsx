@@ -61,6 +61,7 @@ import { PersonalizedDashboardWidgets } from "@/components/personalized-dashboar
 import ZoomInfoScraper from "@/components/zoominfo-scraper";
 import UnifiedVendorSelector from "@/components/unified-vendor-selector";
 import CancellationMetrics from "@/components/cancellation-metrics";
+import PerformanceMonitor from "@/components/performance-monitor";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -99,6 +100,9 @@ export default function Dashboard() {
         return (
           <div className="space-y-6">
             <CRMAnalyticsDashboard />
+            <div className="flex justify-center">
+              <PerformanceMonitor />
+            </div>
             <div className="flex justify-center">
               <EmailNotificationTest />
             </div>

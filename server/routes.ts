@@ -190,18 +190,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Contacts API
+  // Contacts API with performance optimization
   app.get("/api/contacts", async (req, res) => {
     try {
-      // Add response caching for better performance
-      res.set('Cache-Control', 'public, max-age=30'); // Cache for 30 seconds
+      const startTime = Date.now();
       
-      const contacts = await storage.getAllContacts();
+      // Add response caching for better performance
+      res.set('Cache-Control', 'public, max-age=60'); // Cache for 60 seconds
+      
+      // Add pagination support
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 50; // Default to 50 records
+      const offset = (page - 1) * limit;
+      
+      // Use the new optimized paginated query instead of slicing in memory
+      const allContacts = await storage.getAllContacts();
+      const total = allContacts.length;
+      
+      // For small pagination, use memory slicing; for large datasets, use database pagination
+      let paginatedContacts;
+      if (limit <= 100 && total > 1000) {
+        // Use database-level pagination for better performance
+        paginatedContacts = await storage.getContactsPaginated(limit, offset);
+      } else {
+        // Use memory pagination for smaller datasets
+        paginatedContacts = allContacts.slice(offset, offset + limit);
+      }
+      
+      const responseTime = Date.now() - startTime;
+      if (responseTime > 1000) {
+        console.log(`⚠️ Slow query detected: getAllContacts took ${responseTime}ms`);
+      }
       
       // Log performance for monitoring
-      console.log(`📊 Contacts API: Returning ${contacts.length} records`);
+      console.log(`📊 Contacts API: Returning ${paginatedContacts.length}/${total} records (page ${page})`);
       
-      res.json(contacts);
+      res.json({
+        contacts: paginatedContacts,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+          hasNextPage: offset + limit < total,
+          hasPrevPage: page > 1
+        }
+      });
     } catch (error) {
       console.error('Get contacts error:', error);
       res.status(500).json({ error: (error as Error).message });

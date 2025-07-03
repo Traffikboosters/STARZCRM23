@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,12 +26,24 @@ export default function LeadCountDisplay({ variant = "sidebar", className = "" }
   };
 
   // Fetch contacts with optimized refresh
-  const { data: contacts = [], isLoading } = useQuery<Contact[]>({
+  const { data: contactsResponse, isLoading } = useQuery({
     queryKey: ["/api/contacts"],
     refetchInterval: 120000, // Reduced to 2 minutes for optimal performance
     staleTime: 20000, // Consider data fresh for 20 seconds
     gcTime: 300000, // Keep in cache for 5 minutes (renamed from cacheTime in v5)
   });
+
+  // Extract contacts from paginated response structure
+  const contacts: Contact[] = useMemo(() => {
+    if (contactsResponse?.contacts) {
+      return contactsResponse.contacts;
+    }
+    // Fallback for old response format
+    if (Array.isArray(contactsResponse)) {
+      return contactsResponse;
+    }
+    return [];
+  }, [contactsResponse]);
 
   // WebSocket connection for real-time updates
   useEffect(() => {

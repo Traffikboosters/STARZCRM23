@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { format } from "date-fns";
 import { Video, User, FileText, Phone, Mail, Play, ChevronRight, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,9 +23,21 @@ export default function RightSidebar({ onJoinCall, onCreateEvent, onContactClick
     queryKey: ['/api/events'],
   });
 
-  const { data: contacts = [] } = useQuery<Contact[]>({
+  const { data: contactsResponse } = useQuery({
     queryKey: ['/api/contacts'],
   });
+
+  // Extract contacts from paginated response structure
+  const contacts: Contact[] = useMemo(() => {
+    if (contactsResponse?.contacts) {
+      return contactsResponse.contacts;
+    }
+    // Fallback for old response format
+    if (Array.isArray(contactsResponse)) {
+      return contactsResponse;
+    }
+    return [];
+  }, [contactsResponse]);
 
   const { data: companies = [] } = useQuery<Company[]>({
     queryKey: ['/api/companies'],

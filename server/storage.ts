@@ -59,6 +59,7 @@ export interface IStorage {
   
   // Contacts
   getAllContacts(): Promise<Contact[]>;
+  getContactsPaginated(limit?: number, offset?: number): Promise<Contact[]>;
   getContact(id: number): Promise<Contact | undefined>;
   createContact(contact: InsertContact & { createdBy: number }): Promise<Contact>;
   updateContact(id: number, updates: Partial<InsertContact>): Promise<Contact | undefined>;
@@ -292,11 +293,30 @@ export class DatabaseStorage implements IStorage {
     // Add performance monitoring
     const startTime = Date.now();
     
-    const contactResults = await db.select().from(contacts).orderBy(contacts.createdAt);
+    // Optimized query with descending order for recent contacts first
+    const contactResults = await db.select().from(contacts).orderBy(desc(contacts.createdAt));
     
     const queryTime = Date.now() - startTime;
     if (queryTime > 500) {
       console.log(`⚠️ Slow query detected: getAllContacts took ${queryTime}ms`);
+    }
+    
+    return contactResults;
+  }
+
+  // Add paginated version for better performance
+  async getContactsPaginated(limit: number = 50, offset: number = 0): Promise<Contact[]> {
+    const startTime = Date.now();
+    
+    const contactResults = await db.select()
+      .from(contacts)
+      .orderBy(desc(contacts.createdAt))
+      .limit(limit)
+      .offset(offset);
+    
+    const queryTime = Date.now() - startTime;
+    if (queryTime > 200) {
+      console.log(`⚠️ Paginated query took ${queryTime}ms for ${limit} records`);
     }
     
     return contactResults;

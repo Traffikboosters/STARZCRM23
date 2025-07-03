@@ -569,13 +569,26 @@ export default function CRMView() {
     },
   });
 
-  // Data fetching with optimized performance
-  const { data: contacts = [], isLoading } = useQuery<Contact[]>({
+  // Data fetching with optimized performance and pagination
+  const { data: contactsResponse, isLoading } = useQuery({
     queryKey: ["/api/contacts"],
+    queryFn: () => apiRequest("/api/contacts?limit=1000"), // Get first 1000 for now
     refetchInterval: 120000, // Reduced to 2 minutes for optimal performance
     staleTime: 20000, // Consider data fresh for 20 seconds
     gcTime: 300000, // Keep in cache for 5 minutes (renamed from cacheTime in v5)
   });
+
+  // Extract contacts from paginated response structure
+  const contacts: Contact[] = useMemo(() => {
+    if (contactsResponse?.contacts) {
+      return contactsResponse.contacts;
+    }
+    // Fallback for old response format
+    if (Array.isArray(contactsResponse)) {
+      return contactsResponse;
+    }
+    return [];
+  }, [contactsResponse]);
 
   // Current user already defined above using authService
 
