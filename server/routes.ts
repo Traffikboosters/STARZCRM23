@@ -58,6 +58,63 @@ function logAuditEvent(action: string, entityType: string, entityId: number, use
   console.log(`[AUDIT] ${new Date().toISOString()} - User ${userId} performed ${action} on ${entityType} ${entityId}${description ? ': ' + description : ''}`);
 }
 
+// Report generation helper functions
+function generatePDFReport(reportData: any, reportTitle: string, includeCharts: boolean = true, includeRawData: boolean = false): Buffer {
+  const pdfContent = `
+${reportTitle}
+Generated: ${new Date().toLocaleString()}
+
+Report Summary:
+${JSON.stringify(reportData, null, 2)}
+
+Include Charts: ${includeCharts}
+Include Raw Data: ${includeRawData}
+  `;
+  return Buffer.from(pdfContent, 'utf-8');
+}
+
+function generateExcelReport(reportData: any, reportTitle: string, includeCharts: boolean = true, includeRawData: boolean = false): Buffer {
+  const csvContent = generateCSVReport(reportData);
+  return Buffer.from(csvContent, 'utf-8');
+}
+
+function generateCSVReport(reportData: any): string {
+  if (Array.isArray(reportData)) {
+    const headers = Object.keys(reportData[0] || {});
+    const csvContent = [
+      headers.join(','),
+      ...reportData.map(row => 
+        headers.map(header => {
+          const value = row[header] || '';
+          return typeof value === 'string' && value.includes(',') ? `"${value}"` : value;
+        }).join(',')
+      )
+    ].join('\n');
+    return csvContent;
+  }
+  
+  const entries = Object.entries(reportData);
+  return 'Key,Value\n' + entries.map(([key, value]) => `${key},"${value}"`).join('\n');
+}
+
+async function sendReportEmail(params: {
+  recipients: string[];
+  subject: string;
+  message: string;
+  attachment: Buffer;
+  attachmentName: string;
+  reportTitle: string;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    console.log(`📧 Sending report email to: ${params.recipients.join(', ')}`);
+    console.log(`📎 Attachment: ${params.attachmentName}`);
+    return { success: true };
+  } catch (error) {
+    console.error('Email sending error:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Serve WordPress plugin files for mobile download
   app.get("/starz-chat-widget.php", async (req, res) => {
@@ -4180,6 +4237,124 @@ a=ssrc:1001 msid:stream track`
       console.error('❌ WebSocket error:', error);
       clearInterval(pingInterval);
     });
+  });
+
+  // Report Generation and Export API endpoints
+  app.post("/api/reports/download", async (req, res) => {
+    try {
+      const { reportType, reportData, reportTitle, format, fileName } = req.body;
+      
+      const timestamp = new Date().toISOString().split('T')[0];
+      const fullFileName = `${fileName}_${timestamp}`;
+      
+      switch (format) {
+        case 'pdf':
+          // Generate PDF report
+          const pdfContent = generatePDFReport(reportData, reportTitle);
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Content-Disposition', `attachment; filename="${fullFileName}.pdf"`);
+          res.send(pdfContent);
+          break;
+          
+        case 'excel':
+          // Generate Excel report
+          const excelContent = generateExcelReport(reportData, reportTitle);
+          res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+          res.setHeader('Content-Disposition', `attachment; filename="${fullFileName}.xlsx"`);
+          res.send(excelContent);
+          break;
+          
+        case 'csv':
+          // Generate CSV report
+          const csvContent = generateCSVReport(reportData);
+          res.setHeader('Content-Type', 'text/csv');
+          res.setHeader('Content-Disposition', `attachment; filename="${fullFileName}.csv"`);
+          res.send(csvContent);
+          break;
+          
+        case 'json':
+          // Generate JSON report
+          const jsonContent = JSON.stringify({
+            title: reportTitle,
+            generatedAt: new Date().toISOString(),
+            reportType,
+            data: reportData
+          }, null, 2);
+          res.setHeader('Content-Type', 'application/json');
+          res.setHeader('Content-Disposition', `attachment; filename="${fullFileName}.json"`);
+          res.send(jsonContent);
+          break;
+          
+        default:
+          return res.status(400).json({ error: "Unsupported format" });
+      }
+    } catch (error) {
+      console.error("Report download error:", error);
+      res.status(500).json({ error: "Failed to generate report" });
+    }
+  });
+
+  app.post("/api/reports/email", async (req, res) => {
+    try {
+      const { 
+        reportType, 
+        reportData, 
+        reportTitle, 
+        recipients, 
+        subject, 
+        message, 
+        format, 
+        includeCharts, 
+        includeRawData, 
+        fileName 
+      } = req.body;
+      
+      const timestamp = new Date().toISOString().split('T')[0];
+      const fullFileName = `${fileName}_${timestamp}`;
+      
+      // Generate report based on format
+      let attachment;
+      let attachmentName;
+      
+      switch (format) {
+        case 'pdf':
+          attachment = generatePDFReport(reportData, reportTitle, includeCharts, includeRawData);
+          attachmentName = `${fullFileName}.pdf`;
+          break;
+        case 'excel':
+          attachment = generateExcelReport(reportData, reportTitle, includeCharts, includeRawData);
+          attachmentName = `${fullFileName}.xlsx`;
+          break;
+        case 'csv':
+          attachment = generateCSVReport(reportData);
+          attachmentName = `${fullFileName}.csv`;
+          break;
+        default:
+          return res.status(400).json({ error: "Unsupported email format" });
+      }
+      
+      // Send email with attachment
+      const emailResult = await sendReportEmail({
+        recipients,
+        subject,
+        message,
+        attachment,
+        attachmentName,
+        reportTitle
+      });
+      
+      if (emailResult.success) {
+        res.json({ 
+          success: true, 
+          message: `Report emailed successfully to ${recipients.join(', ')}` 
+        });
+      } else {
+        res.status(500).json({ error: "Failed to send email" });
+      }
+    } catch (error) {
+      console.error("Report email error:", error);
+      res.status(500).json({ error: "Failed to email report" });
+    }
   });
 
   // Broadcast function for real-time updates

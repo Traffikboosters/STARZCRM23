@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { Calendar, Users, Video, FileText, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import ReportExport from "@/components/report-export";
 import type { Event, Contact } from "@shared/schema";
 
 export default function AnalyticsView() {
@@ -227,6 +228,76 @@ export default function AnalyticsView() {
                   {contacts.filter(c => c.leadStatus === "qualified").length}
                 </div>
                 <p className="text-sm text-neutral-medium">Qualified Leads</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Report Export Section */}
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle className="text-lg text-neutral-dark">Download & Email Analytics Reports</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-semibold mb-3">Performance Analytics Report</h4>
+                <ReportExport
+                  reportType="analytics"
+                  reportData={{
+                    metrics: {
+                      totalEvents,
+                      totalContacts,
+                      completedEvents,
+                      upcomingEvents,
+                      eventCompletionRate: ((completedEvents / totalEvents) * 100 || 0).toFixed(1),
+                      closedDeals: contacts.filter(c => c.leadStatus === "closed_won").length,
+                      qualifiedLeads: contacts.filter(c => c.leadStatus === "qualified").length
+                    },
+                    eventTypeData,
+                    monthlyEventsData,
+                    contacts: contacts.map(c => ({
+                      name: `${c.firstName} ${c.lastName}`,
+                      email: c.email,
+                      status: c.leadStatus,
+                      source: c.leadSource,
+                      budget: c.budget,
+                      dealValue: c.dealValue
+                    })),
+                    events: events.map(e => ({
+                      title: e.title,
+                      type: e.type,
+                      status: e.status,
+                      startDate: e.startDate,
+                      duration: e.duration
+                    }))
+                  }}
+                  reportTitle="STARZ Analytics Dashboard Report"
+                  fileName="starz_analytics_report"
+                />
+              </div>
+              <div>
+                <h4 className="font-semibold mb-3">Contact Performance Report</h4>
+                <ReportExport
+                  reportType="contacts"
+                  reportData={contacts.map(c => ({
+                    name: `${c.firstName} ${c.lastName}`,
+                    email: c.email,
+                    phone: c.phone,
+                    company: c.company,
+                    position: c.position,
+                    leadStatus: c.leadStatus,
+                    leadSource: c.leadSource,
+                    budget: c.budget,
+                    dealValue: c.dealValue,
+                    priority: c.priority,
+                    lastContact: c.lastContact,
+                    nextFollowUp: c.nextFollowUp,
+                    assignedUser: c.assignedUser?.firstName + ' ' + c.assignedUser?.lastName
+                  }))}
+                  reportTitle="STARZ Contact Management Report"
+                  fileName="starz_contacts_report"
+                />
               </div>
             </div>
           </CardContent>
