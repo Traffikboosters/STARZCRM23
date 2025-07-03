@@ -281,30 +281,51 @@ export default function HighVolumeLeadExtractor() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="space-y-4">
             <div>
-              <h4 className="font-semibold text-green-700 dark:text-green-400 mb-2">🎯 High-Value Business Prospects</h4>
-              <ul className="space-y-1 text-sm">
-                <li><strong>Bark.com:</strong> Service providers seeking marketing help</li>
-                <li><strong>Google Maps:</strong> Local businesses needing optimization</li>
-                <li><strong>Yelp:</strong> Service businesses wanting more reviews</li>
-                <li><strong>ZoomInfo:</strong> Enterprise companies for B2B services</li>
-              </ul>
+              <h4 className="font-semibold text-green-700 dark:text-green-400 mb-3">🔥 Premium Marketing-Ready Prospects</h4>
+              <div className="space-y-2 text-sm">
+                <div className="p-2 bg-green-50 dark:bg-green-950/20 rounded border-l-4 border-green-500">
+                  <strong>Bark.com Business Providers:</strong> Service companies already paying for leads - perfect for upselling SEO, web design, and advanced marketing
+                </div>
+                <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded border-l-4 border-blue-500">
+                  <strong>ZoomInfo Enterprise:</strong> B2B companies with marketing budgets - ideal for comprehensive digital transformation services
+                </div>
+              </div>
             </div>
+            
             <div>
-              <h4 className="font-semibold text-blue-700 dark:text-blue-400 mb-2">🏢 Directory & Database Sources</h4>
-              <ul className="space-y-1 text-sm">
-                <li><strong>Yellow Pages:</strong> Established business directories</li>
-                <li><strong>White Pages:</strong> Professional contact databases</li>
-                <li><strong>Angie's List:</strong> Contractor business listings</li>
-                <li><strong>Craigslist:</strong> Local service providers</li>
-              </ul>
+              <h4 className="font-semibold text-orange-700 dark:text-orange-400 mb-3">⭐ Local Business Opportunities</h4>
+              <div className="space-y-2 text-sm">
+                <div className="p-2 bg-orange-50 dark:bg-orange-950/20 rounded border-l-4 border-orange-500">
+                  <strong>Google Maps Businesses:</strong> Local services needing GMB optimization, local SEO, and online visibility
+                </div>
+                <div className="p-2 bg-purple-50 dark:bg-purple-950/20 rounded border-l-4 border-purple-500">
+                  <strong>Yelp Service Providers:</strong> Review-dependent businesses wanting reputation management and customer acquisition
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold text-blue-700 dark:text-blue-400 mb-3">📂 Traditional Directory Sources</h4>
+              <div className="space-y-2 text-sm">
+                <div className="p-2 bg-gray-50 dark:bg-gray-950/20 rounded border-l-4 border-gray-500">
+                  <strong>Yellow/White Pages:</strong> Established businesses for foundational web presence and digital marketing entry
+                </div>
+                <div className="p-2 bg-teal-50 dark:bg-teal-950/20 rounded border-l-4 border-teal-500">
+                  <strong>Angie's List/Craigslist:</strong> Home service contractors needing professional websites and lead generation systems
+                </div>
+              </div>
             </div>
           </div>
-          <div className="mt-4 p-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-200 dark:border-green-800">
-            <p className="text-sm text-green-800 dark:text-green-200">
-              <strong>Marketing Opportunity:</strong> Bark.com businesses are actively advertising their services - they're already investing in marketing and looking for better results! Perfect prospects for SEO, web development, and lead generation services.
-            </p>
+          
+          <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-950/20 dark:to-blue-950/20 rounded-lg border border-green-200 dark:border-green-800">
+            <h5 className="font-semibold text-green-800 dark:text-green-200 mb-2">Sales Strategy by Vendor Type:</h5>
+            <ul className="text-sm text-green-700 dark:text-green-300 space-y-1">
+              <li><strong>Bark.com:</strong> "You're already paying for leads - let's help you convert more and pay less"</li>
+              <li><strong>Google Maps:</strong> "Your competitors are ranking higher - let's fix that"</li>
+              <li><strong>Directories:</strong> "Time to upgrade from basic listings to a professional online presence"</li>
+            </ul>
           </div>
         </CardContent>
       </Card>
