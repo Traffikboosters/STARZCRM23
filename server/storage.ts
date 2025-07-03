@@ -1438,6 +1438,8 @@ export class DatabaseStorage implements IStorage {
     // Implementation for checking and updating achievement progress
   }
 
+
+
   // Daily Challenges
   async getDailyChallenges(date: Date): Promise<any[]> {
     const startOfDay = new Date(date);

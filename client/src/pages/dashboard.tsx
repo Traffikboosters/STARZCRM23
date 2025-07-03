@@ -49,7 +49,7 @@ import VoiceToneAnalysisEnhanced from "@/components/voice-tone-analysis-enhanced
 import MoodTracker from "@/components/mood-tracker";
 import SalesRepDashboard from "@/components/sales-rep-dashboard";
 import { CareerManagement } from "@/components/career-management";
-import { GamificationSystem } from "@/components/gamification-system";
+import GamificationSystemClean from "@/components/gamification-system-clean";
 import EmployeeTimeClock from "@/components/employee-time-clock";
 
 import { HighRevenueProspects } from "@/components/high-revenue-prospects-clean";
@@ -205,7 +205,7 @@ export default function Dashboard() {
       case "career-management":
         return <CareerManagement />;
       case "gamification":
-        return <GamificationSystem />;
+        return <GamificationSystemClean />;
 
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;

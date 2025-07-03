@@ -5180,6 +5180,198 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  // Gamification System API endpoints
+  app.get("/api/gamification/user-points/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const userPoints = await storage.getUserPoints(parseInt(userId));
+      res.json(userPoints);
+    } catch (error) {
+      console.error("Error fetching user points:", error);
+      res.status(500).json({ error: "Failed to fetch user points" });
+    }
+  });
+
+  app.get("/api/gamification/achievements", async (req, res) => {
+    try {
+      const achievements = await storage.getAchievements();
+      res.json(achievements);
+    } catch (error) {
+      console.error("Error fetching achievements:", error);
+      res.status(500).json({ error: "Failed to fetch achievements" });
+    }
+  });
+
+  app.get("/api/gamification/user-achievements/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const userAchievements = await storage.getUserAchievements(parseInt(userId));
+      res.json(userAchievements);
+    } catch (error) {
+      console.error("Error fetching user achievements:", error);
+      res.status(500).json({ error: "Failed to fetch user achievements" });
+    }
+  });
+
+  app.get("/api/gamification/daily-challenges", async (req, res) => {
+    try {
+      const challenges = await db.select().from(dailyChallenges)
+        .where(and(
+          eq(dailyChallenges.isActive, true),
+          gte(dailyChallenges.validDate, new Date())
+        ));
+      res.json(challenges || []);
+    } catch (error) {
+      console.error("Error fetching daily challenges:", error);
+      res.status(500).json({ error: "Failed to fetch daily challenges" });
+    }
+  });
+
+  app.get("/api/gamification/user-challenges/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const userChallenges = await db.select({
+        userChallenge: userChallenges,
+        challenge: dailyChallenges
+      })
+      .from(userChallenges)
+      .innerJoin(dailyChallenges, eq(userChallenges.challengeId, dailyChallenges.id))
+      .where(and(
+        eq(userChallenges.userId, parseInt(userId)),
+        gte(userChallenges.challengeDate, today)
+      ));
+      
+      res.json(userChallenges || []);
+    } catch (error) {
+      console.error("Error fetching user challenges:", error);
+      res.status(500).json({ error: "Failed to fetch user challenges" });
+    }
+  });
+
+  app.get("/api/gamification/leaderboard", async (req, res) => {
+    try {
+      const leaderboard = await db.select({
+        userId: userPoints.userId,
+        totalPoints: userPoints.totalPoints,
+        currentLevel: userPoints.currentLevel,
+        currentRank: userPoints.currentRank,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        avatar: users.avatar
+      })
+      .from(userPoints)
+      .innerJoin(users, eq(userPoints.userId, users.id))
+      .orderBy(desc(userPoints.totalPoints))
+      .limit(50);
+      
+      res.json(leaderboard || []);
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error);
+      res.status(500).json({ error: "Failed to fetch leaderboard" });
+    }
+  });
+
+  app.post("/api/gamification/award-points", async (req, res) => {
+    try {
+      const { userId, points, source, description } = req.body;
+      
+      // Update user points
+      await db.update(userPoints)
+        .set({
+          totalPoints: sql`${userPoints.totalPoints} + ${points}`,
+          lifetimeEarnings: sql`${userPoints.lifetimeEarnings} + ${points}`,
+          updatedAt: new Date()
+        })
+        .where(eq(userPoints.userId, userId));
+      
+      res.json({ success: true, message: "Points awarded successfully" });
+    } catch (error) {
+      console.error("Error awarding points:", error);
+      res.status(500).json({ error: "Failed to award points" });
+    }
+  });
+
+  app.post("/api/gamification/complete-challenge", async (req, res) => {
+    try {
+      const { userId, challengeId } = req.body;
+      
+      // Get challenge details
+      const challenge = await db.select().from(dailyChallenges)
+        .where(eq(dailyChallenges.id, challengeId)).limit(1);
+      
+      if (challenge && challenge.length > 0) {
+        // Mark challenge as completed
+        await db.insert(userChallenges).values({
+          userId: userId,
+          challengeId: challengeId,
+          progress: challenge[0].targetValue,
+          isCompleted: true,
+          pointsEarned: challenge[0].pointReward,
+          challengeDate: new Date(),
+          completedAt: new Date()
+        });
+        
+        // Award points
+        await db.update(userPoints)
+          .set({
+            totalPoints: sql`${userPoints.totalPoints} + ${challenge[0].pointReward}`,
+            lifetimeEarnings: sql`${userPoints.lifetimeEarnings} + ${challenge[0].pointReward}`
+          })
+          .where(eq(userPoints.userId, userId));
+      }
+      
+      res.json({ success: true, message: "Challenge completed successfully" });
+    } catch (error) {
+      console.error("Error completing challenge:", error);
+      res.status(500).json({ error: "Failed to complete challenge" });
+    }
+  });
+
+  app.post("/api/gamification/unlock-achievement", async (req, res) => {
+    try {
+      const { userId, achievementId } = req.body;
+      
+      // Get achievement details
+      const achievement = await db.select().from(achievements)
+        .where(eq(achievements.id, achievementId)).limit(1);
+      
+      if (achievement && achievement.length > 0) {
+        // Check if already unlocked
+        const existing = await db.select().from(userAchievements)
+          .where(and(
+            eq(userAchievements.userId, userId),
+            eq(userAchievements.achievementId, achievementId)
+          )).limit(1);
+        
+        if (!existing || existing.length === 0) {
+          // Unlock achievement
+          await db.insert(userAchievements).values({
+            userId: userId,
+            achievementId: achievementId,
+            pointsEarned: achievement[0].pointReward,
+            earnedDate: new Date()
+          });
+          
+          // Award points
+          await db.update(userPoints)
+            .set({
+              totalPoints: sql`${userPoints.totalPoints} + ${achievement[0].pointReward}`,
+              lifetimeEarnings: sql`${userPoints.lifetimeEarnings} + ${achievement[0].pointReward}`
+            })
+            .where(eq(userPoints.userId, userId));
+        }
+      }
+      
+      res.json({ success: true, message: "Achievement unlocked successfully" });
+    } catch (error) {
+      console.error("Error unlocking achievement:", error);
+      res.status(500).json({ error: "Failed to unlock achievement" });
+    }
+  });
+
   app.post("/api/payments/webhook", async (req, res) => {
     try {
       const sig = req.headers['stripe-signature'];
