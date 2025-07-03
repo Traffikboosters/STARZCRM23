@@ -735,6 +735,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Marketing strategies endpoints
+  app.get("/api/marketing-strategies", async (req, res) => {
+    try {
+      const strategies = await storage.getAllMarketingStrategies();
+      res.json(strategies);
+    } catch (error) {
+      console.error('Get marketing strategies error:', error);
+      res.status(500).json({ error: "Failed to fetch marketing strategies" });
+    }
+  });
+
+  app.post("/api/marketing-strategies", async (req, res) => {
+    try {
+      const strategyData = req.body;
+      const strategy = await storage.createMarketingStrategy({
+        ...strategyData,
+        createdAt: new Date().toISOString(),
+        status: strategyData.status || 'draft'
+      });
+      res.json(strategy);
+    } catch (error) {
+      console.error('Create marketing strategy error:', error);
+      res.status(500).json({ error: "Failed to create marketing strategy" });
+    }
+  });
+
   // Routes for marketing analytics
   app.get("/api/analytics/campaigns", (req, res) => {
     try {

@@ -10,7 +10,8 @@ import {
   servicePackages, costStructure, profitabilityAnalysis,
   moodEntries, teamMoodSummaries, moodPerformanceCorrelations,
   timeClockEntries, timeClockSchedules, timeOffRequests,
-  emailAccounts, emailTemplates, cancellationMetrics, retentionAttempts, cancellationTrends
+  emailAccounts, emailTemplates, cancellationMetrics, retentionAttempts, cancellationTrends,
+  marketingStrategies
 } from "../shared/schema";
 import type { 
   User, Company, Contact, Event, File, Automation, ScrapingJob,
@@ -22,6 +23,7 @@ import type {
   MoodEntry, TeamMoodSummary, MoodPerformanceCorrelation,
   TimeClockEntry, TimeClockSchedule, TimeOffRequest,
   EmailAccount, EmailTemplate, CancellationMetric, RetentionAttempt, CancellationTrend,
+  MarketingStrategy,
   InsertUser, InsertCompany, InsertContact, InsertEvent, InsertFile, InsertAutomation, InsertScrapingJob,
   InsertChatMessage, InsertChatConversation, InsertCallLog, InsertCampaign, InsertLeadAllocation,
   InsertDocumentTemplate, InsertSigningRequest, InsertUserInvitation,
@@ -30,7 +32,8 @@ import type {
   InsertCallInsights, InsertKeyCallMoments, InsertCallParticipants, InsertVoiceTrendAnalysis,
   InsertMoodEntry, InsertTeamMoodSummary, InsertMoodPerformanceCorrelation,
   InsertTimeClockEntry, InsertTimeClockSchedule, InsertTimeOffRequest,
-  InsertEmailAccount, InsertEmailTemplate, InsertCancellationMetric, InsertRetentionAttempt, InsertCancellationTrend
+  InsertEmailAccount, InsertEmailTemplate, InsertCancellationMetric, InsertRetentionAttempt, InsertCancellationTrend,
+  InsertMarketingStrategy
 } from "../shared/schema";
 
 // Complete interface implementation
@@ -190,6 +193,14 @@ export interface IStorage {
   updateCancellationTrend(id: number, updates: Partial<InsertCancellationTrend>): Promise<CancellationTrend | undefined>;
   deleteCancellationTrend(id: number): Promise<boolean>;
   getCancellationTrendsByPeriod(startDate: Date, endDate: Date): Promise<CancellationTrend[]>;
+  
+  // Marketing Strategies
+  getAllMarketingStrategies(): Promise<MarketingStrategy[]>;
+  getMarketingStrategyById(id: number): Promise<MarketingStrategy | undefined>;
+  createMarketingStrategy(strategy: InsertMarketingStrategy): Promise<MarketingStrategy>;
+  updateMarketingStrategy(id: number, updates: Partial<InsertMarketingStrategy>): Promise<MarketingStrategy | undefined>;
+  deleteMarketingStrategy(id: number): Promise<boolean>;
+  getMarketingStrategiesByStatus(status: string): Promise<MarketingStrategy[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -998,6 +1009,43 @@ export class DatabaseStorage implements IStorage {
         lte(cancellationTrends.periodEnd, endDate)
       ))
       .orderBy(desc(cancellationTrends.periodEnd));
+  }
+
+  // Marketing Strategies
+  async getAllMarketingStrategies(): Promise<MarketingStrategy[]> {
+    return await db.select().from(marketingStrategies).orderBy(desc(marketingStrategies.createdAt));
+  }
+
+  async getMarketingStrategyById(id: number): Promise<MarketingStrategy | undefined> {
+    const [strategy] = await db.select().from(marketingStrategies).where(eq(marketingStrategies.id, id));
+    return strategy || undefined;
+  }
+
+  async createMarketingStrategy(strategy: InsertMarketingStrategy): Promise<MarketingStrategy> {
+    const [newStrategy] = await db.insert(marketingStrategies).values(strategy).returning();
+    return newStrategy;
+  }
+
+  async updateMarketingStrategy(id: number, updates: Partial<InsertMarketingStrategy>): Promise<MarketingStrategy | undefined> {
+    const [updatedStrategy] = await db
+      .update(marketingStrategies)
+      .set(updates)
+      .where(eq(marketingStrategies.id, id))
+      .returning();
+    return updatedStrategy || undefined;
+  }
+
+  async deleteMarketingStrategy(id: number): Promise<boolean> {
+    const result = await db.delete(marketingStrategies).where(eq(marketingStrategies.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getMarketingStrategiesByStatus(status: string): Promise<MarketingStrategy[]> {
+    return await db
+      .select()
+      .from(marketingStrategies)
+      .where(eq(marketingStrategies.status, status))
+      .orderBy(desc(marketingStrategies.createdAt));
   }
 }
 

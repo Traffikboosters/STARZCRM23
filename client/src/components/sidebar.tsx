@@ -94,6 +94,7 @@ export default function Sidebar({
     { id: "documents", label: "Document Signing", icon: FileText },
     { id: "sales-funnels", label: "Sales Funnels", icon: Filter },
     { id: "locations", label: "Location Intelligence", icon: MapPin },
+    { id: "marketing-strategy", label: "Marketing Strategy Builder", icon: Target },
     { id: "email-marketing", label: "Email Marketing", icon: Mail },
     { id: "sms-marketing", label: "SMS Marketing", icon: MessageSquare },
     { id: "whatsapp", label: "WhatsApp Business", icon: MessageCircle },

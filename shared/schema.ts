@@ -1124,6 +1124,29 @@ export const workOrders = pgTable("work_orders", {
   approveRequestId: text("approve_request_id"),
 });
 
+export const marketingStrategies = pgTable("marketing_strategies", {
+  id: serial("id").primaryKey(),
+  strategyName: text("strategy_name").notNull(),
+  targetAudience: text("target_audience").notNull(),
+  budget: integer("budget").notNull(), // monthly budget in dollars
+  duration: text("duration").notNull(), // campaign duration in days
+  channels: text("channels").array().notNull(), // marketing channels used
+  objectives: text("objectives").array().notNull(), // campaign objectives
+  expectedROI: integer("expected_roi").notNull(), // expected ROI percentage
+  costPerLead: text("cost_per_lead").notNull(), // cost per lead as decimal string
+  estimatedLeads: integer("estimated_leads").notNull(), // expected number of leads
+  status: text("status").notNull().default("draft"), // draft, active, completed, paused
+  actualROI: integer("actual_roi"), // actual ROI achieved
+  actualLeads: integer("actual_leads"), // actual leads generated
+  actualCostPerLead: text("actual_cost_per_lead"), // actual cost per lead
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdBy: integer("created_by").references(() => users.id),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const documentTemplates = pgTable("document_templates", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
@@ -1296,6 +1319,15 @@ export const insertWorkOrderSchema = createInsertSchema(workOrders).omit({
   signatureUrl: true,
   documentUrl: true,
   approveRequestId: true,
+});
+
+export const insertMarketingStrategySchema = createInsertSchema(marketingStrategies).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  actualROI: true,
+  actualLeads: true,
+  actualCostPerLead: true,
 });
 
 // Cancellation Metrics Tables for Customer Churn Tracking (3+ months)
@@ -1522,6 +1554,8 @@ export type InsertPaymentMethod = z.infer<typeof insertPaymentMethodSchema>;
 
 export type WorkOrder = typeof workOrders.$inferSelect;
 export type InsertWorkOrder = z.infer<typeof insertWorkOrderSchema>;
+export type MarketingStrategy = typeof marketingStrategies.$inferSelect;
+export type InsertMarketingStrategy = z.infer<typeof insertMarketingStrategySchema>;
 export type DocumentTemplate = typeof documentTemplates.$inferSelect;
 export type InsertDocumentTemplate = z.infer<typeof insertDocumentTemplateSchema>;
 export type SigningRequest = typeof signingRequests.$inferSelect;

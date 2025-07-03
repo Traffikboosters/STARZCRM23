@@ -62,6 +62,7 @@ import ZoomInfoScraper from "@/components/zoominfo-scraper";
 import UnifiedVendorSelector from "@/components/unified-vendor-selector";
 import CancellationMetrics from "@/components/cancellation-metrics";
 import PerformanceMonitor from "@/components/performance-monitor";
+import { MarketingStrategyBuilder } from "@/components/marketing-strategy-builder";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -197,6 +198,8 @@ export default function Dashboard() {
         return <EmployeeTimeClock />;
       case "cancellation-metrics":
         return <CancellationMetrics />;
+      case "marketing-strategy":
+        return <MarketingStrategyBuilder />;
 
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
