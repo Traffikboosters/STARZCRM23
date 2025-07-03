@@ -780,7 +780,7 @@ export function CareerManagement() {
                   <div className="mb-4">
                     <h4 className="font-semibold mb-2">Requirements:</h4>
                     <div className="flex flex-wrap gap-2">
-                      {job.requirements.map((requirement: string, index: number) => (
+                      {(Array.isArray(job.requirements) ? job.requirements : job.requirements.split(', ')).map((requirement: string, index: number) => (
                         <Badge key={index} variant="outline">{requirement}</Badge>
                       ))}
                     </div>
