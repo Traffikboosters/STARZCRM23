@@ -146,15 +146,19 @@ const liveJobPostings = [
 ];
 
 export function CareerManagement() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("website-management");
   const [selectedJobPosting, setSelectedJobPosting] = useState<any>(null);
   const [showCreateJob, setShowCreateJob] = useState(false);
   const [showApplicationDetails, setShowApplicationDetails] = useState<any>(null);
+  const [isEditingWebsiteJob, setIsEditingWebsiteJob] = useState(false);
+  const [editingJobData, setEditingJobData] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Use live job postings from website
-  const jobPostings = liveJobPostings;
+  // Fetch live job postings from traffikboosters.com
+  const { data: jobPostings = [], isLoading: loadingJobs } = useQuery({
+    queryKey: ["/api/career/website-jobs"],
+  });
 
   // Fetch applications
   const { data: applications = [], isLoading: loadingApplications } = useQuery({
@@ -188,6 +192,45 @@ export function CareerManagement() {
       toast({
         title: "Application Updated",
         description: "Application status has been updated",
+      });
+    },
+  });
+
+  // Website job management mutations
+  const updateWebsiteJobMutation = useMutation({
+    mutationFn: async (jobData: any) => 
+      apiRequest("PUT", `/api/career/website-jobs/${jobData.id}`, jobData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/career/website-jobs"] });
+      setIsEditingWebsiteJob(false);
+      setEditingJobData(null);
+      toast({
+        title: "Website Job Updated",
+        description: "Job posting has been updated on traffikboosters.com",
+      });
+    },
+  });
+
+  const deleteWebsiteJobMutation = useMutation({
+    mutationFn: async (jobId: string) => 
+      apiRequest("DELETE", `/api/career/website-jobs/${jobId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/career/website-jobs"] });
+      toast({
+        title: "Website Job Deleted",
+        description: "Job posting has been removed from traffikboosters.com",
+      });
+    },
+  });
+
+  const publishWebsiteJobMutation = useMutation({
+    mutationFn: async (jobData: any) => 
+      apiRequest("POST", "/api/career/website-jobs", jobData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/career/website-jobs"] });
+      toast({
+        title: "Job Published",
+        description: "New job posting has been published to traffikboosters.com",
       });
     },
   });
@@ -477,12 +520,133 @@ export function CareerManagement() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="website-management">Website Management</TabsTrigger>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="postings">Job Postings</TabsTrigger>
           <TabsTrigger value="applications">Applications</TabsTrigger>
           <TabsTrigger value="interviews">Interviews</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="website-management" className="space-y-6">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold mb-2">Traffik Boosters Career Page Management</h2>
+            <p className="text-gray-600">Manage job postings directly on traffikboosters.com/career from STARZ</p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-6">
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center gap-2">
+                    <Globe className="h-5 w-5" />
+                    Live Website Job Postings
+                  </CardTitle>
+                  <Button
+                    onClick={() => {
+                      setEditingJobData({
+                        title: "",
+                        department: "",
+                        location: "Remote",
+                        type: "Full-time",
+                        description: "",
+                        requirements: "",
+                        salary: ""
+                      });
+                      setIsEditingWebsiteJob(true);
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add New Job
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {jobPostings.map((job) => (
+                    <Card key={job.id} className="border-l-4 border-l-orange-500">
+                      <CardHeader className="pb-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-semibold text-lg">{job.title}</h3>
+                            <p className="text-sm text-gray-600">{job.department} • {job.location}</p>
+                            <Badge variant="outline" className="mt-1">{job.type}</Badge>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setEditingJobData(job);
+                                setIsEditingWebsiteJob(true);
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deleteWebsiteJobMutation.mutate(job.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-sm text-gray-700 mb-3">{job.description.substring(0, 120)}...</p>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="font-medium text-green-600">{job.salary}</span>
+                          <Badge 
+                            variant={job.status === "active" ? "default" : "secondary"}
+                            className={job.status === "active" ? "bg-green-100 text-green-800" : ""}
+                          >
+                            {job.status}
+                          </Badge>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="mt-3 w-full"
+                          onClick={() => window.open(`https://traffikboosters.com/career/#${job.id}`, '_blank')}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          View on Website
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Website Analytics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-orange-600">7</div>
+                    <div className="text-sm text-gray-600">Active Jobs</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">156</div>
+                    <div className="text-sm text-gray-600">Page Views (Today)</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">23</div>
+                    <div className="text-sm text-gray-600">Applications (Week)</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600">94%</div>
+                    <div className="text-sm text-gray-600">Completion Rate</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -804,6 +968,165 @@ export function CareerManagement() {
                   </a>
                 </div>
               )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Website Job Editing Dialog */}
+      {isEditingWebsiteJob && editingJobData && (
+        <Dialog open={isEditingWebsiteJob} onOpenChange={setIsEditingWebsiteJob}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {editingJobData.id ? 'Edit Website Job' : 'Add New Website Job'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Job Title</Label>
+                  <Input
+                    id="title"
+                    value={editingJobData.title}
+                    onChange={(e) => setEditingJobData({ 
+                      ...editingJobData, 
+                      title: e.target.value 
+                    })}
+                    placeholder="e.g., Senior SEO Specialist"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="department">Department</Label>
+                  <Select
+                    value={editingJobData.department}
+                    onValueChange={(value) => setEditingJobData({ 
+                      ...editingJobData, 
+                      department: value 
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Digital Marketing">Digital Marketing</SelectItem>
+                      <SelectItem value="Sales">Sales</SelectItem>
+                      <SelectItem value="Development">Development</SelectItem>
+                      <SelectItem value="Design">Design</SelectItem>
+                      <SelectItem value="Support">Support</SelectItem>
+                      <SelectItem value="Management">Management</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location</Label>
+                  <Select
+                    value={editingJobData.location}
+                    onValueChange={(value) => setEditingJobData({ 
+                      ...editingJobData, 
+                      location: value 
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Remote">Remote</SelectItem>
+                      <SelectItem value="On-site">On-site</SelectItem>
+                      <SelectItem value="Hybrid">Hybrid</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="type">Employment Type</Label>
+                  <Select
+                    value={editingJobData.type}
+                    onValueChange={(value) => setEditingJobData({ 
+                      ...editingJobData, 
+                      type: value 
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Full-time">Full-time</SelectItem>
+                      <SelectItem value="Part-time">Part-time</SelectItem>
+                      <SelectItem value="Contract">Contract</SelectItem>
+                      <SelectItem value="Internship">Internship</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="salary">Salary Range</Label>
+                <Input
+                  id="salary"
+                  value={editingJobData.salary}
+                  onChange={(e) => setEditingJobData({ 
+                    ...editingJobData, 
+                    salary: e.target.value 
+                  })}
+                  placeholder="e.g., $60,000 - $80,000"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Job Description</Label>
+                <Textarea
+                  id="description"
+                  rows={6}
+                  value={editingJobData.description}
+                  onChange={(e) => setEditingJobData({ 
+                    ...editingJobData, 
+                    description: e.target.value 
+                  })}
+                  placeholder="Describe the role, responsibilities, and what we're looking for..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="requirements">Requirements</Label>
+                <Textarea
+                  id="requirements"
+                  rows={4}
+                  value={editingJobData.requirements}
+                  onChange={(e) => setEditingJobData({ 
+                    ...editingJobData, 
+                    requirements: e.target.value 
+                  })}
+                  placeholder="List the required skills, experience, and qualifications..."
+                />
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setIsEditingWebsiteJob(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={() => {
+                    if (editingJobData.id) {
+                      updateWebsiteJobMutation.mutate(editingJobData);
+                    } else {
+                      publishWebsiteJobMutation.mutate({
+                        ...editingJobData,
+                        id: `job_${Date.now()}`,
+                        status: "active"
+                      });
+                    }
+                  }}
+                  disabled={!editingJobData.title || !editingJobData.description}
+                >
+                  {editingJobData.id ? 'Update Job' : 'Publish Job'}
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>

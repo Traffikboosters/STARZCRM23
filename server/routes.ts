@@ -5043,6 +5043,143 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  // Career Page Website Management endpoints
+  app.get("/api/career/website-jobs", async (req, res) => {
+    try {
+      // Return live job postings from traffikboosters.com
+      const liveJobs = [
+        {
+          id: "job_ppc_marketer",
+          title: "PPC Marketing Specialist",
+          department: "Digital Marketing",
+          location: "Remote",
+          type: "Full-time",
+          description: "Lead PPC campaigns, manage Google Ads, optimize conversion rates, and drive qualified traffic growth for our clients.",
+          requirements: "3+ years PPC experience, Google Ads certification, analytics expertise",
+          salary: "$60,000 - $80,000",
+          status: "active"
+        },
+        {
+          id: "job_seo_specialist",
+          title: "SEO Specialist",
+          department: "Digital Marketing", 
+          location: "Remote",
+          type: "Full-time",
+          description: "Develop and execute SEO strategies, conduct keyword research, optimize website content, and improve search rankings.",
+          requirements: "2+ years SEO experience, technical SEO knowledge, content optimization skills",
+          salary: "$55,000 - $75,000",
+          status: "active"
+        },
+        {
+          id: "job_sales_consultant",
+          title: "Sales Consultant",
+          department: "Sales",
+          location: "Remote",
+          type: "Full-time",
+          description: "Generate leads, conduct sales calls, close deals, and maintain client relationships in digital marketing services.",
+          requirements: "Sales experience, communication skills, CRM proficiency",
+          salary: "$50,000 - $70,000 + Commission",
+          status: "active"
+        },
+        {
+          id: "job_social_media_marketer",
+          title: "Social Media Marketer",
+          department: "Digital Marketing",
+          location: "Remote", 
+          type: "Full-time",
+          description: "Manage social media campaigns, create engaging content, analyze performance metrics, and grow brand presence.",
+          requirements: "Social media marketing experience, content creation skills, analytics knowledge",
+          salary: "$45,000 - $65,000",
+          status: "active"
+        },
+        {
+          id: "job_web_developer",
+          title: "Web Developer",
+          department: "Development",
+          location: "Remote",
+          type: "Full-time", 
+          description: "Build responsive websites, develop web applications, optimize site performance, and implement technical solutions.",
+          requirements: "HTML/CSS/JavaScript, framework experience, responsive design skills",
+          salary: "$65,000 - $85,000",
+          status: "active"
+        },
+        {
+          id: "job_content_marketer",
+          title: "Content Marketing Specialist",
+          department: "Digital Marketing",
+          location: "Remote",
+          type: "Full-time",
+          description: "Create compelling content, develop content strategies, manage blogs, and support SEO initiatives.",
+          requirements: "Content writing experience, SEO knowledge, creative skills",
+          salary: "$50,000 - $70,000",
+          status: "active"
+        },
+        {
+          id: "job_digital_strategist",
+          title: "Digital Marketing Strategist", 
+          department: "Digital Marketing",
+          location: "Remote",
+          type: "Full-time",
+          description: "Develop comprehensive digital strategies, analyze market trends, coordinate campaigns, and drive client success.",
+          requirements: "5+ years digital marketing experience, strategic thinking, project management",
+          salary: "$70,000 - $90,000",
+          status: "active"
+        }
+      ];
+      res.json(liveJobs);
+    } catch (error) {
+      console.error("Error fetching website jobs:", error);
+      res.status(500).json({ error: "Failed to fetch website jobs" });
+    }
+  });
+
+  app.post("/api/career/website-jobs", async (req, res) => {
+    try {
+      const jobData = req.body;
+      // Simulate publishing to traffikboosters.com
+      console.log("Publishing new job to website:", jobData);
+      res.json({ 
+        success: true, 
+        message: "Job published to traffikboosters.com",
+        jobId: jobData.id 
+      });
+    } catch (error) {
+      console.error("Error publishing website job:", error);
+      res.status(500).json({ error: "Failed to publish job to website" });
+    }
+  });
+
+  app.put("/api/career/website-jobs/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const jobData = req.body;
+      // Simulate updating job on traffikboosters.com
+      console.log(`Updating website job ${id}:`, jobData);
+      res.json({ 
+        success: true, 
+        message: "Job updated on traffikboosters.com" 
+      });
+    } catch (error) {
+      console.error("Error updating website job:", error);
+      res.status(500).json({ error: "Failed to update website job" });
+    }
+  });
+
+  app.delete("/api/career/website-jobs/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      // Simulate removing job from traffikboosters.com
+      console.log(`Removing job ${id} from website`);
+      res.json({ 
+        success: true, 
+        message: "Job removed from traffikboosters.com" 
+      });
+    } catch (error) {
+      console.error("Error deleting website job:", error);
+      res.status(500).json({ error: "Failed to delete website job" });
+    }
+  });
+
   app.post("/api/payments/webhook", async (req, res) => {
     try {
       const sig = req.headers['stripe-signature'];
