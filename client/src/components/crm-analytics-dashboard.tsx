@@ -213,15 +213,18 @@ const leadSourceAnalytics = [
 export default function CRMAnalyticsDashboard() {
   const [sortBy, setSortBy] = useState("closingRatio");
 
-  const { data: contacts = [] } = useQuery<any[]>({
+  const { data: contactsResponse } = useQuery<any>({
     queryKey: ["/api/contacts"],
   });
 
+  // Handle the API response structure properly
+  const contacts = contactsResponse?.contacts || [];
+  
   // Calculate real metrics from actual database contacts
-  const actualTotalLeads = contacts.length;
-  const actualClosedWon = contacts.filter((contact: any) => contact.leadStatus === 'closed-won').length;
-  const actualInProgress = contacts.filter((contact: any) => ['new', 'contacted', 'qualified', 'proposal'].includes(contact.leadStatus)).length;
-  const actualLost = contacts.filter((contact: any) => contact.leadStatus === 'closed-lost').length;
+  const actualTotalLeads = Array.isArray(contacts) ? contacts.length : 0;
+  const actualClosedWon = Array.isArray(contacts) ? contacts.filter((contact: any) => contact.leadStatus === 'closed-won').length : 0;
+  const actualInProgress = Array.isArray(contacts) ? contacts.filter((contact: any) => ['new', 'contacted', 'qualified', 'proposal'].includes(contact.leadStatus)).length : 0;
+  const actualLost = Array.isArray(contacts) ? contacts.filter((contact: any) => contact.leadStatus === 'closed-lost').length : 0;
   
   // Use real data for main metrics, supplement with analytics for additional insights
   const totalMetrics = {

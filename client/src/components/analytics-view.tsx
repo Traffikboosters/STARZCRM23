@@ -11,13 +11,16 @@ export default function AnalyticsView() {
     queryKey: ['/api/events'],
   });
 
-  const { data: contacts = [] } = useQuery<Contact[]>({
+  const { data: contactsResponse } = useQuery<any>({
     queryKey: ['/api/contacts'],
   });
 
+  // Handle the API response structure properly
+  const contacts = contactsResponse?.contacts || [];
+
   // Calculate metrics
   const totalEvents = events.length;
-  const totalContacts = contacts.length;
+  const totalContacts = Array.isArray(contacts) ? contacts.length : 0;
   const completedEvents = events.filter(e => e.status === "completed").length;
   const upcomingEvents = events.filter(e => new Date(e.startDate) > new Date()).length;
 
@@ -33,11 +36,11 @@ export default function AnalyticsView() {
   }));
 
   // Lead status data
-  const leadsByStatus = contacts.reduce((acc, contact) => {
+  const leadsByStatus = Array.isArray(contacts) ? contacts.reduce((acc, contact) => {
     const status = contact.leadStatus || "new";
     acc[status] = (acc[status] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<string, number>) : {};
 
   const leadStatusData = Object.entries(leadsByStatus).map(([status, count]) => ({
     name: status.replace("_", " ").toUpperCase(),
