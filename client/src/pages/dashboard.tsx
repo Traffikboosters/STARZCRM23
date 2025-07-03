@@ -48,6 +48,7 @@ import { VoiceToneAnalysis } from "@/components/voice-tone-analysis";
 import VoiceToneAnalysisEnhanced from "@/components/voice-tone-analysis-enhanced";
 import MoodTracker from "@/components/mood-tracker";
 import SalesRepDashboard from "@/components/sales-rep-dashboard";
+import { CareerManagement } from "@/components/career-management";
 import EmployeeTimeClock from "@/components/employee-time-clock";
 
 import { HighRevenueProspects } from "@/components/high-revenue-prospects-clean";
@@ -200,6 +201,8 @@ export default function Dashboard() {
         return <CancellationMetrics />;
       case "marketing-strategy":
         return <MarketingStrategyBuilder />;
+      case "career-management":
+        return <CareerManagement />;
 
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;

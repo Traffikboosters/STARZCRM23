@@ -15,6 +15,10 @@ import {
   insertCancellationMetricSchema,
   insertRetentionAttemptSchema,
   insertCancellationTrendSchema,
+  insertJobPostingSchema,
+  insertJobApplicationSchema,
+  insertInterviewScheduleSchema,
+  insertCareerSettingsSchema,
   type User,
   type Contact,
   type Event,
@@ -23,7 +27,11 @@ import {
   type WorkOrder,
   type CancellationMetric,
   type RetentionAttempt,
-  type CancellationTrend
+  type CancellationTrend,
+  type JobPosting,
+  type JobApplication,
+  type InterviewSchedule,
+  type CareerSettings
 } from "../shared/schema";
 import { storage } from "./storage";
 import { mightyCallNativeAPI } from "./mightycall-native";
@@ -4523,6 +4531,265 @@ a=ssrc:1001 msid:stream track`
 
   // Store broadcast function globally for use in other endpoints
   (global as any).wssBroadcast = broadcast;
+
+  // Career Management API Routes
+  app.get("/api/career/job-postings", async (req, res) => {
+    try {
+      const jobPostings = await storage.getJobPostings();
+      res.json(jobPostings);
+    } catch (error) {
+      console.error("Error fetching job postings:", error);
+      res.status(500).json({ error: "Failed to fetch job postings" });
+    }
+  });
+
+  app.get("/api/career/job-postings/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const jobPosting = await storage.getJobPosting(id);
+      
+      if (!jobPosting) {
+        return res.status(404).json({ error: "Job posting not found" });
+      }
+      
+      res.json(jobPosting);
+    } catch (error) {
+      console.error("Error fetching job posting:", error);
+      res.status(500).json({ error: "Failed to fetch job posting" });
+    }
+  });
+
+  app.post("/api/career/job-postings", async (req, res) => {
+    try {
+      const validatedData = insertJobPostingSchema.parse(req.body);
+      const createdBy = (req as any).user?.id || 1;
+      
+      const jobPosting = await storage.createJobPosting({
+        ...validatedData,
+        createdBy
+      });
+      
+      res.status(201).json(jobPosting);
+    } catch (error) {
+      console.error("Error creating job posting:", error);
+      res.status(500).json({ error: "Failed to create job posting" });
+    }
+  });
+
+  app.put("/api/career/job-postings/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertJobPostingSchema.partial().parse(req.body);
+      const updatedBy = (req as any).user?.id || 1;
+      
+      const jobPosting = await storage.updateJobPosting(id, {
+        ...validatedData,
+        updatedBy
+      });
+      
+      if (!jobPosting) {
+        return res.status(404).json({ error: "Job posting not found" });
+      }
+      
+      res.json(jobPosting);
+    } catch (error) {
+      console.error("Error updating job posting:", error);
+      res.status(500).json({ error: "Failed to update job posting" });
+    }
+  });
+
+  app.delete("/api/career/job-postings/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteJobPosting(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Job posting not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting job posting:", error);
+      res.status(500).json({ error: "Failed to delete job posting" });
+    }
+  });
+
+  app.get("/api/career/applications", async (req, res) => {
+    try {
+      const applications = await storage.getJobApplications();
+      res.json(applications);
+    } catch (error) {
+      console.error("Error fetching applications:", error);
+      res.status(500).json({ error: "Failed to fetch applications" });
+    }
+  });
+
+  app.get("/api/career/applications/job/:jobId", async (req, res) => {
+    try {
+      const jobId = parseInt(req.params.jobId);
+      const applications = await storage.getJobApplicationsByJobId(jobId);
+      res.json(applications);
+    } catch (error) {
+      console.error("Error fetching applications by job:", error);
+      res.status(500).json({ error: "Failed to fetch applications" });
+    }
+  });
+
+  app.post("/api/career/applications", async (req, res) => {
+    try {
+      const validatedData = insertJobApplicationSchema.parse(req.body);
+      
+      // Calculate application score based on experience and qualifications
+      let score = 50; // Base score
+      if (validatedData.yearsExperience) {
+        score += Math.min(validatedData.yearsExperience * 5, 30); // Max 30 points for experience
+      }
+      if (validatedData.resumeUrl) score += 10;
+      if (validatedData.coverLetter) score += 10;
+      
+      const application = await storage.createJobApplication({
+        ...validatedData,
+        applicationScore: score
+      });
+      
+      // Broadcast real-time notification
+      broadcast({
+        type: 'new_job_application',
+        application,
+        timestamp: new Date().toISOString()
+      });
+      
+      res.status(201).json(application);
+    } catch (error) {
+      console.error("Error creating application:", error);
+      res.status(500).json({ error: "Failed to create application" });
+    }
+  });
+
+  app.put("/api/career/applications/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertJobApplicationSchema.partial().parse(req.body);
+      const reviewedBy = (req as any).user?.id || 1;
+      
+      const application = await storage.updateJobApplication(id, {
+        ...validatedData,
+        reviewedBy,
+        reviewedAt: new Date()
+      });
+      
+      if (!application) {
+        return res.status(404).json({ error: "Application not found" });
+      }
+      
+      res.json(application);
+    } catch (error) {
+      console.error("Error updating application:", error);
+      res.status(500).json({ error: "Failed to update application" });
+    }
+  });
+
+  app.get("/api/career/interviews", async (req, res) => {
+    try {
+      const interviews = await storage.getInterviewSchedules();
+      res.json(interviews);
+    } catch (error) {
+      console.error("Error fetching interviews:", error);
+      res.status(500).json({ error: "Failed to fetch interviews" });
+    }
+  });
+
+  app.post("/api/career/interviews", async (req, res) => {
+    try {
+      const validatedData = insertInterviewScheduleSchema.parse(req.body);
+      const createdBy = (req as any).user?.id || 1;
+      
+      const interview = await storage.createInterviewSchedule({
+        ...validatedData,
+        createdBy
+      });
+      
+      res.status(201).json(interview);
+    } catch (error) {
+      console.error("Error creating interview:", error);
+      res.status(500).json({ error: "Failed to create interview" });
+    }
+  });
+
+  app.put("/api/career/interviews/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertInterviewScheduleSchema.partial().parse(req.body);
+      
+      const interview = await storage.updateInterviewSchedule(id, validatedData);
+      
+      if (!interview) {
+        return res.status(404).json({ error: "Interview not found" });
+      }
+      
+      res.json(interview);
+    } catch (error) {
+      console.error("Error updating interview:", error);
+      res.status(500).json({ error: "Failed to update interview" });
+    }
+  });
+
+  app.get("/api/career/settings", async (req, res) => {
+    try {
+      const settings = await storage.getCareerSettings();
+      res.json(settings || {});
+    } catch (error) {
+      console.error("Error fetching career settings:", error);
+      res.status(500).json({ error: "Failed to fetch career settings" });
+    }
+  });
+
+  app.post("/api/career/settings", async (req, res) => {
+    try {
+      const validatedData = insertCareerSettingsSchema.parse(req.body);
+      const updatedBy = (req as any).user?.id || 1;
+      
+      const settings = await storage.updateCareerSettings({
+        ...validatedData,
+        updatedBy
+      });
+      
+      res.json(settings);
+    } catch (error) {
+      console.error("Error updating career settings:", error);
+      res.status(500).json({ error: "Failed to update career settings" });
+    }
+  });
+
+  // Job posting external application endpoint (for WordPress integration)
+  app.post("/api/career/external-application", async (req, res) => {
+    try {
+      const { jobId, applicantData } = req.body;
+      
+      const application = await storage.createJobApplication({
+        jobPostingId: jobId,
+        ...applicantData,
+        applicationScore: 75, // Default score for external applications
+        referralSource: 'website'
+      });
+      
+      // Broadcast notification
+      broadcast({
+        type: 'new_external_application',
+        application,
+        timestamp: new Date().toISOString()
+      });
+      
+      res.json({ 
+        success: true, 
+        message: "Application submitted successfully",
+        applicationId: application.id 
+      });
+    } catch (error) {
+      console.error("Error processing external application:", error);
+      res.status(500).json({ error: "Failed to process application" });
+    }
+  });
 
   console.log('🚀 WebSocket Server initialized with optimized connection handling');
   return httpServer;

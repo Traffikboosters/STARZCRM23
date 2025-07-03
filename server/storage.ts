@@ -11,7 +11,7 @@ import {
   moodEntries, teamMoodSummaries, moodPerformanceCorrelations,
   timeClockEntries, timeClockSchedules, timeOffRequests,
   emailAccounts, emailTemplates, cancellationMetrics, retentionAttempts, cancellationTrends,
-  marketingStrategies
+  marketingStrategies, jobPostings, jobApplications, interviewSchedules, careerSettings
 } from "../shared/schema";
 import type { 
   User, Company, Contact, Event, File, Automation, ScrapingJob,
@@ -23,7 +23,7 @@ import type {
   MoodEntry, TeamMoodSummary, MoodPerformanceCorrelation,
   TimeClockEntry, TimeClockSchedule, TimeOffRequest,
   EmailAccount, EmailTemplate, CancellationMetric, RetentionAttempt, CancellationTrend,
-  MarketingStrategy,
+  MarketingStrategy, JobPosting, JobApplication, InterviewSchedule, CareerSettings,
   InsertUser, InsertCompany, InsertContact, InsertEvent, InsertFile, InsertAutomation, InsertScrapingJob,
   InsertChatMessage, InsertChatConversation, InsertCallLog, InsertCampaign, InsertLeadAllocation,
   InsertDocumentTemplate, InsertSigningRequest, InsertUserInvitation,
@@ -33,7 +33,7 @@ import type {
   InsertMoodEntry, InsertTeamMoodSummary, InsertMoodPerformanceCorrelation,
   InsertTimeClockEntry, InsertTimeClockSchedule, InsertTimeOffRequest,
   InsertEmailAccount, InsertEmailTemplate, InsertCancellationMetric, InsertRetentionAttempt, InsertCancellationTrend,
-  InsertMarketingStrategy
+  InsertMarketingStrategy, InsertJobPosting, InsertJobApplication, InsertInterviewSchedule, InsertCareerSettings
 } from "../shared/schema";
 
 // Complete interface implementation
@@ -201,6 +201,33 @@ export interface IStorage {
   updateMarketingStrategy(id: number, updates: Partial<InsertMarketingStrategy>): Promise<MarketingStrategy | undefined>;
   deleteMarketingStrategy(id: number): Promise<boolean>;
   getMarketingStrategiesByStatus(status: string): Promise<MarketingStrategy[]>;
+
+  // Career Management
+  getJobPostings(): Promise<JobPosting[]>;
+  getJobPosting(id: number): Promise<JobPosting | undefined>;
+  createJobPosting(jobPosting: InsertJobPosting): Promise<JobPosting>;
+  updateJobPosting(id: number, updates: Partial<InsertJobPosting>): Promise<JobPosting | undefined>;
+  deleteJobPosting(id: number): Promise<boolean>;
+  getJobPostingsByDepartment(department: string): Promise<JobPosting[]>;
+  getJobPostingsByStatus(status: string): Promise<JobPosting[]>;
+  
+  getJobApplications(): Promise<JobApplication[]>;
+  getJobApplication(id: number): Promise<JobApplication | undefined>;
+  getJobApplicationsByJobId(jobId: number): Promise<JobApplication[]>;
+  getJobApplicationsByStatus(status: string): Promise<JobApplication[]>;
+  createJobApplication(application: InsertJobApplication): Promise<JobApplication>;
+  updateJobApplication(id: number, updates: Partial<InsertJobApplication>): Promise<JobApplication | undefined>;
+  deleteJobApplication(id: number): Promise<boolean>;
+  
+  getInterviewSchedules(): Promise<InterviewSchedule[]>;
+  getInterviewSchedule(id: number): Promise<InterviewSchedule | undefined>;
+  getInterviewSchedulesByApplicationId(applicationId: number): Promise<InterviewSchedule[]>;
+  createInterviewSchedule(schedule: InsertInterviewSchedule): Promise<InterviewSchedule>;
+  updateInterviewSchedule(id: number, updates: Partial<InsertInterviewSchedule>): Promise<InterviewSchedule | undefined>;
+  deleteInterviewSchedule(id: number): Promise<boolean>;
+  
+  getCareerSettings(): Promise<CareerSettings | undefined>;
+  updateCareerSettings(settings: InsertCareerSettings): Promise<CareerSettings>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1046,6 +1073,186 @@ export class DatabaseStorage implements IStorage {
       .from(marketingStrategies)
       .where(eq(marketingStrategies.status, status))
       .orderBy(desc(marketingStrategies.createdAt));
+  }
+
+  // Career Management Implementation
+  async getJobPostings(): Promise<JobPosting[]> {
+    return await db
+      .select()
+      .from(jobPostings)
+      .orderBy(desc(jobPostings.createdAt));
+  }
+
+  async getJobPosting(id: number): Promise<JobPosting | undefined> {
+    const [jobPosting] = await db
+      .select()
+      .from(jobPostings)
+      .where(eq(jobPostings.id, id));
+    return jobPosting || undefined;
+  }
+
+  async createJobPosting(jobPosting: InsertJobPosting): Promise<JobPosting> {
+    const [newJobPosting] = await db
+      .insert(jobPostings)
+      .values({ ...jobPosting, updatedAt: new Date() })
+      .returning();
+    return newJobPosting;
+  }
+
+  async updateJobPosting(id: number, updates: Partial<InsertJobPosting>): Promise<JobPosting | undefined> {
+    const [updatedJobPosting] = await db
+      .update(jobPostings)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(jobPostings.id, id))
+      .returning();
+    return updatedJobPosting || undefined;
+  }
+
+  async deleteJobPosting(id: number): Promise<boolean> {
+    const result = await db.delete(jobPostings).where(eq(jobPostings.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getJobPostingsByDepartment(department: string): Promise<JobPosting[]> {
+    return await db
+      .select()
+      .from(jobPostings)
+      .where(eq(jobPostings.department, department))
+      .orderBy(desc(jobPostings.createdAt));
+  }
+
+  async getJobPostingsByStatus(status: string): Promise<JobPosting[]> {
+    return await db
+      .select()
+      .from(jobPostings)
+      .where(eq(jobPostings.status, status))
+      .orderBy(desc(jobPostings.createdAt));
+  }
+
+  async getJobApplications(): Promise<JobApplication[]> {
+    return await db
+      .select()
+      .from(jobApplications)
+      .orderBy(desc(jobApplications.createdAt));
+  }
+
+  async getJobApplication(id: number): Promise<JobApplication | undefined> {
+    const [application] = await db
+      .select()
+      .from(jobApplications)
+      .where(eq(jobApplications.id, id));
+    return application || undefined;
+  }
+
+  async getJobApplicationsByJobId(jobId: number): Promise<JobApplication[]> {
+    return await db
+      .select()
+      .from(jobApplications)
+      .where(eq(jobApplications.jobPostingId, jobId))
+      .orderBy(desc(jobApplications.createdAt));
+  }
+
+  async getJobApplicationsByStatus(status: string): Promise<JobApplication[]> {
+    return await db
+      .select()
+      .from(jobApplications)
+      .where(eq(jobApplications.status, status))
+      .orderBy(desc(jobApplications.createdAt));
+  }
+
+  async createJobApplication(application: InsertJobApplication): Promise<JobApplication> {
+    const [newApplication] = await db
+      .insert(jobApplications)
+      .values({ ...application, updatedAt: new Date() })
+      .returning();
+    return newApplication;
+  }
+
+  async updateJobApplication(id: number, updates: Partial<InsertJobApplication>): Promise<JobApplication | undefined> {
+    const [updatedApplication] = await db
+      .update(jobApplications)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(jobApplications.id, id))
+      .returning();
+    return updatedApplication || undefined;
+  }
+
+  async deleteJobApplication(id: number): Promise<boolean> {
+    const result = await db.delete(jobApplications).where(eq(jobApplications.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getInterviewSchedules(): Promise<InterviewSchedule[]> {
+    return await db
+      .select()
+      .from(interviewSchedules)
+      .orderBy(desc(interviewSchedules.scheduledDate));
+  }
+
+  async getInterviewSchedule(id: number): Promise<InterviewSchedule | undefined> {
+    const [schedule] = await db
+      .select()
+      .from(interviewSchedules)
+      .where(eq(interviewSchedules.id, id));
+    return schedule || undefined;
+  }
+
+  async getInterviewSchedulesByApplicationId(applicationId: number): Promise<InterviewSchedule[]> {
+    return await db
+      .select()
+      .from(interviewSchedules)
+      .where(eq(interviewSchedules.applicationId, applicationId))
+      .orderBy(desc(interviewSchedules.scheduledDate));
+  }
+
+  async createInterviewSchedule(schedule: InsertInterviewSchedule): Promise<InterviewSchedule> {
+    const [newSchedule] = await db
+      .insert(interviewSchedules)
+      .values({ ...schedule, updatedAt: new Date() })
+      .returning();
+    return newSchedule;
+  }
+
+  async updateInterviewSchedule(id: number, updates: Partial<InsertInterviewSchedule>): Promise<InterviewSchedule | undefined> {
+    const [updatedSchedule] = await db
+      .update(interviewSchedules)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(interviewSchedules.id, id))
+      .returning();
+    return updatedSchedule || undefined;
+  }
+
+  async deleteInterviewSchedule(id: number): Promise<boolean> {
+    const result = await db.delete(interviewSchedules).where(eq(interviewSchedules.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getCareerSettings(): Promise<CareerSettings | undefined> {
+    const [settings] = await db
+      .select()
+      .from(careerSettings)
+      .limit(1);
+    return settings || undefined;
+  }
+
+  async updateCareerSettings(settings: InsertCareerSettings): Promise<CareerSettings> {
+    // Check if settings exist, if not create them
+    const existingSettings = await this.getCareerSettings();
+    
+    if (existingSettings) {
+      const [updatedSettings] = await db
+        .update(careerSettings)
+        .set({ ...settings, updatedAt: new Date() })
+        .where(eq(careerSettings.id, existingSettings.id))
+        .returning();
+      return updatedSettings;
+    } else {
+      const [newSettings] = await db
+        .insert(careerSettings)
+        .values({ ...settings, updatedAt: new Date() })
+        .returning();
+      return newSettings;
+    }
   }
 }
 
