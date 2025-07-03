@@ -24,6 +24,7 @@ import VendorSelectorPage from "@/pages/vendor-selector";
 import TimeClockPage from "@/pages/time-clock";
 import HRPortal from "@/pages/hr-portal";
 import CancellationMetrics from "@/components/cancellation-metrics";
+import TraffikBoostersWebsite from "@/pages/traffik-boosters-website";
 
 function Router() {
   return (
@@ -31,6 +32,7 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/landing" component={LandingPage} />
       <Route path="/starz-landing" component={STARZLandingPage} />
+      <Route path="/traffik-boosters" component={TraffikBoostersWebsite} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/analytics" component={AnalyticsPage} />
       <Route path="/powerdials" component={PowerDialsPage} />

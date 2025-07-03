@@ -66,6 +66,7 @@ import CancellationMetrics from "@/components/cancellation-metrics";
 import HighVolumeLeadExtractor from "@/components/high-volume-lead-extractor";
 import PerformanceMonitor from "@/components/performance-monitor";
 import { MarketingStrategyBuilder } from "@/components/marketing-strategy-builder";
+import TraffikBoostersWebsite from "@/pages/traffik-boosters-website";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -209,6 +210,8 @@ export default function Dashboard() {
         return <GamificationSystemClean />;
       case "high-volume-extraction":
         return <HighVolumeLeadExtractor />;
+      case "website":
+        return <TraffikBoostersWebsite />;
 
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
