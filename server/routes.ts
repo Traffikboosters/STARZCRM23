@@ -222,7 +222,8 @@ async function sendReportEmail(params: {
     </body>
     </html>`;
     
-    console.log(`📧 TRAFFIK BOOSTERS: Sending ${params.reportTitle} report to: ${params.recipients.join(', ')}`);
+    const recipientList = Array.isArray(params.recipients) ? params.recipients.join(', ') : 'No recipients';
+    console.log(`📧 TRAFFIK BOOSTERS: Sending ${params.reportTitle} report to: ${recipientList}`);
     console.log(`📎 Attachment: ${params.attachmentName} (${Math.round(params.attachment.length / 1024)}KB)`);
     console.log(`🎨 Enhanced email with prominent Traffik Boosters branding and logo`);
     
@@ -4420,7 +4421,9 @@ a=ssrc:1001 msid:stream track`
         reportType, 
         reportData, 
         reportTitle, 
-        recipients, 
+        recipients: rawRecipients,
+        emailTo,
+        emailSubject,
         subject, 
         message, 
         format, 
@@ -4428,6 +4431,10 @@ a=ssrc:1001 msid:stream track`
         includeRawData, 
         fileName 
       } = req.body;
+      
+      // Handle both recipients array and single emailTo format
+      const recipients = rawRecipients || (emailTo ? [emailTo] : []);
+      const finalSubject = subject || emailSubject || `${reportTitle} Report`;
       
       const timestamp = new Date().toISOString().split('T')[0];
       const fullFileName = `${fileName}_${timestamp}`;
@@ -4456,7 +4463,7 @@ a=ssrc:1001 msid:stream track`
       // Send email with attachment
       const emailResult = await sendReportEmail({
         recipients,
-        subject,
+        subject: finalSubject,
         message,
         attachment,
         attachmentName,
