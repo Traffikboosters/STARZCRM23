@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Download, Mail, FileText, FileSpreadsheet, FileImage, Send, Loader2 } from "lucide-react";
+import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751503217918.png";
 
 interface ReportExportProps {
   reportType: string;
@@ -102,7 +103,23 @@ export default function ReportExport({ reportType, reportData, reportTitle, file
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="space-y-4">
+      {/* Traffik Boosters Logo Header */}
+      <div className="flex items-center justify-center gap-4 p-4 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg shadow-lg">
+        <img 
+          src={traffikBoostersLogo} 
+          alt="Traffik Boosters Logo" 
+          className="h-16 w-auto object-contain crisp-edges"
+          style={{ imageRendering: 'crisp-edges' }}
+        />
+        <div className="text-white">
+          <h3 className="text-xl font-bold">TRAFFIK BOOSTERS</h3>
+          <p className="text-sm opacity-90">More Traffik! More Sales!</p>
+        </div>
+      </div>
+      
+      {/* Export Controls */}
+      <div className="flex items-center gap-2">
       {/* Download Dropdown */}
       <div className="relative group">
         <Button variant="outline" className="flex items-center gap-2">
@@ -243,12 +260,13 @@ export default function ReportExport({ reportType, reportData, reportTitle, file
         </DialogContent>
       </Dialog>
 
-      {isDownloading && (
-        <div className="flex items-center gap-1 text-sm text-gray-500">
-          <Loader2 className="h-3 w-3 animate-spin" />
-          Downloading...
-        </div>
-      )}
+        {isDownloading && (
+          <div className="flex items-center gap-1 text-sm text-gray-500">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Downloading...
+          </div>
+        )}
+      </div>
     </div>
   );
 }
