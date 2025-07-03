@@ -239,23 +239,38 @@ export default function LeadSourceTrackingFixed() {
             <CardDescription>Lead source breakdown and percentages</CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={350}>
               <PieChart>
                 <Pie
                   data={chartData}
                   cx="50%"
                   cy="50%"
-                  labelLine={false}
-                  label={({ name, percentage }) => `${name}: ${percentage}%`}
-                  outerRadius={80}
+                  labelLine={true}
+                  label={({ name, percentage }) => {
+                    // Only show label if percentage is > 5% to avoid overlap
+                    if (percentage > 5) {
+                      return `${name.length > 10 ? name.substring(0, 10) + '...' : name}`;
+                    }
+                    return '';
+                  }}
+                  outerRadius={90}
+                  innerRadius={30}
                   fill="#8884d8"
                   dataKey="value"
+                  fontSize={11}
                 >
                   {chartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip 
+                  formatter={(value, name) => {
+                    const numValue = Number(value);
+                    const total = chartData.reduce((sum, item) => sum + item.value, 0);
+                    const percentage = ((numValue / total) * 100).toFixed(1);
+                    return [`${value} leads (${percentage}%)`, name];
+                  }}
+                />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -272,34 +287,34 @@ export default function LeadSourceTrackingFixed() {
           <div className="space-y-4">
             {sourceStats.map((source, index) => (
               <div key={source.source} className="p-4 border rounded-lg">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                <div className="flex flex-col space-y-4">
                   <div className="flex items-center space-x-4">
                     <LeadSourceBadge source={source.source} size="md" showIcon={true} />
-                    <div>
-                      <h3 className="font-semibold">{source.source.replace('_', ' ').toUpperCase()}</h3>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-base leading-relaxed">{source.source.replace('_', ' ').toUpperCase()}</h3>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
                         Last activity: {new Date(source.lastActivity).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:min-w-[400px]">
-                    <div className="text-center">
-                      <p className="text-xl font-bold">{source.count}</p>
-                      <p className="text-xs text-muted-foreground mt-1">Leads</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <p className="text-xl font-bold text-gray-900 leading-none">{source.count}</p>
+                      <p className="text-xs text-muted-foreground mt-2 leading-relaxed">Total Leads</p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-lg font-semibold text-green-600">{source.conversionRate.toFixed(1)}%</p>
-                      <p className="text-xs text-muted-foreground mt-1">Conversion</p>
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <p className="text-lg font-semibold text-green-600 leading-none">{source.conversionRate.toFixed(1)}%</p>
+                      <p className="text-xs text-muted-foreground mt-2 leading-relaxed">Conversion Rate</p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-lg font-semibold text-blue-600">{source.avgResponseTime.toFixed(1)}h</p>
-                      <p className="text-xs text-muted-foreground mt-1">Response</p>
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <p className="text-lg font-semibold text-blue-600 leading-none">{source.avgResponseTime.toFixed(1)}h</p>
+                      <p className="text-xs text-muted-foreground mt-2 leading-relaxed">Avg Response</p>
                     </div>
-                    <div className="text-center">
-                      <Badge variant="outline" className="text-sm">
+                    <div className="text-center p-3 bg-orange-50 rounded-lg">
+                      <Badge variant="outline" className="text-sm font-semibold">
                         {((source.count / totalLeads) * 100).toFixed(1)}%
                       </Badge>
-                      <p className="text-xs text-muted-foreground mt-1">Share</p>
+                      <p className="text-xs text-muted-foreground mt-2 leading-relaxed">Market Share</p>
                     </div>
                   </div>
                 </div>
