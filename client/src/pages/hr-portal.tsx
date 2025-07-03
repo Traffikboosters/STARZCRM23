@@ -453,11 +453,12 @@ export default function HRPortal() {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="employees" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="employees">Employee Management</TabsTrigger>
             <TabsTrigger value="invitations">Send Invitations</TabsTrigger>
             <TabsTrigger value="onboarding">Employee Onboarding</TabsTrigger>
             <TabsTrigger value="email">Email Management</TabsTrigger>
+            <TabsTrigger value="recruitment">OnlineJobs.ph</TabsTrigger>
           </TabsList>
 
           <TabsContent value="employees" className="space-y-4">
@@ -792,6 +793,155 @@ export default function HRPortal() {
                 </div>
               </DialogContent>
             </Dialog>
+          </TabsContent>
+
+          <TabsContent value="recruitment" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-6 w-6 text-blue-600" />
+                  OnlineJobs.ph Recruitment Portal
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Quick Access Panel */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Quick Access</h3>
+                    <div className="space-y-3">
+                      <Button 
+                        className="w-full justify-start h-12 bg-blue-600 hover:bg-blue-700"
+                        onClick={() => window.open('https://www.onlinejobs.ph/', '_blank')}
+                      >
+                        <Building2 className="h-5 w-5 mr-3" />
+                        Open OnlineJobs.ph Platform
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start h-12"
+                        onClick={() => window.open('https://www.onlinejobs.ph/jobseekers', '_blank')}
+                      >
+                        <Users className="h-5 w-5 mr-3" />
+                        Browse Job Seekers
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full justify-start h-12"
+                        onClick={() => window.open('https://www.onlinejobs.ph/post-a-job', '_blank')}
+                      >
+                        <UserPlus className="h-5 w-5 mr-3" />
+                        Post New Job Opening
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Recruitment Stats */}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900">Recruitment Overview</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Card className="p-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-blue-600">0</div>
+                          <div className="text-sm text-gray-600">Active Job Posts</div>
+                        </div>
+                      </Card>
+                      <Card className="p-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-green-600">0</div>
+                          <div className="text-sm text-gray-600">Applications Received</div>
+                        </div>
+                      </Card>
+                      <Card className="p-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-orange-600">0</div>
+                          <div className="text-sm text-gray-600">Interviews Scheduled</div>
+                        </div>
+                      </Card>
+                      <Card className="p-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-purple-600">0</div>
+                          <div className="text-sm text-gray-600">Candidates Hired</div>
+                        </div>
+                      </Card>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Popular Job Categories */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Popular Job Categories for Remote Work</h3>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer" 
+                          onClick={() => window.open('https://www.onlinejobs.ph/jobseekers/info/Virtual-Assistant', '_blank')}>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-blue-600">Virtual Assistants</div>
+                        <div className="text-sm text-gray-600 mt-2">General admin, customer service, data entry</div>
+                      </div>
+                    </Card>
+                    <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer"
+                          onClick={() => window.open('https://www.onlinejobs.ph/jobseekers/search?q=web+developer', '_blank')}>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-green-600">Web Developers</div>
+                        <div className="text-sm text-gray-600 mt-2">Frontend, backend, full-stack development</div>
+                      </div>
+                    </Card>
+                    <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer"
+                          onClick={() => window.open('https://www.onlinejobs.ph/jobseekers/search?q=digital+marketing', '_blank')}>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-orange-600">Digital Marketers</div>
+                        <div className="text-sm text-gray-600 mt-2">SEO, social media, content marketing</div>
+                      </div>
+                    </Card>
+                    <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer"
+                          onClick={() => window.open('https://www.onlinejobs.ph/jobseekers/search?q=graphic+designer', '_blank')}>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-purple-600">Graphic Designers</div>
+                        <div className="text-sm text-gray-600 mt-2">Logo design, branding, web graphics</div>
+                      </div>
+                    </Card>
+                    <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer"
+                          onClick={() => window.open('https://www.onlinejobs.ph/jobseekers/search?q=content+writer', '_blank')}>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-red-600">Content Writers</div>
+                        <div className="text-sm text-gray-600 mt-2">Blog posts, website copy, technical writing</div>
+                      </div>
+                    </Card>
+                    <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer"
+                          onClick={() => window.open('https://www.onlinejobs.ph/jobseekers/search?q=customer+service', '_blank')}>
+                      <div className="text-center">
+                        <div className="text-lg font-semibold text-teal-600">Customer Service</div>
+                        <div className="text-sm text-gray-600 mt-2">Chat support, phone support, help desk</div>
+                      </div>
+                    </Card>
+                  </div>
+                </div>
+
+                {/* Quick Tips */}
+                <Card className="bg-blue-50 border-blue-200">
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold text-blue-900 mb-4">OnlineJobs.ph Recruitment Tips</h3>
+                    <div className="grid md:grid-cols-2 gap-4 text-sm text-blue-800">
+                      <div>
+                        <div className="font-medium mb-2">✓ Cost-Effective Hiring</div>
+                        <p>Access to skilled Filipino professionals at competitive rates</p>
+                      </div>
+                      <div>
+                        <div className="font-medium mb-2">✓ English Proficiency</div>
+                        <p>Strong English communication skills across all candidates</p>
+                      </div>
+                      <div>
+                        <div className="font-medium mb-2">✓ Time Zone Advantage</div>
+                        <p>Philippines timezone works well for US business operations</p>
+                      </div>
+                      <div>
+                        <div className="font-medium mb-2">✓ Dedicated Workers</div>
+                        <p>Known for loyalty, dedication, and long-term employment</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 

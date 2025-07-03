@@ -22,6 +22,7 @@ import DownloadPlugin from "@/pages/download-plugin";
 import STARZLandingPage from "@/components/starz-landing-page";
 import VendorSelectorPage from "@/pages/vendor-selector";
 import TimeClockPage from "@/pages/time-clock";
+import HRPortal from "@/pages/hr-portal";
 
 function Router() {
   return (
@@ -43,6 +44,7 @@ function Router() {
       <Route path="/payments" component={Payments} />
       <Route path="/vendor-selector" component={VendorSelectorPage} />
       <Route path="/time-clock" component={TimeClockPage} />
+      <Route path="/hr-portal" component={HRPortal} />
       <Route path="/accept-invitation" component={AcceptInvitation} />
       <Route path="/download-plugin" component={DownloadPlugin} />
       <Route component={NotFound} />
