@@ -898,6 +898,30 @@ export const paymentMethods = pgTable("payment_methods", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Enhanced Payment Processing Tables
+export const paymentTransactions = pgTable("payment_transactions", {
+  id: serial("id").primaryKey(),
+  stripePaymentIntentId: text("stripe_payment_intent_id").unique(),
+  customerId: integer("customer_id").references(() => contacts.id),
+  packageId: text("package_id").notNull(),
+  packageName: text("package_name").notNull(),
+  amount: integer("amount").notNull(), // in cents
+  currency: text("currency").default("usd"),
+  status: text("status").notNull(), // succeeded, pending, failed, canceled
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email").notNull(),
+  customerPhone: text("customer_phone"),
+  customerCompany: text("customer_company"),
+  description: text("description"),
+  metadata: json("metadata"),
+  processingFee: integer("processing_fee"), // in cents
+  netAmount: integer("net_amount"), // in cents after fees
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow()
+});
+
+
+
 // Emoji-based mood tracking for sales performance
 export const moodEntries = pgTable("mood_entries", {
   id: serial("id").primaryKey(),

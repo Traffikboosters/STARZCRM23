@@ -13,7 +13,8 @@ import {
   emailAccounts, emailTemplates, cancellationMetrics, retentionAttempts, cancellationTrends,
   marketingStrategies, jobPostings, jobApplications, interviewSchedules, careerSettings,
   userPoints, pointActivities, achievements, userAchievements, dailyChallenges, userChallenges,
-  leaderboards, pointMultipliers, badgeCategories, userBadges, engagementMetrics
+  leaderboards, pointMultipliers, badgeCategories, userBadges, engagementMetrics,
+  paymentTransactions
 } from "../shared/schema";
 import type { 
   User, Company, Contact, Event, File, Automation, ScrapingJob,
@@ -261,6 +262,18 @@ export interface IStorage {
   awardBadge(userId: number, badge: any): Promise<any>;
   getEngagementMetrics(userId: number, date: Date): Promise<any>;
   updateEngagementMetrics(userId: number, metrics: any): Promise<any>;
+  
+  // Payment Processing
+  getAllPaymentTransactions(): Promise<any[]>;
+  getPaymentTransaction(id: number): Promise<any | undefined>;
+  getPaymentTransactionByStripeId(stripePaymentIntentId: string): Promise<any | undefined>;
+  createPaymentTransaction(transaction: any): Promise<any>;
+  updatePaymentTransaction(id: number, updates: any): Promise<any | undefined>;
+  getPaymentAnalytics(): Promise<any>;
+  getServicePackages(): Promise<any[]>;
+  getServicePackage(id: string): Promise<any | undefined>;
+  createServicePackage(servicePackage: any): Promise<any>;
+  updateServicePackage(id: string, updates: any): Promise<any | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1603,6 +1616,81 @@ export class DatabaseStorage implements IStorage {
       }).returning();
       return created;
     }
+  }
+
+  // Payment Processing Implementation
+  async getAllPaymentTransactions(): Promise<any[]> {
+    return db.select().from(paymentTransactions).orderBy(paymentTransactions.createdAt);
+  }
+
+  async getPaymentTransaction(id: number): Promise<any | undefined> {
+    const [transaction] = await db.select().from(paymentTransactions).where(eq(paymentTransactions.id, id));
+    return transaction || undefined;
+  }
+
+  async getPaymentTransactionByStripeId(stripePaymentIntentId: string): Promise<any | undefined> {
+    const [transaction] = await db.select().from(paymentTransactions)
+      .where(eq(paymentTransactions.stripePaymentIntentId, stripePaymentIntentId));
+    return transaction || undefined;
+  }
+
+  async createPaymentTransaction(transaction: any): Promise<any> {
+    const [created] = await db.insert(paymentTransactions).values(transaction).returning();
+    return created;
+  }
+
+  async updatePaymentTransaction(id: number, updates: any): Promise<any | undefined> {
+    const [updated] = await db.update(paymentTransactions)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(paymentTransactions.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async getPaymentAnalytics(): Promise<any> {
+    const transactions = await this.getAllPaymentTransactions();
+    const successfulTransactions = transactions.filter(t => t.status === 'succeeded');
+    
+    const totalRevenue = successfulTransactions.reduce((sum, t) => sum + t.amount, 0) / 100; // Convert from cents
+    const averageOrder = successfulTransactions.length > 0 ? totalRevenue / successfulTransactions.length : 0;
+    const successRate = transactions.length > 0 ? (successfulTransactions.length / transactions.length) * 100 : 0;
+    
+    // Get unique customers
+    const uniqueCustomers = new Set(successfulTransactions.map(t => t.customerEmail));
+    
+    return {
+      totalRevenue,
+      successfulPayments: successfulTransactions.length,
+      successRate: Math.round(successRate),
+      activeCustomers: uniqueCustomers.size,
+      averageOrder,
+      revenueGrowth: 15, // Mock data for growth percentage
+      customerGrowth: 8,
+      orderTrend: 12
+    };
+  }
+
+  async getServicePackages(): Promise<any[]> {
+    return db.select().from(servicePackages).where(eq(servicePackages.isActive, true));
+  }
+
+  async getServicePackage(id: string): Promise<any | undefined> {
+    const [servicePackage] = await db.select().from(servicePackages)
+      .where(eq(servicePackages.id, parseInt(id)));
+    return servicePackage || undefined;
+  }
+
+  async createServicePackage(servicePackage: any): Promise<any> {
+    const [created] = await db.insert(servicePackages).values(servicePackage).returning();
+    return created;
+  }
+
+  async updateServicePackage(id: string, updates: any): Promise<any | undefined> {
+    const [updated] = await db.update(servicePackages)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(servicePackages.id, parseInt(id)))
+      .returning();
+    return updated || undefined;
   }
 }
 

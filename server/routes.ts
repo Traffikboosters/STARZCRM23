@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { z } from "zod";
+import Stripe from "stripe";
 import { eq, desc, and, gte, lte, sql, asc } from "drizzle-orm";
 import { 
   insertUserSchema, 
@@ -47,20 +48,11 @@ const mightyCallConfig = {
 console.log('✅ MIGHTYCALL STATUS: CONNECTED - Account:', mightyCallConfig.accountId);
 import { googleMapsExtractor } from "./google-maps-extractor";
 import { AISalesTipGenerator } from "./ai-sales-tip-generator";
-import Stripe from "stripe";
 import fs from "fs";
 import path from "path";
 
 // WebSocket server instance
 let wss: WebSocketServer;
-
-// Initialize Stripe
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
-}
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-05-28.basil",
-});
 
 function logAuditEvent(action: string, entityType: string, entityId: number, userId: number = 1, oldValues?: any, newValues?: any, description?: string) {
   console.log(`[AUDIT] ${new Date().toISOString()} - User ${userId} performed ${action} on ${entityType} ${entityId}${description ? ': ' + description : ''}`);
@@ -245,6 +237,11 @@ async function sendReportEmail(params: {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Initialize Stripe
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+    apiVersion: "2023-10-16",
+  });
+
   // Serve WordPress plugin files for mobile download
   app.get("/starz-chat-widget.php", async (req, res) => {
     try {
@@ -4992,6 +4989,111 @@ a=ssrc:1001 msid:stream track`
     } catch (error) {
       console.error("Error updating engagement metrics:", error);
       res.status(500).json({ error: "Failed to update engagement metrics" });
+    }
+  });
+
+  // Payment Processing API Routes
+  app.post("/api/create-payment-intent", async (req, res) => {
+    try {
+      const { amount, customerEmail, description } = req.body;
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: "usd",
+        metadata: {
+          customerEmail,
+          description: description || "STARZ Service Payment"
+        }
+      });
+
+      // Log transaction in database
+      await storage.createPaymentTransaction({
+        stripePaymentIntentId: paymentIntent.id,
+        amount: amount * 100,
+        currency: 'usd',
+        status: 'pending',
+        customerEmail,
+        description: description || "STARZ Service Payment",
+        createdAt: new Date()
+      });
+
+      res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error: any) {
+      console.error("Error creating payment intent:", error);
+      res.status(500).json({ error: "Failed to create payment intent: " + error.message });
+    }
+  });
+
+  app.get("/api/payments/transactions", async (req, res) => {
+    try {
+      const transactions = await storage.getAllPaymentTransactions();
+      res.json(transactions);
+    } catch (error) {
+      console.error("Error fetching payment transactions:", error);
+      res.status(500).json({ error: "Failed to fetch payment transactions" });
+    }
+  });
+
+  app.get("/api/payments/analytics", async (req, res) => {
+    try {
+      const analytics = await storage.getPaymentAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching payment analytics:", error);
+      res.status(500).json({ error: "Failed to fetch payment analytics" });
+    }
+  });
+
+  app.post("/api/payments/webhook", async (req, res) => {
+    try {
+      const sig = req.headers['stripe-signature'];
+      let event;
+
+      try {
+        event = stripe.webhooks.constructEvent(req.body, sig as string, process.env.STRIPE_WEBHOOK_SECRET!);
+      } catch (err: any) {
+        console.error('Webhook signature verification failed:', err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+      }
+
+      // Handle payment intent events
+      if (event.type === 'payment_intent.succeeded') {
+        const paymentIntent = event.data.object;
+        
+        // Update transaction status in database
+        const existingTransaction = await storage.getPaymentTransactionByStripeId(paymentIntent.id);
+        if (existingTransaction) {
+          await storage.updatePaymentTransaction(existingTransaction.id, {
+            status: 'succeeded',
+            updatedAt: new Date()
+          });
+        }
+      }
+
+      res.json({ received: true });
+    } catch (error) {
+      console.error("Error processing webhook:", error);
+      res.status(500).json({ error: "Failed to process webhook" });
+    }
+  });
+
+  app.get("/api/service-packages", async (req, res) => {
+    try {
+      const packages = await storage.getServicePackages();
+      res.json(packages);
+    } catch (error) {
+      console.error("Error fetching service packages:", error);
+      res.status(500).json({ error: "Failed to fetch service packages" });
+    }
+  });
+
+  app.post("/api/service-packages", async (req, res) => {
+    try {
+      const packageData = req.body;
+      const newPackage = await storage.createServicePackage(packageData);
+      res.json(newPackage);
+    } catch (error) {
+      console.error("Error creating service package:", error);
+      res.status(500).json({ error: "Failed to create service package" });
     }
   });
 
