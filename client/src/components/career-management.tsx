@@ -50,18 +50,111 @@ import {
 // Note: Type imports will be resolved at runtime
 import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
 
+// Live job postings from Traffik Boosters website
+const liveJobPostings = [
+  {
+    id: 1,
+    title: "PPC Advertising Marketer",
+    department: "Digital Marketing",
+    type: "Full Time",
+    location: "Remote",
+    postedDate: "2025-01-17",
+    description: "We are seeking a talented and results-driven PPC Advertising Marketer to join our digital marketing team. The ideal candidate will have a strong background in managing PPC campaigns, a deep understanding of digital advertising platforms, and a proven track record of driving measurable results through paid search and display advertising.",
+    requirements: ["3+ years PPC experience", "Google Ads certified", "Analytics expertise", "Campaign optimization skills"],
+    applyUrl: "https://traffikboosters.com/job-apply-ppc-advertising-marketer/",
+    salary: "$55,000 - $75,000",
+    status: "active"
+  },
+  {
+    id: 2,
+    title: "SEO Specialist",
+    department: "Digital Marketing",
+    type: "Full Time",
+    location: "Remote",
+    postedDate: "2025-01-06",
+    description: "We are seeking a talented and motivated SEO Specialist to join our marketing team. The ideal candidate will have a strong understanding of search engine optimization strategies, stay updated on industry trends, and implement effective tactics to enhance our online visibility and drive organic traffic.",
+    requirements: ["2+ years SEO experience", "Technical SEO knowledge", "Content optimization", "Analytics tools proficiency"],
+    applyUrl: "https://traffikboosters.com/job-apply-seo-specialist/",
+    salary: "$50,000 - $70,000",
+    status: "active"
+  },
+  {
+    id: 3,
+    title: "Sales Consultant",
+    department: "Sales",
+    type: "Full Time",
+    location: "Remote",
+    postedDate: "2025-01-08",
+    description: "Traffik Boosters is a leading digital marketing agency dedicated to empowering businesses with innovative and strategic online marketing solutions. Our mission is to elevate brands in the digital landscape by delivering measurable results and fostering long-term partnerships.",
+    requirements: ["5+ years sales experience", "Digital marketing knowledge", "Client relationship management", "Commission-driven mindset"],
+    applyUrl: "https://traffikboosters.com/job-apply-marketing-agency/",
+    salary: "$45,000 + Commission",
+    status: "active"
+  },
+  {
+    id: 4,
+    title: "Social Media Marketer",
+    department: "Digital Marketing",
+    type: "Full Time",
+    location: "Remote",
+    postedDate: "2025-01-09",
+    description: "We are looking for a creative and results-driven Social Media Marketer to join our marketing team. The ideal candidate will have a passion for social media, a deep understanding of various platforms, and a proven track record of developing and implementing effective social media strategies.",
+    requirements: ["3+ years social media experience", "Content creation skills", "Platform expertise", "Analytics and reporting"],
+    applyUrl: "https://traffikboosters.com/job-apply-social-media-marketer/",
+    salary: "$48,000 - $65,000",
+    status: "active"
+  },
+  {
+    id: 5,
+    title: "Web Designer & Developer",
+    department: "Development",
+    type: "Full Time",
+    location: "Remote",
+    postedDate: "2025-01-12",
+    description: "We are seeking a talented and creative Web Designer & Developer to join our team. The ideal candidate will have a passion for creating visually appealing and user-friendly websites. From conceptualization to execution, you will play a key role in crafting innovative designs and implementing robust web development solutions.",
+    requirements: ["4+ years web development", "React/JavaScript expertise", "UI/UX design skills", "WordPress proficiency"],
+    applyUrl: "https://traffikboosters.com/job-apply-web-designer-developer/",
+    salary: "$60,000 - $80,000",
+    status: "active"
+  },
+  {
+    id: 6,
+    title: "Content Marketing Marketer",
+    department: "Marketing",
+    type: "Full Time",
+    location: "Remote",
+    postedDate: "2025-01-14",
+    description: "We are seeking a skilled and innovative Content Marketing Marketer to join our dynamic marketing team. The ideal candidate will have a passion for creating compelling content, a deep understanding of content marketing strategies, and the ability to drive engagement across various platforms.",
+    requirements: ["3+ years content marketing", "Writing and editing skills", "Content strategy development", "SEO knowledge"],
+    applyUrl: "https://traffikboosters.com/job-apply-content-marketing-marketer/",
+    salary: "$52,000 - $68,000",
+    status: "active"
+  },
+  {
+    id: 7,
+    title: "Digital Strategist",
+    department: "Strategy",
+    type: "Full Time",
+    location: "Remote",
+    postedDate: "2025-01-15",
+    description: "We are seeking a talented and experienced Digital Strategist to join our team. The ideal candidate will play a crucial role in developing and implementing digital marketing strategies to achieve our business objectives. The Digital Strategist will work closely with cross-functional teams to optimize online presence, drive engagement, and enhance overall digital performance.",
+    requirements: ["5+ years digital marketing", "Strategic planning skills", "Data analysis expertise", "Team leadership experience"],
+    applyUrl: "https://traffikboosters.com/job-apply-digital-strategist/",
+    salary: "$70,000 - $90,000",
+    status: "active"
+  }
+];
+
 export function CareerManagement() {
   const [activeTab, setActiveTab] = useState("overview");
-  const [selectedJobPosting, setSelectedJobPosting] = useState<JobPosting | null>(null);
+  const [selectedJobPosting, setSelectedJobPosting] = useState<any>(null);
   const [showCreateJob, setShowCreateJob] = useState(false);
-  const [showApplicationDetails, setShowApplicationDetails] = useState<JobApplication | null>(null);
+  const [showApplicationDetails, setShowApplicationDetails] = useState<any>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch job postings
-  const { data: jobPostings = [], isLoading: loadingJobs } = useQuery({
-    queryKey: ["/api/career/job-postings"],
-  });
+  // Use live job postings from website
+  const jobPostings = liveJobPostings;
 
   // Fetch applications
   const { data: applications = [], isLoading: loadingApplications } = useQuery({
@@ -399,9 +492,9 @@ export function CareerManagement() {
                 <Briefcase className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{jobPostings.filter((job: JobPosting) => job.status === 'active').length}</div>
+                <div className="text-2xl font-bold">{jobPostings.filter((job: any) => job.status === 'active').length}</div>
                 <p className="text-xs text-muted-foreground">
-                  {jobPostings.filter((job: JobPosting) => job.isUrgentHiring).length} urgent positions
+                  {jobPostings.filter((job: any) => job.department === 'Digital Marketing').length} digital marketing roles
                 </p>
               </CardContent>
             </Card>
@@ -480,16 +573,14 @@ export function CareerManagement() {
 
         <TabsContent value="postings" className="space-y-6">
           <div className="grid gap-6">
-            {jobPostings.map((job: JobPosting) => (
+            {jobPostings.map((job: any) => (
               <Card key={job.id}>
                 <CardHeader>
                   <div className="flex justify-between items-start">
                     <div>
                       <CardTitle className="flex items-center gap-2">
                         {job.title}
-                        {job.isUrgentHiring && (
-                          <Badge className="bg-red-100 text-red-800">URGENT</Badge>
-                        )}
+                        <Badge className="bg-blue-100 text-blue-800">{job.type}</Badge>
                       </CardTitle>
                       <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
@@ -502,11 +593,11 @@ export function CareerManagement() {
                         </span>
                         <span className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
-                          {job.employmentType}
+                          Posted {job.postedDate}
                         </span>
                         <span className="flex items-center gap-1">
                           <DollarSign className="h-4 w-4" />
-                          {formatSalaryRange(job.salaryRangeMin || undefined, job.salaryRangeMax || undefined)}
+                          {job.salary}
                         </span>
                       </div>
                     </div>
@@ -522,10 +613,25 @@ export function CareerManagement() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground mb-4">{job.description}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {job.skillsRequired.slice(0, 5).map((skill, index) => (
-                      <Badge key={index} variant="outline">{skill}</Badge>
-                    ))}
+                  <div className="mb-4">
+                    <h4 className="font-semibold mb-2">Requirements:</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {job.requirements.map((requirement: string, index: number) => (
+                        <Badge key={index} variant="outline">{requirement}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <Button 
+                      onClick={() => window.open(job.applyUrl, '_blank')}
+                      className="bg-orange-600 hover:bg-orange-700 text-white"
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Apply Now on Website
+                    </Button>
+                    <Badge className={job.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
+                      {job.status.toUpperCase()}
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>
