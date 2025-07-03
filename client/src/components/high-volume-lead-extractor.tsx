@@ -272,6 +272,43 @@ export default function HighVolumeLeadExtractor() {
         </Card>
       </div>
 
+      {/* Lead Types Explanation */}
+      <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center">
+            <Users className="w-5 h-5 mr-2 text-blue-600" />
+            Understanding Your Lead Types
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <h4 className="font-semibold text-green-700 dark:text-green-400 mb-2">🎯 Customer Leads (Hot Prospects)</h4>
+              <ul className="space-y-1 text-sm">
+                <li><strong>Bark.com:</strong> Customers actively seeking services</li>
+                <li><strong>Angie's List:</strong> Homeowners looking for contractors</li>
+                <li><strong>Craigslist:</strong> People posting service requests</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-blue-700 dark:text-blue-400 mb-2">🏢 Business Leads (Service Providers)</h4>
+              <ul className="space-y-1 text-sm">
+                <li><strong>Google Maps:</strong> Local businesses offering services</li>
+                <li><strong>Yellow Pages:</strong> Established business directories</li>
+                <li><strong>ZoomInfo:</strong> Enterprise business intelligence</li>
+                <li><strong>Yelp:</strong> Service businesses with reviews</li>
+              </ul>
+            </div>
+          </div>
+          <div className="mt-4 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-800">
+            <p className="text-sm text-orange-800 dark:text-orange-200">
+              <strong>Pro Tip:</strong> Bark.com leads are customers actively looking for services - these are your hottest prospects! 
+              Use different sales approaches for customers vs. businesses.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Main Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4">
         <Button
