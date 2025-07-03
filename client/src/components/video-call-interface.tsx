@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Video, VideoOff, Mic, MicOff, Phone, PhoneOff, Settings, Users, Share2, MessageSquare, Volume2 } from "lucide-react";
+import TraffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751503217918.png";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -174,6 +175,16 @@ export default function VideoCallInterface({
                     <p>Camera is off</p>
                   </div>
                 )}
+                
+                {/* Traffik Boosters Logo Overlay - Upper Right Corner */}
+                <div className="absolute top-4 right-4 z-10">
+                  <img 
+                    src={TraffikBoostersLogo} 
+                    alt="Traffik Boosters" 
+                    className="h-16 w-auto opacity-90 drop-shadow-lg"
+                    style={{ filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.3))' }}
+                  />
+                </div>
                 
                 {/* Screen sharing indicator */}
                 {isScreenSharing && (

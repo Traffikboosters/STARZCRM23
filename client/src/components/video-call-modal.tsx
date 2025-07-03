@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X, Dock, Paperclip, StopCircle, Mic, MicOff, Video, VideoOff, MessageSquare, Users } from "lucide-react";
+import TraffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751503217918.png";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -78,7 +79,17 @@ export default function VideoCallModal({ isOpen, onClose }: VideoCallModalProps)
         </div>
         
         {/* Video grid */}
-        <div className="grid grid-cols-2 gap-2 p-4 bg-neutral-dark min-h-96">
+        <div className="grid grid-cols-2 gap-2 p-4 bg-neutral-dark min-h-96 relative">
+          {/* Traffik Boosters Logo Overlay - Upper Right Corner */}
+          <div className="absolute top-8 right-8 z-20">
+            <img 
+              src={TraffikBoostersLogo} 
+              alt="Traffik Boosters" 
+              className="h-14 w-auto opacity-90 drop-shadow-lg"
+              style={{ filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.4))' }}
+            />
+          </div>
+          
           {participants.map((participant, index) => (
             <div key={participant.id} className="bg-black rounded-lg relative overflow-hidden aspect-video">
               {/* Video placeholder - would be actual video stream */}

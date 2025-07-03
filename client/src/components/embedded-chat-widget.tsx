@@ -111,6 +111,38 @@ export default function EmbeddedChatWidget({
     setMessages(prev => [...prev, newMessage]);
   };
 
+  const startVideoCall = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      setMediaStream(stream);
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+      }
+      setIsVideoCallActive(true);
+      setIsCameraOn(true);
+      setIsMicOn(true);
+    } catch (error) {
+      console.error('Error starting video call:', error);
+      setIsCameraOn(!isCameraOn);
+    }
+  };
+
+  const endVideoCall = () => {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach(track => track.stop());
+      setMediaStream(null);
+    }
+    setIsVideoCallActive(false);
+    setIsCameraOn(false);
+    setIsMicOn(false);
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = null;
+    }
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = null;
+    }
+  };
+
   const handleInitialResponse = () => {
     addMessage("I'm interested in learning more about your services!", true);
     setTimeout(() => {
@@ -409,6 +441,16 @@ export default function EmbeddedChatWidget({
                           </div>
                         </div>
                       )}
+                      
+                      {/* Traffik Boosters Logo Overlay - Upper Right Corner */}
+                      <div className="absolute top-2 right-2 z-10">
+                        <img 
+                          src={traffikBoostersLogo} 
+                          alt="Traffik Boosters" 
+                          className="h-8 w-auto opacity-90 drop-shadow-lg"
+                          style={{ filter: 'drop-shadow(0px 1px 4px rgba(0,0,0,0.4))' }}
+                        />
+                      </div>
                       
                       {/* Local video (user) - small overlay */}
                       <div className="absolute bottom-2 right-2 w-16 h-12 bg-gray-700 rounded overflow-hidden">
