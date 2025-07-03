@@ -1457,10 +1457,16 @@ export default function CRMView() {
                       onClick={(e) => {
                         e.stopPropagation();
                         console.log("AI Tips button clicked for contact:", contact.firstName, contact.lastName);
+                        console.log("Current isAITipGeneratorOpen state:", isAITipGeneratorOpen);
+                        alert("AI Tips button clicked!"); // Temporary debugging
                         setSelectedContact(contact);
                         setCurrentAction('calling');
                         setIsAITipGeneratorOpen(true);
-                        console.log("AI Tip Generator state set to open");
+                        console.log("AI Tip Generator state set to true");
+                        // Force re-render check
+                        setTimeout(() => {
+                          console.log("AI Tip Generator state after timeout:", isAITipGeneratorOpen);
+                        }, 100);
                       }}
                     >
                       <ClipboardList className="h-4 w-4 mb-1 text-purple-600 flex-shrink-0" />
@@ -1475,9 +1481,15 @@ export default function CRMView() {
                       onClick={(e) => {
                         e.stopPropagation();
                         console.log("Send to Tech button clicked for contact:", contact.firstName, contact.lastName);
+                        console.log("Current isTechnicalProposalModalOpen state:", isTechnicalProposalModalOpen);
+                        alert("Send to Tech button clicked!"); // Temporary debugging
                         setSelectedContact(contact);
                         setIsTechnicalProposalModalOpen(true);
-                        console.log("Technical Proposal Modal state set to open");
+                        console.log("Technical Proposal Modal state set to true");
+                        // Force re-render check
+                        setTimeout(() => {
+                          console.log("Technical Proposal Modal state after timeout:", isTechnicalProposalModalOpen);
+                        }, 100);
                       }}
                     >
                       <FileUp className="h-4 w-4 mb-1 text-orange-600 flex-shrink-0" />
