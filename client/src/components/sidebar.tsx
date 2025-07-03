@@ -77,6 +77,7 @@ export default function Sidebar({
     { id: "live-extraction", label: "Live Data Extractor", icon: Activity },
     { id: "vendor-selector", label: "Vendor Selector", icon: Database },
     { id: "extraction-history", label: "Live Extraction History", icon: Clock },
+    { id: "high-volume-extraction", label: "High-Volume Lead Extractor", icon: Database },
     { id: "real-leads", label: "Lead Card Research", icon: Search },
     { id: "zoominfo", label: "ZoomInfo Scraping", icon: Building2 },
     { id: "dial-tracking", label: "Dial Tracking", icon: Timer },

@@ -63,6 +63,7 @@ import { PersonalizedDashboardWidgets } from "@/components/personalized-dashboar
 import ZoomInfoScraper from "@/components/zoominfo-scraper";
 import UnifiedVendorSelector from "@/components/unified-vendor-selector";
 import CancellationMetrics from "@/components/cancellation-metrics";
+import HighVolumeLeadExtractor from "@/components/high-volume-lead-extractor";
 import PerformanceMonitor from "@/components/performance-monitor";
 import { MarketingStrategyBuilder } from "@/components/marketing-strategy-builder";
 import type { Contact } from "@shared/schema";
@@ -206,6 +207,8 @@ export default function Dashboard() {
         return <CareerManagement />;
       case "gamification":
         return <GamificationSystemClean />;
+      case "high-volume-extraction":
+        return <HighVolumeLeadExtractor />;
 
       default:
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;

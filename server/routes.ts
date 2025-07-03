@@ -48,6 +48,7 @@ const mightyCallConfig = {
 console.log('✅ MIGHTYCALL STATUS: CONNECTED - Account:', mightyCallConfig.accountId);
 import { googleMapsExtractor } from "./google-maps-extractor";
 import { AISalesTipGenerator } from "./ai-sales-tip-generator";
+import { highVolumeLeadExtractor } from "./high-volume-lead-extractor";
 import fs from "fs";
 import path from "path";
 
@@ -5369,6 +5370,165 @@ a=ssrc:1001 msid:stream track`
     } catch (error) {
       console.error("Error unlocking achievement:", error);
       res.status(500).json({ error: "Failed to unlock achievement" });
+    }
+  });
+
+  // High Volume Lead Extraction Endpoints
+  app.post("/api/high-volume-extraction/execute", async (req, res) => {
+    try {
+      console.log("🚀 Starting high-volume lead extraction...");
+      const startTime = Date.now();
+      
+      const results = await highVolumeLeadExtractor.executeHighVolumeExtraction();
+      
+      const totalLeads = results.reduce((sum, result) => sum + result.leadsExtracted, 0);
+      const averageSuccessRate = results.reduce((sum, result) => sum + result.successRate, 0) / results.length;
+      const executionTime = Date.now() - startTime;
+      
+      console.log(`✅ High-volume extraction completed: ${totalLeads} leads extracted`);
+      
+      // Broadcast to WebSocket clients
+      if (wss) {
+        const message = {
+          type: "high_volume_extraction_complete",
+          data: {
+            totalLeads,
+            averageSuccessRate,
+            executionTime,
+            results,
+            timestamp: new Date().toISOString()
+          }
+        };
+        
+        wss.clients.forEach(client => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(message));
+          }
+        });
+      }
+      
+      res.json({
+        success: true,
+        totalLeads,
+        averageSuccessRate,
+        executionTime,
+        results
+      });
+    } catch (error) {
+      console.error("Error in high-volume extraction:", error);
+      res.status(500).json({ 
+        error: "Failed to execute high-volume extraction",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.get("/api/high-volume-extraction/status", async (req, res) => {
+    try {
+      const status = highVolumeLeadExtractor.getExtractionStatus();
+      
+      const totalDailyCapacity = status.reduce((sum, vendor) => sum + vendor.dailyLimit, 0);
+      const totalExtractedToday = status.reduce((sum, vendor) => sum + vendor.currentDaily, 0);
+      const remainingCapacity = totalDailyCapacity - totalExtractedToday;
+      const activeVendors = status.filter(vendor => vendor.isActive).length;
+      
+      res.json({
+        vendors: status,
+        summary: {
+          totalDailyCapacity,
+          totalExtractedToday,
+          remainingCapacity,
+          activeVendors,
+          totalVendors: status.length,
+          canExtract100PerVendor: status.every(vendor => 
+            !vendor.isActive || (vendor.dailyLimit - vendor.currentDaily) >= 100
+          )
+        }
+      });
+    } catch (error) {
+      console.error("Error getting extraction status:", error);
+      res.status(500).json({ error: "Failed to get extraction status" });
+    }
+  });
+
+  app.post("/api/high-volume-extraction/vendor/:vendorId/toggle", async (req, res) => {
+    try {
+      const { vendorId } = req.params;
+      const { isActive } = req.body;
+      
+      highVolumeLeadExtractor.toggleVendor(vendorId, isActive);
+      
+      res.json({ 
+        success: true, 
+        message: `Vendor ${vendorId} ${isActive ? 'enabled' : 'disabled'}` 
+      });
+    } catch (error) {
+      console.error("Error toggling vendor:", error);
+      res.status(500).json({ error: "Failed to toggle vendor" });
+    }
+  });
+
+  app.post("/api/high-volume-extraction/reset-counters", async (req, res) => {
+    try {
+      highVolumeLeadExtractor.resetDailyCounters();
+      
+      res.json({ 
+        success: true, 
+        message: "Daily counters reset successfully" 
+      });
+    } catch (error) {
+      console.error("Error resetting counters:", error);
+      res.status(500).json({ error: "Failed to reset counters" });
+    }
+  });
+
+  app.post("/api/high-volume-extraction/single-vendor", async (req, res) => {
+    try {
+      const { vendorId, leadCount = 100 } = req.body;
+      
+      console.log(`🎯 Starting single vendor extraction: ${vendorId} (${leadCount} leads)`);
+      
+      const results = await highVolumeLeadExtractor.executeHighVolumeExtraction();
+      const vendorResult = results.find(result => 
+        result.vendor.toLowerCase().includes(vendorId.toLowerCase())
+      );
+      
+      if (!vendorResult) {
+        return res.status(404).json({ error: "Vendor not found or inactive" });
+      }
+      
+      // Broadcast to WebSocket clients
+      if (wss) {
+        const message = {
+          type: "single_vendor_extraction_complete",
+          data: {
+            vendor: vendorResult.vendor,
+            leadsExtracted: vendorResult.leadsExtracted,
+            timestamp: new Date().toISOString()
+          }
+        };
+        
+        wss.clients.forEach(client => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(message));
+          }
+        });
+      }
+      
+      res.json({
+        success: true,
+        vendor: vendorResult.vendor,
+        leadsExtracted: vendorResult.leadsExtracted,
+        successRate: vendorResult.successRate,
+        executionTime: vendorResult.executionTime,
+        leadSample: vendorResult.leadSample
+      });
+    } catch (error) {
+      console.error("Error in single vendor extraction:", error);
+      res.status(500).json({ 
+        error: "Failed to execute single vendor extraction",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
