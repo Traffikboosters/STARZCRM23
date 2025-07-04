@@ -1,0 +1,417 @@
+<!-- TRAFFIK BOOSTERS CHAT WIDGET - COPY THIS ENTIRE CODE -->
+<!-- Paste this code before the closing </body> tag on your website -->
+
+<div id="traffik-chat-widget"></div>
+
+<script>
+// Traffik Boosters Chat Widget - Production Ready
+(function() {
+    // Configuration
+    const config = {
+        primaryColor: '#e45c2b',
+        companyName: 'Traffik Boosters',
+        phone: '(877) 840-6250',
+        phoneNumber: '8778406250',
+        welcomeMessage: 'Hi! How can we help boost your traffic today?',
+        logo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTYiIGZpbGw9IiNlNDVjMmIiLz4KPHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+VEI8L3RleHQ+Cjwvc3ZnPgo='
+    };
+
+    let isOpen = false;
+    let chatPhase = 'chat'; // chat, form
+    
+    // Create widget HTML
+    function createWidget() {
+        const widgetHTML = `
+            <!-- Chat Button -->
+            <div id="chat-button" style="
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                width: 60px;
+                height: 60px;
+                background: ${config.primaryColor};
+                border-radius: 50%;
+                cursor: pointer;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+                transition: transform 0.2s ease;
+            " onclick="toggleChat()">
+                <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3.04.97 4.39L1 23l6.61-1.97C9.04 21.64 10.46 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"/>
+                </svg>
+                <div id="status-dot" style="
+                    position: absolute;
+                    top: -2px;
+                    right: -2px;
+                    width: 14px;
+                    height: 14px;
+                    background: #28a745;
+                    border: 2px solid white;
+                    border-radius: 50%;
+                    animation: pulse 2s infinite;
+                "></div>
+            </div>
+
+            <!-- Chat Window -->
+            <div id="chat-window" style="
+                position: fixed;
+                bottom: 90px;
+                right: 20px;
+                width: 300px;
+                height: 400px;
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+                z-index: 9999;
+                display: none;
+                flex-direction: column;
+                overflow: hidden;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            ">
+                <!-- Header -->
+                <div style="
+                    background: ${config.primaryColor};
+                    color: white;
+                    padding: 15px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                ">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <img src="${config.logo}" alt="TB" style="width: 28px; height: 28px; border-radius: 50%; background: white; padding: 2px;">
+                        <div>
+                            <div style="font-weight: 600; font-size: 14px;">${config.companyName}</div>
+                            <div style="font-size: 11px; opacity: 0.9;">More Traffik! More Sales!</div>
+                            <div style="font-size: 10px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 8px; margin-top: 2px; display: inline-block;">Online Now</div>
+                        </div>
+                    </div>
+                    <button onclick="toggleChat()" style="
+                        background: none;
+                        border: none;
+                        color: white;
+                        cursor: pointer;
+                        font-size: 18px;
+                        padding: 0;
+                        width: 24px;
+                        height: 24px;
+                    ">×</button>
+                </div>
+
+                <!-- Chat Content -->
+                <div id="chat-content" style="flex: 1; display: flex; flex-direction: column;">
+                    <!-- Messages Area -->
+                    <div id="messages-area" style="
+                        flex: 1;
+                        padding: 15px;
+                        overflow-y: auto;
+                        background: #f8f9fa;
+                    ">
+                        <div style="
+                            background: white;
+                            padding: 10px;
+                            border-radius: 8px;
+                            margin-bottom: 10px;
+                            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                            font-size: 14px;
+                        ">${config.welcomeMessage}</div>
+                    </div>
+
+                    <!-- Form Area (Hidden by default) -->
+                    <div id="form-area" style="
+                        padding: 15px;
+                        background: white;
+                        display: none;
+                    ">
+                        <h4 style="margin: 0 0 15px 0; color: #333; font-size: 16px;">Let's Get Started!</h4>
+                        <input type="text" id="lead-name" placeholder="Your Name *" style="
+                            width: 100%;
+                            padding: 8px 12px;
+                            border: 1px solid #ddd;
+                            border-radius: 6px;
+                            margin-bottom: 10px;
+                            font-size: 14px;
+                            box-sizing: border-box;
+                        ">
+                        <input type="email" id="lead-email" placeholder="Business Email *" style="
+                            width: 100%;
+                            padding: 8px 12px;
+                            border: 1px solid #ddd;
+                            border-radius: 6px;
+                            margin-bottom: 10px;
+                            font-size: 14px;
+                            box-sizing: border-box;
+                        ">
+                        <input type="text" id="lead-company" placeholder="Company Name *" style="
+                            width: 100%;
+                            padding: 8px 12px;
+                            border: 1px solid #ddd;
+                            border-radius: 6px;
+                            margin-bottom: 10px;
+                            font-size: 14px;
+                            box-sizing: border-box;
+                        ">
+                        <input type="tel" id="lead-phone" placeholder="Phone Number" style="
+                            width: 100%;
+                            padding: 8px 12px;
+                            border: 1px solid #ddd;
+                            border-radius: 6px;
+                            margin-bottom: 15px;
+                            font-size: 14px;
+                            box-sizing: border-box;
+                        ">
+                        <button onclick="submitLead()" style="
+                            width: 100%;
+                            padding: 10px;
+                            background: ${config.primaryColor};
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 14px;
+                            font-weight: 600;
+                            margin-bottom: 8px;
+                        ">Get Free Quote</button>
+                        <button onclick="showChat()" style="
+                            width: 100%;
+                            padding: 8px;
+                            background: none;
+                            color: #666;
+                            border: 1px solid #ddd;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 12px;
+                        ">Continue Chat Instead</button>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div id="input-area" style="
+                        padding: 15px;
+                        background: white;
+                        border-top: 1px solid #eee;
+                    ">
+                        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                            <button onclick="showForm()" style="
+                                flex: 1;
+                                padding: 6px 12px;
+                                background: ${config.primaryColor};
+                                color: white;
+                                border: none;
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-size: 11px;
+                            ">Get Quote</button>
+                            <button onclick="callNow()" style="
+                                flex: 1;
+                                padding: 6px 12px;
+                                background: #28a745;
+                                color: white;
+                                border: none;
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-size: 11px;
+                            ">Call ${config.phone}</button>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="message-input" placeholder="Type your message..." style="
+                                flex: 1;
+                                padding: 8px 12px;
+                                border: 1px solid #ddd;
+                                border-radius: 6px;
+                                font-size: 14px;
+                            " onkeypress="if(event.key==='Enter') sendMessage()">
+                            <button onclick="sendMessage()" style="
+                                padding: 8px 12px;
+                                background: ${config.primaryColor};
+                                color: white;
+                                border: none;
+                                border-radius: 6px;
+                                cursor: pointer;
+                            ">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <style>
+                @keyframes pulse {
+                    0% { transform: scale(1); opacity: 1; }
+                    50% { transform: scale(1.1); opacity: 0.7; }
+                    100% { transform: scale(1); opacity: 1; }
+                }
+                #chat-button:hover {
+                    transform: scale(1.05);
+                }
+                #chat-window input:focus, #chat-window button:focus {
+                    outline: 2px solid ${config.primaryColor};
+                    outline-offset: 2px;
+                }
+            </style>
+        `;
+        
+        document.getElementById('traffik-chat-widget').innerHTML = widgetHTML;
+    }
+
+    // Widget functions
+    window.toggleChat = function() {
+        const window_elem = document.getElementById('chat-window');
+        const button = document.getElementById('chat-button');
+        
+        if (isOpen) {
+            window_elem.style.display = 'none';
+            isOpen = false;
+        } else {
+            window_elem.style.display = 'flex';
+            isOpen = true;
+        }
+    };
+
+    window.showForm = function() {
+        document.getElementById('messages-area').style.display = 'none';
+        document.getElementById('input-area').style.display = 'none';
+        document.getElementById('form-area').style.display = 'block';
+        chatPhase = 'form';
+    };
+
+    window.showChat = function() {
+        document.getElementById('messages-area').style.display = 'block';
+        document.getElementById('input-area').style.display = 'block';
+        document.getElementById('form-area').style.display = 'none';
+        chatPhase = 'chat';
+    };
+
+    window.sendMessage = function() {
+        const input = document.getElementById('message-input');
+        const message = input.value.trim();
+        if (!message) return;
+
+        addMessage(message, true);
+        input.value = '';
+
+        // Auto-response
+        setTimeout(() => {
+            let response = "Thanks for your message! Let me connect you with our team.";
+            
+            if (message.toLowerCase().includes('price') || message.toLowerCase().includes('cost')) {
+                response = "Our pricing varies based on your specific needs. I'll have our team prepare a custom quote for you.";
+            } else if (message.toLowerCase().includes('service')) {
+                response = "We specialize in digital marketing, SEO, and paid advertising to boost your online traffic and conversions.";
+            } else if (message.toLowerCase().includes('help')) {
+                response = "I'm here to help! We offer comprehensive digital marketing services. Would you like to speak with one of our growth experts?";
+            }
+            
+            addMessage(response, false);
+            
+            // Suggest quote form after a few messages
+            setTimeout(() => {
+                addMessage("To provide you with the best recommendations, would you like to share your contact information? This helps us create a customized strategy for your business.", false);
+            }, 2000);
+        }, 1000);
+    };
+
+    window.addMessage = function(text, isUser) {
+        const messagesArea = document.getElementById('messages-area');
+        const messageDiv = document.createElement('div');
+        
+        messageDiv.style.cssText = `
+            background: ${isUser ? config.primaryColor : 'white'};
+            color: ${isUser ? 'white' : '#333'};
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            margin-left: ${isUser ? '20px' : '0'};
+            margin-right: ${isUser ? '0' : '20px'};
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            font-size: 14px;
+            line-height: 1.4;
+        `;
+        
+        messageDiv.textContent = text;
+        messagesArea.appendChild(messageDiv);
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+    };
+
+    window.submitLead = function() {
+        const name = document.getElementById('lead-name').value.trim();
+        const email = document.getElementById('lead-email').value.trim();
+        const company = document.getElementById('lead-company').value.trim();
+        const phone = document.getElementById('lead-phone').value.trim();
+
+        if (!name || !email || !company) {
+            alert('Please fill in all required fields (Name, Email, Company)');
+            return;
+        }
+
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            alert('Please enter a valid email address');
+            return;
+        }
+
+        // Submit to your CRM or email service
+        const leadData = {
+            name: name,
+            email: email,
+            company: company,
+            phone: phone,
+            source: 'Website Chat Widget',
+            message: 'Lead submitted via chat widget on ' + window.location.href,
+            timestamp: new Date().toISOString()
+        };
+
+        // You can replace this with your actual lead submission endpoint
+        console.log('Lead submitted:', leadData);
+        
+        // For now, we'll use a simple email mailto (you should replace this with your CRM integration)
+        const subject = 'New Lead from Chat Widget - ' + company;
+        const body = `New lead from chat widget:
+
+Name: ${name}
+Email: ${email}
+Company: ${company}
+Phone: ${phone}
+Source: Website Chat Widget
+Page: ${window.location.href}
+Time: ${new Date().toLocaleString()}
+
+Please follow up within 24 hours.`;
+
+        // Option 1: Send email (temporary solution)
+        const mailtoLink = `mailto:leads@traffikboosters.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.open(mailtoLink);
+
+        // Show success message
+        showChat();
+        addMessage("Perfect! Your information has been submitted. A growth expert will call you within 24 business hours to discuss how we can help grow your business.", false);
+        
+        // Clear form
+        document.getElementById('lead-name').value = '';
+        document.getElementById('lead-email').value = '';
+        document.getElementById('lead-company').value = '';
+        document.getElementById('lead-phone').value = '';
+    };
+
+    window.callNow = function() {
+        window.open('tel:' + config.phoneNumber);
+    };
+
+    // Initialize widget when page loads
+    function init() {
+        if (document.getElementById('traffik-chat-widget')) {
+            createWidget();
+        }
+    }
+
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+</script>
+
+<!-- END OF CHAT WIDGET CODE -->
