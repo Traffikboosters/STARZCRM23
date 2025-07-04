@@ -19,6 +19,7 @@ import {
   Award,
   MessageCircle
 } from 'lucide-react';
+import ChatWidget from '@/components/chat-widget';
 import traffikBoostersLogo from '@assets/TRAFIC BOOSTERS3 copy_1751503217918.png';
 
 export default function TraffikBoostersWebsite() {
@@ -495,6 +496,9 @@ export default function TraffikBoostersWebsite() {
           </div>
         </div>
       </footer>
+
+      {/* Chat Widget */}
+      <ChatWidget />
     </div>
   );
 }

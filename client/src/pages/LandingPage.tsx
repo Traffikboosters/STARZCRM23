@@ -8,6 +8,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { LiveTestimonials } from "@/components/live-testimonials";
+import ChatWidget from "@/components/chat-widget";
 import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
 
 export default function LandingPage() {
@@ -536,6 +537,9 @@ export default function LandingPage() {
           </div>
         </div>
       )}
+
+      {/* Chat Widget */}
+      <ChatWidget />
     </div>
   );
 }

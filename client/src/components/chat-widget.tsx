@@ -1,1124 +1,401 @@
-import { useState, useEffect, useRef } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { EmailNotificationManager } from "./email-notification-sound";
 import { 
   MessageCircle, 
+  X, 
   Send, 
   Phone, 
-  Mail,
-  X,
-  Minimize2,
+  Video, 
+  Minimize2, 
   Maximize2,
-  Settings,
   User,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  Copy,
-  Code,
-  Eye,
-  Download,
-  Palette,
-  Monitor,
-  BarChart3
+  Bot
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
-import WidgetEmailForm from "./widget-email-form";
-import WidgetSalesMetrics from "./widget-sales-metrics";
+import { apiRequest } from "@/lib/queryClient";
+import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
 
-interface ChatMessage {
+interface Message {
   id: string;
-  message: string;
-  sender: 'visitor' | 'agent';
+  text: string;
+  isUser: boolean;
   timestamp: Date;
-  senderName: string;
-  status?: 'sent' | 'delivered' | 'read';
 }
 
-interface EmailConfig {
-  server: string;
-  username: string;
-  password: string;
-  port?: number;
-  secure?: boolean;
+interface LeadForm {
+  name: string;
+  email: string;
+  company: string;
+  phone: string;
+  message: string;
 }
-
-interface ChatSession {
-  id: string;
-  visitorName: string;
-  visitorEmail: string;
-  visitorPhone?: string;
-  startTime: Date;
-  status: 'active' | 'waiting' | 'closed';
-  messages: ChatMessage[];
-  assignedAgent?: string;
-  leadScore: number;
-  source: string;
-}
-
-interface WidgetSettings {
-  position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
-  primaryColor: string;
-  accentColor: string;
-  welcomeMessage: string;
-  offlineMessage: string;
-  collectEmail: boolean;
-  collectPhone: boolean;
-  showTypingIndicator: boolean;
-  playSound: boolean;
-  autoResponders: boolean;
-}
-
-const defaultSettings: WidgetSettings = {
-  position: 'bottom-right',
-  primaryColor: 'hsl(14, 88%, 55%)',
-  accentColor: 'hsl(29, 85%, 58%)',
-  welcomeMessage: 'Hi! How can we help you today?',
-  offlineMessage: 'We\'re currently offline. Leave us a message and we\'ll get back to you!',
-  collectEmail: true,
-  collectPhone: true,
-  showTypingIndicator: true,
-  playSound: true,
-  autoResponders: true
-};
-
-const sampleSessions: ChatSession[] = [
-  {
-    id: "chat-001",
-    visitorName: "Sarah Martinez",
-    visitorEmail: "sarah@bellavista.com",
-    visitorPhone: "+1-555-0123",
-    startTime: new Date(Date.now() - 15 * 60 * 1000),
-    status: "active",
-    assignedAgent: "Mike Rodriguez",
-    leadScore: 85,
-    source: "Website - Services Page",
-    messages: [
-      {
-        id: "msg-001",
-        message: "Hi! I'm interested in your digital marketing services for my restaurant.",
-        sender: "visitor",
-        timestamp: new Date(Date.now() - 15 * 60 * 1000),
-        senderName: "Sarah Martinez",
-        status: "read"
-      },
-      {
-        id: "msg-002",
-        message: "Hello Sarah! I'd be happy to help you with digital marketing for your restaurant. What specific areas are you looking to improve?",
-        sender: "agent",
-        timestamp: new Date(Date.now() - 14 * 60 * 1000),
-        senderName: "Mike Rodriguez",
-        status: "read"
-      },
-      {
-        id: "msg-003",
-        message: "We need help with social media management and Google Ads. Our current marketing isn't bringing in enough customers.",
-        sender: "visitor",
-        timestamp: new Date(Date.now() - 12 * 60 * 1000),
-        senderName: "Sarah Martinez",
-        status: "read"
-      },
-      {
-        id: "msg-004",
-        message: "Perfect! We specialize in restaurant marketing. I can schedule a free consultation to discuss a custom strategy. Would you prefer a call or video meeting?",
-        sender: "agent",
-        timestamp: new Date(Date.now() - 10 * 60 * 1000),
-        senderName: "Mike Rodriguez",
-        status: "delivered"
-      }
-    ]
-  },
-  {
-    id: "chat-002",
-    visitorName: "Anonymous Visitor",
-    visitorEmail: "",
-    startTime: new Date(Date.now() - 5 * 60 * 1000),
-    status: "waiting",
-    leadScore: 45,
-    source: "Website - Homepage",
-    messages: [
-      {
-        id: "msg-005",
-        message: "What are your pricing plans?",
-        sender: "visitor",
-        timestamp: new Date(Date.now() - 5 * 60 * 1000),
-        senderName: "Anonymous Visitor",
-        status: "sent"
-      }
-    ]
-  }
-];
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [currentView, setCurrentView] = useState<'demo' | 'sessions' | 'settings' | 'metrics' | 'email'>('demo');
-  const [sessions, setSessions] = useState<ChatSession[]>(sampleSessions);
-  const [selectedSession, setSelectedSession] = useState<ChatSession | null>(sessions[0]);
-  const [newMessage, setNewMessage] = useState("");
-  const [visitorInfo, setVisitorInfo] = useState({
-    name: "",
-    email: "",
-    company: "",
-    phone: "",
-    message: ""
+  const [chatPhase, setChatPhase] = useState<'greeting' | 'form' | 'chat' | 'video'>('greeting');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [leadForm, setLeadForm] = useState<LeadForm>({
+    name: '',
+    email: '',
+    company: '',
+    phone: '',
+    message: ''
   });
-  const [settings, setSettings] = useState<WidgetSettings>(defaultSettings);
-  const [widgetCode, setWidgetCode] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [emailConfig, setEmailConfig] = useState<EmailConfig>({
-    server: "https://emailmg.ipage.com/sqmail/src/webmail.php",
-    username: "starz@traffikboosters.com",
-    password: "Gn954793*",
-    port: 993,
-    secure: true
-  });
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // Check if it's business hours
+  const isBusinessHours = () => {
+    const now = new Date();
+    const estTime = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+    const hour = estTime.getHours();
+    const day = estTime.getDay();
+    const isWeekday = day >= 1 && day <= 5;
+    const isBusinessTime = hour >= 9 && hour < 18;
+    return isWeekday && isBusinessTime;
   };
 
+  // Initial greeting message
   useEffect(() => {
-    scrollToBottom();
-  }, [selectedSession?.messages]);
-
-  const sendMessage = () => {
-    if (!newMessage.trim() || !selectedSession) return;
-
-    const message: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      message: newMessage,
-      sender: 'agent',
-      timestamp: new Date(),
-      senderName: "You",
-      status: 'sent'
-    };
-
-    setSessions(prevSessions =>
-      prevSessions.map(session =>
-        session.id === selectedSession.id
-          ? { ...session, messages: [...session.messages, message] }
-          : session
-      )
-    );
-
-    setSelectedSession(prev => prev ? {
-      ...prev,
-      messages: [...prev.messages, message]
-    } : null);
-
-    setNewMessage("");
-
-    // Simulate typing indicator and auto response
-    if (settings.autoResponders) {
-      setIsTyping(true);
-      setTimeout(() => {
-        setIsTyping(false);
-        // Could add auto-response logic here
-      }, 2000);
+    if (isOpen && messages.length === 0) {
+      const welcomeMessage: Message = {
+        id: '1',
+        text: isBusinessHours() 
+          ? "Hi! How can we help boost your traffic today?" 
+          : "Hi! We're currently offline. Leave us a message and a growth expert will call within 24 business hours!",
+        isUser: false,
+        timestamp: new Date()
+      };
+      setMessages([welcomeMessage]);
     }
+  }, [isOpen]);
 
-    toast({
-      title: "Message Sent",
-      description: "Your message has been delivered to the visitor.",
-    });
+  const addMessage = (text: string, isUser: boolean) => {
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      text,
+      isUser,
+      timestamp: new Date()
+    };
+    setMessages(prev => [...prev, newMessage]);
   };
 
-  const generateWidgetCode = () => {
-    const code = `<!-- Traffik Boosters Chat Widget -->
-<script>
-  (function() {
-    window.TrafficBoostersChat = {
-      apiKey: 'YOUR_API_KEY',
-      settings: {
-        position: '${settings.position}',
-        primaryColor: '${settings.primaryColor}',
-        accentColor: '${settings.accentColor}',
-        welcomeMessage: '${settings.welcomeMessage}',
-        collectEmail: ${settings.collectEmail},
-        collectPhone: ${settings.collectPhone}
+  const handleSendMessage = () => {
+    if (!currentMessage.trim()) return;
+
+    addMessage(currentMessage, true);
+    setCurrentMessage('');
+
+    // Auto-response
+    setTimeout(() => {
+      const lowerMessage = currentMessage.toLowerCase();
+      let response = "Thanks for your message! Let me connect you with our team.";
+      
+      if (lowerMessage.includes('price') || lowerMessage.includes('cost')) {
+        response = "Our pricing varies based on your specific needs. I'll have our team prepare a custom quote for you.";
+      } else if (lowerMessage.includes('service')) {
+        response = "We specialize in digital marketing, SEO, and paid advertising to boost your online traffic and conversions.";
       }
-    };
-    
-    var script = document.createElement('script');
-    script.src = 'https://widget.traffikboosters.com/chat.js';
-    script.async = true;
-    document.head.appendChild(script);
-  })();
-</script>
-
-<!-- Optional: Custom styling -->
-<style>
-  .tb-chat-widget {
-    --tb-primary: ${settings.primaryColor};
-    --tb-accent: ${settings.accentColor};
-  }
-</style>`;
-
-    setWidgetCode(code);
-    
-    navigator.clipboard.writeText(code).then(() => {
-      toast({
-        title: "Widget Code Copied!",
-        description: "The chat widget code has been copied to your clipboard.",
-      });
-    });
+      
+      addMessage(response, false);
+      
+      // Prompt for contact info after a few messages
+      if (messages.length >= 2) {
+        setTimeout(() => {
+          addMessage("To better assist you, could you share your contact information? This helps us provide personalized recommendations.", false);
+          setChatPhase('form');
+        }, 1500);
+      }
+    }, 1000);
   };
 
-  const getStatusColor = (status: ChatSession['status']) => {
-    switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'waiting': return 'bg-orange-100 text-orange-800';
-      case 'closed': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getLeadScoreColor = (score: number) => {
-    if (score >= 80) return 'bg-green-100 text-green-800';
-    if (score >= 60) return 'bg-blue-100 text-blue-800';
-    if (score >= 40) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
-  };
-
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  const formatDuration = (startTime: Date) => {
-    const duration = Math.floor((Date.now() - startTime.getTime()) / 60000);
-    return `${duration} min`;
-  };
-
-  const startNewChat = async () => {
-    if (!visitorInfo.name || !visitorInfo.email) {
+  const handleSubmitLead = async () => {
+    if (!leadForm.name || !leadForm.email || !leadForm.company) {
       toast({
         title: "Missing Information",
-        description: "Please provide at least name and email to start a chat.",
-        variant: "destructive"
+        description: "Please fill in all required fields.",
+        variant: "destructive",
       });
       return;
     }
 
+    setIsSubmitting(true);
+    
     try {
-      // Submit to chat widget API with auto-reply
-      const response = await fetch('/api/chat-widget/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          visitorName: visitorInfo.name,
-          visitorEmail: visitorInfo.email,
-          visitorPhone: visitorInfo.phone,
-          companyName: visitorInfo.company,
-          message: visitorInfo.message || "Initial contact from chat widget"
-        })
+      await apiRequest("POST", "/api/chat-widget/submit", {
+        name: leadForm.name,
+        company: leadForm.company,
+        email: leadForm.email,
+        phone: leadForm.phone,
+        message: leadForm.message || "Contacted via chat widget"
       });
-
-      if (response.ok) {
-        const result = await response.json();
-        
-        // Play email notification sound
-        const notificationManager = EmailNotificationManager.getInstance();
-        await notificationManager.playNotification(`Chat Widget Lead: ${visitorInfo.name} - ${visitorInfo.company || 'No Company'}`);
-        
-        toast({
-          title: "📧 Auto-Reply Sent",
-          description: `Thank you ${visitorInfo.name}! Auto-reply email sent from starz@traffikboosters.com`,
-        });
-
-        // Create local session for demo
-        const newSession: ChatSession = {
-          id: `chat-${Date.now()}`,
-          visitorName: visitorInfo.name,
-          visitorEmail: visitorInfo.email,
-          visitorPhone: visitorInfo.phone,
-          startTime: new Date(),
-          status: 'waiting',
-          leadScore: 50,
-          source: "Chat Widget",
-          messages: visitorInfo.message ? [{
-            id: `msg-${Date.now()}`,
-            message: visitorInfo.message,
-            sender: 'visitor',
-            timestamp: new Date(),
-            senderName: visitorInfo.name,
-            status: 'sent'
-          }] : []
-        };
-
-        setSessions(prev => [newSession, ...prev]);
-        setSelectedSession(newSession);
-        setVisitorInfo({ name: "", email: "", company: "", phone: "", message: "" });
-        setCurrentView('sessions');
-      } else {
-        throw new Error('Failed to submit chat widget form');
-      }
+      
+      toast({
+        title: "Thank you!",
+        description: "A growth expert will call you within 24 business hours.",
+      });
+      
+      addMessage("Perfect! Your information has been submitted. A growth expert will call you within 24 business hours to discuss how we can help grow your business.", false);
+      setChatPhase('chat');
+      
+      // Reset form
+      setLeadForm({
+        name: '',
+        email: '',
+        company: '',
+        phone: '',
+        message: ''
+      });
     } catch (error) {
-      console.error('Chat widget submission error:', error);
       toast({
         title: "Submission Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive"
+        description: "There was an issue submitting your information. Please try again.",
+        variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Website Chat Widget</h1>
-          <p className="text-muted-foreground">Engage visitors and convert leads in real-time</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <img src={traffikBoostersLogo} alt="Traffik Boosters" className="h-8 w-auto" />
-          <Badge className="bg-green-100 text-green-800">
-            {sessions.filter(s => s.status === 'active').length} Active Chats
-          </Badge>
+  const startVideoCall = () => {
+    setChatPhase('video');
+    addMessage("Starting video consultation...", false);
+    // In a real implementation, this would integrate with video calling API
+    setTimeout(() => {
+      addMessage("Video calling requires camera permissions. Our team will call you to set up a consultation.", false);
+    }, 1000);
+  };
+
+  if (!isOpen) {
+    return (
+      <div className="fixed bottom-6 right-6 z-50">
+        <Button
+          onClick={() => setIsOpen(true)}
+          className="w-16 h-16 rounded-full bg-orange-600 hover:bg-orange-700 shadow-lg transition-transform hover:scale-105"
+          size="lg"
+        >
+          <MessageCircle className="w-6 h-6 text-white" />
+        </Button>
+        
+        {/* Status indicator */}
+        <div className="absolute -top-2 -right-2">
+          <div className={`w-4 h-4 rounded-full ${isBusinessHours() ? 'bg-green-500' : 'bg-yellow-500'} animate-pulse`} />
         </div>
       </div>
+    );
+  }
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Navigation & Controls */}
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Widget Controls</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button 
-                onClick={() => setCurrentView('demo')}
-                variant={currentView === 'demo' ? 'default' : 'outline'}
-                className="w-full justify-start"
+  return (
+    <div className="fixed bottom-6 right-6 z-50">
+      <Card className={`w-80 ${chatPhase === 'video' ? 'h-[500px]' : 'h-[450px]'} flex flex-col shadow-2xl ${isMinimized ? 'h-14' : ''}`}>
+        {/* Header */}
+        <CardHeader className="bg-orange-600 text-white p-4 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <img 
+                src={traffikBoostersLogo} 
+                alt="Traffik Boosters" 
+                className="w-8 h-8 rounded-full bg-white p-1"
+              />
+              <div>
+                <CardTitle className="text-sm font-semibold">Traffik Boosters</CardTitle>
+                <p className="text-xs opacity-90">More Traffik! More Sales!</p>
+                <Badge 
+                  variant="secondary" 
+                  className={`text-xs ${isBusinessHours() ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}
+                >
+                  {isBusinessHours() ? 'Online Now' : 'Will Call Within 24hrs'}
+                </Badge>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMinimized(!isMinimized)}
+                className="text-white hover:bg-orange-700 p-1"
               >
-                <Eye className="w-4 h-4 mr-2" />
-                Demo Preview
+                {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
               </Button>
-              <Button 
-                onClick={() => setCurrentView('sessions')}
-                variant={currentView === 'sessions' ? 'default' : 'outline'}
-                className="w-full justify-start"
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsOpen(false)}
+                className="text-white hover:bg-orange-700 p-1"
               >
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Live Sessions ({sessions.length})
+                <X className="w-4 h-4" />
               </Button>
-              <Button 
-                onClick={() => setCurrentView('settings')}
-                variant={currentView === 'settings' ? 'default' : 'outline'}
-                className="w-full justify-start"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Widget Settings
-              </Button>
-              <Button 
-                onClick={() => setCurrentView('metrics')}
-                variant={currentView === 'metrics' ? 'default' : 'outline'}
-                className="w-full justify-start"
-              >
-                <BarChart3 className="w-4 h-4 mr-2" />
-                Sales Metrics
-              </Button>
-              <Button 
-                onClick={() => setCurrentView('email')}
-                variant={currentView === 'email' ? 'default' : 'outline'}
-                className="w-full justify-start"
-              >
-                <Mail className="w-4 h-4 mr-2" />
-                Email Integration
-              </Button>
-              <Button onClick={generateWidgetCode} className="w-full justify-start">
-                <Code className="w-4 h-4 mr-2" />
-                Get Widget Code
-              </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+        </CardHeader>
 
-          {/* Email Widget Plugin */}
-          <WidgetEmailForm />
-
-          {/* Active Sessions */}
-          {currentView === 'sessions' && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Chat Sessions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-64">
-                  <div className="space-y-2">
-                    {sessions.map((session) => (
-                      <div
-                        key={session.id}
-                        className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                          selectedSession?.id === session.id ? 'bg-primary/10 border-primary' : 'hover:bg-muted/50'
-                        }`}
-                        onClick={() => setSelectedSession(session)}
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-sm">
-                            {session.visitorName || 'Anonymous'}
-                          </span>
-                          <Badge className={getStatusColor(session.status)} variant="secondary">
-                            {session.status}
-                          </Badge>
-                        </div>
-                        <div className="text-xs text-muted-foreground space-y-1">
-                          <div>Started: {formatTime(session.startTime)}</div>
-                          <div>Duration: {formatDuration(session.startTime)}</div>
-                          <div className="flex items-center justify-between">
-                            <span>Lead Score:</span>
-                            <Badge className={getLeadScoreColor(session.leadScore)} variant="secondary">
-                              {session.leadScore}%
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Main Content */}
-        <div className="lg:col-span-2">
-          {/* Sales Metrics View */}
-          {currentView === 'metrics' && (
-            <WidgetSalesMetrics />
-          )}
-
-          {/* Email Integration View */}
-          {currentView === 'email' && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="w-5 h-5" />
-                  Email Server Integration
-                </CardTitle>
-                <CardDescription>
-                  Configure email server for inbound and outbound chat widget communications
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Email Configuration */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email-server">Email Server URL</Label>
-                      <Input
-                        id="email-server"
-                        value={emailConfig.server}
-                        onChange={(e) => setEmailConfig(prev => ({ ...prev, server: e.target.value }))}
-                        placeholder="https://emailmg.ipage.com/sqmail/src/webmail.php"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="email-username">Email Username</Label>
-                      <Input
-                        id="email-username"
-                        value={emailConfig.username}
-                        onChange={(e) => setEmailConfig(prev => ({ ...prev, username: e.target.value }))}
-                        placeholder="starz@traffikboosters.com"
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="email-password">Email Password</Label>
-                      <Input
-                        id="email-password"
-                        type="password"
-                        value={emailConfig.password}
-                        onChange={(e) => setEmailConfig(prev => ({ ...prev, password: e.target.value }))}
-                        placeholder="Enter email password"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email-port">SMTP/IMAP Port</Label>
-                      <Input
-                        id="email-port"
-                        type="number"
-                        value={emailConfig.port}
-                        onChange={(e) => setEmailConfig(prev => ({ ...prev, port: parseInt(e.target.value) }))}
-                        placeholder="993"
-                      />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>Secure Connection (SSL/TLS)</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Use secure email connection
-                        </p>
-                      </div>
-                      <Switch 
-                        checked={emailConfig.secure}
-                        onCheckedChange={(checked) => setEmailConfig(prev => ({ 
-                          ...prev, 
-                          secure: checked 
-                        }))}
-                      />
-                    </div>
-
-                    <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                        <span className="font-medium text-green-800">Email Account Configuration</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 text-xs text-green-700">
-                        <div>
-                          <p className="font-semibold">Incoming (IMAP)</p>
-                          <p>Host: imap.ipage.com</p>
-                          <p>Port: 993 (SSL/TLS)</p>
-                        </div>
-                        <div>
-                          <p className="font-semibold">Outgoing (SMTP)</p>
-                          <p>Host: smtp.ipage.com</p>
-                          <p>Port: 465 (SSL/TLS)</p>
-                        </div>
-                      </div>
-                      <p className="text-xs text-green-600 mt-2">
-                        Account: starz@traffikboosters.com | Widget replies from this address
-                      </p>
-                      <p className="text-xs text-green-600">
-                        Last sync: {new Date().toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Email Features */}
-                <div className="border-t pt-6">
-                  <h3 className="font-semibold mb-4">Email Integration Features</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-center gap-3 p-3 border rounded-lg">
-                      <Mail className="w-5 h-5 text-blue-600" />
-                      <div>
-                        <p className="font-medium">Inbound Email Processing</p>
-                        <p className="text-sm text-muted-foreground">Automatically convert emails to chat messages</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3 p-3 border rounded-lg">
-                      <Send className="w-5 h-5 text-green-600" />
-                      <div>
-                        <p className="font-medium">Outbound Email Delivery</p>
-                        <p className="text-sm text-muted-foreground">Send chat transcripts and follow-ups via email</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3 p-3 border rounded-lg">
-                      <User className="w-5 h-5 text-purple-600" />
-                      <div>
-                        <p className="font-medium">Lead Capture Integration</p>
-                        <p className="text-sm text-muted-foreground">Sync visitor emails with CRM automatically</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3 p-3 border rounded-lg">
-                      <Clock className="w-5 h-5 text-orange-600" />
-                      <div>
-                        <p className="font-medium">Real-time Notifications</p>
-                        <p className="text-sm text-muted-foreground">Instant email alerts for new chat messages</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="border-t pt-6 flex gap-3">
-                  <Button 
-                    onClick={() => {
-                      toast({
-                        title: "Email Configuration Saved",
-                        description: "Email server settings have been updated successfully.",
-                      });
-                    }}
-                    className="bg-green-600 hover:bg-green-700"
+        {!isMinimized && (
+          <CardContent className="flex-1 flex flex-col p-0">
+            {chatPhase === 'form' ? (
+              /* Contact Form */
+              <div className="p-4 space-y-4 flex-1 overflow-y-auto">
+                <h3 className="font-semibold text-gray-900">Let's Get Started</h3>
+                <div className="space-y-3">
+                  <Input
+                    placeholder="Your Name *"
+                    value={leadForm.name}
+                    onChange={(e) => setLeadForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="text-sm"
+                  />
+                  <Input
+                    placeholder="Business Email *"
+                    type="email"
+                    value={leadForm.email}
+                    onChange={(e) => setLeadForm(prev => ({ ...prev, email: e.target.value }))}
+                    className="text-sm"
+                  />
+                  <Input
+                    placeholder="Company Name *"
+                    value={leadForm.company}
+                    onChange={(e) => setLeadForm(prev => ({ ...prev, company: e.target.value }))}
+                    className="text-sm"
+                  />
+                  <Input
+                    placeholder="Phone Number"
+                    value={leadForm.phone}
+                    onChange={(e) => setLeadForm(prev => ({ ...prev, phone: e.target.value }))}
+                    className="text-sm"
+                  />
+                  <Textarea
+                    placeholder="How can we help grow your business?"
+                    value={leadForm.message}
+                    onChange={(e) => setLeadForm(prev => ({ ...prev, message: e.target.value }))}
+                    className="text-sm"
+                    rows={3}
+                  />
+                  <Button
+                    onClick={handleSubmitLead}
+                    disabled={isSubmitting}
+                    className="w-full bg-orange-600 hover:bg-orange-700"
                   >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Save Configuration
+                    {isSubmitting ? "Submitting..." : "Get Free Quote"}
                   </Button>
-                  
-                  <Button 
+                  <Button
                     variant="outline"
-                    onClick={() => {
-                      toast({
-                        title: "Testing Email Connection",
-                        description: "Sending test email to verify configuration...",
-                      });
-                    }}
+                    onClick={() => setChatPhase('chat')}
+                    className="w-full text-sm"
                   >
-                    <Send className="w-4 h-4 mr-2" />
-                    Test Connection
+                    Continue Chat Instead
                   </Button>
-                  
-                  <Button 
+                </div>
+              </div>
+            ) : chatPhase === 'video' ? (
+              /* Video Call Interface */
+              <div className="p-4 flex-1 flex flex-col justify-center items-center bg-gray-900 text-white">
+                <Video className="w-16 h-16 mb-4 text-orange-500" />
+                <h3 className="text-lg font-semibold mb-2">Video Consultation</h3>
+                <p className="text-sm text-center mb-4 opacity-80">
+                  Video calls require camera permissions and setup. Our team will contact you to arrange a video consultation.
+                </p>
+                <div className="flex space-x-2">
+                  <Button
                     variant="outline"
-                    onClick={() => {
-                      const emailUrl = "https://emailmg.ipage.com/sqmail/src/webmail.php";
-                      navigator.clipboard.writeText(emailUrl);
-                      window.open(emailUrl, '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
-                      toast({
-                        title: "Email Client Opening",
-                        description: "Email URL copied to clipboard. Login with: starz@traffikboosters.com",
-                      });
-                    }}
+                    onClick={() => setChatPhase('chat')}
+                    className="bg-white text-gray-900"
                   >
-                    <Monitor className="w-4 h-4 mr-2" />
-                    Open Email Client
+                    Back to Chat
+                  </Button>
+                  <Button className="bg-orange-600 hover:bg-orange-700">
+                    <Phone className="w-4 h-4 mr-2" />
+                    Call (877) 840-6250
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {currentView === 'demo' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Widget Demo</CardTitle>
-                <CardDescription>
-                  Preview how your chat widget will look and behave on your website
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Widget Preview */}
-                <div className="relative border-2 border-dashed border-muted rounded-lg p-8 bg-muted/20 min-h-[400px]">
-                  <div className="text-center text-muted-foreground mb-8">
-                    Website Preview Area
-                  </div>
-                  
-                  {/* Chat Widget */}
-                  <div className={`fixed ${
-                    settings.position === 'bottom-right' ? 'bottom-4 right-4' :
-                    settings.position === 'bottom-left' ? 'bottom-4 left-4' :
-                    settings.position === 'top-right' ? 'top-4 right-4' :
-                    'top-4 left-4'
-                  } z-50`}>
-                    {!isOpen ? (
-                      <Button
-                        onClick={() => setIsOpen(true)}
-                        className="rounded-full w-14 h-14 shadow-lg"
-                        style={{ backgroundColor: settings.primaryColor }}
-                      >
-                        <MessageCircle className="w-6 h-6" />
-                      </Button>
-                    ) : (
-                      <Card className="w-80 h-96 shadow-xl">
-                        <CardHeader className="p-3" style={{ backgroundColor: settings.primaryColor, color: 'white' }}>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <div className="flex flex-col items-center">
-                                <img src={traffikBoostersLogo} alt="Logo" className="w-16 h-16 rounded" />
-                                <p className="text-xs opacity-90 font-medium text-center">More Traffik! More Sales!</p>
-                              </div>
-                              <div>
-                                <p className="font-medium text-sm">Starz Widget</p>
-                                <p className="text-xs opacity-80">We're online!</p>
-                              </div>
-                            </div>
-                            <div className="flex gap-1">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="w-6 h-6 p-0 text-white hover:bg-white/20"
-                                onClick={() => setIsMinimized(!isMinimized)}
-                              >
-                                <Minimize2 className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="w-6 h-6 p-0 text-white hover:bg-white/20"
-                                onClick={() => setIsOpen(false)}
-                              >
-                                <X className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </div>
-                        </CardHeader>
-                        
-                        {!isMinimized && (
-                          <CardContent className="p-0 flex flex-col h-80">
-                            <div className="p-3 border-b">
-                              <p className="text-sm text-muted-foreground">{settings.welcomeMessage}</p>
-                            </div>
-                            
-                            <div className="flex-1 p-3 space-y-3">
-                              <div className="space-y-2">
-                                <Label htmlFor="demo-name">Name *</Label>
-                                <Input
-                                  id="demo-name"
-                                  value={visitorInfo.name}
-                                  onChange={(e) => setVisitorInfo(prev => ({ ...prev, name: e.target.value }))}
-                                  placeholder="Your name"
-                                />
-                              </div>
-                              
-                              {settings.collectEmail && (
-                                <div className="space-y-2">
-                                  <Label htmlFor="demo-email">Email *</Label>
-                                  <Input
-                                    id="demo-email"
-                                    type="email"
-                                    value={visitorInfo.email}
-                                    onChange={(e) => setVisitorInfo(prev => ({ ...prev, email: e.target.value }))}
-                                    placeholder="your@email.com"
-                                  />
-                                </div>
-                              )}
-                              
-                              {settings.collectPhone && (
-                                <div className="space-y-2">
-                                  <Label htmlFor="demo-phone">Phone</Label>
-                                  <Input
-                                    id="demo-phone"
-                                    value={visitorInfo.phone}
-                                    onChange={(e) => setVisitorInfo(prev => ({ ...prev, phone: e.target.value }))}
-                                    placeholder="(555) 123-4567"
-                                  />
-                                </div>
-                              )}
-                              
-                              <div className="space-y-2">
-                                <Label htmlFor="demo-message">Message</Label>
-                                <Textarea
-                                  id="demo-message"
-                                  value={visitorInfo.message}
-                                  onChange={(e) => setVisitorInfo(prev => ({ ...prev, message: e.target.value }))}
-                                  placeholder="How can we help you?"
-                                  rows={2}
-                                />
-                              </div>
-                            </div>
-                            
-                            <div className="p-3 border-t">
-                              <Button 
-                                onClick={startNewChat} 
-                                className="w-full"
-                                style={{ backgroundColor: settings.accentColor }}
-                              >
-                                Start Chat
-                              </Button>
-                            </div>
-                          </CardContent>
-                        )}
-                      </Card>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {currentView === 'sessions' && selectedSession && (
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <User className="w-5 h-5" />
-                      {selectedSession.visitorName || 'Anonymous Visitor'}
-                    </CardTitle>
-                    <CardDescription>
-                      {selectedSession.visitorEmail && (
-                        <span className="flex items-center gap-1">
-                          <Mail className="w-3 h-3" />
-                          {selectedSession.visitorEmail}
-                        </span>
-                      )}
-                      {selectedSession.visitorPhone && (
-                        <span className="flex items-center gap-1 ml-4">
-                          <Phone className="w-3 h-3" />
-                          {selectedSession.visitorPhone}
-                        </span>
-                      )}
-                    </CardDescription>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge className={getLeadScoreColor(selectedSession.leadScore)} variant="secondary">
-                      Lead Score: {selectedSession.leadScore}%
-                    </Badge>
-                    <Badge className={getStatusColor(selectedSession.status)} variant="secondary">
-                      {selectedSession.status}
-                    </Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Messages */}
-                  <ScrollArea className="h-64 border rounded-lg p-3">
-                    <div className="space-y-3">
-                      {selectedSession.messages.map((message) => (
-                        <div key={message.id} className={`flex ${message.sender === 'agent' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-xs lg:max-w-md px-3 py-2 rounded-lg ${
-                            message.sender === 'agent' 
-                              ? 'bg-primary text-primary-foreground' 
-                              : 'bg-muted'
-                          }`}>
-                            <p className="text-sm">{message.message}</p>
-                            <div className="flex items-center justify-between mt-1">
-                              <span className="text-xs opacity-70">
-                                {formatTime(message.timestamp)}
-                              </span>
-                              {message.sender === 'agent' && message.status && (
-                                <div className="flex items-center gap-1">
-                                  {message.status === 'sent' && <Clock className="w-3 h-3" />}
-                                  {message.status === 'delivered' && <CheckCircle className="w-3 h-3" />}
-                                  {message.status === 'read' && <CheckCircle className="w-3 h-3 text-blue-400" />}
-                                </div>
-                              )}
-                            </div>
-                          </div>
+              </div>
+            ) : (
+              /* Chat Interface */
+              <>
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className={`flex items-start space-x-2 max-w-[70%] ${message.isUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${message.isUser ? 'bg-orange-600' : 'bg-gray-200'}`}>
+                          {message.isUser ? (
+                            <User className="w-3 h-3 text-white" />
+                          ) : (
+                            <img src={traffikBoostersLogo} alt="TB" className="w-3 h-3 rounded-full" />
+                          )}
                         </div>
-                      ))}
-                      
-                      {isTyping && settings.showTypingIndicator && (
-                        <div className="flex justify-start">
-                          <div className="bg-muted px-3 py-2 rounded-lg">
-                            <div className="flex space-x-1">
-                              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                              <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                            </div>
-                          </div>
+                        <div
+                          className={`p-3 rounded-lg text-sm ${
+                            message.isUser
+                              ? 'bg-orange-600 text-white'
+                              : 'bg-gray-100 text-gray-900'
+                          }`}
+                        >
+                          {message.text}
                         </div>
-                      )}
-                      <div ref={messagesEndRef} />
+                      </div>
                     </div>
-                  </ScrollArea>
+                  ))}
+                </div>
+
+                {/* Chat Actions */}
+                <div className="p-4 border-t bg-gray-50">
+                  <div className="flex space-x-2 mb-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setChatPhase('form')}
+                      className="flex-1 text-xs"
+                    >
+                      Get Quote
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={startVideoCall}
+                      className="flex-1 text-xs"
+                    >
+                      <Video className="w-3 h-3 mr-1" />
+                      Video
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open('tel:8778406250')}
+                      className="flex-1 text-xs"
+                    >
+                      <Phone className="w-3 h-3 mr-1" />
+                      Call
+                    </Button>
+                  </div>
                   
-                  {/* Message Input */}
-                  <div className="flex gap-2">
+                  <div className="flex space-x-2">
                     <Input
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Type your message..."
-                      onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                      value={currentMessage}
+                      onChange={(e) => setCurrentMessage(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                      className="flex-1 text-sm"
                     />
-                    <Button onClick={sendMessage} disabled={!newMessage.trim()}>
+                    <Button
+                      onClick={handleSendMessage}
+                      size="sm"
+                      className="bg-orange-600 hover:bg-orange-700 px-3"
+                    >
                       <Send className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {currentView === 'settings' && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Widget Settings</CardTitle>
-                <CardDescription>
-                  Customize your chat widget appearance and behavior
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label>Widget Position</Label>
-                      <Select value={settings.position} onValueChange={(value: any) => 
-                        setSettings(prev => ({ ...prev, position: value }))
-                      }>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="bottom-right">Bottom Right</SelectItem>
-                          <SelectItem value="bottom-left">Bottom Left</SelectItem>
-                          <SelectItem value="top-right">Top Right</SelectItem>
-                          <SelectItem value="top-left">Top Left</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Primary Color</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={settings.primaryColor}
-                          onChange={(e) => setSettings(prev => ({ ...prev, primaryColor: e.target.value }))}
-                        />
-                        <div 
-                          className="w-10 h-10 rounded border cursor-pointer"
-                          style={{ backgroundColor: settings.primaryColor }}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Accent Color</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={settings.accentColor}
-                          onChange={(e) => setSettings(prev => ({ ...prev, accentColor: e.target.value }))}
-                        />
-                        <div 
-                          className="w-10 h-10 rounded border cursor-pointer"
-                          style={{ backgroundColor: settings.accentColor }}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Welcome Message</Label>
-                      <Textarea
-                        value={settings.welcomeMessage}
-                        onChange={(e) => setSettings(prev => ({ ...prev, welcomeMessage: e.target.value }))}
-                        rows={2}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label>Offline Message</Label>
-                      <Textarea
-                        value={settings.offlineMessage}
-                        onChange={(e) => setSettings(prev => ({ ...prev, offlineMessage: e.target.value }))}
-                        rows={2}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>Collect Email</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Require email before starting chat
-                        </p>
-                      </div>
-                      <Switch 
-                        checked={settings.collectEmail}
-                        onCheckedChange={(checked) => setSettings(prev => ({ 
-                          ...prev, 
-                          collectEmail: checked 
-                        }))}
-                      />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>Collect Phone</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Ask for phone number (optional)
-                        </p>
-                      </div>
-                      <Switch 
-                        checked={settings.collectPhone}
-                        onCheckedChange={(checked) => setSettings(prev => ({ 
-                          ...prev, 
-                          collectPhone: checked 
-                        }))}
-                      />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>Typing Indicator</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Show when agents are typing
-                        </p>
-                      </div>
-                      <Switch 
-                        checked={settings.showTypingIndicator}
-                        onCheckedChange={(checked) => setSettings(prev => ({ 
-                          ...prev, 
-                          showTypingIndicator: checked 
-                        }))}
-                      />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>Sound Notifications</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Play sound for new messages
-                        </p>
-                      </div>
-                      <Switch 
-                        checked={settings.playSound}
-                        onCheckedChange={(checked) => setSettings(prev => ({ 
-                          ...prev, 
-                          playSound: checked 
-                        }))}
-                      />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label>Auto Responders</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Automatic responses when offline
-                        </p>
-                      </div>
-                      <Switch 
-                        checked={settings.autoResponders}
-                        onCheckedChange={(checked) => setSettings(prev => ({ 
-                          ...prev, 
-                          autoResponders: checked 
-                        }))}
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="pt-4 border-t">
-                  <Button onClick={generateWidgetCode} className="w-full">
-                    <Copy className="w-4 h-4 mr-2" />
-                    Generate & Copy Widget Code
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Widget Code Display */}
-          {widgetCode && (
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle>Widget Installation Code</CardTitle>
-                <CardDescription>
-                  Copy this code and paste it before the closing &lt;/body&gt; tag on your website
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="relative">
-                  <pre className="bg-muted p-4 rounded-lg text-sm overflow-auto max-h-64">
-                    <code>{widgetCode}</code>
-                  </pre>
-                  <Button
-                    size="sm"
-                    className="absolute top-2 right-2"
-                    onClick={() => navigator.clipboard.writeText(widgetCode)}
-                  >
-                    <Copy className="w-3 h-3" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </div>
+              </>
+            )}
+          </CardContent>
+        )}
+      </Card>
     </div>
   );
 }
