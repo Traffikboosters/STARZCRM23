@@ -428,9 +428,11 @@ export default function CRMView() {
                       className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[60px]"
                       onClick={(e) => {
                         e.stopPropagation();
+                        console.log('AI Tips clicked for contact:', contact.firstName, contact.lastName);
                         setSelectedContact(contact);
                         setCurrentAction('calling');
                         setIsAITipGeneratorOpen(true);
+                        console.log('AI Tip Generator state set to open:', true);
                       }}
                     >
                       <ClipboardList className="h-3 w-3 mb-2 text-purple-600" />
@@ -634,61 +636,23 @@ export default function CRMView() {
       )}
 
       {/* AI Sales Tip Generator Modal */}
-      {isAITipGeneratorOpen && selectedContact && (
-        <div className="fixed inset-0 z-[9999] bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-5xl w-full max-h-[95vh] overflow-hidden">
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <ClipboardList className="h-5 w-5 text-purple-600" />
-                  <h2 className="text-lg font-semibold">AI Sales Tips</h2>
-                </div>
-                <div className="flex items-center gap-3">
-                  <img 
-                    src={traffikBoostersLogo}
-                    alt="Traffik Boosters" 
-                    className="h-8 w-8"
-                  />
-                  <div className="text-right">
-                    <div className="text-sm font-semibold text-black">AI Sales Intelligence</div>
-                    <div className="text-xs text-black">More Traffik! More Sales!</div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setIsAITipGeneratorOpen(false);
-                      setSelectedContact(null);
-                      setCurrentAction(undefined);
-                    }}
-                    className="ml-2"
-                  >
-                    ✕
-                  </Button>
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-6 overflow-y-auto max-h-[calc(95vh-140px)]">
-              <AISalesTipGenerator
-                contact={selectedContact}
-                currentAction={currentAction}
-                isOpen={isAITipGeneratorOpen}
-                onClose={() => {
-                  setIsAITipGeneratorOpen(false);
-                  setSelectedContact(null);
-                  setCurrentAction(undefined);
-                }}
-                onApplyTip={(tipId) => {
-                  toast({
-                    title: "Sales Tip Applied",
-                    description: `AI tip ${tipId} has been applied to your sales approach.`,
-                  });
-                }}
-              />
-            </div>
-          </div>
-        </div>
+      {selectedContact && (
+        <AISalesTipGenerator
+          contact={selectedContact}
+          currentAction={currentAction}
+          isOpen={isAITipGeneratorOpen}
+          onClose={() => {
+            setIsAITipGeneratorOpen(false);
+            setSelectedContact(null);
+            setCurrentAction(undefined);
+          }}
+          onApplyTip={(tipId) => {
+            toast({
+              title: "Sales Tip Applied",
+              description: `AI tip ${tipId} has been applied to your sales approach.`,
+            });
+          }}
+        />
       )}
     </div>
   );
