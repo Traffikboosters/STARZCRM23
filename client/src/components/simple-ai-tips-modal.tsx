@@ -94,7 +94,7 @@ export function SimpleAITipsModal({ contact, isOpen, onClose }: SimpleAITipsModa
               <div>
                 <DialogTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
                   <Brain className="h-6 w-6 text-blue-600" />
-                  AI Sales Tips
+                  Starz Sales Tips
                 </DialogTitle>
                 <p className="text-sm text-gray-600">
                   Personalized for {contact.firstName} {contact.lastName} at {contact.company || 'Individual Contact'}

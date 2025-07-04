@@ -439,14 +439,14 @@ export default function CRMView() {
                       <span className="leading-tight">Email</span>
                     </Button>
 
-                    {/* AI Tips Button */}
+                    {/* Starz Tips Button */}
                     <Button
                       variant="outline"
                       size="sm"
                       className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[60px]"
                       onClick={(e) => {
                         e.stopPropagation();
-                        console.log('AI Tips clicked for contact:', contact.firstName, contact.lastName);
+                        console.log('Starz Tips clicked for contact:', contact.firstName, contact.lastName);
                         setSelectedContact(contact);
                         setCurrentAction('calling');
                         setIsAITipGeneratorOpen(true);
@@ -457,13 +457,13 @@ export default function CRMView() {
                           currentAction: 'calling'
                         });
                         toast({
-                          title: "AI Tips Opening",
-                          description: `Loading AI sales tips for ${contact.firstName} ${contact.lastName}`,
+                          title: "Starz Sales Tips Opening",
+                          description: `Loading Starz sales tips for ${contact.firstName} ${contact.lastName}`,
                         });
                       }}
                     >
                       <ClipboardList className="h-3 w-3 mb-2 text-purple-600" />
-                      <span className="leading-tight">AI Tips</span>
+                      <span className="leading-tight">Starz Tips</span>
                     </Button>
 
                     {/* Notes Button */}
@@ -634,7 +634,7 @@ export default function CRMView() {
         />
       )}
 
-      {/* AI Sales Tip Generator Modal */}
+      {/* Starz Sales Tip Generator Modal */}
       {selectedContact && (
         <SimpleAITipsModal
           contact={selectedContact}
