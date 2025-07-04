@@ -2,7 +2,7 @@ import { useState } from "react";
 import Header from "@/components/header";
 import Sidebar from "@/components/sidebar";
 import CalendarView from "@/components/calendar-view";
-import CRMView from "@/components/crm-view";
+import CRMViewCompact from "@/components/crm-view-compact";
 import CampaignManagementView from "@/components/campaign-management-view";
 import ScrapingAnalytics from "@/components/scraping-analytics";
 import FilesView from "@/components/files-view";
@@ -92,7 +92,7 @@ export default function Dashboard() {
       case "calendar":
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
       case "crm":
-        return <CRMView />;
+        return <CRMViewCompact />;
       case "sold-leads":
         return <SoldLeadsView />;
       case "campaigns":

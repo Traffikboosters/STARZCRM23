@@ -964,58 +964,82 @@ export default function CRMView() {
           <div className="text-green-600 font-semibold">
             Displaying {filteredContacts.length} lead cards
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 2xl:grid-cols-10 gap-2">
             {filteredContacts.map((contact) => {
               const ageStatus = getLeadAgeStatus(contact.createdAt);
               return (
                 <Card 
                   key={contact.id} 
-                  className={`hover:shadow-md transition-all duration-300 border-l-4 border-l-orange-500 ${ageStatus.bgColor} lead-card-content`}
+                  className="w-32 h-32 hover:shadow-md transition-all duration-300 border-l-2 border-l-orange-500 cursor-pointer"
                 >
-                <CardHeader className="pb-1 p-2">
-                  <div className="flex items-center justify-between mb-1">
-                    <Badge 
-                      className={`${ageStatus.badgeColor} text-white text-[10px] px-1 py-0 ${ageStatus.description === '0-24H' ? ageStatus.animation : ''}`}
-                    >
-                      {ageStatus.description}
-                    </Badge>
-                    <Badge 
-                      className={`text-[10px] px-1 py-0 ${contact.isDemo ? 'bg-gray-500 text-white' : 'bg-green-600 text-white'}`}
-                    >
-                      {contact.isDemo ? 'DEMO' : 'REAL'}
-                    </Badge>
-                  </div>
-                  
-                  {/* Smaller Logo */}
-                  <div className="flex justify-center mb-1">
-                    <img 
-                      src={traffikBoostersLogo} 
-                      alt="Traffik Boosters" 
-                      className="h-8 w-auto object-contain"
-                      style={{ imageRendering: 'crisp-edges' }}
-                    />
-                  </div>
-                  
-                  <div className="flex items-center justify-between mb-0">
-                    <h3 className="text-[10px] font-bold text-gray-900">LEAD CARD</h3>
-                    <CardTitle className="text-[10px] font-semibold leading-tight flex-1 text-right">
-                      <div className="truncate">
-                        {contact.company || `${contact.firstName} ${contact.lastName}`}
+                  <CardContent className="p-1 h-full flex flex-col justify-between">
+                    {/* Top section with status and name */}
+                    <div className="space-y-1">
+                      <Badge 
+                        className={`${ageStatus.badgeColor} text-white text-[8px] px-1 py-0 ${ageStatus.description === '0-24H' ? ageStatus.animation : ''}`}
+                      >
+                        {ageStatus.description}
+                      </Badge>
+                      <div className="text-[9px] font-bold text-gray-900 truncate">
+                        {contact.firstName} {contact.lastName}
                       </div>
-                    </CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-1 lead-card-section p-2">
-                  {/* Contact Information */}
-                  <div className="space-y-0 lead-card-text">
-                    <div className="flex items-center text-[10px] text-gray-600 min-h-[14px] leading-none">
-                      <User className="h-2 w-2 mr-1 flex-shrink-0" />
-                      <span className="truncate font-medium">{contact.firstName} {contact.lastName}</span>
+                      <div className="text-[8px] text-gray-600 truncate">
+                        {contact.company || formatPhoneNumber(contact.phone)}
+                      </div>
                     </div>
-                    <div className="flex items-center text-[10px] text-gray-600 min-h-[14px] leading-none">
-                      <Phone className="h-2 w-2 mr-1 flex-shrink-0" />
-                      <span className="truncate font-medium">{formatPhoneNumber(contact.phone) || 'No phone'}</span>
+                    
+                    {/* Bottom section with action buttons */}
+                    <div className="space-y-1">
+                      <div className="grid grid-cols-2 gap-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-6 text-[8px] px-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCallContact(contact);
+                          }}
+                          disabled={!contact.phone}
+                        >
+                          <Phone className="h-2 w-2" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-6 text-[8px] px-1"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedContact(contact);
+                            setIsEmailModalOpen(true);
+                          }}
+                          disabled={!contact.email}
+                        >
+                          <Mail className="h-2 w-2" />
+                        </Button>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="default"
+                        className="w-full h-5 text-[8px] bg-orange-500 hover:bg-orange-600"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedContactForDetails(contact);
+                          setIsDetailsModalOpen(true);
+                        }}
+                      >
+                        More
+                      </Button>
                     </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
                     <div className="flex items-center text-[10px] text-gray-600 min-h-[14px] leading-none">
                       <Mail className="h-2 w-2 mr-1 flex-shrink-0" />
                       <span className="truncate font-medium">{contact.email || 'No email'}</span>
