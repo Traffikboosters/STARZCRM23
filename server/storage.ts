@@ -455,16 +455,28 @@ export class DatabaseStorage implements IStorage {
     const now = new Date();
     const redistributionDate = new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000); // 10 days from now
     
+    // Sold leads go to Sold Lead Cards Files, all others go to recent contacts folder
+    const updateData: any = {
+      disposition,
+      dispositionDate: now,
+      updatedAt: now,
+      updatedBy: userId
+    };
+
+    if (disposition === 'sold') {
+      // Sold leads: route to Sold Lead Cards Files system
+      updateData.leadStatus = 'sold';
+      updateData.isRecentContact = false;
+      updateData.redistributionEligibleAt = null; // Sold leads are not redistributed
+    } else {
+      // All other dispositions: route to recent contacts folder for 10-day redistribution cycle
+      updateData.isRecentContact = true;
+      updateData.redistributionEligibleAt = redistributionDate;
+    }
+    
     const [contact] = await db
       .update(contacts)
-      .set({
-        disposition,
-        dispositionDate: now,
-        redistributionEligibleAt: redistributionDate,
-        isRecentContact: disposition !== 'sold', // If not sold, it becomes a recent contact
-        updatedAt: now,
-        updatedBy: userId
-      })
+      .set(updateData)
       .where(eq(contacts.id, id))
       .returning();
     return contact || undefined;

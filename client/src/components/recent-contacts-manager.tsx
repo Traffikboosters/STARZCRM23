@@ -120,6 +120,9 @@ export default function RecentContactsManager() {
           <p className="text-muted-foreground">
             Manage recent contacts and redistribution after 10-day closing period
           </p>
+          <p className="text-sm text-blue-600 mt-1">
+            Note: Sold leads are automatically routed to Sold Lead Cards Files
+          </p>
         </div>
         <div className="flex gap-2">
           <Badge variant="outline" className="flex items-center gap-1">

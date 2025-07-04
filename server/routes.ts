@@ -586,12 +586,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Send WebSocket notification for disposition update
       if (wss) {
+        const routingMessage = disposition === 'sold' 
+          ? `Lead marked as sold - routed to Sold Lead Cards Files`
+          : `Lead disposition updated to: ${disposition} - moved to Recent Contacts folder`;
+          
         const notificationData = {
           type: 'disposition_updated',
           contactId: id,
           disposition,
           timestamp: new Date().toISOString(),
-          message: `Lead disposition updated to: ${disposition}`
+          message: routingMessage
         };
         
         wss.clients.forEach(client => {
