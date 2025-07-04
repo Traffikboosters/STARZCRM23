@@ -26,6 +26,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { authService } from "@/lib/auth";
 import type { Contact } from "@shared/schema";
 import { AISalesTipGenerator } from "./ai-sales-tip-generator";
+import LeadDetailsModal from "./lead-details-modal";
 import { formatPhoneNumber } from "@/lib/utils";
 
 // Import Traffik Boosters logo
@@ -606,68 +607,16 @@ export default function CRMView() {
         </DialogContent>
       </Dialog>
 
-      {/* Contact Details Modal Placeholder */}
+      {/* Contact Details Modal with Tabs */}
       {isDetailsModalOpen && selectedContactForDetails && (
-        <div className="fixed inset-0 z-[9999] bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[95vh] overflow-hidden">
-            <div className="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-blue-600" />
-                  <h2 className="text-lg font-semibold">Contact Details</h2>
-                </div>
-                <div className="flex items-center gap-3">
-                  <img 
-                    src={traffikBoostersLogo}
-                    alt="Traffik Boosters" 
-                    className="h-8 w-8"
-                  />
-                  <div className="text-right">
-                    <div className="text-sm font-semibold text-black">Lead Management</div>
-                    <div className="text-xs text-black">More Traffik! More Sales!</div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setIsDetailsModalOpen(false);
-                      setSelectedContactForDetails(null);
-                    }}
-                    className="ml-2"
-                  >
-                    ✕
-                  </Button>
-                </div>
-              </div>
-            </div>
-            
-            <div className="p-6 overflow-y-auto max-h-[calc(95vh-140px)]">
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold">
-                  {selectedContactForDetails.firstName} {selectedContactForDetails.lastName}
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Company</p>
-                    <p className="font-medium">{selectedContactForDetails.company || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Phone</p>
-                    <p className="font-medium">{selectedContactForDetails.phone || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Email</p>
-                    <p className="font-medium">{selectedContactForDetails.email || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Lead Status</p>
-                    <p className="font-medium">{selectedContactForDetails.leadStatus || 'N/A'}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <LeadDetailsModal 
+          contact={selectedContactForDetails}
+          isOpen={isDetailsModalOpen}
+          onClose={() => {
+            setIsDetailsModalOpen(false);
+            setSelectedContactForDetails(null);
+          }}
+        />
       )}
 
       {/* AI Sales Tip Generator Modal */}
