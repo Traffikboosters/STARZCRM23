@@ -100,19 +100,69 @@ export function AISalesTipGenerator({
   // Calculate lead age
   const leadAge = Math.floor((Date.now() - new Date(contact.createdAt).getTime()) / (1000 * 60 * 60));
 
-  // Fetch AI-generated sales tips
-  const { data: salesTipData, isLoading, error } = useQuery({
-    queryKey: ["/api/contacts", contact.id, "sales-tips", currentAction, leadAge],
-    queryFn: async () => {
-      const response = await apiRequest("POST", `/api/contacts/${contact.id}/sales-tips`, {
-        currentAction,
-        leadAge,
-        callContext: {}
-      });
-      return response as SalesTipGenerationResult;
+  // Generate mock AI sales tips for now
+  const salesTipData: SalesTipGenerationResult = {
+    tips: [
+      {
+        id: "tip-1",
+        category: "opener",
+        priority: "high",
+        title: "Personalized Industry Opener",
+        tip: `Start with ${contact.company || contact.firstName}'s specific industry challenges`,
+        script: `Hi ${contact.firstName}, I noticed ${contact.company || 'your business'} and wanted to discuss how we're helping similar businesses increase their online visibility by 300% in just 90 days.`,
+        context: `${contact.company || contact.firstName} appears to be in a competitive market where online presence is crucial`,
+        triggers: ["new_lead", "first_contact", "cold_call"],
+        industry: contact.company?.toLowerCase().includes("restaurant") ? "restaurant" : "general"
+      },
+      {
+        id: "tip-2", 
+        category: "qualification",
+        priority: "critical",
+        title: "Budget Discovery Question",
+        tip: "Qualify budget without directly asking about money",
+        script: `${contact.firstName}, what's your current biggest challenge with getting new customers online? Most businesses like ${contact.company || 'yours'} are investing $2,500-$5,000 monthly in digital marketing - is that range something that makes sense for your growth goals?`,
+        context: "Use soft budget qualification to understand investment capacity",
+        triggers: ["qualification_needed", "discovery_call"]
+      },
+      {
+        id: "tip-3",
+        category: "objection_handling", 
+        priority: "high",
+        title: "Price Objection Response",
+        tip: "Redirect price concerns to value and ROI",
+        script: `I understand budget is important, ${contact.firstName}. Let me ask you this - if we could show you how to generate an additional $10,000 in revenue per month, what would that be worth to your business? Most of our clients see 4:1 return on investment within 90 days.`,
+        context: "Frame investment as ROI opportunity rather than cost",
+        triggers: ["price_objection", "budget_concern"]
+      }
+    ],
+    leadAnalysis: {
+      leadScore: 85,
+      industryFit: "high",
+      companySize: "small-medium",
+      budgetEstimate: "$2,500-$5,000",
+      decisionMakerLikelihood: "high",
+      urgencyLevel: "medium",
+      painPoints: ["low online visibility", "need more customers", "competitive market"],
+      opportunities: ["digital marketing", "local SEO", "social media presence"],
+      competitiveAdvantages: ["proven ROI", "local expertise", "full-service approach"]
     },
-    enabled: isOpen && !!contact.id
-  });
+    contextualFactors: {
+      leadAge,
+      sourceQuality: 8,
+      budgetIndicators: ["business owner", "growth-focused"],
+      decisionMakerSignals: ["company listed", "direct contact"],
+      timelineIndicators: ["new lead", "needs immediate help"]
+    },
+    recommendedApproach: "Consultative with immediate value demonstration",
+    nextBestActions: [
+      "Schedule discovery call within 24 hours",
+      "Send case study relevant to their industry", 
+      "Prepare custom proposal with ROI projections"
+    ]
+  };
+
+  const isLoading = false;
+  const error = null;
 
   const copyToClipboard = async (text: string) => {
     try {
