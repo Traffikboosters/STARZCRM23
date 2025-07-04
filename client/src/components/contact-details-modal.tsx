@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -112,6 +112,19 @@ export default function ContactDetailsModal({
 }: ContactDetailsModalProps) {
   const [activeTab, setActiveTab] = useState("overview");
   const queryClient = useQueryClient();
+
+  // Reset active tab when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab("overview");
+    }
+  }, [isOpen]);
+
+  // Debug tab changes
+  const handleTabChange = (value: string) => {
+    console.log("Tab change requested:", value);
+    setActiveTab(value);
+  };
   const currentUser = authService.getCurrentUser();
   const isManagement = currentUser?.role === 'admin' || currentUser?.role === 'manager';
 
@@ -252,17 +265,17 @@ export default function ContactDetailsModal({
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-9">
-            <TabsTrigger key="overview-tab" value="overview">Overview</TabsTrigger>
-            <TabsTrigger key="notes-tab" value="notes">Notes ({notes.length})</TabsTrigger>
-            <TabsTrigger key="intake-tab" value="intake">Lead Intake</TabsTrigger>
-            <TabsTrigger key="disposition-tab" value="disposition">Disposition</TabsTrigger>
-            <TabsTrigger key="timeline-tab" value="timeline">Timeline</TabsTrigger>
-            <TabsTrigger key="conversation-tab" value="conversation">AI Starters</TabsTrigger>
-            <TabsTrigger key="quick-replies-tab" value="quick-replies">Quick Replies</TabsTrigger>
-            <TabsTrigger key="online-presence-tab" value="online-presence">Online Research</TabsTrigger>
-            <TabsTrigger key="enrichment-tab" value="enrichment">Social Media</TabsTrigger>
+        <Tabs defaultValue="overview" value={activeTab} onValueChange={handleTabChange} className="w-full">
+          <TabsList className="grid w-full grid-cols-9 bg-gray-100">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-white">Overview</TabsTrigger>
+            <TabsTrigger value="notes" className="data-[state=active]:bg-white">Notes ({notes.length})</TabsTrigger>
+            <TabsTrigger value="intake" className="data-[state=active]:bg-white">Lead Intake</TabsTrigger>
+            <TabsTrigger value="disposition" className="data-[state=active]:bg-white">Disposition</TabsTrigger>
+            <TabsTrigger value="timeline" className="data-[state=active]:bg-white">Timeline</TabsTrigger>
+            <TabsTrigger value="conversation" className="data-[state=active]:bg-white">AI Starters</TabsTrigger>
+            <TabsTrigger value="quick-replies" className="data-[state=active]:bg-white">Quick Replies</TabsTrigger>
+            <TabsTrigger value="online-presence" className="data-[state=active]:bg-white">Online Research</TabsTrigger>
+            <TabsTrigger value="enrichment" className="data-[state=active]:bg-white">Social Media</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
