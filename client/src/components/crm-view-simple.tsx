@@ -93,11 +93,14 @@ export default function CRMView() {
   });
 
   const contacts: Contact[] = useMemo(() => {
-    if (contactsResponse?.contacts) {
-      return contactsResponse.contacts;
-    }
-    if (Array.isArray(contactsResponse)) {
-      return contactsResponse;
+    // Handle different response structures
+    if (contactsResponse && typeof contactsResponse === 'object') {
+      if ('contacts' in contactsResponse && Array.isArray((contactsResponse as any).contacts)) {
+        return (contactsResponse as any).contacts;
+      }
+      if (Array.isArray(contactsResponse)) {
+        return contactsResponse;
+      }
     }
     return [];
   }, [contactsResponse]);
@@ -448,6 +451,10 @@ export default function CRMView() {
                         setCurrentAction('calling');
                         setIsAITipGeneratorOpen(true);
                         console.log('AI Tip Generator state set to open:', true);
+                        toast({
+                          title: "AI Tips Opening",
+                          description: `Loading AI sales tips for ${contact.firstName} ${contact.lastName}`,
+                        });
                       }}
                     >
                       <ClipboardList className="h-3 w-3 mb-2 text-purple-600" />
