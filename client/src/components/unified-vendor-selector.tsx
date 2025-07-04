@@ -243,12 +243,23 @@ export default function UnifiedVendorSelector() {
         return newSet;
       });
 
+      // Invalidate multiple query keys to ensure UI updates
       queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+      queryClient.invalidateQueries({ queryKey: ["contacts"] });
+      queryClient.refetchQueries({ queryKey: ["/api/contacts"] });
       
+      // Show success toast
+      const extractedCount = result.leadsExtracted || result.extracted || result.contactsCreated || 0;
       toast({
-        title: `${platform.name} Extraction Complete`,
-        description: `Successfully extracted ${result.leadsExtracted || result.extracted || 0} ${platform.leadType.toLowerCase()}`,
+        title: `✅ ${platform.name} Extraction Complete`,
+        description: `Successfully extracted ${extractedCount} ${platform.leadType.toLowerCase()}. Check your CRM for new leads.`,
+        duration: 5000,
       });
+
+      // Force a page refresh to show new data
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     },
     onError: (error: any, { platform }) => {
       setExtractingPlatforms(prev => {
