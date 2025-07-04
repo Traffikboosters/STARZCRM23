@@ -243,6 +243,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     apiVersion: "2023-10-16",
   });
 
+  // Serve standalone Traffik Boosters website
+  app.get("/website", (req, res) => {
+    try {
+      const filePath = path.join(process.cwd(), "public", "index.html");
+      if (fs.existsSync(filePath)) {
+        res.sendFile(filePath);
+      } else {
+        res.status(404).send("Website not found");
+      }
+    } catch (error) {
+      res.status(500).send("Error loading website");
+    }
+  });
+
   // Serve WordPress plugin files for mobile download
   app.get("/starz-chat-widget.php", async (req, res) => {
     try {
