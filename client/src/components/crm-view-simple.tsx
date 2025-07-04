@@ -182,11 +182,11 @@ export default function CRMView() {
     const hoursDiff = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
     
     if (hoursDiff <= 24) {
-      return { status: 'new', color: 'bg-green-100 border-green-300', badge: 'NEW' };
-    } else if (hoursDiff <= 72) {
-      return { status: 'follow_up', color: 'bg-yellow-100 border-yellow-300', badge: 'FOLLOW UP' };
+      return { status: 'new', color: 'bg-green-100 border-green-300', badge: 'NEW', badgeColor: 'bg-green-500' };
+    } else if (hoursDiff <= 48) {
+      return { status: 'follow_up', color: 'bg-yellow-100 border-yellow-300', badge: 'FOLLOW UP', badgeColor: 'bg-yellow-500' };
     } else {
-      return { status: 'urgent', color: 'bg-red-100 border-red-300', badge: 'URGENT' };
+      return { status: 'urgent', color: 'bg-red-100 border-red-300', badge: 'URGENT', badgeColor: 'bg-red-500' };
     }
   };
 
@@ -308,11 +308,9 @@ export default function CRMView() {
                       />
                       <span className="text-sm font-medium text-gray-500">LEAD CARD</span>
                     </div>
-                    {ageStatus.status === 'new' && (
-                      <Badge className={`text-xs animate-pulse ${ageStatus.status === 'new' ? 'bg-green-500' : ageStatus.status === 'follow_up' ? 'bg-yellow-500' : 'bg-red-500'} text-white`}>
-                        {ageStatus.badge}
-                      </Badge>
-                    )}
+                    <Badge className={`text-xs ${ageStatus.status === 'new' ? 'animate-pulse' : ''} ${ageStatus.badgeColor} text-white`}>
+                      {ageStatus.badge}
+                    </Badge>
                   </div>
                   <CardTitle className="text-lg">
                     {contact.firstName} {contact.lastName}
