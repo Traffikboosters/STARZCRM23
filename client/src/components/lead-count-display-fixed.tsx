@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Users, UserCheck, Calendar, Clock } from "lucide-react";
-import type { Contact } from "@db/schema";
+import type { Contact } from "@/lib/types";
 
 interface LeadCountDisplayProps {
   variant?: "sidebar" | "header" | "dashboard" | "compact";
