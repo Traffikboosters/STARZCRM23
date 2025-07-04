@@ -30,8 +30,10 @@ import { useToast } from "@/hooks/use-toast";
 
 import { apiRequest } from "@/lib/queryClient";
 import { authService } from "@/lib/auth";
-import type { Contact } from "@shared/schema";
+import type { Contact, UserType } from "@shared/schema";
+import { contactFormSchema, type ContactFormData } from "@shared/schema";
 import { AISalesTipGenerator } from "./ai-sales-tip-generator";
+import { ContactDetailsModal } from "./contact-details-modal";
 import { formatPhoneNumber } from "@/lib/utils";
 
 // Import Traffik Boosters logo
