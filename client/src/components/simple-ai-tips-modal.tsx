@@ -14,7 +14,8 @@ import {
   Phone,
   Users,
   Target,
-  Clock
+  Clock,
+  TrendingUp
 } from "lucide-react";
 import { Contact } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -49,34 +50,34 @@ export function SimpleAITipsModal({ contact, isOpen, onClose }: SimpleAITipsModa
     {
       id: "opener",
       icon: <Phone className="h-4 w-4" />,
-      title: "Opening Script",
+      title: "B2B Rapport Building Opener",
       category: "Opener",
-      script: `Hi ${contact.firstName}, this is Michael from Traffik Boosters. I noticed ${contact.company || 'your business'} and wanted to reach out about helping you increase your online visibility. We're helping similar businesses generate 300% more leads online. Do you have 2 minutes to discuss how this could work for your business?`,
-      tip: "Start with their specific business name and immediate value proposition"
+      script: `Hello ${contact.firstName}, this is Michael Thompson from Traffik Boosters. I specialize in helping business owners like yourself scale their operations through strategic digital marketing. I've been researching ${contact.company || 'your industry'} and noticed some opportunities that could significantly impact your bottom line. Do you have 3 minutes for me to share what I've found?`,
+      tip: "Build credibility immediately by showing you've done research on their business"
     },
     {
       id: "qualification",
       icon: <Users className="h-4 w-4" />,
-      title: "Qualification Questions",
+      title: "Business Value Discovery",
       category: "Discovery",
-      script: `${contact.firstName}, what's your biggest challenge with getting new customers right now? Most businesses like ${contact.company || 'yours'} are investing $2,500-$5,000 monthly in digital marketing to solve this. Is growing your customer base a priority for you this quarter?`,
-      tip: "Qualify budget and urgency without being direct about money"
+      script: `${contact.firstName}, as a business owner, I'm sure you're focused on sustainable growth and profitable revenue streams. What's your current biggest obstacle to reaching your next revenue milestone? Most successful business owners I work with are investing 8-12% of revenue back into marketing to stay competitive. Where do you see the biggest opportunity for ${contact.company || 'your business'} right now?`,
+      tip: "Focus on business growth goals and position marketing as a strategic investment"
     },
     {
       id: "objection",
       icon: <Target className="h-4 w-4" />,
-      title: "Price Objection Handler",
+      title: "Investment ROI Discussion",
       category: "Objections",
-      script: `I understand budget is important, ${contact.firstName}. Let me ask you this - if we could show you how to generate an additional $10,000 in revenue per month, what would that investment be worth to your business? Our average client sees 4:1 return within 90 days.`,
-      tip: "Redirect price concerns to ROI and value creation"
+      script: `${contact.firstName}, I appreciate that you're being fiscally responsible - that's what makes you a successful business owner. Let me frame this differently: if I could show you a strategy that generates an additional $25,000-$50,000 in monthly revenue within 6 months, and the investment required is less than 10% of that return, would that be worth exploring? Our clients typically see 300-500% ROI because we focus on high-intent leads that convert to actual customers.`,
+      tip: "Speak their language - ROI, profit margins, and business growth metrics"
     },
     {
       id: "closing",
       icon: <Clock className="h-4 w-4" />,
-      title: "Closing Script",
+      title: "Executive Decision Closing",
       category: "Closing",
-      script: `${contact.firstName}, based on what you've told me about ${contact.company || 'your business'}, I believe we can help you achieve those growth goals. I'd like to schedule a 15-minute strategy session to show you exactly how we'd approach your specific situation. Are you available tomorrow at 2 PM or would Thursday at 10 AM work better?`,
-      tip: "Assume the sale and offer specific time options"
+      script: `${contact.firstName}, based on our conversation, I can see ${contact.company || 'your business'} has tremendous potential for scaled growth. I'd like to put together a customized growth strategy specifically for your situation. I have two spots available this week for a 30-minute strategy consultation - Tuesday at 10 AM or Thursday at 2 PM. Which works better for your schedule? I'll come prepared with specific recommendations for your industry and market.`,
+      tip: "Position as a strategic consultation, not a sales call. Give limited availability to create urgency."
     }
   ];
 
@@ -104,7 +105,73 @@ export function SimpleAITipsModal({ contact, isOpen, onClose }: SimpleAITipsModa
           </div>
         </DialogHeader>
 
-        <div className="space-y-4 mt-6">
+        <div className="space-y-6 mt-6">
+          {/* B2B Lead Analysis Dashboard */}
+          <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
+                Strategic Business Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">Business Profile</h4>
+                    <div className="space-y-1 text-sm">
+                      <p><span className="font-medium">Business Type:</span> {contact.company ? "Established Business" : "Growing Business"}</p>
+                      <p><span className="font-medium">Industry:</span> {
+                        contact.notes?.includes("restaurant") ? "Food Service & Hospitality" : 
+                        contact.notes?.includes("HVAC") ? "HVAC & Home Services" :
+                        contact.notes?.includes("plumbing") ? "Plumbing & Mechanical Services" :
+                        contact.notes?.includes("electrical") ? "Electrical & Contracting Services" :
+                        contact.notes?.includes("dental") ? "Healthcare & Medical" :
+                        contact.notes?.includes("law") ? "Professional Services" :
+                        "Service-Based Business"
+                      }</p>
+                      <p><span className="font-medium">Priority Level:</span> <Badge variant="secondary">High Value Prospect</Badge></p>
+                      <p><span className="font-medium">Investment Range:</span> $3,500 - $8,500/month</p>
+                      <p><span className="font-medium">Decision Timeline:</span> 45-90 days</p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">Business Challenges</h4>
+                    <ul className="text-sm space-y-1">
+                      <li>• Scaling customer acquisition</li>
+                      <li>• Competing with larger companies</li>
+                      <li>• Converting leads to high-value customers</li>
+                      <li>• Measuring marketing ROI</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">Growth Opportunities</h4>
+                    <ul className="text-sm space-y-1">
+                      <li>• Digital presence optimization</li>
+                      <li>• Automated lead nurturing systems</li>
+                      <li>• High-intent keyword targeting</li>
+                      <li>• Competitive market positioning</li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">Strategic Next Steps</h4>
+                    <ul className="text-sm space-y-1">
+                      <li>• Executive strategy consultation</li>
+                      <li>• Comprehensive competitor audit</li>
+                      <li>• Custom growth plan presentation</li>
+                      <li>• Implementation roadmap discussion</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="grid gap-4">
             {salesTips.map((tip) => (
               <Card key={tip.id} className="border-l-4 border-l-blue-500">
