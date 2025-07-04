@@ -48,6 +48,8 @@ export default function CRMViewCompact() {
   const [isLeadAllocationModalOpen, setIsLeadAllocationModalOpen] = useState(false);
   const [selectedLeadsForAllocation, setSelectedLeadsForAllocation] = useState<number[]>([]);
   const [selectedSalesRep, setSelectedSalesRep] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const leadsPerPage = 50;
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -108,6 +110,18 @@ export default function CRMViewCompact() {
       contact.company?.toLowerCase().includes(searchLower)
     );
   });
+
+  // Pagination calculations
+  const totalLeads = filteredContacts.length;
+  const totalPages = Math.ceil(totalLeads / leadsPerPage);
+  const startIndex = (currentPage - 1) * leadsPerPage;
+  const endIndex = startIndex + leadsPerPage;
+  const currentLeads = filteredContacts.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search changes  
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const handleCallContact = (contact: Contact) => {
     if (contact.phone) {
@@ -191,23 +205,78 @@ export default function CRMViewCompact() {
         </div>
       </div>
 
-      {/* Lead Count */}
-      <div className="text-green-600 font-semibold">
-        Displaying {filteredContacts.length} of {contacts.length} lead cards
+      {/* Lead Count and Pagination Info */}
+      <div className="flex items-center justify-between">
+        <div className="text-green-600 font-semibold">
+          Displaying {currentLeads.length} of {filteredContacts.length} lead cards
+          {filteredContacts.length !== contacts.length && ` (filtered from ${contacts.length} total)`}
+        </div>
+        <div className="text-sm text-gray-600">
+          Page {currentPage} of {totalPages} ({leadsPerPage} per page)
+        </div>
       </div>
 
       {/* Compact Lead Cards Grid */}
-      {filteredContacts.length === 0 ? (
+      {currentLeads.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           No contacts found matching your criteria.
         </div>
       ) : (
         <CompactLeadCards
-          contacts={filteredContacts}
+          contacts={currentLeads}
           onContactClick={handleContactClick}
           onCallContact={handleCallContact}
           onEmailContact={handleEmailContact}
         />
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between py-4">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1}
+            >
+              First
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">
+              Page {currentPage} of {totalPages}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages}
+            >
+              Last
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Full-Featured Contact Details Modal with All Tabs */}
@@ -253,9 +322,9 @@ export default function CRMViewCompact() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setSelectedLeadsForAllocation(filteredContacts.map((c: Contact) => c.id))}
+                    onClick={() => setSelectedLeadsForAllocation(currentLeads.map((c: Contact) => c.id))}
                   >
-                    Select All
+                    Select All (Current Page)
                   </Button>
                   <Button
                     variant="outline"
@@ -269,7 +338,7 @@ export default function CRMViewCompact() {
               
               <div className="border rounded-lg max-h-96 overflow-y-auto">
                 <div className="grid gap-2 p-4">
-                  {filteredContacts.map((contact: Contact) => {
+                  {currentLeads.map((contact: Contact) => {
                     const ageStatus = getLeadAgeStatus(contact.createdAt);
                     const isSelected = selectedLeadsForAllocation.includes(contact.id);
                     
