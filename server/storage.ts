@@ -72,6 +72,10 @@ export interface IStorage {
   deleteContact(id: number): Promise<boolean>;
   searchContacts(query: string): Promise<Contact[]>;
   getLeadsByRep(repId: number): Promise<Contact[]>;
+  updateContactDisposition(id: number, disposition: string, userId: number): Promise<Contact | undefined>;
+  getRecentContacts(): Promise<Contact[]>;
+  getContactsEligibleForRedistribution(): Promise<Contact[]>;
+  redistributeContact(contactId: number, newRepId: number, redistributedBy: number): Promise<Contact | undefined>;
   
   // Events
   getAllEvents(): Promise<Event[]>;
@@ -445,6 +449,65 @@ export class DatabaseStorage implements IStorage {
 
   async getLeadsByRep(repId: number): Promise<Contact[]> {
     return await db.select().from(contacts).where(eq(contacts.assignedTo, repId));
+  }
+
+  async updateContactDisposition(id: number, disposition: string, userId: number): Promise<Contact | undefined> {
+    const now = new Date();
+    const redistributionDate = new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000); // 10 days from now
+    
+    const [contact] = await db
+      .update(contacts)
+      .set({
+        disposition,
+        dispositionDate: now,
+        redistributionEligibleAt: redistributionDate,
+        isRecentContact: disposition !== 'sold', // If not sold, it becomes a recent contact
+        updatedAt: now,
+        updatedBy: userId
+      })
+      .where(eq(contacts.id, id))
+      .returning();
+    return contact || undefined;
+  }
+
+  async getRecentContacts(): Promise<Contact[]> {
+    return await db.select()
+      .from(contacts)
+      .where(eq(contacts.isRecentContact, true))
+      .orderBy(desc(contacts.dispositionDate));
+  }
+
+  async getContactsEligibleForRedistribution(): Promise<Contact[]> {
+    const now = new Date();
+    return await db.select()
+      .from(contacts)
+      .where(
+        and(
+          eq(contacts.isRecentContact, true),
+          lte(contacts.redistributionEligibleAt, now)
+        )
+      )
+      .orderBy(desc(contacts.redistributionEligibleAt));
+  }
+
+  async redistributeContact(contactId: number, newRepId: number, redistributedBy: number): Promise<Contact | undefined> {
+    const now = new Date();
+    const nextRedistributionDate = new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000); // Another 10 days
+    
+    const [contact] = await db
+      .update(contacts)
+      .set({
+        assignedTo: newRepId,
+        assignedBy: redistributedBy,
+        assignedAt: now,
+        redistributionEligibleAt: nextRedistributionDate,
+        isRecentContact: false, // Reset recent contact status for new rep
+        updatedAt: now,
+        updatedBy: redistributedBy
+      })
+      .where(eq(contacts.id, contactId))
+      .returning();
+    return contact || undefined;
   }
 
   // Events

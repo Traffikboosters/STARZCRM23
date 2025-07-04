@@ -109,6 +109,7 @@ export default function Sidebar({
     { id: "hr", label: "HR Portal", icon: UserPlus },
     { id: "departments", label: "Department Management", icon: Building2 },
     { id: "mood-tracker", label: "Mood Tracker", icon: Activity },
+    { id: "recent-contacts", label: "Recent Contacts", icon: Clock },
     { id: "dual-onboarding", label: "Employee Onboarding", icon: UserCheck },
     { id: "time-clock", label: "Employee Time Clock", icon: Clock },
     { id: "cancellation-metrics", label: "Cancellation Metrics", icon: UserX },

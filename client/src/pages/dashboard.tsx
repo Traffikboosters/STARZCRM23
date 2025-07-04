@@ -47,6 +47,7 @@ import TechnicalPortal from "@/components/technical-portal";
 import { VoiceToneAnalysis } from "@/components/voice-tone-analysis";
 import VoiceToneAnalysisEnhanced from "@/components/voice-tone-analysis-enhanced";
 import MoodTracker from "@/components/mood-tracker";
+import RecentContactsManager from "@/components/recent-contacts-manager";
 import SalesRepDashboard from "@/components/sales-rep-dashboard";
 import { CareerManagement } from "@/components/career-management";
 import GamificationSystemClean from "@/components/gamification-system-clean";
@@ -190,6 +191,8 @@ export default function Dashboard() {
         return <VoiceToneAnalysisEnhanced />;
       case "mood-tracker":
         return <MoodTracker />;
+      case "recent-contacts":
+        return <RecentContactsManager />;
       case "whatsapp":
         return <WhatsAppBusiness />;
       case "real-leads":

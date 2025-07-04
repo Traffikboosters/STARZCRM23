@@ -138,13 +138,16 @@ export const contacts = pgTable("contacts", {
   leadStatus: text("lead_status").default("new"), // new, contacted, qualified, proposal, negotiation, closed_won, closed_lost, sold
   leadSource: text("lead_source"), // yelp, google_maps, google_ads, facebook, instagram, tiktok, linkedin, youtube, twitter, website, referral, cold_call, email, event, chat_widget
   isDemo: boolean("is_demo").default(false), // true for demo/sample data, false for real customer inquiries
-  disposition: text("disposition"), // interested, not_interested, callback, do_not_call, wrong_number, busy
+  disposition: text("disposition"), // interested, not_interested, callback, do_not_call, wrong_number, busy, contacted, qualified
+  dispositionDate: timestamp("disposition_date"), // when disposition was set
   priority: text("priority").default("medium"), // low, medium, high, urgent
   budget: integer("budget"), // in cents
   timeline: text("timeline"), // immediate, 1_month, 3_months, 6_months, 1_year, unknown
   assignedTo: integer("assigned_to").references(() => users.id), // sales rep assigned to this lead
   assignedBy: integer("assigned_by").references(() => users.id), // manager who assigned the lead
   assignedAt: timestamp("assigned_at"),
+  redistributionEligibleAt: timestamp("redistribution_eligible_at"), // when lead becomes eligible for redistribution (10 days after disposition)
+  isRecentContact: boolean("is_recent_contact").default(false), // true if dispositioned but not sold
   pipelineStage: text("pipeline_stage").default("prospect"), // prospect, qualified, demo, proposal, negotiation, closed_won, closed_lost
   dealValue: integer("deal_value"), // expected deal value in cents
   lastContactedAt: timestamp("last_contacted_at"),

@@ -568,6 +568,115 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Disposition Management API
+  app.patch("/api/contacts/:id/disposition", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { disposition } = req.body;
+      const userId = 1; // Current user ID (get from session in real app)
+      
+      if (!disposition) {
+        return res.status(400).json({ error: "Disposition is required" });
+      }
+      
+      const contact = await storage.updateContactDisposition(id, disposition, userId);
+      if (!contact) {
+        return res.status(404).json({ error: "Contact not found" });
+      }
+      
+      // Send WebSocket notification for disposition update
+      if (wss) {
+        const notificationData = {
+          type: 'disposition_updated',
+          contactId: id,
+          disposition,
+          timestamp: new Date().toISOString(),
+          message: `Lead disposition updated to: ${disposition}`
+        };
+        
+        wss.clients.forEach(client => {
+          if (client.readyState === 1) {
+            client.send(JSON.stringify(notificationData));
+          }
+        });
+      }
+      
+      res.json(contact);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  // Get recent contacts (dispositioned but not sold)
+  app.get("/api/contacts/recent", async (req, res) => {
+    try {
+      const recentContacts = await storage.getRecentContacts();
+      res.json(recentContacts);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  // Get contacts eligible for redistribution (10+ days since disposition)
+  app.get("/api/contacts/redistribution-eligible", async (req, res) => {
+    try {
+      const eligibleContacts = await storage.getContactsEligibleForRedistribution();
+      res.json(eligibleContacts);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
+  // Redistribute a contact to a new sales rep
+  app.post("/api/contacts/:id/redistribute", async (req, res) => {
+    try {
+      const contactId = parseInt(req.params.id);
+      const { newRepId } = req.body;
+      const redistributedBy = 1; // Current user ID (admin/manager)
+      
+      if (!newRepId) {
+        return res.status(400).json({ error: "New sales rep ID is required" });
+      }
+      
+      // Verify the new sales rep exists
+      const newRep = await storage.getUser(newRepId);
+      if (!newRep) {
+        return res.status(404).json({ error: "Sales representative not found" });
+      }
+      
+      const contact = await storage.redistributeContact(contactId, newRepId, redistributedBy);
+      if (!contact) {
+        return res.status(404).json({ error: "Contact not found" });
+      }
+      
+      // Send WebSocket notification for redistribution
+      if (wss) {
+        const notificationData = {
+          type: 'lead_redistributed',
+          contactId,
+          newRepId,
+          newRepName: `${newRep.firstName} ${newRep.lastName}`,
+          timestamp: new Date().toISOString(),
+          message: `Lead redistributed to ${newRep.firstName} ${newRep.lastName}`
+        };
+        
+        wss.clients.forEach(client => {
+          if (client.readyState === 1) {
+            client.send(JSON.stringify(notificationData));
+          }
+        });
+      }
+      
+      res.json({
+        success: true,
+        contact,
+        message: `Lead redistributed to ${newRep.firstName} ${newRep.lastName}`
+      });
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
   // Lead Allocation endpoint - Assign multiple leads to a sales representative
   app.post("/api/contacts/allocate", async (req, res) => {
     try {
