@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starz Chat Widget - Installation Guide</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #e45c2b;
+            border-bottom: 3px solid #e45c2b;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #333;
+            margin-top: 30px;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 10px;
+            border-left: 4px solid #ffc107;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            padding: 10px;
+            border-left: 4px solid #28a745;
+            margin: 15px 0;
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .feature-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 3px solid #e45c2b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>🚀 Starz Chat Widget Installation</h1>
+            <p style="color: #666; font-size: 18px;">Transform Your Website Into a Lead Generation Machine</p>
+        </div>
+
+        <div class="success">
+            <strong>Ready for Installation!</strong> This chat widget will integrate seamlessly with your Traffik Boosters website and connect directly to your Starz CRM system.
+        </div>
+
+        <h2>🎯 Features Included</h2>
+        <div class="feature-list">
+            <div class="feature-item">
+                <strong>Real-Time Chat</strong><br>
+                Instant messaging with intelligent auto-responses
+            </div>
+            <div class="feature-item">
+                <strong>Lead Capture</strong><br>
+                Automatic contact form with CRM integration
+            </div>
+            <div class="feature-item">
+                <strong>Business Hours</strong><br>
+                Smart detection with appropriate messaging
+            </div>
+            <div class="feature-item">
+                <strong>Video Consultation</strong><br>
+                One-click video call scheduling
+            </div>
+            <div class="feature-item">
+                <strong>Mobile Responsive</strong><br>
+                Perfect experience on all devices
+            </div>
+            <div class="feature-item">
+                <strong>Traffik Boosters Branding</strong><br>
+                Complete white-label integration
+            </div>
+        </div>
+
+        <h2>📋 Installation Instructions</h2>
+        
+        <h3>Step 1: Add the Widget Script</h3>
+        <p>Add this code before the closing <code>&lt;/body&gt;</code> tag on your website:</p>
+        
+        <div class="code-block">
+<pre>&lt;!-- Traffik Boosters Chat Widget --&gt;
+&lt;div id="starz-chat-widget"&gt;&lt;/div&gt;
+&lt;script&gt;
+(function() {
+    // Widget Configuration
+    window.STARZWidgetConfig = {
+        apiEndpoint: 'https://your-starz-domain.replit.app/api/chat-widget/submit',
+        companyName: 'Traffik Boosters',
+        primaryColor: '#e45c2b',
+        welcomeMessage: 'Hi! How can we help boost your traffic today?',
+        position: 'bottom-right',
+        logoUrl: 'https://your-domain.com/traffik-boosters-logo.png'
+    };
+
+    // Chat Widget Component
+    function createChatWidget() {
+        const widgetContainer = document.getElementById('starz-chat-widget');
+        if (!widgetContainer) return;
+
+        // Widget HTML Structure
+        widgetContainer.innerHTML = `
+            &lt;div id="chat-widget-button" style="
+                position: fixed;
+                bottom: 24px;
+                right: 24px;
+                width: 64px;
+                height: 64px;
+                background: #e45c2b;
+                border-radius: 50%;
+                cursor: pointer;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                transition: transform 0.2s ease;
+            " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"&gt;
+                &lt;svg width="24" height="24" fill="white" viewBox="0 0 24 24"&gt;
+                    &lt;path d="M12 2C6.48 2 2 6.48 2 12c0 1.54.36 3.04.97 4.39L1 23l6.61-1.97C9.04 21.64 10.46 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2z"/&gt;
+                &lt;/svg&gt;
+                &lt;div style="
+                    position: absolute;
+                    top: -8px;
+                    right: -8px;
+                    width: 16px;
+                    height: 16px;
+                    background: #28a745;
+                    border-radius: 50%;
+                    animation: pulse 2s infinite;
+                "&gt;&lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;div id="chat-widget-window" style="
+                position: fixed;
+                bottom: 100px;
+                right: 24px;
+                width: 320px;
+                height: 400px;
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+                z-index: 10000;
+                display: none;
+                flex-direction: column;
+                overflow: hidden;
+            "&gt;
+                &lt;div style="
+                    background: #e45c2b;
+                    color: white;
+                    padding: 16px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                "&gt;
+                    &lt;div style="display: flex; align-items: center; gap: 12px;"&gt;
+                        &lt;img src="${window.STARZWidgetConfig.logoUrl}" alt="Traffik Boosters" style="width: 32px; height: 32px; border-radius: 50%; background: white; padding: 2px;"&gt;
+                        &lt;div&gt;
+                            &lt;div style="font-weight: 600; font-size: 14px;"&gt;Traffik Boosters&lt;/div&gt;
+                            &lt;div style="font-size: 12px; opacity: 0.9;"&gt;More Traffik! More Sales!&lt;/div&gt;
+                        &lt;/div&gt;
+                    &lt;/div&gt;
+                    &lt;button onclick="toggleChatWidget()" style="
+                        background: none;
+                        border: none;
+                        color: white;
+                        cursor: pointer;
+                        padding: 4px;
+                    "&gt;✕&lt;/button&gt;
+                &lt;/div&gt;
+                
+                &lt;div id="chat-messages" style="
+                    flex: 1;
+                    padding: 16px;
+                    overflow-y: auto;
+                    background: #f8f9fa;
+                "&gt;
+                    &lt;div style="
+                        background: white;
+                        padding: 12px;
+                        border-radius: 8px;
+                        margin-bottom: 12px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    "&gt;
+                        ${window.STARZWidgetConfig.welcomeMessage}
+                    &lt;/div&gt;
+                &lt;/div&gt;
+
+                &lt;div style="padding: 16px; background: white; border-top: 1px solid #eee;"&gt;
+                    &lt;div style="display: flex; gap: 8px; margin-bottom: 12px;"&gt;
+                        &lt;button onclick="showLeadForm()" style="
+                            flex: 1;
+                            padding: 8px 12px;
+                            background: #e45c2b;
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 12px;
+                        "&gt;Get Quote&lt;/button&gt;
+                        &lt;button onclick="window.open('tel:8778406250')" style="
+                            flex: 1;
+                            padding: 8px 12px;
+                            background: #28a745;
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 12px;
+                        "&gt;Call Now&lt;/button&gt;
+                    &lt;/div&gt;
+                    &lt;div style="display: flex; gap: 8px;"&gt;
+                        &lt;input type="text" id="message-input" placeholder="Type your message..." style="
+                            flex: 1;
+                            padding: 8px 12px;
+                            border: 1px solid #ddd;
+                            border-radius: 6px;
+                            font-size: 14px;
+                        "&gt;
+                        &lt;button onclick="sendMessage()" style="
+                            padding: 8px 12px;
+                            background: #e45c2b;
+                            color: white;
+                            border: none;
+                            border-radius: 6px;
+                            cursor: pointer;
+                        "&gt;Send&lt;/button&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;style&gt;
+                @keyframes pulse {
+                    0% { transform: scale(1); opacity: 1; }
+                    50% { transform: scale(1.1); opacity: 0.7; }
+                    100% { transform: scale(1); opacity: 1; }
+                }
+            &lt;/style&gt;
+        `;
+
+        // Add click event to chat button
+        document.getElementById('chat-widget-button').onclick = toggleChatWidget;
+    }
+
+    // Widget Functions
+    window.toggleChatWidget = function() {
+        const widget = document.getElementById('chat-widget-window');
+        widget.style.display = widget.style.display === 'none' ? 'flex' : 'none';
+    };
+
+    window.sendMessage = function() {
+        const input = document.getElementById('message-input');
+        const message = input.value.trim();
+        if (!message) return;
+
+        addMessage(message, true);
+        input.value = '';
+
+        // Auto-response
+        setTimeout(() => {
+            let response = "Thanks for your message! Let me connect you with our team.";
+            if (message.toLowerCase().includes('price')) {
+                response = "Our pricing varies based on your specific needs. I'll have our team prepare a custom quote for you.";
+            }
+            addMessage(response, false);
+        }, 1000);
+    };
+
+    window.addMessage = function(text, isUser) {
+        const messagesContainer = document.getElementById('chat-messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.style.cssText = `
+            background: ${isUser ? '#e45c2b' : 'white'};
+            color: ${isUser ? 'white' : '#333'};
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            margin-left: ${isUser ? '20px' : '0'};
+            margin-right: ${isUser ? '0' : '20px'};
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        `;
+        messageDiv.textContent = text;
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    };
+
+    window.showLeadForm = function() {
+        const name = prompt("What's your name?");
+        if (!name) return;
+        
+        const email = prompt("What's your email address?");
+        if (!email) return;
+        
+        const company = prompt("What's your company name?");
+        if (!company) return;
+        
+        const phone = prompt("What's your phone number? (optional)") || '';
+
+        // Submit lead
+        fetch(window.STARZWidgetConfig.apiEndpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: name,
+                email: email,
+                company: company,
+                phone: phone,
+                message: 'Contacted via chat widget'
+            })
+        }).then(() => {
+            addMessage("Perfect! Your information has been submitted. A growth expert will call you within 24 business hours.", false);
+        }).catch(() => {
+            addMessage("Thank you for your interest! We'll be in touch soon.", false);
+        });
+    };
+
+    // Initialize widget when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', createChatWidget);
+    } else {
+        createChatWidget();
+    }
+})();
+&lt;/script&gt;</pre>
+        </div>
+
+        <h3>Step 2: Update Configuration</h3>
+        <div class="highlight">
+            <strong>Important:</strong> Replace <code>your-starz-domain.replit.app</code> with your actual Starz dashboard URL and <code>your-domain.com/traffik-boosters-logo.png</code> with your logo URL.
+        </div>
+
+        <h3>Step 3: Test the Widget</h3>
+        <p>After installation:</p>
+        <ul>
+            <li>Visit your website and look for the orange chat button in the bottom-right corner</li>
+            <li>Click the button to open the chat widget</li>
+            <li>Test sending a message and submitting the lead form</li>
+            <li>Check your Starz CRM to verify leads are being captured</li>
+        </ul>
+
+        <h2>🔧 Advanced Configuration</h2>
+        
+        <h3>Custom Styling</h3>
+        <p>You can customize the widget appearance by modifying the <code>STARZWidgetConfig</code> object:</p>
+        
+        <div class="code-block">
+<pre>window.STARZWidgetConfig = {
+    apiEndpoint: 'https://your-starz-domain.replit.app/api/chat-widget/submit',
+    companyName: 'Traffik Boosters',
+    primaryColor: '#e45c2b',        // Change to your brand color
+    welcomeMessage: 'Custom welcome message here!',
+    position: 'bottom-left',        // Options: bottom-right, bottom-left
+    logoUrl: 'https://your-domain.com/logo.png'
+};</pre>
+        </div>
+
+        <h3>Business Hours Configuration</h3>
+        <p>The widget automatically detects business hours (Monday-Friday, 9 AM - 6 PM EST) and adjusts messaging accordingly.</p>
+
+        <h2>📞 Support</h2>
+        <div class="success">
+            <strong>Need Help?</strong><br>
+            Call: (877) 840-6250<br>
+            Email: support@traffikboosters.com<br>
+            Available 24/7 for technical support
+        </div>
+
+        <h2>🎉 Next Steps</h2>
+        <ol>
+            <li>Install the widget code on your live website</li>
+            <li>Test the functionality thoroughly</li>
+            <li>Monitor lead capture in your Starz CRM dashboard</li>
+            <li>Customize the styling to match your brand</li>
+            <li>Train your team on responding to chat leads</li>
+        </ol>
+
+        <div style="text-align: center; margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+            <h3 style="color: #e45c2b; margin-bottom: 10px;">🚀 Ready to Boost Your Traffic?</h3>
+            <p style="margin: 0; color: #666;">Your chat widget is ready for installation. Start capturing more leads today!</p>
+        </div>
+    </div>
+</body>
+</html>
