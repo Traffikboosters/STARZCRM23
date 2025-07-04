@@ -11,6 +11,7 @@ import { formatPhoneNumber } from '@/lib/utils';
 import { apiRequest } from '@/lib/queryClient';
 import type { Contact } from '@shared/schema';
 import CompactLeadCards from './compact-lead-cards';
+import ContactDetailsModal from './contact-details-modal';
 
 function getLeadAgeStatus(createdAt: string | Date) {
   const created = new Date(createdAt);
@@ -156,75 +157,12 @@ export default function CRMViewCompact() {
         />
       )}
 
-      {/* Contact Details Modal */}
-      <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Lead Details</DialogTitle>
-          </DialogHeader>
-          {selectedContact && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Name</label>
-                  <p className="text-lg font-semibold">
-                    {selectedContact.firstName} {selectedContact.lastName}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Company</label>
-                  <p>{selectedContact.company || 'Not specified'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Phone</label>
-                  <p>{formatPhoneNumber(selectedContact.phone) || 'Not provided'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Email</label>
-                  <p>{selectedContact.email || 'Not provided'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Lead Source</label>
-                  <p>{selectedContact.leadSource || 'Unknown'}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Status</label>
-                  <Badge variant="secondary">
-                    {selectedContact.leadStatus?.replace('_', ' ').toUpperCase() || 'NEW'}
-                  </Badge>
-                </div>
-              </div>
-              
-              {selectedContact.notes && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Notes</label>
-                  <p className="mt-1 p-3 bg-gray-50 rounded-md">{selectedContact.notes}</p>
-                </div>
-              )}
-
-              <div className="flex gap-3 pt-4">
-                <Button
-                  onClick={() => handleCallContact(selectedContact)}
-                  disabled={!selectedContact.phone}
-                  className="flex-1"
-                >
-                  <Phone className="h-4 w-4 mr-2" />
-                  Call
-                </Button>
-                <Button
-                  onClick={() => handleEmailContact(selectedContact)}
-                  disabled={!selectedContact.email}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  Email
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Full-Featured Contact Details Modal with All Tabs */}
+      <ContactDetailsModal
+        contact={selectedContact}
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+      />
     </div>
   );
 }
