@@ -972,57 +972,57 @@ export default function CRMView() {
                   key={contact.id} 
                   className={`hover:shadow-md transition-all duration-300 border-l-4 border-l-orange-500 ${ageStatus.bgColor} lead-card-content`}
                 >
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between mb-2">
+                <CardHeader className="pb-1 p-2">
+                  <div className="flex items-center justify-between mb-1">
                     <Badge 
-                      className={`${ageStatus.badgeColor} text-white text-xs px-2 py-1 ${ageStatus.description === '0-24H' ? ageStatus.animation : ''}`}
+                      className={`${ageStatus.badgeColor} text-white text-[10px] px-1 py-0 ${ageStatus.description === '0-24H' ? ageStatus.animation : ''}`}
                     >
                       {ageStatus.description}
                     </Badge>
                     <Badge 
-                      className={`text-xs px-2 py-1 ${contact.isDemo ? 'bg-gray-500 text-white' : 'bg-green-600 text-white'}`}
+                      className={`text-[10px] px-1 py-0 ${contact.isDemo ? 'bg-gray-500 text-white' : 'bg-green-600 text-white'}`}
                     >
                       {contact.isDemo ? 'DEMO' : 'REAL'}
                     </Badge>
                   </div>
                   
                   {/* Smaller Logo */}
-                  <div className="flex justify-center mb-2">
+                  <div className="flex justify-center mb-1">
                     <img 
                       src={traffikBoostersLogo} 
                       alt="Traffik Boosters" 
-                      className="h-16 w-auto object-contain"
+                      className="h-8 w-auto object-contain"
                       style={{ imageRendering: 'crisp-edges' }}
                     />
                   </div>
                   
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="text-sm font-bold text-gray-900">LEAD CARD</h3>
-                    <CardTitle className="text-sm font-semibold leading-tight flex-1 text-right">
+                  <div className="flex items-center justify-between mb-0">
+                    <h3 className="text-[10px] font-bold text-gray-900">LEAD CARD</h3>
+                    <CardTitle className="text-[10px] font-semibold leading-tight flex-1 text-right">
                       <div className="truncate">
                         {contact.company || `${contact.firstName} ${contact.lastName}`}
                       </div>
                     </CardTitle>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-2 lead-card-section">
+                <CardContent className="space-y-1 lead-card-section p-2">
                   {/* Contact Information */}
-                  <div className="space-y-1 lead-card-text">
-                    <div className="flex items-center text-sm text-gray-600 min-h-[20px] leading-tight">
-                      <User className="h-3 w-3 mr-2 flex-shrink-0" />
+                  <div className="space-y-0 lead-card-text">
+                    <div className="flex items-center text-[10px] text-gray-600 min-h-[14px] leading-none">
+                      <User className="h-2 w-2 mr-1 flex-shrink-0" />
                       <span className="truncate font-medium">{contact.firstName} {contact.lastName}</span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600 min-h-[20px] leading-tight">
-                      <Phone className="h-3 w-3 mr-2 flex-shrink-0" />
+                    <div className="flex items-center text-[10px] text-gray-600 min-h-[14px] leading-none">
+                      <Phone className="h-2 w-2 mr-1 flex-shrink-0" />
                       <span className="truncate font-medium">{formatPhoneNumber(contact.phone) || 'No phone'}</span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-600 min-h-[20px] leading-tight">
-                      <Mail className="h-3 w-3 mr-2 flex-shrink-0" />
+                    <div className="flex items-center text-[10px] text-gray-600 min-h-[14px] leading-none">
+                      <Mail className="h-2 w-2 mr-1 flex-shrink-0" />
                       <span className="truncate font-medium">{contact.email || 'No email'}</span>
                     </div>
                     {contact.website && (
-                      <div className="flex items-center text-sm text-gray-600 min-h-[20px] leading-tight">
-                        <ExternalLink className="h-3 w-3 mr-2 flex-shrink-0" />
+                      <div className="flex items-center text-[10px] text-gray-600 min-h-[14px] leading-none">
+                        <ExternalLink className="h-2 w-2 mr-1 flex-shrink-0" />
                         <a href={contact.website.startsWith('http') ? contact.website : `https://${contact.website}`} 
                            target="_blank" 
                            rel="noopener noreferrer" 
@@ -1032,8 +1032,8 @@ export default function CRMView() {
                       </div>
                     )}
                     {contact.position && (
-                      <div className="flex items-center text-sm text-gray-600 min-h-[20px] leading-tight">
-                        <Briefcase className="h-3 w-3 mr-2 flex-shrink-0" />
+                      <div className="flex items-center text-[10px] text-gray-600 min-h-[14px] leading-none">
+                        <Briefcase className="h-2 w-2 mr-1 flex-shrink-0" />
                         <span className="truncate font-medium">{contact.position}</span>
                       </div>
                     )}
@@ -1053,13 +1053,13 @@ export default function CRMView() {
                   )}
 
                   {/* Lead Status & Priority */}
-                  <div className="flex items-center justify-between pt-1 border-t border-gray-100">
-                    <div className="flex items-center gap-1">
-                      <Badge variant="secondary" className="text-xs px-1 py-0">
+                  <div className="flex items-center justify-between pt-0.5 border-t border-gray-100">
+                    <div className="flex items-center gap-0.5">
+                      <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3">
                         {contact.leadStatus?.replace('_', ' ').toUpperCase() || 'NEW'}
                       </Badge>
                       {contact.priority && (
-                        <Badge variant={contact.priority === 'high' ? 'destructive' : contact.priority === 'medium' ? 'default' : 'secondary'} className="text-xs px-1 py-0">
+                        <Badge variant={contact.priority === 'high' ? 'destructive' : contact.priority === 'medium' ? 'default' : 'secondary'} className="text-[8px] px-1 py-0 h-3">
                           {contact.priority.toUpperCase()}
                         </Badge>
                       )}
@@ -1068,36 +1068,36 @@ export default function CRMView() {
 
                   {/* Service Interest Information */}
                   {(contact.primaryServiceNeed || (contact.servicesInterested && contact.servicesInterested.length > 0)) && (
-                    <div className="pt-3 border-t border-gray-100 space-y-2">
-                      <div className="flex items-center text-xs text-gray-600 mb-2">
-                        <Target className="h-3 w-3 mr-1" />
+                    <div className="pt-0.5 border-t border-gray-100 space-y-0">
+                      <div className="flex items-center text-[8px] text-gray-600 mb-0.5">
+                        <Target className="h-2 w-2 mr-0.5" />
                         <span className="font-medium">Service Interest</span>
                       </div>
                       {contact.primaryServiceNeed && (
-                        <div className="text-sm font-medium text-blue-600 mb-2">
+                        <div className="text-[8px] font-medium text-blue-600 mb-0.5">
                           {contact.primaryServiceNeed}
                         </div>
                       )}
                       {contact.servicesInterested && contact.servicesInterested.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mb-2">
-                          {contact.servicesInterested.slice(0, 3).map((service, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs px-1 py-0">
+                        <div className="flex flex-wrap gap-0.5 mb-0.5">
+                          {contact.servicesInterested.slice(0, 2).map((service, idx) => (
+                            <Badge key={idx} variant="outline" className="text-[8px] px-1 py-0 h-3">
                               {service}
                             </Badge>
                           ))}
-                          {contact.servicesInterested.length > 3 && (
-                            <Badge variant="outline" className="text-xs px-1 py-0">
-                              +{contact.servicesInterested.length - 3}
+                          {contact.servicesInterested.length > 2 && (
+                            <Badge variant="outline" className="text-[8px] px-1 py-0 h-3">
+                              +{contact.servicesInterested.length - 2}
                             </Badge>
                           )}
                         </div>
                       )}
                       {contact.serviceDescription && (
-                        <div className="text-xs text-gray-600 truncate mb-2">
+                        <div className="text-[8px] text-gray-600 truncate mb-0.5">
                           {contact.serviceDescription}
                         </div>
                       )}
-                      <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center justify-between text-[8px]">
                         {contact.serviceUrgency && (
                           <Badge 
                             variant={
@@ -1105,7 +1105,7 @@ export default function CRMView() {
                               contact.serviceUrgency === 'high' ? 'default' : 
                               'secondary'
                             } 
-                            className="text-xs px-1 py-0"
+                            className="text-[8px] px-1 py-0 h-3"
                           >
                             {contact.serviceUrgency.toUpperCase()}
                           </Badge>
@@ -1369,43 +1369,43 @@ export default function CRMView() {
                     </div>
                   </div>
 
-                  {/* Compact Action Buttons */}
-                  <div className="grid grid-cols-5 gap-1 mt-2">
+                  {/* Ultra Compact Action Buttons */}
+                  <div className="grid grid-cols-5 gap-0.5 mt-1">
                     {/* Call Button */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs flex flex-col items-center justify-center py-1 h-auto min-h-[40px] px-1"
+                      className="text-xs flex flex-col items-center justify-center py-0 h-auto min-h-[24px] px-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleCallContact(contact);
                       }}
                       disabled={!contact.phone}
                     >
-                      <Phone className="h-3 w-3 mb-1 text-green-600 flex-shrink-0" />
-                      <span className="leading-none text-center text-[10px]">Call</span>
+                      <Phone className="h-2 w-2 mb-0.5 text-green-600 flex-shrink-0" />
+                      <span className="leading-none text-center text-[8px]">Call</span>
                     </Button>
 
                     {/* Schedule Button */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs flex flex-col items-center justify-center py-1 h-auto min-h-[40px] px-1"
+                      className="text-xs flex flex-col items-center justify-center py-0 h-auto min-h-[24px] px-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedContact(contact);
                         setIsScheduleModalOpen(true);
                       }}
                     >
-                      <Calendar className="h-3 w-3 mb-1 text-blue-600 flex-shrink-0" />
-                      <span className="leading-none text-center text-[10px]">Schedule</span>
+                      <Calendar className="h-2 w-2 mb-0.5 text-blue-600 flex-shrink-0" />
+                      <span className="leading-none text-center text-[8px]">Schedule</span>
                     </Button>
 
                     {/* Email Button */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs flex flex-col items-center justify-center py-1 h-auto min-h-[40px] px-1"
+                      className="text-xs flex flex-col items-center justify-center py-0 h-auto min-h-[24px] px-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedContact(contact);
@@ -1413,60 +1413,60 @@ export default function CRMView() {
                       }}
                       disabled={!contact.email}
                     >
-                      <Mail className="h-3 w-3 mb-1 text-orange-600 flex-shrink-0" />
-                      <span className="leading-none text-center text-[10px]">Email</span>
+                      <Mail className="h-2 w-2 mb-0.5 text-orange-600 flex-shrink-0" />
+                      <span className="leading-none text-center text-[8px]">Email</span>
                     </Button>
 
                     {/* AI Starters Button */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs flex flex-col items-center justify-center py-1 h-auto min-h-[40px] px-1"
+                      className="text-xs flex flex-col items-center justify-center py-0 h-auto min-h-[24px] px-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedContactForDetails(contact);
                         setIsDetailsModalOpen(true);
                       }}
                     >
-                      <Bot className="h-3 w-3 mb-1 text-indigo-600 flex-shrink-0" />
-                      <span className="leading-none text-center text-[10px]">AI Starters</span>
+                      <Bot className="h-2 w-2 mb-0.5 text-indigo-600 flex-shrink-0" />
+                      <span className="leading-none text-center text-[8px]">AI Starters</span>
                     </Button>
 
                     {/* Quick Replies Button */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs flex flex-col items-center justify-center py-1 h-auto min-h-[40px] px-1"
+                      className="text-xs flex flex-col items-center justify-center py-0 h-auto min-h-[24px] px-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedContactForDetails(contact);
                         setIsDetailsModalOpen(true);
                       }}
                     >
-                      <Zap className="h-3 w-3 mb-1 text-yellow-600 flex-shrink-0" />
-                      <span className="leading-none text-center text-[10px]">Quick Reply</span>
+                      <Zap className="h-2 w-2 mb-0.5 text-yellow-600 flex-shrink-0" />
+                      <span className="leading-none text-center text-[8px]">Quick Reply</span>
                     </Button>
 
                     {/* Notes Button */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs flex flex-col items-center justify-center py-1 h-auto min-h-[40px] px-1"
+                      className="text-xs flex flex-col items-center justify-center py-0 h-auto min-h-[24px] px-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedContactForDetails(contact);
                         setIsDetailsModalOpen(true);
                       }}
                     >
-                      <StickyNote className="h-3 w-3 mb-1 text-amber-600 flex-shrink-0" />
-                      <span className="leading-none text-center text-[10px]">Notes</span>
+                      <StickyNote className="h-2 w-2 mb-0.5 text-amber-600 flex-shrink-0" />
+                      <span className="leading-none text-center text-[8px]">Notes</span>
                     </Button>
 
                     {/* AI Sales Tips Button */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs flex flex-col items-center justify-center py-1 h-auto min-h-[40px] px-1"
+                      className="text-xs flex flex-col items-center justify-center py-0 h-auto min-h-[24px] px-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         console.log("AI Tips button clicked for contact:", contact.firstName, contact.lastName);
@@ -1482,15 +1482,15 @@ export default function CRMView() {
                         }, 100);
                       }}
                     >
-                      <ClipboardList className="h-3 w-3 mb-1 text-purple-600 flex-shrink-0" />
-                      <span className="leading-none text-center text-[10px]">AI Tips</span>
+                      <ClipboardList className="h-2 w-2 mb-0.5 text-purple-600 flex-shrink-0" />
+                      <span className="leading-none text-center text-[8px]">AI Tips</span>
                     </Button>
 
                     {/* Send to Technical Button */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-xs flex flex-col items-center justify-center py-1 h-auto min-h-[40px] px-1 border-orange-300 hover:bg-orange-50"
+                      className="text-xs flex flex-col items-center justify-center py-0 h-auto min-h-[24px] px-0 border-orange-300 hover:bg-orange-50"
                       onClick={(e) => {
                         e.stopPropagation();
                         console.log("Send to Tech button clicked for contact:", contact.firstName, contact.lastName);
@@ -1505,8 +1505,8 @@ export default function CRMView() {
                         }, 100);
                       }}
                     >
-                      <FileUp className="h-3 w-3 mb-1 text-orange-600 flex-shrink-0" />
-                      <span className="leading-none text-center text-[10px]">Send to Tech</span>
+                      <FileUp className="h-2 w-2 mb-0.5 text-orange-600 flex-shrink-0" />
+                      <span className="leading-none text-center text-[8px]">Send to Tech</span>
                     </Button>
                   </div>
                 </CardContent>
