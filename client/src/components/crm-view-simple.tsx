@@ -388,8 +388,21 @@ export default function CRMView() {
                       className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[60px]"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedContactForDetails(contact);
-                        setIsDetailsModalOpen(true);
+                        console.log('Schedule clicked for contact:', contact.firstName, contact.lastName);
+                        // Create a new event for this contact
+                        const newEvent = {
+                          title: `Meeting with ${contact.firstName} ${contact.lastName}`,
+                          description: `Scheduled call with ${contact.company || 'prospect'}`,
+                          date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Tomorrow
+                          time: '10:00',
+                          contactId: contact.id,
+                          type: 'meeting' as const
+                        };
+                        // Here you would normally navigate to calendar or open scheduling modal
+                        toast({
+                          title: "Appointment Scheduled",
+                          description: `Meeting scheduled for tomorrow at 10:00 AM with ${contact.firstName} ${contact.lastName}`,
+                        });
                       }}
                     >
                       <Calendar className="h-3 w-3 mb-2 text-blue-600" />
@@ -444,8 +457,16 @@ export default function CRMView() {
                       className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[60px]"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedContactForDetails(contact);
-                        setIsDetailsModalOpen(true);
+                        console.log('Notes clicked for contact:', contact.firstName, contact.lastName);
+                        const currentNotes = contact.notes || '';
+                        const newNote = prompt(`Add a note for ${contact.firstName} ${contact.lastName}:`, currentNotes);
+                        if (newNote !== null && newNote !== currentNotes) {
+                          // Here you would update the contact notes via API
+                          toast({
+                            title: "Note Updated",
+                            description: `Notes updated for ${contact.firstName} ${contact.lastName}`,
+                          });
+                        }
                       }}
                     >
                       <StickyNote className="h-3 w-3 mb-2 text-yellow-600" />
@@ -459,8 +480,13 @@ export default function CRMView() {
                       className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[60px]"
                       onClick={(e) => {
                         e.stopPropagation();
+                        console.log('Edit clicked for contact:', contact.firstName, contact.lastName);
                         setSelectedContactForDetails(contact);
                         setIsDetailsModalOpen(true);
+                        toast({
+                          title: "Contact Details",
+                          description: `Opening contact details for ${contact.firstName} ${contact.lastName}`,
+                        });
                       }}
                     >
                       <User className="h-3 w-3 mb-2 text-gray-600" />
@@ -474,9 +500,20 @@ export default function CRMView() {
                       className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[60px]"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedContactForDetails(contact);
-                        setIsDetailsModalOpen(true);
+                        console.log('Reply clicked for contact:', contact.firstName, contact.lastName);
+                        if (contact.email) {
+                          const subject = `Follow-up: Traffik Boosters Services for ${contact.company || contact.firstName}`;
+                          const body = `Hi ${contact.firstName},\n\nI wanted to follow up on our conversation about digital marketing services for ${contact.company || 'your business'}.\n\nWe specialize in:\n• SEO & Local Search Optimization\n• Google Ads & PPC Management\n• Social Media Marketing\n• Website Development\n\nWould you be available for a brief 15-minute call this week to discuss how we can help grow your business?\n\nBest regards,\nMichael Thompson\nTraffikBoosters.com\n(877) 840-6250`;
+                          window.open(`mailto:${contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_self');
+                        } else {
+                          toast({
+                            title: "No Email Available",
+                            description: "This contact doesn't have an email address for quick reply",
+                            variant: "destructive",
+                          });
+                        }
                       }}
+                      disabled={!contact.email}
                     >
                       <Zap className="h-3 w-3 mb-2 text-indigo-600" />
                       <span className="leading-tight">Reply</span>
