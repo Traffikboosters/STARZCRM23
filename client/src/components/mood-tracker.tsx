@@ -1,378 +1,557 @@
 import { useState, useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { Slider } from "@/components/ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { format } from "date-fns";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, Tooltip, Legend } from "recharts";
+import { Smile, TrendingUp, Users, Calendar, Target, Zap } from "lucide-react";
+import type { MoodEntry } from "@shared/schema";
 
-// Emoji mood options
-const moodEmojis = [
-  { emoji: "😞", label: "Very Sad", score: 1, color: "#ef4444" },
-  { emoji: "😟", label: "Sad", score: 2, color: "#f97316" },
-  { emoji: "😐", label: "Neutral", score: 3, color: "#eab308" },
-  { emoji: "😊", label: "Happy", score: 4, color: "#22c55e" },
-  { emoji: "😃", label: "Very Happy", score: 5, color: "#10b981" },
-  { emoji: "🚀", label: "Energized", score: 6, color: "#3b82f6" },
-  { emoji: "💪", label: "Motivated", score: 7, color: "#8b5cf6" },
-  { emoji: "🔥", label: "On Fire", score: 8, color: "#ec4899" },
-  { emoji: "⭐", label: "Excellent", score: 9, color: "#f59e0b" },
-  { emoji: "🏆", label: "Peak", score: 10, color: "#dc2626" }
+// Mood options with emojis and labels
+const MOOD_OPTIONS = [
+  { emoji: "😊", label: "Great", score: 10, color: "bg-green-500" },
+  { emoji: "😎", label: "Confident", score: 9, color: "bg-blue-500" },
+  { emoji: "💪", label: "Motivated", score: 8, color: "bg-purple-500" },
+  { emoji: "🔥", label: "On Fire", score: 10, color: "bg-red-500" },
+  { emoji: "🎯", label: "Focused", score: 8, color: "bg-indigo-500" },
+  { emoji: "😐", label: "Neutral", score: 5, color: "bg-gray-500" },
+  { emoji: "😟", label: "Concerned", score: 4, color: "bg-yellow-500" },
+  { emoji: "😤", label: "Frustrated", score: 3, color: "bg-orange-500" },
+  { emoji: "😴", label: "Tired", score: 3, color: "bg-slate-500" },
 ];
 
-// Performance factors
-const performanceFactors = [
-  "Energy Level",
-  "Focus",
-  "Confidence",
-  "Team Collaboration",
-  "Client Interactions",
-  "Goal Achievement"
+const SHIFT_OPTIONS = [
+  { value: "morning", label: "Morning (9AM-1PM)" },
+  { value: "afternoon", label: "Afternoon (1PM-5PM)" },
+  { value: "evening", label: "Evening (5PM-9PM)" },
 ];
 
-interface MoodEntry {
-  id: number;
-  userId: number;
-  moodScore: number;
-  notes?: string;
-  performanceFactors?: Record<string, number>;
-  entryDate: Date;
-  createdAt: Date;
-}
+const ENTRY_TYPES = [
+  { value: "daily", label: "Daily Check-in" },
+  { value: "pre_call", label: "Before Calling" },
+  { value: "post_call", label: "After Calling" },
+  { value: "weekly", label: "Weekly Summary" },
+];
 
-interface MoodTrackerProps {
-  currentUserId: number;
-}
+const moodEntrySchema = z.object({
+  moodEmoji: z.string().min(1, "Please select a mood"),
+  moodLabel: z.string().min(1, "Mood label is required"),
+  moodScore: z.number().min(1).max(10),
+  energyLevel: z.number().min(1).max(10),
+  motivationLevel: z.number().min(1).max(10),
+  stressLevel: z.number().min(1).max(10),
+  confidenceLevel: z.number().min(1).max(10),
+  notes: z.string().optional(),
+  shift: z.string().min(1, "Please select shift"),
+  entryType: z.string().min(1, "Please select entry type"),
+});
 
-export default function MoodTracker({ currentUserId }: MoodTrackerProps) {
-  const [selectedMood, setSelectedMood] = useState<number | null>(null);
-  const [notes, setNotes] = useState("");
-  const [performanceRatings, setPerformanceRatings] = useState<Record<string, number>>({});
+type MoodEntryData = z.infer<typeof moodEntrySchema>;
+
+export default function MoodTracker() {
+  const [selectedMood, setSelectedMood] = useState<typeof MOOD_OPTIONS[0] | null>(null);
+  const [showForm, setShowForm] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Get current user
+  const { data: currentUser } = useQuery({
+    queryKey: ["/api/users/me"],
+  });
+
   // Get user's mood entries
-  const { data: moodEntries = [] } = useQuery({
-    queryKey: ['/api/mood-entries/user', currentUserId],
-    queryFn: () => fetch(`/api/mood-entries/user/${currentUserId}?limit=30`).then(r => r.json())
+  const { data: moodEntriesData } = useQuery({
+    queryKey: ["/api/mood-entries/user", currentUser?.id],
+    enabled: !!currentUser?.id,
   });
 
-  // Get mood analytics
-  const { data: analytics } = useQuery({
-    queryKey: ['/api/mood-analytics', currentUserId],
-    queryFn: () => fetch(`/api/mood-analytics/${currentUserId}?days=30`).then(r => r.json())
+  // Get team mood summary for today
+  const { data: teamMoodSummary } = useQuery({
+    queryKey: ["/api/team-mood-summary", new Date().toISOString().split('T')[0]],
   });
 
-  // Create mood entry mutation
-  const createMoodEntryMutation = useMutation({
-    mutationFn: (entry: any) => fetch('/api/mood-entries', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(entry)
-    }).then(r => r.json()),
+  const moodEntries = Array.isArray(moodEntriesData) ? moodEntriesData : [];
+
+  const form = useForm<MoodEntryData>({
+    resolver: zodResolver(moodEntrySchema),
+    defaultValues: {
+      moodEmoji: "",
+      moodLabel: "",
+      moodScore: 5,
+      energyLevel: 5,
+      motivationLevel: 5,
+      stressLevel: 5,
+      confidenceLevel: 5,
+      notes: "",
+      shift: getCurrentShift(),
+      entryType: "daily",
+    },
+  });
+
+  function getCurrentShift() {
+    const hour = new Date().getHours();
+    if (hour >= 9 && hour < 13) return "morning";
+    if (hour >= 13 && hour < 17) return "afternoon";
+    return "evening";
+  }
+
+  const createMoodEntry = useMutation({
+    mutationFn: async (data: MoodEntryData) => {
+      return apiRequest("POST", "/api/mood-entries", {
+        ...data,
+        userId: currentUser?.id,
+      });
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/mood-entries/user'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/mood-analytics'] });
-      toast({ title: "Mood entry saved successfully!" });
+      toast({
+        title: "Mood Recorded",
+        description: "Your mood has been successfully tracked!",
+      });
+      setShowForm(false);
       setSelectedMood(null);
-      setNotes("");
-      setPerformanceRatings({});
+      form.reset();
+      queryClient.invalidateQueries({ queryKey: ["/api/mood-entries/user", currentUser?.id] });
     },
     onError: () => {
-      toast({ title: "Failed to save mood entry", variant: "destructive" });
-    }
+      toast({
+        title: "Error",
+        description: "Failed to record mood. Please try again.",
+        variant: "destructive",
+      });
+    },
   });
 
-  const handleSubmitMoodEntry = () => {
-    if (!selectedMood) {
-      toast({ title: "Please select your mood", variant: "destructive" });
-      return;
-    }
-
-    const entry = {
-      userId: currentUserId,
-      moodScore: selectedMood,
-      notes: notes.trim() || null,
-      performanceFactors: Object.keys(performanceRatings).length > 0 ? performanceRatings : null,
-      entryDate: new Date().toISOString()
-    };
-
-    createMoodEntryMutation.mutate(entry);
+  const handleMoodSelect = (mood: typeof MOOD_OPTIONS[0]) => {
+    setSelectedMood(mood);
+    form.setValue("moodEmoji", mood.emoji);
+    form.setValue("moodLabel", mood.label);
+    form.setValue("moodScore", mood.score);
+    setShowForm(true);
   };
 
-  // Prepare chart data
-  const chartData = moodEntries.slice(0, 7).reverse().map((entry: MoodEntry, index: number) => ({
-    date: format(new Date(entry.entryDate), 'MMM dd'),
-    mood: entry.moodScore,
-    emoji: moodEmojis.find(m => m.score === entry.moodScore)?.emoji || "😐"
-  }));
-
-  const getMoodEmoji = (score: number) => {
-    return moodEmojis.find(m => m.score === score)?.emoji || "😐";
-  };
-
-  const getMoodColor = (score: number) => {
-    return moodEmojis.find(m => m.score === score)?.color || "#eab308";
+  const onSubmit = (data: MoodEntryData) => {
+    createMoodEntry.mutate(data);
   };
 
   // Get today's entry
-  const todayEntry = moodEntries.find((entry: MoodEntry) => {
+  const todayEntry = moodEntries.find((entry: any) => {
     const entryDate = new Date(entry.entryDate);
     const today = new Date();
     return entryDate.toDateString() === today.toDateString();
   });
 
+  // Calculate mood trends for chart
+  const moodTrendData = moodEntries.slice(0, 7).reverse().map((entry: any) => ({
+    date: new Date(entry.entryDate).toLocaleDateString(),
+    mood: entry.moodScore,
+    energy: entry.energyLevel,
+    motivation: entry.motivationLevel,
+    stress: entry.stressLevel,
+    confidence: entry.confidenceLevel,
+  }));
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Daily Mood & Performance Tracker
-        </h2>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Track your daily mood and correlate it with your sales performance
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Mood Tracker</h2>
+          <p className="text-muted-foreground">
+            Track your daily mood and see how it correlates with your sales performance
+          </p>
+        </div>
+        {todayEntry && (
+          <Badge variant="secondary" className="text-lg px-4 py-2">
+            Today: {todayEntry.moodEmoji} {todayEntry.moodLabel}
+          </Badge>
+        )}
       </div>
 
-      {/* Today's Mood Entry */}
-      {!todayEntry && (
-        <Card>
+      <div className="grid gap-6 md:grid-cols-3">
+        {/* Mood Entry Card */}
+        <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              📊 How are you feeling today?
+              <Smile className="h-5 w-5" />
+              {todayEntry ? "Update Today's Mood" : "How are you feeling today?"}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            {/* Mood Selection */}
-            <div>
-              <label className="block text-sm font-medium mb-3">Select your current mood:</label>
-              <div className="grid grid-cols-5 gap-3">
-                {moodEmojis.map((mood) => (
-                  <button
-                    key={mood.score}
-                    onClick={() => setSelectedMood(mood.score)}
-                    className={`p-3 rounded-lg border-2 transition-all hover:scale-105 ${
-                      selectedMood === mood.score
-                        ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="text-2xl mb-1">{mood.emoji}</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">{mood.label}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Performance Factors */}
-            {selectedMood && (
-              <div>
-                <label className="block text-sm font-medium mb-3">Rate your performance factors (1-10):</label>
-                <div className="grid grid-cols-2 gap-4">
-                  {performanceFactors.map((factor) => (
-                    <div key={factor} className="flex items-center justify-between">
-                      <span className="text-sm">{factor}:</span>
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((rating) => (
-                          <button
-                            key={rating}
-                            onClick={() => setPerformanceRatings(prev => ({ ...prev, [factor]: rating }))}
-                            className={`w-6 h-6 text-xs rounded ${
-                              performanceRatings[factor] === rating
-                                ? 'bg-orange-500 text-white'
-                                : 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300'
-                            }`}
-                          >
-                            {rating}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+            {!showForm ? (
+              <>
+                <div className="grid grid-cols-3 gap-4">
+                  {MOOD_OPTIONS.map((mood) => (
+                    <Button
+                      key={mood.emoji}
+                      variant="outline"
+                      size="lg"
+                      className="h-20 flex-col gap-2 hover:scale-105 transition-transform"
+                      onClick={() => handleMoodSelect(mood)}
+                    >
+                      <span className="text-2xl">{mood.emoji}</span>
+                      <span className="text-sm">{mood.label}</span>
+                    </Button>
                   ))}
                 </div>
-              </div>
-            )}
+              </>
+            ) : (
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  {/* Selected Mood Display */}
+                  {selectedMood && (
+                    <div className="flex items-center gap-4 p-4 bg-secondary rounded-lg">
+                      <span className="text-4xl">{selectedMood.emoji}</span>
+                      <div>
+                        <h3 className="font-semibold">{selectedMood.label}</h3>
+                        <p className="text-sm text-muted-foreground">Mood Score: {selectedMood.score}/10</p>
+                      </div>
+                    </div>
+                  )}
 
-            {/* Notes */}
-            {selectedMood && (
-              <div>
-                <label className="block text-sm font-medium mb-2">Notes (optional):</label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="What's contributing to your mood today? Any specific wins or challenges?"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700"
-                  rows={3}
-                />
-              </div>
-            )}
+                  <div className="grid grid-cols-2 gap-6">
+                    {/* Energy Level */}
+                    <FormField
+                      control={form.control}
+                      name="energyLevel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Energy Level: {field.value}/10</FormLabel>
+                          <FormControl>
+                            <Slider
+                              min={1}
+                              max={10}
+                              step={1}
+                              value={[field.value]}
+                              onValueChange={(value) => field.onChange(value[0])}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-            {selectedMood && (
-              <Button 
-                onClick={handleSubmitMoodEntry}
-                disabled={createMoodEntryMutation.isPending}
-                className="w-full bg-orange-600 hover:bg-orange-700"
-              >
-                {createMoodEntryMutation.isPending ? "Saving..." : "Save Mood Entry"}
-              </Button>
+                    {/* Motivation Level */}
+                    <FormField
+                      control={form.control}
+                      name="motivationLevel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Motivation Level: {field.value}/10</FormLabel>
+                          <FormControl>
+                            <Slider
+                              min={1}
+                              max={10}
+                              step={1}
+                              value={[field.value]}
+                              onValueChange={(value) => field.onChange(value[0])}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Stress Level */}
+                    <FormField
+                      control={form.control}
+                      name="stressLevel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Stress Level: {field.value}/10</FormLabel>
+                          <FormControl>
+                            <Slider
+                              min={1}
+                              max={10}
+                              step={1}
+                              value={[field.value]}
+                              onValueChange={(value) => field.onChange(value[0])}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Confidence Level */}
+                    <FormField
+                      control={form.control}
+                      name="confidenceLevel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confidence Level: {field.value}/10</FormLabel>
+                          <FormControl>
+                            <Slider
+                              min={1}
+                              max={10}
+                              step={1}
+                              value={[field.value]}
+                              onValueChange={(value) => field.onChange(value[0])}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="shift"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Shift</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {SHIFT_OPTIONS.map((shift) => (
+                                <SelectItem key={shift.value} value={shift.value}>
+                                  {shift.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="entryType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Entry Type</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {ENTRY_TYPES.map((type) => (
+                                <SelectItem key={type.value} value={type.value}>
+                                  {type.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Notes (Optional)</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Any additional context about your mood today..."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="flex gap-3">
+                    <Button
+                      type="submit"
+                      disabled={createMoodEntry.isPending}
+                    >
+                      {createMoodEntry.isPending ? "Recording..." : "Record Mood"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setShowForm(false);
+                        setSelectedMood(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </Form>
             )}
           </CardContent>
         </Card>
-      )}
 
-      {/* Today's Entry Display */}
-      {todayEntry && (
+        {/* Today's Stats */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              ✅ Today's Mood Recorded
+              <Target className="h-5 w-5" />
+              Today's Vibe
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {todayEntry ? (
+              <>
+                <div className="text-center">
+                  <div className="text-4xl mb-2">{todayEntry.moodEmoji}</div>
+                  <div className="font-semibold">{todayEntry.moodLabel}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {new Date(todayEntry.entryDate).toLocaleTimeString()}
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Energy</span>
+                    <div className="flex items-center gap-2">
+                      <Progress value={todayEntry.energyLevel * 10} className="w-16" />
+                      <span className="text-sm">{todayEntry.energyLevel}/10</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Motivation</span>
+                    <div className="flex items-center gap-2">
+                      <Progress value={todayEntry.motivationLevel * 10} className="w-16" />
+                      <span className="text-sm">{todayEntry.motivationLevel}/10</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Confidence</span>
+                    <div className="flex items-center gap-2">
+                      <Progress value={todayEntry.confidenceLevel * 10} className="w-16" />
+                      <span className="text-sm">{todayEntry.confidenceLevel}/10</span>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Stress</span>
+                    <div className="flex items-center gap-2">
+                      <Progress value={todayEntry.stressLevel * 10} className="w-16" />
+                      <span className="text-sm">{todayEntry.stressLevel}/10</span>
+                    </div>
+                  </div>
+                </div>
+
+                {todayEntry.notes && (
+                  <>
+                    <Separator />
+                    <div>
+                      <div className="text-sm font-medium mb-1">Notes</div>
+                      <div className="text-sm text-muted-foreground">{todayEntry.notes}</div>
+                    </div>
+                  </>
+                )}
+              </>
+            ) : (
+              <div className="text-center text-muted-foreground">
+                <Zap className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p>No mood recorded today</p>
+                <p className="text-xs">Record your mood to start tracking</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Mood Trends Chart */}
+      {moodTrendData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              7-Day Mood Trends
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="text-4xl">{getMoodEmoji(todayEntry.moodScore)}</div>
-              <div>
-                <div className="font-semibold">
-                  {moodEmojis.find(m => m.score === todayEntry.moodScore)?.label} ({todayEntry.moodScore}/10)
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                  Recorded at {format(new Date(todayEntry.entryDate), 'h:mm a')}
-                </div>
-                {todayEntry.notes && (
-                  <div className="text-sm mt-2 italic">"{todayEntry.notes}"</div>
-                )}
-              </div>
-            </div>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={moodTrendData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis domain={[1, 10]} />
+                <Tooltip />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="mood" 
+                  stroke="#8884d8" 
+                  name="Mood Score"
+                  strokeWidth={2}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="energy" 
+                  stroke="#82ca9d" 
+                  name="Energy"
+                  strokeWidth={2}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="motivation" 
+                  stroke="#ffc658" 
+                  name="Motivation"
+                  strokeWidth={2}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="confidence" 
+                  stroke="#ff7c7c" 
+                  name="Confidence"
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       )}
 
-      {/* Analytics Dashboard */}
-      {analytics && moodEntries.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Mood Trend Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                📈 7-Day Mood Trend
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {chartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height={200}>
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis domain={[1, 10]} />
-                    <Tooltip 
-                      formatter={(value: any, name: any, props: any) => [
-                        `${props.payload.emoji} ${value}/10`,
-                        'Mood Score'
-                      ]}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="mood" 
-                      stroke="#ea580c" 
-                      strokeWidth={3}
-                      dot={{ fill: '#ea580c', strokeWidth: 2, r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="text-center text-gray-500 py-8">
-                  No mood data available yet
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Mood Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                📊 Mood Statistics
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span>Average Mood (30 days):</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">{getMoodEmoji(Math.round(analytics.averageMood))}</span>
-                    <span className="font-semibold">{analytics.averageMood}/10</span>
-                  </div>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span>Mood Trend:</span>
-                  <span className={`font-semibold ${
-                    analytics.moodTrend === 'improving' 
-                      ? 'text-green-600' 
-                      : analytics.moodTrend === 'declining' 
-                        ? 'text-red-600' 
-                        : 'text-gray-600'
-                  }`}>
-                    {analytics.moodTrend === 'improving' && '📈 Improving'}
-                    {analytics.moodTrend === 'declining' && '📉 Declining'}
-                    {analytics.moodTrend === 'stable' && '➡️ Stable'}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span>Total Entries:</span>
-                  <span className="font-semibold">{moodEntries.length}</span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span>Best Day:</span>
-                  <div className="flex items-center gap-2">
-                    {moodEntries.length > 0 && (
-                      <>
-                        <span className="text-xl">
-                          {getMoodEmoji(Math.max(...moodEntries.map((e: MoodEntry) => e.moodScore)))}
-                        </span>
-                        <span className="font-semibold">
-                          {Math.max(...moodEntries.map((e: MoodEntry) => e.moodScore))}/10
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Recent Entries */}
+      {/* Recent Mood History */}
       {moodEntries.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              📝 Recent Mood Entries
+              <Calendar className="h-5 w-5" />
+              Recent Mood History
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {moodEntries.slice(0, 5).map((entry: MoodEntry) => (
-                <div key={entry.id} className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <div className="text-2xl">{getMoodEmoji(entry.moodScore)}</div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold">
-                        {moodEmojis.find(m => m.score === entry.moodScore)?.label} ({entry.moodScore}/10)
-                      </span>
-                      <span className="text-sm text-gray-500">
-                        {format(new Date(entry.entryDate), 'MMM dd, yyyy')}
-                      </span>
-                    </div>
-                    {entry.notes && (
-                      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        "{entry.notes}"
+              {moodEntries.slice(0, 5).map((entry: any) => (
+                <div key={entry.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{entry.moodEmoji}</span>
+                    <div>
+                      <div className="font-medium">{entry.moodLabel}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {new Date(entry.entryDate).toLocaleDateString()} • {entry.shift} • {entry.entryType.replace('_', ' ')}
                       </div>
-                    )}
+                    </div>
+                  </div>
+                  <div className="text-right text-sm">
+                    <div>Score: {entry.moodScore}/10</div>
+                    <div className="text-muted-foreground">
+                      E:{entry.energyLevel} M:{entry.motivationLevel} C:{entry.confidenceLevel}
+                    </div>
                   </div>
                 </div>
               ))}

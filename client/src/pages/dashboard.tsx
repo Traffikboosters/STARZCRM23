@@ -189,7 +189,7 @@ export default function Dashboard() {
       case "voice-analysis":
         return <VoiceToneAnalysisEnhanced />;
       case "mood-tracker":
-        return currentUser ? <MoodTracker currentUserId={(currentUser as any).id} /> : <div>Loading...</div>;
+        return <MoodTracker />;
       case "whatsapp":
         return <WhatsAppBusiness />;
       case "real-leads":

@@ -45,6 +45,23 @@ export const userInvitations = pgTable("user_invitations", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const moodTracking = pgTable("mood_tracking", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  moodEmoji: text("mood_emoji").notNull(), // 😊, 😐, 😞, 🔥, 💪, 😴, 🎯, 🤔
+  moodScore: integer("mood_score").notNull(), // 1-10 scale
+  energyLevel: text("energy_level").notNull(), // high, medium, low
+  stressLevel: text("stress_level").notNull(), // low, medium, high
+  motivationLevel: text("motivation_level").notNull(), // high, medium, low
+  notes: text("notes"), // optional notes about mood
+  dealsClosedToday: integer("deals_closed_today").default(0),
+  callsMadeToday: integer("calls_made_today").default(0),
+  appointmentsSetToday: integer("appointments_set_today").default(0),
+  revenueGeneratedToday: integer("revenue_generated_today").default(0), // in cents
+  trackingDate: timestamp("tracking_date").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const userSessions = pgTable("user_sessions", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id).notNull(),
@@ -1241,6 +1258,8 @@ export const insertMoodPerformanceCorrelationSchema = createInsertSchema(moodPer
   id: true,
   createdAt: true,
 });
+
+
 
 export const insertWorkOrderSchema = createInsertSchema(workOrders).omit({
   id: true,
