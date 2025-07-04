@@ -45,9 +45,9 @@ export default function CRMViewCompact() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch contacts
+  // Fetch contacts with high limit to get all records
   const { data: contactsResponse, isLoading, error, refetch } = useQuery({
-    queryKey: ['/api/contacts'],
+    queryKey: ['/api/contacts?limit=2000'],
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
