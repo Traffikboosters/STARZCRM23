@@ -112,7 +112,10 @@ export function AISalesTipGenerator({
         script: `Hi ${contact.firstName}, I noticed ${contact.company || 'your business'} and wanted to discuss how we're helping similar businesses increase their online visibility by 300% in just 90 days.`,
         context: `${contact.company || contact.firstName} appears to be in a competitive market where online presence is crucial`,
         triggers: ["new_lead", "first_contact", "cold_call"],
-        industry: contact.company?.toLowerCase().includes("restaurant") ? "restaurant" : "general"
+        industry: contact.company?.toLowerCase().includes("restaurant") ? "restaurant" : "general",
+        confidence: 85,
+        expectedImpact: "high",
+        timeToImplement: "immediate"
       },
       {
         id: "tip-2", 
@@ -122,7 +125,10 @@ export function AISalesTipGenerator({
         tip: "Qualify budget without directly asking about money",
         script: `${contact.firstName}, what's your current biggest challenge with getting new customers online? Most businesses like ${contact.company || 'yours'} are investing $2,500-$5,000 monthly in digital marketing - is that range something that makes sense for your growth goals?`,
         context: "Use soft budget qualification to understand investment capacity",
-        triggers: ["qualification_needed", "discovery_call"]
+        triggers: ["qualification_needed", "discovery_call"],
+        confidence: 90,
+        expectedImpact: "high",
+        timeToImplement: "immediate"
       },
       {
         id: "tip-3",
@@ -132,7 +138,10 @@ export function AISalesTipGenerator({
         tip: "Redirect price concerns to value and ROI",
         script: `I understand budget is important, ${contact.firstName}. Let me ask you this - if we could show you how to generate an additional $10,000 in revenue per month, what would that be worth to your business? Most of our clients see 4:1 return on investment within 90 days.`,
         context: "Frame investment as ROI opportunity rather than cost",
-        triggers: ["price_objection", "budget_concern"]
+        triggers: ["price_objection", "budget_concern"],
+        confidence: 85,
+        expectedImpact: "high",
+        timeToImplement: "immediate"
       }
     ],
     leadAnalysis: {

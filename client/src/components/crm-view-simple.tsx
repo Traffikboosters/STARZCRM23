@@ -25,7 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { authService } from "@/lib/auth";
 import type { Contact } from "@shared/schema";
-import { AISalesTipGenerator } from "./ai-sales-tip-generator";
+import { SimpleAITipsModal } from "./simple-ai-tips-modal";
 import LeadDetailsModal from "./lead-details-modal";
 import { formatPhoneNumber } from "@/lib/utils";
 
@@ -451,6 +451,11 @@ export default function CRMView() {
                         setCurrentAction('calling');
                         setIsAITipGeneratorOpen(true);
                         console.log('AI Tip Generator state set to open:', true);
+                        console.log('Current state values:', {
+                          selectedContact: contact,
+                          isAITipGeneratorOpen: true,
+                          currentAction: 'calling'
+                        });
                         toast({
                           title: "AI Tips Opening",
                           description: `Loading AI sales tips for ${contact.firstName} ${contact.lastName}`,
@@ -631,20 +636,13 @@ export default function CRMView() {
 
       {/* AI Sales Tip Generator Modal */}
       {selectedContact && (
-        <AISalesTipGenerator
+        <SimpleAITipsModal
           contact={selectedContact}
-          currentAction={currentAction}
           isOpen={isAITipGeneratorOpen}
           onClose={() => {
             setIsAITipGeneratorOpen(false);
             setSelectedContact(null);
             setCurrentAction(undefined);
-          }}
-          onApplyTip={(tipId) => {
-            toast({
-              title: "Sales Tip Applied",
-              description: `AI tip ${tipId} has been applied to your sales approach.`,
-            });
           }}
         />
       )}
