@@ -568,6 +568,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Lead Allocation endpoint - Assign multiple leads to a sales representative
+  app.post("/api/contacts/allocate", async (req, res) => {
+    try {
+      const { leadIds, salesRepId } = req.body;
+      
+      if (!Array.isArray(leadIds) || leadIds.length === 0) {
+        return res.status(400).json({ error: "leadIds must be a non-empty array" });
+      }
+      
+      if (!salesRepId || typeof salesRepId !== 'number') {
+        return res.status(400).json({ error: "salesRepId must be a valid number" });
+      }
+
+      // Verify the sales rep exists
+      const salesRep = await storage.getUser(salesRepId);
+      if (!salesRep) {
+        return res.status(404).json({ error: "Sales representative not found" });
+      }
+
+      // Update all leads with the new sales rep assignment
+      const updatedContacts = [];
+      for (const leadId of leadIds) {
+        const contact = await storage.updateContact(leadId, { 
+          assignedTo: salesRepId,
+          assignedAt: new Date(),
+          assignedBy: 1 // Current user ID (admin)
+        });
+        if (contact) {
+          updatedContacts.push(contact);
+        }
+      }
+
+      // Log the allocation action
+      console.log(`LEAD ALLOCATION: ${leadIds.length} leads assigned to ${salesRep.firstName} ${salesRep.lastName} (ID: ${salesRepId})`);
+      
+      // Send real-time WebSocket notification
+      if (wss) {
+        const notificationData = {
+          type: 'leads_allocated',
+          salesRep: salesRep,
+          leadCount: updatedContacts.length,
+          leadIds: leadIds,
+          timestamp: new Date().toISOString()
+        };
+        
+        wss.clients.forEach((client: any) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(notificationData));
+          }
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Successfully allocated ${updatedContacts.length} leads to ${salesRep.firstName} ${salesRep.lastName}`,
+        updatedContacts: updatedContacts
+      });
+    } catch (error) {
+      console.error('Lead allocation error:', error);
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
+
   // AI Conversation Starters endpoint
   app.get("/api/contacts/:contactId/conversation-starters", async (req, res) => {
     try {

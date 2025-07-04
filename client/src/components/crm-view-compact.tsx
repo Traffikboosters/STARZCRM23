@@ -4,12 +4,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Phone, Mail, MoreVertical, Plus, Filter, Search, RefreshCw } from 'lucide-react';
+import { Phone, Mail, MoreVertical, Plus, Filter, Search, RefreshCw, Users, UserPlus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { formatPhoneNumber } from '@/lib/utils';
 import { apiRequest } from '@/lib/queryClient';
-import type { Contact } from '@shared/schema';
+import type { Contact, User } from '@shared/schema';
 import CompactLeadCards from './compact-lead-cards';
 import ContactDetailsModal from './contact-details-modal';
 
@@ -43,8 +45,21 @@ export default function CRMViewCompact() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [isLeadAllocationModalOpen, setIsLeadAllocationModalOpen] = useState(false);
+  const [selectedLeadsForAllocation, setSelectedLeadsForAllocation] = useState<number[]>([]);
+  const [selectedSalesRep, setSelectedSalesRep] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Fetch users for sales rep assignment
+  const { data: users = [] } = useQuery<User[]>({
+    queryKey: ["/api/users"],
+  });
+
+  // Fetch current user
+  const { data: currentUser } = useQuery<User>({
+    queryKey: ["/api/users/me"],
+  });
 
   // Fetch contacts with high limit to get all records
   const { data: contactsResponse, isLoading, error, refetch } = useQuery({
@@ -53,6 +68,34 @@ export default function CRMViewCompact() {
   });
 
   const contacts = (contactsResponse as any)?.contacts || [];
+  
+  // Get sales representatives (excluding admin-only accounts)  
+  const salesReps = (users as User[]).filter((user: User) => user.role === 'sales_rep' || user.role === 'admin');
+
+  // Lead allocation mutation
+  const allocateLeadsMutation = useMutation({
+    mutationFn: async ({ leadIds, salesRepId }: { leadIds: number[], salesRepId: number }) => {
+      const response = await apiRequest('POST', '/api/contacts/allocate', { leadIds, salesRepId });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/contacts'] });
+      toast({
+        title: "Success",
+        description: `Successfully allocated ${selectedLeadsForAllocation.length} leads`,
+      });
+      setIsLeadAllocationModalOpen(false);
+      setSelectedLeadsForAllocation([]);
+      setSelectedSalesRep("");
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to allocate leads. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Filter contacts based on search
   const filteredContacts = contacts.filter((contact: Contact) => {
@@ -131,6 +174,16 @@ export default function CRMViewCompact() {
               className="pl-10 w-64"
             />
           </div>
+          {currentUser?.role === 'admin' && (
+            <Button 
+              variant="outline"
+              onClick={() => setIsLeadAllocationModalOpen(true)}
+              className="bg-orange-600 hover:bg-orange-700 text-white border-orange-600"
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Allocate Leads
+            </Button>
+          )}
           <Button onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
@@ -163,6 +216,134 @@ export default function CRMViewCompact() {
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
       />
+
+      {/* Lead Allocation Modal */}
+      <Dialog open={isLeadAllocationModalOpen} onOpenChange={setIsLeadAllocationModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Allocate Leads to Sales Representatives
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Sales Rep Selection */}
+            <div>
+              <Label htmlFor="sales-rep-select">Assign to Sales Representative:</Label>
+              <Select value={selectedSalesRep} onValueChange={setSelectedSalesRep}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a sales representative..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {salesReps.filter(rep => rep.role !== 'admin').map((rep) => (
+                    <SelectItem key={rep.id} value={rep.id.toString()}>
+                      {rep.firstName} {rep.lastName} - {rep.email}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Lead Selection */}
+            <div>
+              <div className="flex justify-between items-center mb-3">
+                <Label>Select Leads to Allocate ({selectedLeadsForAllocation.length} selected):</Label>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedLeadsForAllocation(filteredContacts.map((c: Contact) => c.id))}
+                  >
+                    Select All
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedLeadsForAllocation([])}
+                  >
+                    Clear All
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="border rounded-lg max-h-96 overflow-y-auto">
+                <div className="grid gap-2 p-4">
+                  {filteredContacts.map((contact: Contact) => {
+                    const ageStatus = getLeadAgeStatus(contact.createdAt);
+                    const isSelected = selectedLeadsForAllocation.includes(contact.id);
+                    
+                    return (
+                      <div
+                        key={contact.id}
+                        className={`
+                          flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all
+                          ${isSelected ? 'bg-orange-50 border-orange-200' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'}
+                        `}
+                        onClick={() => {
+                          if (isSelected) {
+                            setSelectedLeadsForAllocation(prev => prev.filter(id => id !== contact.id));
+                          } else {
+                            setSelectedLeadsForAllocation(prev => [...prev, contact.id]);
+                          }
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => {}}
+                          className="w-4 h-4 text-orange-600"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">
+                              {contact.firstName} {contact.lastName}
+                            </span>
+                            <Badge className={`${ageStatus.badgeColor} text-white text-xs`}>
+                              {ageStatus.description}
+                            </Badge>
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            {contact.email} • {formatPhoneNumber(contact.phone)}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsLeadAllocationModalOpen(false);
+                  setSelectedLeadsForAllocation([]);
+                  setSelectedSalesRep("");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="bg-orange-600 hover:bg-orange-700"
+                disabled={!selectedSalesRep || selectedLeadsForAllocation.length === 0 || allocateLeadsMutation.isPending}
+                onClick={() => {
+                  if (selectedSalesRep && selectedLeadsForAllocation.length > 0) {
+                    allocateLeadsMutation.mutate({
+                      leadIds: selectedLeadsForAllocation,
+                      salesRepId: parseInt(selectedSalesRep)
+                    });
+                  }
+                }}
+              >
+                {allocateLeadsMutation.isPending ? "Allocating..." : `Allocate ${selectedLeadsForAllocation.length} Leads`}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
