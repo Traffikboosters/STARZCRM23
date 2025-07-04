@@ -85,7 +85,10 @@ export default function CRMView() {
   // Data fetching
   const { data: contactsResponse, isLoading } = useQuery({
     queryKey: ["/api/contacts"],
-    queryFn: () => apiRequest("/api/contacts?limit=1000"),
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/contacts?limit=1000");
+      return response;
+    },
     refetchInterval: 60000,
   });
 
