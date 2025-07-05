@@ -31,33 +31,14 @@ export default function DualPhoneSystem() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Query MightyCall status
-  const { data: mightyCallStatus, refetch: refetchMightyCall } = useQuery({
-    queryKey: ['/api/mightycall/status'],
-  });
-
-  // Query PowerDials status
+  // Query PowerDials status (uses MightyCall backend)
   const { data: powerDialsStatus, refetch: refetchPowerDials } = useQuery({
     queryKey: ['/api/powerdials/status'],
   });
 
-  const testMightyCallConnection = async () => {
-    try {
-      const response = await fetch('/api/mightycall/test', { method: 'POST' });
-      const result = await response.json();
-      toast({
-        title: "MightyCall Test",
-        description: result.success ? "Connection successful" : result.message,
-        variant: result.success ? "default" : "destructive",
-      });
-      refetchMightyCall();
-    } catch (error) {
-      toast({
-        title: "MightyCall Test Failed",
-        description: "Unable to test connection",
-        variant: "destructive",
-      });
-    }
+  // Type guard for PowerDials status
+  const isPowerDialsConfigured = (status: any): boolean => {
+    return status && typeof status === 'object' && 'configured' in status && status.configured;
   };
 
   const testPowerDialsConnection = async () => {
@@ -65,31 +46,30 @@ export default function DualPhoneSystem() {
       const response = await fetch('/api/powerdials/status');
       const result = await response.json();
       toast({
-        title: "PowerDials Test",
-        description: result.configured ? "System ready" : result.message,
+        title: "PowerDials System Test",
+        description: result.configured ? "PowerDials system ready" : result.message,
         variant: result.configured ? "default" : "destructive",
       });
       refetchPowerDials();
     } catch (error) {
       toast({
         title: "PowerDials Test Failed",
-        description: "Unable to test connection",
+        description: "Unable to test PowerDials connection",
         variant: "destructive",
       });
     }
   };
 
-  const makeTestCall = async (system: 'mightycall' | 'powerdials') => {
-    const endpoint = system === 'mightycall' ? '/api/mightycall/call' : '/api/powerdials/call';
+  const makeTestCall = async (mode: 'web' | 'desktop') => {
     const testNumber = '8778406250'; // Traffik Boosters number
     
     try {
-      const response = await fetch(endpoint, {
+      const response = await fetch('/api/powerdials/call', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phoneNumber: testNumber,
-          contactName: 'Test Call',
+          contactName: 'PowerDials Test Call',
           userId: 1
         })
       });
@@ -97,23 +77,23 @@ export default function DualPhoneSystem() {
       const result = await response.json();
       
       if (result.success) {
-        if (system === 'powerdials' && result.dialerUrl) {
+        if (mode === 'web' && result.dialerUrl) {
           window.open(result.dialerUrl, 'PowerDialsDialer', 'width=800,height=600,scrollbars=yes,resizable=yes');
-        } else if (system === 'mightycall') {
+        } else {
           window.open(`tel:${testNumber}`, '_self');
         }
         
         toast({
-          title: `${system === 'mightycall' ? 'MightyCall' : 'PowerDials'} Call Initiated`,
-          description: `Test call to ${testNumber}`,
+          title: `PowerDials ${mode === 'web' ? 'Web' : 'Desktop'} Call`,
+          description: `Test call initiated to ${testNumber}`,
         });
       } else {
         throw new Error(result.message || 'Call failed');
       }
     } catch (error) {
       toast({
-        title: "Call Failed",
-        description: `${system === 'mightycall' ? 'MightyCall' : 'PowerDials'} call could not be initiated`,
+        title: "PowerDials Call Failed",
+        description: "PowerDials call could not be initiated",
         variant: "destructive",
       });
     }
@@ -123,83 +103,41 @@ export default function DualPhoneSystem() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Phone System</h1>
+          <h1 className="text-3xl font-bold">PowerDials Phone System</h1>
           <p className="text-muted-foreground">
-            Dual dialer integration - Choose between MightyCall and PowerDials
+            Advanced cloud-based dialing system for high-performance sales teams
           </p>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="mightycall">MightyCall</TabsTrigger>
-          <TabsTrigger value="powerdials">PowerDials</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overview">Dashboard</TabsTrigger>
+          <TabsTrigger value="powerdials">PowerDials Control</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            {/* MightyCall Status Card */}
+            {/* PowerDials Web Dialer */}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">MightyCall</CardTitle>
-                <Phone className="h-4 w-4 text-green-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center space-x-2 mb-3">
-                  {mightyCallStatus?.connected ? (
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                  ) : (
-                    <XCircle className="h-4 w-4 text-red-600" />
-                  )}
-                  <Badge variant={mightyCallStatus?.connected ? "default" : "destructive"}>
-                    {mightyCallStatus?.connected ? "Connected" : "Disconnected"}
-                  </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground mb-3">
-                  {mightyCallStatus?.message || "Status unknown"}
-                </p>
-                <div className="space-y-2">
-                  <Button 
-                    onClick={testMightyCallConnection} 
-                    size="sm" 
-                    className="w-full"
-                  >
-                    Test Connection
-                  </Button>
-                  <Button 
-                    onClick={() => makeTestCall('mightycall')} 
-                    size="sm" 
-                    variant="outline" 
-                    className="w-full"
-                    disabled={!mightyCallStatus?.connected}
-                  >
-                    Make Test Call
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* PowerDials Status Card */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">PowerDials</CardTitle>
+                <CardTitle className="text-sm font-medium">PowerDials Web</CardTitle>
                 <Zap className="h-4 w-4 text-blue-600" />
               </CardHeader>
               <CardContent>
                 <div className="flex items-center space-x-2 mb-3">
-                  {powerDialsStatus?.configured ? (
+                  {isPowerDialsConfigured(powerDialsStatus) ? (
                     <CheckCircle className="h-4 w-4 text-green-600" />
                   ) : (
                     <XCircle className="h-4 w-4 text-red-600" />
                   )}
-                  <Badge variant={powerDialsStatus?.configured ? "default" : "destructive"}>
-                    {powerDialsStatus?.configured ? "Ready" : "Needs Setup"}
+                  <Badge variant={isPowerDialsConfigured(powerDialsStatus) ? "default" : "destructive"}>
+                    {isPowerDialsConfigured(powerDialsStatus) ? "Online" : "Setup Required"}
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">
-                  {powerDialsStatus?.message || "Status unknown"}
+                  Browser-based dialing system with advanced call management
                 </p>
                 <div className="space-y-2">
                   <Button 
@@ -207,16 +145,57 @@ export default function DualPhoneSystem() {
                     size="sm" 
                     className="w-full"
                   >
-                    Test Connection
+                    Test System
                   </Button>
                   <Button 
-                    onClick={() => makeTestCall('powerdials')} 
+                    onClick={() => makeTestCall('web')} 
                     size="sm" 
                     variant="outline" 
                     className="w-full"
-                    disabled={!powerDialsStatus?.configured}
+                    disabled={!isPowerDialsConfigured(powerDialsStatus)}
                   >
-                    Make Test Call
+                    Test Web Call
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* PowerDials Desktop Integration */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">PowerDials Desktop</CardTitle>
+                <Phone className="h-4 w-4 text-blue-800" />
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center space-x-2 mb-3">
+                  {isPowerDialsConfigured(powerDialsStatus) ? (
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-red-600" />
+                  )}
+                  <Badge variant={isPowerDialsConfigured(powerDialsStatus) ? "default" : "destructive"}>
+                    {isPowerDialsConfigured(powerDialsStatus) ? "Ready" : "Setup Required"}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Desktop phone integration for seamless device calling
+                </p>
+                <div className="space-y-2">
+                  <Button 
+                    onClick={testPowerDialsConnection} 
+                    size="sm" 
+                    className="w-full"
+                  >
+                    Test System
+                  </Button>
+                  <Button 
+                    onClick={() => makeTestCall('desktop')} 
+                    size="sm" 
+                    variant="outline" 
+                    className="w-full"
+                    disabled={!isPowerDialsConfigured(powerDialsStatus)}
+                  >
+                    Test Desktop Call
                   </Button>
                 </div>
               </CardContent>
@@ -277,60 +256,7 @@ export default function DualPhoneSystem() {
           </div>
         </TabsContent>
 
-        <TabsContent value="mightycall" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Phone className="h-5 w-5 text-green-600" />
-                MightyCall Integration
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <h4 className="font-semibold mb-2">Connection Status</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">API Access:</span>
-                      <Badge variant={mightyCallStatus?.connected ? "default" : "destructive"}>
-                        {mightyCallStatus?.connected ? "Active" : "Inactive"}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">Account ID:</span>
-                      <span className="text-xs font-mono">
-                        {mightyCallStatus?.accountId || "Not configured"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="font-semibold mb-2">Capabilities</h4>
-                  <ul className="text-sm space-y-1">
-                    <li>• Pro Plan Features</li>
-                    <li>• Web Dialer Integration</li>
-                    <li>• Call Logging</li>
-                    <li>• Device Phone Dialer</li>
-                  </ul>
-                </div>
-              </div>
-              
-              <div className="pt-4 border-t">
-                <Button onClick={testMightyCallConnection} className="mr-2">
-                  Test Connection
-                </Button>
-                <Button 
-                  onClick={() => makeTestCall('mightycall')} 
-                  variant="outline"
-                  disabled={!mightyCallStatus?.connected}
-                >
-                  Make Test Call
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+
 
         <TabsContent value="powerdials" className="space-y-4">
           <Card>
@@ -347,8 +273,8 @@ export default function DualPhoneSystem() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm">System Status:</span>
-                      <Badge variant={powerDialsStatus?.configured ? "default" : "destructive"}>
-                        {powerDialsStatus?.configured ? "Ready" : "Needs Setup"}
+                      <Badge variant={isPowerDialsConfigured(powerDialsStatus) ? "default" : "destructive"}>
+                        {isPowerDialsConfigured(powerDialsStatus) ? "Ready" : "Needs Setup"}
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between">
@@ -369,7 +295,7 @@ export default function DualPhoneSystem() {
                 </div>
               </div>
 
-              {!powerDialsStatus?.configured && (
+              {!isPowerDialsConfigured(powerDialsStatus) && (
                 <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
                   <h4 className="font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
                     Setup Required
@@ -390,11 +316,11 @@ export default function DualPhoneSystem() {
                   Test Connection
                 </Button>
                 <Button 
-                  onClick={() => makeTestCall('powerdials')} 
+                  onClick={() => makeTestCall('web')} 
                   variant="outline"
-                  disabled={!powerDialsStatus?.configured}
+                  disabled={!isPowerDialsConfigured(powerDialsStatus)}
                 >
-                  Make Test Call
+                  Test Web Call
                 </Button>
               </div>
             </CardContent>
@@ -426,26 +352,24 @@ export default function DualPhoneSystem() {
               </div>
 
               <div>
-                <h4 className="font-semibold mb-3">System Status</h4>
+                <h4 className="font-semibold mb-3">PowerDials System Status</h4>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded">
                     <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-green-600" />
-                      <span>MightyCall</span>
+                      <Zap className="h-4 w-4 text-blue-600" />
+                      <span>Web Dialer</span>
                     </div>
-                    <Badge variant={mightyCallStatus?.connected ? "default" : "destructive"}>
-                      {mightyCallStatus?.connected ? "Active" : "Inactive"}
+                    <Badge variant={isPowerDialsConfigured(powerDialsStatus) ? "default" : "destructive"}>
+                      {isPowerDialsConfigured(powerDialsStatus) ? "Ready" : "Needs Setup"}
                     </Badge>
                   </div>
                   
                   <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded">
                     <div className="flex items-center gap-2">
-                      <Zap className="h-4 w-4 text-blue-600" />
-                      <span>PowerDials</span>
+                      <Phone className="h-4 w-4 text-blue-800" />
+                      <span>Desktop Integration</span>
                     </div>
-                    <Badge variant={powerDialsStatus?.configured ? "default" : "destructive"}>
-                      {powerDialsStatus?.configured ? "Ready" : "Needs Setup"}
-                    </Badge>
+                    <Badge variant="default">Available</Badge>
                   </div>
                 </div>
               </div>

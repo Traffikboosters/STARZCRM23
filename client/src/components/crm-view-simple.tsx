@@ -414,7 +414,7 @@ export default function CRMView() {
                           onClick={(e) => {
                             e.stopPropagation();
                             if (contact.phone) {
-                              // PowerDials Web Dialer
+                              // PowerDials Web Dialer (using MightyCall backend)
                               fetch('/api/powerdials/call', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
@@ -430,7 +430,7 @@ export default function CRMView() {
                                 if (data.success && data.dialerUrl) {
                                   window.open(data.dialerUrl, 'PowerDialsDialer', 'width=800,height=600,scrollbars=yes,resizable=yes');
                                   toast({
-                                    title: "PowerDials Opened",
+                                    title: "PowerDials Ready",
                                     description: `PowerDials web dialer ready for ${contact.firstName} ${contact.lastName}`,
                                   });
                                 } else {
@@ -440,7 +440,7 @@ export default function CRMView() {
                               .catch(error => {
                                 toast({
                                   title: "PowerDials Error",
-                                  description: "PowerDials not configured. Using device dialer.",
+                                  description: "PowerDials web dialer unavailable. Using device dialer.",
                                   variant: "destructive",
                                 });
                                 window.open(`tel:${contact.phone}`, '_self');
@@ -449,24 +449,44 @@ export default function CRMView() {
                           }}
                         >
                           <Phone className="h-4 w-4 mr-2 text-blue-600" />
-                          PowerDials (Web)
+                          PowerDials Web
                         </DropdownMenuItem>
                         
                         <DropdownMenuItem
                           onClick={(e) => {
                             e.stopPropagation();
                             if (contact.phone) {
-                              // MightyCall integration - keep existing logic
-                              window.open(`tel:${contact.phone}`, '_self');
-                              toast({
-                                title: "MightyCall Ready",
-                                description: `Calling ${contact.firstName} ${contact.lastName} via MightyCall`,
+                              // PowerDials Desktop (using MightyCall backend)
+                              fetch('/api/powerdials/call', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  phoneNumber: contact.phone,
+                                  contactName: `${contact.firstName} ${contact.lastName}`,
+                                  contactId: contact.id,
+                                  userId: 1
+                                })
+                              })
+                              .then(res => res.json())
+                              .then(data => {
+                                window.open(`tel:${contact.phone}`, '_self');
+                                toast({
+                                  title: "PowerDials Desktop",
+                                  description: `Calling ${contact.firstName} ${contact.lastName} via PowerDials`,
+                                });
+                              })
+                              .catch(error => {
+                                window.open(`tel:${contact.phone}`, '_self');
+                                toast({
+                                  title: "PowerDials Call",
+                                  description: `Calling ${contact.firstName} ${contact.lastName}`,
+                                });
                               });
                             }
                           }}
                         >
-                          <Phone className="h-4 w-4 mr-2 text-green-600" />
-                          MightyCall
+                          <Phone className="h-4 w-4 mr-2 text-blue-700" />
+                          PowerDials Desktop
                         </DropdownMenuItem>
                         
                         <DropdownMenuItem
