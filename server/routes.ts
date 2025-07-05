@@ -37,6 +37,7 @@ import {
 import { storage } from "./storage";
 import { mightyCallNativeAPI } from "./mightycall-native";
 import { mightyCallCoreFixed } from "./mightycall-core-fixed";
+import { powerDialsIntegration } from "./powerdials-integration";
 
 // Initialize POWERDIALS connection immediately
 console.log('🔥 INITIALIZING MIGHTYCALL INTEGRATION...');
@@ -298,36 +299,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // POWERDIALS API status endpoint
   app.get("/api/powerdials/status", async (req, res) => {
-    // BYPASS NATIVE API - USE FIXED CORE SYSTEM
-    const status = {
-      connected: true,
-      apiAccess: true,
-      accountId: mightyCallConfig.accountId,
-      secretKey: mightyCallConfig.secretKey ? 'CONFIGURED' : 'MISSING',
-      integrationLevel: 'FULL API ACCESS',
-      message: '🔥 POWERDIALS CONNECTED AND OPERATIONAL',
-      capabilities: [
-        'Outbound call initiation',
-        'Call logging and tracking', 
-        'Web dialer integration',
-        'SIP URL generation',
-        'Device phone dialer',
-        'Pro plan features'
-      ],
-      lastTestTime: new Date().toISOString(),
-      proStatus: 'ACTIVE',
-      testConnection: 'SUCCESS',
-      authStatus: 'BYPASSED - USING CORE SYSTEM'
-    };
-    
-    console.log('📞 POWERDIALS STATUS: CONNECTED - Account:', status.accountId);
-    res.json(status);
+    try {
+      const status = powerDialsIntegration.getStatus();
+      const testResult = await powerDialsIntegration.testConnection();
+      
+      const response = {
+        ...status,
+        testResult,
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log('📞 PowerDials STATUS:', status.configured ? 'READY' : 'NEEDS CONFIG');
+      res.json(response);
+    } catch (error) {
+      res.status(500).json({
+        configured: false,
+        message: 'PowerDials status check failed',
+        error: (error as Error).message
+      });
+    }
   });
 
   // POWERDIALS API call initiation endpoint
   app.post("/api/powerdials/call", async (req, res) => {
     try {
-      const { phoneNumber, contactName, extension, userId = 1 } = req.body;
+      const { phoneNumber, contactName, contactId, userId = 1 } = req.body;
       
       if (!phoneNumber) {
         return res.status(400).json({
@@ -336,19 +332,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const callResponse = await mightyCallCoreFixed.initiateOutboundCall({
+      const callResponse = await powerDialsIntegration.initiateCall({
         phoneNumber,
         contactName,
-        userId,
-        extension
+        contactId,
+        userId
       });
 
-      console.log(`POWERDIALS Fixed API: ${phoneNumber} - ${callResponse.success ? 'Success' : 'Failed'}`);
+      console.log(`📞 PowerDials API: ${phoneNumber} - ${callResponse.success ? 'Success' : 'Failed'}`);
       res.json(callResponse);
     } catch (error) {
       res.status(500).json({
         success: false,
-        message: `Native API call failed: ${(error as Error).message}`
+        message: `PowerDials API call failed: ${(error as Error).message}`
       });
     }
   });

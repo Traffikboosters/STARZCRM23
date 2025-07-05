@@ -21,6 +21,9 @@ import {
 import { 
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from "@/components/ui/select";
+import { 
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 
 import { apiRequest } from "@/lib/queryClient";
@@ -393,32 +396,96 @@ export default function CRMView() {
 
                   {/* Action Buttons Grid - 7 buttons in 4-column layout */}
                   <div className="grid grid-cols-4 gap-1 mt-3" onClick={(e) => e.stopPropagation()}>
-                    {/* Call Button */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[60px]"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (contact.phone) {
-                          window.open(`tel:${contact.phone}`, '_self');
-                          toast({
-                            title: "Call Initiated",
-                            description: `Calling ${contact.firstName} ${contact.lastName}`,
-                          });
-                        } else {
-                          toast({
-                            title: "No Phone Number",
-                            description: "This contact doesn't have a phone number",
-                            variant: "destructive",
-                          });
-                        }
-                      }}
-                      disabled={!contact.phone}
-                    >
-                      <Phone className="h-3 w-3 mb-2 text-green-600" />
-                      <span className="leading-tight">Call</span>
-                    </Button>
+                    {/* Call Button with Dialer Options */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[60px]"
+                          disabled={!contact.phone}
+                        >
+                          <Phone className="h-3 w-3 mb-2 text-green-600" />
+                          <span className="leading-tight">Call</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start" className="w-48">
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (contact.phone) {
+                              // PowerDials Web Dialer
+                              fetch('/api/powerdials/call', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  phoneNumber: contact.phone,
+                                  contactName: `${contact.firstName} ${contact.lastName}`,
+                                  contactId: contact.id,
+                                  userId: 1
+                                })
+                              })
+                              .then(res => res.json())
+                              .then(data => {
+                                if (data.success && data.dialerUrl) {
+                                  window.open(data.dialerUrl, 'PowerDialsDialer', 'width=800,height=600,scrollbars=yes,resizable=yes');
+                                  toast({
+                                    title: "PowerDials Opened",
+                                    description: `PowerDials web dialer ready for ${contact.firstName} ${contact.lastName}`,
+                                  });
+                                } else {
+                                  throw new Error(data.message || 'PowerDials unavailable');
+                                }
+                              })
+                              .catch(error => {
+                                toast({
+                                  title: "PowerDials Error",
+                                  description: "PowerDials not configured. Using device dialer.",
+                                  variant: "destructive",
+                                });
+                                window.open(`tel:${contact.phone}`, '_self');
+                              });
+                            }
+                          }}
+                        >
+                          <Phone className="h-4 w-4 mr-2 text-blue-600" />
+                          PowerDials (Web)
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (contact.phone) {
+                              // MightyCall integration - keep existing logic
+                              window.open(`tel:${contact.phone}`, '_self');
+                              toast({
+                                title: "MightyCall Ready",
+                                description: `Calling ${contact.firstName} ${contact.lastName} via MightyCall`,
+                              });
+                            }
+                          }}
+                        >
+                          <Phone className="h-4 w-4 mr-2 text-green-600" />
+                          MightyCall
+                        </DropdownMenuItem>
+                        
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (contact.phone) {
+                              window.open(`tel:${contact.phone}`, '_self');
+                              toast({
+                                title: "Device Dialer",
+                                description: `Calling ${contact.firstName} ${contact.lastName}`,
+                              });
+                            }
+                          }}
+                        >
+                          <Phone className="h-4 w-4 mr-2 text-gray-600" />
+                          Device Dialer
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
 
                     {/* Schedule Button */}
                     <Button

@@ -11,7 +11,7 @@ import CRMAnalyticsDashboard from "@/components/crm-analytics-dashboard";
 import AutomationsView from "@/components/automations-view";
 import Payments from "@/pages/payments";
 import LegalDocumentsView from "@/components/legal-documents-view";
-import { ComprehensivePhoneSystem } from "@/components/comprehensive-phone-system";
+import DualPhoneSystem from "@/components/dual-phone-system";
 import WorkOrders from "@/pages/work-orders";
 import SecureFileManager from "@/components/secure-file-manager";
 import ChatWidget from "@/components/chat-widget";
@@ -140,7 +140,7 @@ export default function Dashboard() {
       case "work-orders":
         return <WorkOrders />;
       case "phone":
-        return <ComprehensivePhoneSystem />;
+        return <DualPhoneSystem />;
       case "users":
         return currentUser ? <UserManagement currentUser={currentUser as any} /> : <div>Loading...</div>;
       case "files":
