@@ -83,11 +83,20 @@ export default function CRMView() {
   });
 
   // Data fetching
-  const { data: contactsResponse, isLoading } = useQuery({
+  const { data: contactsResponse, isLoading, error } = useQuery({
     queryKey: ["/api/contacts"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/contacts?limit=1000");
-      return response;
+      try {
+        const response = await fetch("/api/contacts?limit=1000");
+        if (!response.ok) {
+          throw new Error(`Failed to fetch contacts: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error("Error fetching contacts:", error);
+        throw error;
+      }
     },
     refetchInterval: 60000,
   });
@@ -290,6 +299,20 @@ export default function CRMView() {
           {[...Array(6)].map((_, i) => (
             <div key={i} className="h-64 bg-gray-200 animate-pulse rounded-lg"></div>
           ))}
+        </div>
+      ) : error ? (
+        <div className="text-center py-12">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+            <h3 className="text-lg font-semibold text-red-800 mb-2">Failed to Load Contacts</h3>
+            <p className="text-red-600 mb-4">There was an error loading your contacts. Please try refreshing the page.</p>
+            <Button 
+              onClick={() => window.location.reload()} 
+              variant="outline"
+              className="border-red-300 text-red-700 hover:bg-red-50"
+            >
+              Refresh Page
+            </Button>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
