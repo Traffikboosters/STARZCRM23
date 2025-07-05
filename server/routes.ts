@@ -794,30 +794,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // POWERDIALS webhook for inbound calls
-  app.post("/api/powerdials/webhook", async (req, res) => {
+  app.post("/api/powerdials/webhook/inbound-call", async (req, res) => {
     try {
-      console.log("📞 Inbound Call Webhook Received:", req.body);
+      console.log("📞 PowerDials Inbound Call Webhook:", req.body);
       
-      const webhookData = {
-        callId: req.body.call_id || `inbound_${Date.now()}`,
-        fromNumber: req.body.from_number || req.body.caller_id,
-        toNumber: req.body.to_number || '(877) 840-6250',
-        callStatus: req.body.status || 'ringing',
-        duration: req.body.duration || 0,
+      const { powerDialsIntegration } = await import("./powerdials-integration");
+      
+      const callData = {
+        callId: req.body.call_id || `pd_inbound_${Date.now()}`,
+        callerNumber: req.body.caller_number || req.body.from,
+        callerName: req.body.caller_name,
         timestamp: req.body.timestamp || new Date().toISOString(),
-        direction: 'inbound' as const
+        duration: req.body.duration || 0,
+        status: req.body.status || 'ringing' as 'ringing' | 'answered' | 'missed' | 'ended'
       };
 
-      const processed = await mightyCallCoreFixed.handleInboundWebhook(webhookData);
+      const processed = await powerDialsIntegration.handleInboundCall(callData);
       
-      if (processed) {
-        res.status(200).json({ success: true, message: "Webhook processed" });
-      } else {
-        res.status(400).json({ success: false, message: "Webhook processing failed" });
-      }
+      res.status(200).json(processed);
     } catch (error) {
-      console.error("Webhook processing error:", error);
-      res.status(500).json({ success: false, message: "Internal server error" });
+      console.error("PowerDials inbound call webhook error:", error);
+      res.status(500).json({ success: false, message: "Failed to process inbound call" });
+    }
+  });
+
+  // POWERDIALS webhook for inbound SMS
+  app.post("/api/powerdials/webhook/inbound-sms", async (req, res) => {
+    try {
+      console.log("📱 PowerDials Inbound SMS Webhook:", req.body);
+      
+      const { powerDialsIntegration } = await import("./powerdials-integration");
+      
+      const smsData = {
+        messageId: req.body.message_id || `pd_sms_${Date.now()}`,
+        phoneNumber: req.body.from_number || req.body.from,
+        message: req.body.message || req.body.body,
+        direction: 'inbound' as 'inbound',
+        timestamp: req.body.timestamp || new Date().toISOString(),
+        status: 'received' as 'received',
+        contactId: req.body.contact_id
+      };
+
+      const processed = await powerDialsIntegration.handleInboundSMS(smsData);
+      
+      res.status(200).json(processed);
+    } catch (error) {
+      console.error("PowerDials inbound SMS webhook error:", error);
+      res.status(500).json({ success: false, message: "Failed to process inbound SMS" });
+    }
+  });
+
+  // POWERDIALS send SMS endpoint
+  app.post("/api/powerdials/sms/send", async (req, res) => {
+    try {
+      const { phoneNumber, message, contactId } = req.body;
+      
+      if (!phoneNumber || !message) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Phone number and message are required" 
+        });
+      }
+
+      const { powerDialsIntegration } = await import("./powerdials-integration");
+      const result = await powerDialsIntegration.sendSMS(phoneNumber, message, contactId);
+      
+      res.json(result);
+    } catch (error) {
+      console.error("PowerDials SMS send error:", error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to send SMS",
+        error: (error as Error).message 
+      });
     }
   });
 
