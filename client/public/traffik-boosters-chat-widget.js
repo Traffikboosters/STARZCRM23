@@ -30,6 +30,20 @@
     return element;
   }
 
+  // Sanitize user input to prevent XSS
+  function sanitizeInput(input) {
+    if (typeof input !== 'string') return input;
+    return input.replace(/[<>'"&]/g, function(match) {
+      return {
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#x27;',
+        '&': '&amp;'
+      }[match];
+    });
+  }
+
   function formatTime(date) {
     return date.toLocaleTimeString('en-US', { 
       hour: '2-digit', 
@@ -327,34 +341,75 @@
     
     // Chat button (initially visible)
     const chatButton = createElement('button', 'tb-chat-button');
-    chatButton.innerHTML = '💬';
+    chatButton.textContent = '💬';
     chatButton.onclick = () => openWidget();
     
     // Chat window (initially hidden)
     const chatWindow = createElement('div', 'tb-chat-window tb-hidden');
-    chatWindow.innerHTML = `
-      <div class="tb-chat-header">
-        <div style="display: flex; align-items: center;">
-          <div style="display: flex; flex-direction: column; align-items: center; margin-right: 12px;">
-            <div class="tb-chat-logo">TB</div>
-            <div style="font-weight: 500; font-size: 10px; opacity: 0.9; text-align: center; margin-top: 2px;">More Traffik! More Sales!</div>
-          </div>
-          <div>
-            <div style="font-weight: 600; font-size: 14px;">${WIDGET_CONFIG.companyName}</div>
-            <div class="tb-business-status">
-              <div class="tb-status-dot"></div>
-              ${isBusinessHours() ? 'Online Now' : 'Will Call Within 24hrs'}
-            </div>
-          </div>
-        </div>
-        <div class="tb-chat-controls">
-          <button class="tb-chat-control-btn" onclick="TrafikBoostersWidget.minimize()">−</button>
-          <button class="tb-chat-control-btn" onclick="TrafikBoostersWidget.close()">×</button>
-        </div>
-      </div>
-      <div class="tb-chat-messages" id="tb-messages"></div>
-      <div class="tb-chat-input" id="tb-input-area"></div>
-    `;
+    
+    // Create header safely using DOM methods
+    const header = createElement('div', 'tb-chat-header');
+    
+    const headerContent = createElement('div');
+    headerContent.style.cssText = 'display: flex; align-items: center;';
+    
+    const logoSection = createElement('div');
+    logoSection.style.cssText = 'display: flex; flex-direction: column; align-items: center; margin-right: 12px;';
+    
+    const logo = createElement('div', 'tb-chat-logo');
+    logo.textContent = 'TB';
+    
+    const slogan = createElement('div');
+    slogan.style.cssText = 'font-weight: 500; font-size: 10px; opacity: 0.9; text-align: center; margin-top: 2px;';
+    slogan.textContent = 'More Traffik! More Sales!';
+    
+    logoSection.appendChild(logo);
+    logoSection.appendChild(slogan);
+    
+    const titleSection = createElement('div');
+    
+    const companyTitle = createElement('div');
+    companyTitle.style.cssText = 'font-weight: 600; font-size: 14px;';
+    companyTitle.textContent = WIDGET_CONFIG.companyName; // Safe text content
+    
+    const statusSection = createElement('div', 'tb-business-status');
+    const statusDot = createElement('div', 'tb-status-dot');
+    const statusText = document.createTextNode(isBusinessHours() ? 'Online Now' : 'Will Call Within 24hrs');
+    
+    statusSection.appendChild(statusDot);
+    statusSection.appendChild(statusText);
+    
+    titleSection.appendChild(companyTitle);
+    titleSection.appendChild(statusSection);
+    
+    headerContent.appendChild(logoSection);
+    headerContent.appendChild(titleSection);
+    
+    const controls = createElement('div', 'tb-chat-controls');
+    
+    const minimizeBtn = createElement('button', 'tb-chat-control-btn');
+    minimizeBtn.textContent = '−';
+    minimizeBtn.onclick = () => TrafikBoostersWidget.minimize();
+    
+    const closeBtn = createElement('button', 'tb-chat-control-btn');
+    closeBtn.textContent = '×';
+    closeBtn.onclick = () => TrafikBoostersWidget.close();
+    
+    controls.appendChild(minimizeBtn);
+    controls.appendChild(closeBtn);
+    
+    header.appendChild(headerContent);
+    header.appendChild(controls);
+    
+    const messagesContainer = createElement('div', 'tb-chat-messages');
+    messagesContainer.id = 'tb-messages';
+    
+    const inputArea = createElement('div', 'tb-chat-input');
+    inputArea.id = 'tb-input-area';
+    
+    chatWindow.appendChild(header);
+    chatWindow.appendChild(messagesContainer);
+    chatWindow.appendChild(inputArea);
 
     widget.appendChild(chatButton);
     widget.appendChild(chatWindow);
@@ -400,7 +455,7 @@
   function addMessage(text, isUser = false) {
     messages.push({
       id: Date.now(),
-      text: text,
+      text: isUser ? sanitizeInput(text) : text, // Sanitize user messages only
       isUser: isUser,
       timestamp: new Date()
     });
@@ -409,14 +464,25 @@
 
   function renderMessages() {
     const container = document.getElementById('tb-messages');
-    container.innerHTML = messages.map(msg => `
-      <div class="tb-message ${msg.isUser ? 'user' : ''}">
-        <div class="tb-message-avatar">
-          ${msg.isUser ? '👤' : 'TB'}
-        </div>
-        <div class="tb-message-content">${msg.text}</div>
-      </div>
-    `).join('');
+    
+    // Clear container safely
+    container.innerHTML = '';
+    
+    // Create messages using safe DOM methods
+    messages.forEach(msg => {
+      const messageDiv = createElement('div', `tb-message ${msg.isUser ? 'user' : ''}`);
+      
+      const avatar = createElement('div', 'tb-message-avatar');
+      avatar.textContent = msg.isUser ? '👤' : 'TB';
+      
+      const content = createElement('div', 'tb-message-content');
+      content.textContent = msg.text; // Safe text content prevents XSS
+      
+      messageDiv.appendChild(avatar);
+      messageDiv.appendChild(content);
+      container.appendChild(messageDiv);
+    });
+    
     container.scrollTop = container.scrollHeight;
   }
 
@@ -483,7 +549,15 @@
     init: function(config = {}) {
       if (isWidgetLoaded) return;
       
-      Object.assign(WIDGET_CONFIG, config);
+      // Sanitize user-provided configuration to prevent XSS
+      const sanitizedConfig = {};
+      for (const key in config) {
+        if (config.hasOwnProperty(key)) {
+          sanitizedConfig[key] = sanitizeInput(config[key]);
+        }
+      }
+      
+      Object.assign(WIDGET_CONFIG, sanitizedConfig);
       injectStyles();
       chatWidget = createWidget();
       document.body.appendChild(chatWidget);
@@ -501,7 +575,7 @@
     },
 
     updateForm: function(field, value) {
-      leadForm[field] = value;
+      leadForm[field] = sanitizeInput(value);
     },
 
     submitForm: function(event) {

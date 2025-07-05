@@ -107,6 +107,7 @@ The application uses a comprehensive schema including:
 - Tailwind CSS configuration with custom design tokens
 
 ## Changelog
+- July 5, 2025. CRITICAL SECURITY FIX: Patched XSS vulnerabilities in chat widget JavaScript (client/public/traffik-boosters-chat-widget.js lines 335-357). Replaced unsafe innerHTML usage with secure DOM manipulation using textContent and createTextNode. Added input sanitization function to prevent script injection through user-provided configuration and messages. All user input now properly escaped before display.
 - July 5, 2025. SECURITY FIX: Removed hardcoded Google Maps API key from GOOGLE_MAPS_API_SETUP.md documentation file following security vulnerability scan. Replaced exposed API key (AIzaSyAek_29lbVmrNswmCHqsHypfP6-Je0pgh0) with placeholder text to prevent unauthorized usage. API key now handled securely through environment variables on backend only.
 - June 22, 2025. Initial setup
 - June 22, 2025. Added Traffik Boosters company logo to CRM and scraping configuration interfaces for consistent branding
