@@ -31,7 +31,7 @@ export default function DualPhoneSystem() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Query PowerDials status (uses MightyCall backend)
+  // Query PowerDials status
   const { data: powerDialsStatus, refetch: refetchPowerDials } = useQuery({
     queryKey: ['/api/powerdials/status'],
   });

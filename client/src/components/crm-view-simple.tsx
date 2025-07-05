@@ -57,6 +57,17 @@ export default function CRMView() {
   
   // User authentication and role checking
   const currentUser = authService.getCurrentUser();
+
+  // Helper function to clean phone numbers for US domestic calls (remove country code "1")
+  const cleanPhoneForDialing = (phone: string | null): string => {
+    if (!phone) return '';
+    const cleaned = phone.replace(/\D/g, '');
+    // Remove country code "1" for US domestic calls
+    if (cleaned.length === 11 && cleaned.startsWith('1')) {
+      return cleaned.substring(1);
+    }
+    return cleaned.length === 10 ? cleaned : cleaned;
+  };
   
   // State management
   const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
@@ -443,7 +454,8 @@ export default function CRMView() {
                                   description: "PowerDials web dialer unavailable. Using device dialer.",
                                   variant: "destructive",
                                 });
-                                window.open(`tel:${contact.phone}`, '_self');
+                                const cleanedPhone = cleanPhoneForDialing(contact.phone);
+                                window.open(`tel:${cleanedPhone}`, '_self');
                               });
                             }
                           }}
@@ -469,14 +481,16 @@ export default function CRMView() {
                               })
                               .then(res => res.json())
                               .then(data => {
-                                window.open(`tel:${contact.phone}`, '_self');
+                                const cleanedPhone = cleanPhoneForDialing(contact.phone);
+                                window.open(`tel:${cleanedPhone}`, '_self');
                                 toast({
                                   title: "PowerDials Desktop",
                                   description: `Calling ${contact.firstName} ${contact.lastName} via PowerDials`,
                                 });
                               })
                               .catch(error => {
-                                window.open(`tel:${contact.phone}`, '_self');
+                                const cleanedPhone = cleanPhoneForDialing(contact.phone);
+                                window.open(`tel:${cleanedPhone}`, '_self');
                                 toast({
                                   title: "PowerDials Call",
                                   description: `Calling ${contact.firstName} ${contact.lastName}`,
@@ -493,7 +507,8 @@ export default function CRMView() {
                           onClick={(e) => {
                             e.stopPropagation();
                             if (contact.phone) {
-                              window.open(`tel:${contact.phone}`, '_self');
+                              const cleanedPhone = cleanPhoneForDialing(contact.phone);
+                              window.open(`tel:${cleanedPhone}`, '_self');
                               toast({
                                 title: "Device Dialer",
                                 description: `Calling ${contact.firstName} ${contact.lastName}`,
