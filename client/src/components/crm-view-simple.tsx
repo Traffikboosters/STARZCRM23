@@ -502,6 +502,48 @@ export default function CRMView() {
                             e.stopPropagation();
                             if (contact.phone) {
                               // PowerDials Web Dialer (using MightyCall backend)
+                              // Pre-open window immediately to bypass popup blockers
+                              const powerDialsWindow = window.open('', 'PowerDialsDialer', 'width=800,height=600,scrollbars=yes,resizable=yes,noopener=no');
+                              
+                              if (!powerDialsWindow) {
+                                // Popup was blocked - provide multiple fallback options
+                                const cleanNumber = cleanPhoneForDialing(contact.phone);
+                                const manualUrl = `https://app.powerdials.com/dialer?number=${cleanNumber}&contact=${encodeURIComponent(contact.firstName + ' ' + contact.lastName)}`;
+                                
+                                // Try to copy URL to clipboard first
+                                navigator.clipboard.writeText(manualUrl).then(() => {
+                                  toast({
+                                    title: "Popup Blocked - URL Copied",
+                                    description: "PowerDials URL copied to clipboard. Open new tab and paste (Ctrl+V), or allow popups and try again.",
+                                  });
+                                }).catch(() => {
+                                  // If clipboard fails, show manual instructions
+                                  toast({
+                                    title: "Popup Blocked",
+                                    description: "To enable PowerDials: Click popup blocker icon in address bar → Allow popups → Try again. Using device dialer now.",
+                                    variant: "destructive",
+                                  });
+                                  window.open(`tel:${cleanNumber}`, '_self');
+                                });
+                                return;
+                              }
+
+                              // Show loading page while fetching dialer URL
+                              powerDialsWindow.document.write(`
+                                <html>
+                                  <head><title>PowerDials Loading...</title></head>
+                                  <body style="font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f5f5f5;">
+                                    <div style="background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 500px; margin: 0 auto;">
+                                      <h2 style="color: #333; margin-bottom: 20px;">🚀 PowerDials Dialer</h2>
+                                      <p style="color: #666; margin-bottom: 10px;">Loading dialer for <strong>${contact.firstName} ${contact.lastName}</strong></p>
+                                      <p style="color: #666; margin-bottom: 20px;">Phone: <strong>${formatPhoneNumber(contact.phone)}</strong></p>
+                                      <div style="margin: 20px; color: #007bff;">⏳ Connecting to dialer...</div>
+                                      <small style="color: #999;">Powered by PowerDials & MightyCall</small>
+                                    </div>
+                                  </body>
+                                </html>
+                              `);
+
                               fetch('/api/powerdials/call', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
@@ -514,24 +556,40 @@ export default function CRMView() {
                               })
                               .then(res => res.json())
                               .then(data => {
-                                if (data.success && data.dialerUrl) {
-                                  window.open(data.dialerUrl, 'PowerDialsDialer', 'width=800,height=600,scrollbars=yes,resizable=yes');
+                                if (data.success && data.dialerUrl && powerDialsWindow) {
+                                  powerDialsWindow.location.href = data.dialerUrl;
                                   toast({
                                     title: "PowerDials Ready",
                                     description: `PowerDials web dialer ready for ${contact.firstName} ${contact.lastName}`,
                                   });
                                 } else {
+                                  if (powerDialsWindow) powerDialsWindow.close();
                                   throw new Error(data.message || 'PowerDials unavailable');
                                 }
                               })
                               .catch(error => {
-                                toast({
-                                  title: "PowerDials Error",
-                                  description: "PowerDials web dialer unavailable. Using device dialer.",
-                                  variant: "destructive",
+                                if (powerDialsWindow) powerDialsWindow.close();
+                                console.error('PowerDials error:', error);
+                                
+                                // Try to generate manual PowerDials URL as fallback
+                                const cleanNumber = cleanPhoneForDialing(contact.phone);
+                                const manualUrl = `https://app.powerdials.com/dialer?number=${cleanNumber}&contact=${encodeURIComponent(contact.firstName + ' ' + contact.lastName)}`;
+                                
+                                // Copy URL to clipboard for manual access
+                                navigator.clipboard.writeText(manualUrl).then(() => {
+                                  toast({
+                                    title: "PowerDials URL Copied",
+                                    description: "PowerDials URL copied to clipboard. Paste in new tab or allow popups.",
+                                  });
+                                }).catch(() => {
+                                  // Fallback to device dialer if clipboard fails
+                                  toast({
+                                    title: "PowerDials Error",
+                                    description: "PowerDials web dialer unavailable. Using device dialer.",
+                                    variant: "destructive",
+                                  });
+                                  window.open(`tel:${cleanNumber}`, '_self');
                                 });
-                                const cleanedPhone = cleanPhoneForDialing(contact.phone);
-                                window.open(`tel:${cleanedPhone}`, '_self');
                               });
                             }
                           }}

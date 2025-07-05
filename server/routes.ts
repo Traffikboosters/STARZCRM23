@@ -1201,35 +1201,34 @@ a=ssrc:1001 msid:stream track`
   // POWERDIALS API integration
   app.post('/api/powerdials/call', async (req, res) => {
     try {
-      const { phoneNumber, contactName } = req.body;
+      const { phoneNumber, contactName, contactId, userId } = req.body;
       
       if (!phoneNumber) {
         return res.status(400).json({ error: 'Phone number is required' });
       }
 
-      // Generate unique call ID
-      const callId = `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Import PowerDials integration
+      const { powerDialsIntegration } = await import('./powerdials-integration');
       
-      // Clean phone number for dialing
-      const cleanNumber = phoneNumber.replace(/\D/g, '');
+      // Use PowerDials integration to initiate call
+      const callResult = await powerDialsIntegration.initiateCall({
+        phoneNumber,
+        contactName,
+        contactId,
+        userId: userId || 1
+      });
       
       // Log the call attempt
-      console.log(`Call Logging: Call to ${phoneNumber} (${contactName || 'Unknown Contact'}) - ID: ${callId}`);
+      console.log(`📞 PowerDials Call: ${phoneNumber} (${contactName || 'Unknown Contact'}) - Success: ${callResult.success}`);
       
-      res.json({
-        success: true,
-        callId,
-        phoneNumber: cleanNumber,
-        contactName: contactName || 'Unknown Contact',
-        status: 'logged',
-        useDeviceDialer: true
-      });
+      res.json(callResult);
 
     } catch (error) {
       console.error('POWERDIALS API error:', error);
       res.status(500).json({ 
-        error: 'Failed to initiate call',
-        details: (error as Error).message 
+        success: false,
+        message: 'Failed to initiate call',
+        error: (error as Error).message 
       });
     }
   });
