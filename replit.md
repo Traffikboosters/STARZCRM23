@@ -107,7 +107,7 @@ The application uses a comprehensive schema including:
 - Tailwind CSS configuration with custom design tokens
 
 ## Changelog
-- July 5, 2025. SECURITY FIX: Removed hardcoded Google Maps API key from frontend code following security vulnerability scan. API key now handled securely through environment variables on backend only, preventing client-side exposure.
+- July 5, 2025. SECURITY FIX: Removed hardcoded Google Maps API key from GOOGLE_MAPS_API_SETUP.md documentation file following security vulnerability scan. Replaced exposed API key (AIzaSyAek_29lbVmrNswmCHqsHypfP6-Je0pgh0) with placeholder text to prevent unauthorized usage. API key now handled securely through environment variables on backend only.
 - June 22, 2025. Initial setup
 - June 22, 2025. Added Traffik Boosters company logo to CRM and scraping configuration interfaces for consistent branding
 - June 22, 2025. Implemented comprehensive lead notification system with audio alerts and popup notifications for both scraping and form submissions

@@ -79,7 +79,7 @@ Once configured, test your API key with these endpoints:
 ```bash
 curl "https://places.googleapis.com/v1/places:searchText" \
   -H "Content-Type: application/json" \
-  -H "X-Goog-Api-Key: AIzaSyAek_29lbVmrNswmCHqsHypfP6-Je0pgh0" \
+  -H "X-Goog-Api-Key: YOUR_GOOGLE_MAPS_API_KEY" \
   -H "X-Goog-FieldMask: places.displayName,places.formattedAddress,places.rating" \
   -d '{
     "textQuery": "restaurants in New York"
@@ -88,7 +88,7 @@ curl "https://places.googleapis.com/v1/places:searchText" \
 
 ### Test 2: Geocoding
 ```bash
-curl "https://maps.googleapis.com/maps/api/geocode/json?address=New+York,NY&key=AIzaSyAek_29lbVmrNswmCHqsHypfP6-Je0pgh0"
+curl "https://maps.googleapis.com/maps/api/geocode/json?address=New+York,NY&key=YOUR_GOOGLE_MAPS_API_KEY"
 ```
 
 ## Expected Costs
