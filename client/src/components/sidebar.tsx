@@ -64,7 +64,6 @@ export default function Sidebar({
 
   const navigationItems = [
     { id: "smart-search", label: "AI Smart Search", icon: Search },
-    { id: "calendar", label: "Calendar", icon: Calendar },
     { id: "smart-calendar", label: "Smart Calendar", icon: Brain },
     { id: "crm", label: "CRM", icon: Users },
     { id: "sold-leads", label: "Sold Lead Cards", icon: Trophy },

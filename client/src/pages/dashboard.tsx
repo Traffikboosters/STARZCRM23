@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Header from "@/components/header";
 import Sidebar from "@/components/sidebar";
-import CalendarView from "@/components/calendar-view";
+
 import SmartCalendarIntegration from "@/components/smart-calendar-integration";
 import CRMView from "@/components/crm-view-simple";
 import CampaignManagementView from "@/components/campaign-management-view";
@@ -91,8 +91,7 @@ export default function Dashboard() {
     switch (activeTab) {
       case "smart-search":
         return <SmartSearchAI isOpen={true} onClose={() => setActiveTab("dashboard")} onNavigate={(path) => console.log('Navigate to:', path)} />;
-      case "calendar":
-        return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
+
       case "smart-calendar":
         return <SmartCalendarIntegration />;
       case "crm":
@@ -220,7 +219,7 @@ export default function Dashboard() {
         return <TraffikBoostersWebsite />;
 
       default:
-        return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
+        return <SmartCalendarIntegration />;
     }
   };
 
