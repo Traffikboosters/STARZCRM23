@@ -81,6 +81,7 @@ export default function CRMView() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
   const [currentAction, setCurrentAction] = useState<'calling' | 'emailing' | 'scheduling' | 'qualifying' | 'closing' | undefined>(undefined);
 
   // Form setup
@@ -102,10 +103,10 @@ export default function CRMView() {
 
   // Data fetching
   const { data: contactsResponse, isLoading, error } = useQuery({
-    queryKey: ["/api/contacts"],
+    queryKey: ["/api/contacts", currentPage],
     queryFn: async () => {
       try {
-        const response = await fetch("/api/contacts?limit=1000");
+        const response = await fetch(`/api/contacts?limit=50&page=${currentPage}`);
         if (!response.ok) {
           throw new Error(`Failed to fetch contacts: ${response.status}`);
         }
@@ -318,10 +319,56 @@ export default function CRMView() {
         </div>
       </div>
 
-      {/* Results count */}
-      <div className="text-sm text-gray-600">
-        Showing {filteredContacts.length} of {totalContactCount.toLocaleString()} lead cards
-        {hasActiveFilters && " (filtered)"}
+      {/* Results count and pagination */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-gray-600">
+          Showing {(currentPage - 1) * 50 + 1}-{Math.min(currentPage * 50, totalContactCount)} of {totalContactCount.toLocaleString()} lead cards
+          {hasActiveFilters && " (filtered)"}
+        </div>
+        
+        {/* Pagination Controls */}
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-gray-600 whitespace-nowrap">
+            Page {currentPage} of {Math.ceil(totalContactCount / 50)}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            disabled={currentPage >= Math.ceil(totalContactCount / 50)}
+          >
+            Next
+          </Button>
+          {/* Quick page jump for first/last */}
+          {currentPage > 2 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentPage(1)}
+              className="text-xs"
+            >
+              First
+            </Button>
+          )}
+          {currentPage < Math.ceil(totalContactCount / 50) - 1 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setCurrentPage(Math.ceil(totalContactCount / 50))}
+              className="text-xs"
+            >
+              Last
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Lead Cards Grid */}
