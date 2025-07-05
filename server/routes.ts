@@ -41,10 +41,16 @@ import { mightyCallCoreFixed } from "./mightycall-core-fixed";
 // Initialize POWERDIALS connection immediately
 console.log('🔥 INITIALIZING MIGHTYCALL INTEGRATION...');
 const mightyCallConfig = {
-  accountId: '4f917f13-aae1-401d-8241-010db91da5b2',
-  secretKey: '33a20a35-459d-46bf-9645-5e3ddd8b8966',
+  accountId: process.env.MIGHTYCALL_ACCOUNT_ID || '4f917f13-aae1-401d-8241-010db91da5b2',
+  secretKey: process.env.MIGHTYCALL_SECRET_KEY,
   status: 'CONNECTED'
 };
+
+if (!mightyCallConfig.secretKey) {
+  console.warn('⚠️  MIGHTYCALL SECRET KEY NOT FOUND - Please set MIGHTYCALL_SECRET_KEY environment variable');
+  mightyCallConfig.status = 'DISCONNECTED';
+}
+
 console.log('✅ MIGHTYCALL STATUS: CONNECTED - Account:', mightyCallConfig.accountId);
 import { googleMapsExtractor } from "./google-maps-extractor";
 import { AISalesTipGenerator } from "./ai-sales-tip-generator";
