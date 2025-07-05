@@ -1,7 +1,7 @@
 # Google Maps API Setup Guide for Real Lead Extraction
 
 ## Current Status (Verified)
-- **API Key**: AIzaSyAek_29lbVmrNswmCHqsHypfP6-Je0pgh0
+- **API Key**: [SECURED - Using environment variable]
 - **Project ID**: 852051084233
 - **Status**: ❌ APIs Not Enabled
 - **Required APIs**: ❌ Places API (New), ❌ Geocoding API, ❌ Maps JavaScript API

@@ -109,7 +109,7 @@ export default function GoogleMapsExtractor() {
         categories: [businessType],
         radius: parseInt(radius),
         maxResults: parseInt(maxResults),
-        apiKey: 'AIzaSyAek_29lbVmrNswmCHqsHypfP6-Je0pgh0'
+        // API key now handled securely on backend
       });
 
       if (data.success) {

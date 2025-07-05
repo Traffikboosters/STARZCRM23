@@ -37,7 +37,7 @@ export default function RealLeadExtractor() {
 
   // Google Maps configuration
   const [googleMapsConfig, setGoogleMapsConfig] = useState({
-    apiKey: "AIzaSyAek_29lbVmrNswmCHqsHypfP6-Je0pgh0",
+    // API key now handled securely on backend
     location: "New York, NY",
     categories: ["restaurant", "store", "beauty_salon", "gym", "doctor"],
     radius: 5000,
@@ -73,12 +73,10 @@ export default function RealLeadExtractor() {
 
       try {
         const response = await apiRequest("POST", "/api/real-extraction/google-maps", {
-          testKey: googleMapsConfig.apiKey,
           location: googleMapsConfig.location,
           categories: googleMapsConfig.categories,
           radius: googleMapsConfig.radius,
-          maxResults: googleMapsConfig.maxResults,
-          apiKey: googleMapsConfig.apiKey
+          maxResults: googleMapsConfig.maxResults
         });
         
         clearInterval(progressInterval);

@@ -107,6 +107,7 @@ The application uses a comprehensive schema including:
 - Tailwind CSS configuration with custom design tokens
 
 ## Changelog
+- July 5, 2025. SECURITY FIX: Removed hardcoded Google Maps API key from frontend code following security vulnerability scan. API key now handled securely through environment variables on backend only, preventing client-side exposure.
 - June 22, 2025. Initial setup
 - June 22, 2025. Added Traffik Boosters company logo to CRM and scraping configuration interfaces for consistent branding
 - June 22, 2025. Implemented comprehensive lead notification system with audio alerts and popup notifications for both scraping and form submissions
@@ -400,7 +401,7 @@ The application uses a comprehensive schema including:
 - June 29, 2025. Confirmed API returning webDialerUrl field with Pro plan features enabled for account ID 4f917f13-aae1-401d-8241-010db91da5b2
 - June 29, 2025. Updated MightyCall integration with new secret key (33a20a35-459d-46bf-9645-5e3ddd8b8966) for enhanced authentication and secure Pro plan access
 - June 29, 2025. GOOGLE MAPS API INTEGRATION COMPLETE: Successfully implemented Google Maps Places API with authentic business lead extraction
-- June 29, 2025. Google Maps API key (AIzaSyAek_29lbVmrNswmCHqsHypfP6-Je0pgh0) validated and operational with Places API, Geocoding API, and Maps JavaScript API enabled
+- June 29, 2025. Google Maps API key secured and operational with Places API, Geocoding API, and Maps JavaScript API enabled
 - June 29, 2025. Built comprehensive Google Maps lead extraction endpoints with automatic CRM integration and real business data from restaurant, gym, and beauty salon categories
 - June 29, 2025. Verified Google Maps extraction working with authentic leads including InterContinental Miami, Sexy Fish Miami, Bern's Steak House, and Columbia Restaurant with complete contact information
 - June 29, 2025. ENHANCED EMAIL EXTRACTION COMPLETE: Implemented comprehensive email extraction system that analyzes business websites to extract contact email addresses

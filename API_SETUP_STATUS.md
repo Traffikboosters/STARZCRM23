@@ -3,7 +3,7 @@
 ## VERIFIED API ISSUES (Live Testing Results)
 
 ### Your Project Details
-- **API Key**: AIzaSyAek_29lbVmrNswmCHqsHypfP6-Je0pgh0
+- **API Key**: [SECURED - Using environment variable]
 - **Project ID**: 852051084233
 - **Current Status**: APIs NOT ENABLED
 
