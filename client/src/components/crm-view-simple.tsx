@@ -119,17 +119,30 @@ export default function CRMView() {
     refetchInterval: 60000,
   });
 
-  const contacts: Contact[] = useMemo(() => {
+  const { contacts, totalContactCount } = useMemo(() => {
     // Handle different response structures
     if (contactsResponse && typeof contactsResponse === 'object') {
       if ('contacts' in contactsResponse && Array.isArray((contactsResponse as any).contacts)) {
-        return (contactsResponse as any).contacts;
+        const paginatedResponse = contactsResponse as { 
+          contacts: Contact[], 
+          pagination?: { total: number } 
+        };
+        return {
+          contacts: paginatedResponse.contacts,
+          totalContactCount: paginatedResponse.pagination?.total || paginatedResponse.contacts.length
+        };
       }
       if (Array.isArray(contactsResponse)) {
-        return contactsResponse;
+        return {
+          contacts: contactsResponse,
+          totalContactCount: contactsResponse.length
+        };
       }
     }
-    return [];
+    return {
+      contacts: [],
+      totalContactCount: 0
+    };
   }, [contactsResponse]);
 
   // Add contact mutation
@@ -299,7 +312,7 @@ export default function CRMView() {
               className="whitespace-nowrap"
             >
               <Eye className="h-4 w-4 mr-2" />
-              View All ({contacts.length})
+              View All ({totalContactCount.toLocaleString()})
             </Button>
           )}
         </div>
@@ -307,7 +320,7 @@ export default function CRMView() {
 
       {/* Results count */}
       <div className="text-sm text-gray-600">
-        Showing {filteredContacts.length} of {contacts.length} lead cards
+        Showing {filteredContacts.length} of {totalContactCount.toLocaleString()} lead cards
         {hasActiveFilters && " (filtered)"}
       </div>
 
