@@ -69,11 +69,14 @@ export default function LeadCountDisplay({ variant = "sidebar", className = "" }
       try {
         const data = JSON.parse(event.data);
         
-        // Handle lead count updates from email submissions
-        if (data.type === 'lead_count_update' || data.type === 'new_lead') {
+        // Handle lead count updates from various sources
+        if (data.type === 'lead_count_update' || 
+            data.type === 'new_lead' || 
+            data.type === 'single_vendor_extraction_complete') {
           // Invalidate and refetch contacts immediately
           queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
           setLastUpdate(new Date());
+          console.log('Lead count refreshed due to:', data.type);
         }
       } catch (error) {
         console.error('WebSocket message parse error:', error);
