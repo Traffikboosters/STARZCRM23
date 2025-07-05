@@ -15,12 +15,15 @@ interface SimplifiedCallResponse {
 }
 
 export class MightyCallSimplified {
-  private accountId = '4f917f13-aae1-401d-8241-010db91da5b2';
-  private secretKey = '10c2bac9-f2d1-427a-a1d9-31a582a3c782';
+  private accountId = process.env.MIGHTYCALL_ACCOUNT_ID || '4f917f13-aae1-401d-8241-010db91da5b2';
+  private secretKey = process.env.MIGHTYCALL_SECRET_KEY || '';
   private mainNumber = '(877) 840-6250';
   private domain = 'traffikboosters.mightycall.com';
 
   constructor() {
+    if (!this.secretKey) {
+      console.warn('MightyCall secret key not configured in environment variables');
+    }
     console.log('MightyCall Simplified initialized for Traffik Boosters');
   }
 
@@ -51,8 +54,8 @@ export class MightyCallSimplified {
       // Option 3: Pro Plan Web dialer URL with US domestic number (no country code)
       const webDialerUrl = `https://panel.mightycall.com/dialer?number=${encodeURIComponent(formattedNumber)}&contact=${encodeURIComponent(request.contactName || 'Contact')}`;
 
-      // Log call attempt for tracking
-      console.log(`📞 Pro Plan Call (Auth) - Contact: ${request.contactName}, Number: ${formattedNumber}, Key: ${this.secretKey.substring(0, 8)}...`);
+      // Log call attempt for tracking (without exposing secret key)
+      console.log(`📞 Pro Plan Call (Auth) - Contact: ${request.contactName}, Number: ${formattedNumber}, Account: ${this.accountId}`);
 
       return {
         success: true,
