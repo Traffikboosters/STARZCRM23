@@ -36,15 +36,20 @@ interface InboundWebhookData {
 
 export class MightyCallCoreFixed {
   private config: MightyCallConfig = {
-    accountId: '4f917f13-aae1-401d-8241-010db91da5b2',
-    secretKey: '33a20a35-459d-46bf-9645-5e3ddd8b8966',
-    mainNumber: '8778406250',
-    domain: 'traffikboosters.mightycall.com',
-    apiBaseUrl: 'https://panel.mightycall.com'
+    accountId: process.env.MIGHTYCALL_ACCOUNT_ID || '4f917f13-aae1-401d-8241-010db91da5b2',
+    secretKey: process.env.MIGHTYCALL_SECRET_KEY || '',
+    mainNumber: process.env.MIGHTYCALL_MAIN_NUMBER || '8778406250',
+    domain: process.env.MIGHTYCALL_DOMAIN || 'traffikboosters.mightycall.com',
+    apiBaseUrl: process.env.MIGHTYCALL_API_BASE_URL || 'https://panel.mightycall.com'
   };
 
   constructor() {
     console.log('MightyCall Core Fixed - Account:', this.config.accountId);
+    
+    // Validate required configuration
+    if (!this.config.secretKey) {
+      console.warn('⚠️  MIGHTYCALL_SECRET_KEY environment variable not set - phone functionality may be limited');
+    }
   }
 
   /**
