@@ -2,6 +2,7 @@ import { useState } from "react";
 import Header from "@/components/header";
 import Sidebar from "@/components/sidebar";
 import CalendarView from "@/components/calendar-view";
+import SmartCalendarIntegration from "@/components/smart-calendar-integration";
 import CRMView from "@/components/crm-view-simple";
 import CampaignManagementView from "@/components/campaign-management-view";
 import ScrapingAnalytics from "@/components/scraping-analytics";
@@ -92,6 +93,8 @@ export default function Dashboard() {
         return <SmartSearchAI isOpen={true} onClose={() => setActiveTab("dashboard")} onNavigate={(path) => console.log('Navigate to:', path)} />;
       case "calendar":
         return <CalendarView onCreateEvent={() => setIsEventModalOpen(true)} />;
+      case "smart-calendar":
+        return <SmartCalendarIntegration />;
       case "crm":
         return <CRMView />;
       case "sold-leads":
