@@ -6,6 +6,7 @@ import {
   User, Clock, StickyNote, 
   Zap, ClipboardList, Eye
 } from "lucide-react";
+import { formatDistanceToNow, format } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -348,6 +349,14 @@ export default function CRMView() {
                   {contact.company && (
                     <p className="text-sm text-gray-600">{contact.company}</p>
                   )}
+                  
+                  {/* Timestamp Display */}
+                  <div className="flex items-center text-xs text-gray-500 mt-2">
+                    <Clock className="h-3 w-3 mr-1" />
+                    <span title={format(new Date(contact.createdAt), "PPpp")}>
+                      Posted {formatDistanceToNow(new Date(contact.createdAt), { addSuffix: true })}
+                    </span>
+                  </div>
                 </CardHeader>
                 
                 <CardContent className="space-y-3">
