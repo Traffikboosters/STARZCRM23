@@ -63,7 +63,7 @@ export default function Sidebar({
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const navigationItems = [
-    { id: "smart-search", label: "AI Smart Search", icon: Search },
+    { id: "smart-search", label: "Starz Smart Search", icon: Search },
     { id: "smart-calendar", label: "Smart Calendar", icon: Brain },
     { id: "crm", label: "CRM", icon: Users },
     { id: "sold-leads", label: "Sold Lead Cards", icon: Trophy },

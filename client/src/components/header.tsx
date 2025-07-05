@@ -144,13 +144,13 @@ export default function Header({ onTabChange }: HeaderProps) {
         </div>
         
         <div className="flex items-center space-x-2 md:space-x-4 flex-shrink min-w-0">
-          {/* AI-Powered Smart Search */}
+          {/* Starz-Powered Smart Search */}
           <div className="relative flex-shrink min-w-0 hidden md:block">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 type="text"
-                placeholder="AI Smart Search with suggestions..."
+                placeholder="Starz Smart Search with suggestions..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSmartSearch(true)}
@@ -462,7 +462,7 @@ export default function Header({ onTabChange }: HeaderProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Smart Search AI Modal */}
+      {/* Starz Smart Search Modal */}
       <SmartSearchAI
         isOpen={showSmartSearch}
         onClose={() => setShowSmartSearch(false)}

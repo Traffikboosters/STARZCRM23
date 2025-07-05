@@ -594,7 +594,7 @@ export default function SmartSearchAI({ isOpen, onClose, onNavigate }: SmartSear
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-blue-600" />
-            Smart Search with AI Suggestions
+            Starz Smart Search with AI Suggestions
             <Zap className="h-4 w-4 text-yellow-500" />
           </DialogTitle>
         </DialogHeader>
