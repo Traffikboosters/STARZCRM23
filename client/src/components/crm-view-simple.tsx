@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { 
   Plus, Search, Phone, Mail, Calendar, 
   User, Clock, StickyNote, 
-  Zap, ClipboardList, Eye
+  Zap, ClipboardList, Eye, Brain
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 
@@ -31,6 +31,7 @@ import { authService } from "@/lib/auth";
 import type { Contact } from "@shared/schema";
 import { SimpleAITipsModal } from "./simple-ai-tips-modal";
 import LeadDetailsModal from "./lead-details-modal";
+import SmartCalendarModal from "./smart-calendar-modal";
 import { formatPhoneNumber } from "@/lib/utils";
 
 // Import Traffik Boosters logo
@@ -73,8 +74,10 @@ export default function CRMView() {
   const [isAddContactModalOpen, setIsAddContactModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isAITipGeneratorOpen, setIsAITipGeneratorOpen] = useState(false);
+  const [isSmartCalendarOpen, setIsSmartCalendarOpen] = useState(false);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [selectedContactForDetails, setSelectedContactForDetails] = useState<Contact | null>(null);
+  const [selectedContactForCalendar, setSelectedContactForCalendar] = useState<Contact | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sourceFilter, setSourceFilter] = useState("all");
@@ -522,32 +525,20 @@ export default function CRMView() {
                       </DropdownMenuContent>
                     </DropdownMenu>
 
-                    {/* Schedule Button */}
+                    {/* Smart Schedule Button */}
                     <Button
                       variant="outline"
                       size="sm"
                       className="text-xs flex flex-col items-center justify-center py-2 h-auto min-h-[60px]"
                       onClick={(e) => {
                         e.stopPropagation();
-                        console.log('Schedule clicked for contact:', contact.firstName, contact.lastName);
-                        // Create a new event for this contact
-                        const newEvent = {
-                          title: `Meeting with ${contact.firstName} ${contact.lastName}`,
-                          description: `Scheduled call with ${contact.company || 'prospect'}`,
-                          date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Tomorrow
-                          time: '10:00',
-                          contactId: contact.id,
-                          type: 'meeting' as const
-                        };
-                        // Here you would normally navigate to calendar or open scheduling modal
-                        toast({
-                          title: "Appointment Scheduled",
-                          description: `Meeting scheduled for tomorrow at 10:00 AM with ${contact.firstName} ${contact.lastName}`,
-                        });
+                        console.log('Smart Schedule clicked for contact:', contact.firstName, contact.lastName);
+                        setSelectedContactForCalendar(contact);
+                        setIsSmartCalendarOpen(true);
                       }}
                     >
-                      <Calendar className="h-3 w-3 mb-2 text-blue-600" />
-                      <span className="leading-tight">Schedule</span>
+                      <Brain className="h-3 w-3 mb-2 text-purple-600" />
+                      <span className="leading-tight">Smart Schedule</span>
                     </Button>
 
                     {/* Email Button */}
@@ -777,6 +768,18 @@ export default function CRMView() {
             setIsAITipGeneratorOpen(false);
             setSelectedContact(null);
             setCurrentAction(undefined);
+          }}
+        />
+      )}
+
+      {/* Smart Calendar Modal */}
+      {selectedContactForCalendar && (
+        <SmartCalendarModal
+          contact={selectedContactForCalendar}
+          isOpen={isSmartCalendarOpen}
+          onClose={() => {
+            setIsSmartCalendarOpen(false);
+            setSelectedContactForCalendar(null);
           }}
         />
       )}
