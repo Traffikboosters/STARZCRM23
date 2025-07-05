@@ -32,6 +32,7 @@ import type { Contact } from "@shared/schema";
 import { SimpleAITipsModal } from "./simple-ai-tips-modal";
 import LeadDetailsModal from "./lead-details-modal";
 import SmartCalendarModal from "./smart-calendar-modal";
+import RealPhoneUpdater from "./real-phone-updater";
 import { formatPhoneNumber } from "@/lib/utils";
 
 // Import Traffik Boosters logo
@@ -253,14 +254,26 @@ export default function CRMView() {
             <p className="text-gray-600">Manage your lead cards and customer relationships</p>
           </div>
         </div>
-        <Dialog open={isAddContactModalOpen} onOpenChange={setIsAddContactModalOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-orange-600 hover:bg-orange-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Add New Lead
-            </Button>
-          </DialogTrigger>
-        </Dialog>
+        <div className="flex gap-3">
+          <RealPhoneUpdater 
+            contactIds={filteredContacts.map(c => c.id)}
+            onUpdate={() => {
+              queryClient.invalidateQueries({ queryKey: ["/api/contacts"] });
+              toast({
+                title: "Phone Numbers Updated",
+                description: "Contact phone numbers have been refreshed with real business data"
+              });
+            }}
+          />
+          <Dialog open={isAddContactModalOpen} onOpenChange={setIsAddContactModalOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-orange-600 hover:bg-orange-700">
+                <Plus className="h-4 w-4 mr-2" />
+                Add New Lead
+              </Button>
+            </DialogTrigger>
+          </Dialog>
+        </div>
       </div>
 
       {/* Filters */}

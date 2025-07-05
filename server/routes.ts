@@ -56,6 +56,7 @@ console.log('✅ MIGHTYCALL STATUS: CONNECTED - Account:', mightyCallConfig.acco
 import { googleMapsExtractor } from "./google-maps-extractor";
 import { AISalesTipGenerator } from "./ai-sales-tip-generator";
 import { highVolumeLeadExtractor } from "./high-volume-lead-extractor";
+import { RealPhoneExtractor } from "./real-phone-extractor";
 import fs from "fs";
 import path from "path";
 
@@ -2655,6 +2656,85 @@ a=ssrc:1001 msid:stream track`
     } catch (error) {
       console.error("Error generating sales tips:", error);
       res.status(500).json({ error: "Failed to generate sales tips" });
+    }
+  });
+
+  // Real Phone Number Update Endpoint
+  app.post("/api/contacts/update-phone-numbers", async (req, res) => {
+    try {
+      const { contactIds } = req.body;
+      
+      if (!contactIds || !Array.isArray(contactIds)) {
+        return res.status(400).json({ error: "Contact IDs array required" });
+      }
+
+      const results = [];
+      let updatedCount = 0;
+
+      for (const contactId of contactIds) {
+        const contact = await storage.getContact(contactId);
+        if (!contact) continue;
+
+        const phoneResult = await RealPhoneExtractor.extractRealPhoneNumber(contact);
+        
+        if (phoneResult.success && phoneResult.phone !== contact.phone) {
+          // Update contact with real phone number
+          await storage.updateContact(contactId, {
+            phone: phoneResult.phone,
+            notes: contact.notes ? 
+              `${contact.notes}\n\n[Phone Updated: ${phoneResult.source} - Confidence: ${Math.round(phoneResult.confidence * 100)}%]` :
+              `[Phone Updated: ${phoneResult.source} - Confidence: ${Math.round(phoneResult.confidence * 100)}%]`
+          });
+          
+          updatedCount++;
+          
+          results.push({
+            contactId,
+            oldPhone: contact.phone,
+            newPhone: phoneResult.phone,
+            source: phoneResult.source,
+            confidence: phoneResult.confidence,
+            businessVerified: phoneResult.businessVerified,
+            updated: true
+          });
+
+          // Broadcast update via WebSocket
+          if (wss) {
+            wss.clients.forEach((client: any) => {
+              if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify({
+                  type: 'phone_number_updated',
+                  contactId,
+                  newPhone: phoneResult.phone,
+                  source: phoneResult.source,
+                  timestamp: new Date().toISOString()
+                }));
+              }
+            });
+          }
+        } else {
+          results.push({
+            contactId,
+            phone: contact.phone,
+            source: phoneResult.source,
+            confidence: phoneResult.confidence,
+            businessVerified: phoneResult.businessVerified,
+            updated: false,
+            reason: phoneResult.success ? "Phone already real" : "No real phone found"
+          });
+        }
+      }
+
+      res.json({
+        success: true,
+        processed: contactIds.length,
+        updated: updatedCount,
+        results
+      });
+
+    } catch (error) {
+      console.error("Error updating phone numbers:", error);
+      res.status(500).json({ error: "Failed to update phone numbers" });
     }
   });
 
