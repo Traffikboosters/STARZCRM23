@@ -5729,14 +5729,7 @@ a=ssrc:1001 msid:stream track`
       
       console.log(`🎯 Starting single vendor extraction: ${vendorId} (${leadCount} leads)`);
       
-      const results = await highVolumeLeadExtractor.executeHighVolumeExtraction();
-      const vendorResult = results.find(result => 
-        result.vendor.toLowerCase().includes(vendorId.toLowerCase())
-      );
-      
-      if (!vendorResult) {
-        return res.status(404).json({ error: "Vendor not found or inactive" });
-      }
+      const vendorResult = await highVolumeLeadExtractor.executeSingleVendorExtraction(vendorId, leadCount);
       
       // Broadcast to WebSocket clients
       if (wss) {
