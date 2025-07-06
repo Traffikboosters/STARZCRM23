@@ -408,7 +408,7 @@ export default function CRMView() {
                       }}
                     >
                       <User className="h-3 w-3 mb-1 text-gray-600" />
-                      <span>DETAIL</span>
+                      <span>Details</span>
                     </Button>
 
                     {/* Email Button */}
