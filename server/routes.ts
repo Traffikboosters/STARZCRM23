@@ -4474,11 +4474,11 @@ a=ssrc:1001 msid:stream track`
       }
 
       // Set default values
+      const now = new Date();
       const newUserData = {
         ...userData,
         isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: now,
         avatar: userData.avatar || null,
         mobilePhone: userData.phone || null,
         workEmail: userData.email,
@@ -4486,9 +4486,12 @@ a=ssrc:1001 msid:stream track`
         baseSalary: userData.baseSalary ? parseFloat(userData.baseSalary) : null,
         commissionRate: userData.commissionRate ? parseFloat(userData.commissionRate) : null,
         bonusCommissionRate: userData.bonusCommissionRate ? parseFloat(userData.bonusCommissionRate) : null,
+        // Ensure employment fields have defaults
+        employmentType: userData.employmentType || 'w2_employee',
+        taxStatus: userData.taxStatus || 'employee',
       };
 
-      console.log('Creating new user:', newUserData);
+      console.log('Creating new user with data:', JSON.stringify(newUserData, null, 2));
       
       const newUser = await storage.createUser(newUserData);
       
@@ -4497,6 +4500,7 @@ a=ssrc:1001 msid:stream track`
       res.status(201).json(newUser);
     } catch (error) {
       console.error("Create user error:", error);
+      console.error("Error stack:", (error as Error).stack);
       res.status(500).json({ 
         error: "Failed to create user",
         details: (error as Error).message 
