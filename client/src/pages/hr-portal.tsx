@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Users, DollarSign, Calendar, TrendingUp, Award, Building2, Phone, Mail, UserPlus, Trash2, Edit, Send, Package, Copy, CheckCircle } from 'lucide-react';
+import { Users, DollarSign, Calendar, TrendingUp, Award, Building2, Phone, Mail, UserPlus, Trash2, Edit, Send, Package, Copy, CheckCircle, User, Shield, Building, CreditCard } from 'lucide-react';
 import UserInvitation from '@/components/user-invitation';
 import EmployeeOnboarding from '@/components/employee-onboarding';
 
@@ -66,6 +66,9 @@ export default function HRPortal() {
     firstName: '',
     lastName: '',
     phone: '',
+    mobilePhone: '',
+    extension: '',
+    workEmail: '',
     role: 'sales_rep',
     compensationType: 'commission',
     employmentType: 'w2_employee', // w2_employee or contractor_1099
@@ -74,7 +77,20 @@ export default function HRPortal() {
     commissionRate: 10,
     bonusCommissionRate: 0,
     commissionTier: 'standard',
-    department: 'sales'
+    department: 'sales',
+    // Direct Deposit Information
+    bankName: '',
+    routingNumber: '',
+    accountNumber: '',
+    accountType: 'checking',
+    directDepositEnabled: false,
+    // Emergency Contact
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    emergencyContactRelation: '',
+    // Employment Details
+    hireDate: '',
+    employeeId: ''
   });
 
   const { toast } = useToast();
@@ -104,6 +120,7 @@ export default function HRPortal() {
       commissionRate: employeeData.commissionRate?.toString() || '10',
       baseCommissionRate: employeeData.commissionRate?.toString() || '10',
       bonusCommissionRate: (employeeData.bonusCommissionRate || 0).toString(),
+      hireDate: employeeData.hireDate ? new Date(employeeData.hireDate) : null,
       isActive: true
     }),
     onSuccess: () => {
@@ -115,15 +132,28 @@ export default function HRPortal() {
         firstName: '',
         lastName: '',
         phone: '',
+        mobilePhone: '',
+        extension: '',
+        workEmail: '',
         role: 'sales_rep',
         compensationType: 'commission',
         employmentType: 'w2_employee',
         taxStatus: 'employee',
-        baseSalary: 0,
+        baseSalary: 50000,
         commissionRate: 10,
         bonusCommissionRate: 0,
         commissionTier: 'standard',
-        department: 'sales'
+        department: 'sales',
+        bankName: '',
+        routingNumber: '',
+        accountNumber: '',
+        accountType: 'checking',
+        directDepositEnabled: false,
+        emergencyContactName: '',
+        emergencyContactPhone: '',
+        emergencyContactRelation: '',
+        hireDate: '',
+        employeeId: ''
       });
       toast({
         title: "Employee Added",
@@ -485,7 +515,7 @@ export default function HRPortal() {
                             </AvatarFallback>
                           </Avatar>
                           
-                          <div className="space-y-1">
+                          <div className="space-y-2">
                             <div className="flex items-center gap-3">
                               <h3 className="text-xl font-bold text-gray-900">
                                 {employee.firstName} {employee.lastName}
@@ -498,18 +528,54 @@ export default function HRPortal() {
                               </Badge>
                             </div>
                             
-                            <div className="flex items-center gap-4 text-sm text-gray-600">
-                              <div className="flex items-center gap-1">
-                                <Mail className="h-4 w-4" />
-                                {employee.email}
+                            <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-1">
+                                  <Mail className="h-4 w-4" />
+                                  <span className="font-medium">Personal:</span> {employee.email}
+                                </div>
+                                {employee.workEmail && (
+                                  <div className="flex items-center gap-1">
+                                    <Mail className="h-4 w-4" />
+                                    <span className="font-medium">Work:</span> {employee.workEmail}
+                                  </div>
+                                )}
+                                <div className="flex items-center gap-1">
+                                  <Phone className="h-4 w-4" />
+                                  <span className="font-medium">Phone:</span> {employee.phone}
+                                </div>
+                                {employee.mobilePhone && (
+                                  <div className="flex items-center gap-1">
+                                    <Phone className="h-4 w-4" />
+                                    <span className="font-medium">Mobile:</span> {employee.mobilePhone}
+                                  </div>
+                                )}
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Phone className="h-4 w-4" />
-                                {employee.phone}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Building2 className="h-4 w-4" />
-                                Ext. {employee.extension}
+                              <div className="space-y-1">
+                                {employee.extension && (
+                                  <div className="flex items-center gap-1">
+                                    <Building2 className="h-4 w-4" />
+                                    <span className="font-medium">Ext:</span> {employee.extension}
+                                  </div>
+                                )}
+                                {employee.employeeId && (
+                                  <div className="flex items-center gap-1">
+                                    <CreditCard className="h-4 w-4" />
+                                    <span className="font-medium">ID:</span> {employee.employeeId}
+                                  </div>
+                                )}
+                                {employee.directDepositEnabled && (
+                                  <div className="flex items-center gap-1 text-green-600">
+                                    <DollarSign className="h-4 w-4" />
+                                    <span className="font-medium">Direct Deposit Active</span>
+                                  </div>
+                                )}
+                                {employee.hireDate && (
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="h-4 w-4" />
+                                    <span className="font-medium">Hired:</span> {new Date(employee.hireDate).toLocaleDateString()}
+                                  </div>
+                                )}
                               </div>
                             </div>
 
@@ -1021,14 +1087,67 @@ export default function HRPortal() {
                 />
               </div>
               
-              <div>
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  value={newEmployee.phone}
-                  onChange={(e) => setNewEmployee({...newEmployee, phone: e.target.value})}
-                  placeholder="(877) 840-6250"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    value={newEmployee.phone}
+                    onChange={(e) => setNewEmployee({...newEmployee, phone: e.target.value})}
+                    placeholder="(877) 840-6250"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="mobilePhone">Mobile Phone</Label>
+                  <Input
+                    id="mobilePhone"
+                    value={newEmployee.mobilePhone}
+                    onChange={(e) => setNewEmployee({...newEmployee, mobilePhone: e.target.value})}
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="extension">Extension</Label>
+                  <Input
+                    id="extension"
+                    value={newEmployee.extension}
+                    onChange={(e) => setNewEmployee({...newEmployee, extension: e.target.value})}
+                    placeholder="1001"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="workEmail">Work Email</Label>
+                  <Input
+                    id="workEmail"
+                    value={newEmployee.workEmail}
+                    onChange={(e) => setNewEmployee({...newEmployee, workEmail: e.target.value})}
+                    placeholder="firstname.lastname@traffikboosters.com"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="employeeId">Employee ID</Label>
+                  <Input
+                    id="employeeId"
+                    value={newEmployee.employeeId}
+                    onChange={(e) => setNewEmployee({...newEmployee, employeeId: e.target.value})}
+                    placeholder="EMP-001"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="hireDate">Hire Date</Label>
+                  <Input
+                    id="hireDate"
+                    type="date"
+                    value={newEmployee.hireDate}
+                    onChange={(e) => setNewEmployee({...newEmployee, hireDate: e.target.value})}
+                  />
+                </div>
               </div>
               
               <div>
@@ -1152,6 +1271,111 @@ export default function HRPortal() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Direct Deposit Section */}
+              <div className="border-t pt-6 mt-6">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">Direct Deposit Information</h4>
+                
+                <div className="flex items-center space-x-2 mb-4">
+                  <input
+                    type="checkbox"
+                    id="directDepositEnabled"
+                    checked={newEmployee.directDepositEnabled}
+                    onChange={(e) => setNewEmployee({...newEmployee, directDepositEnabled: e.target.checked})}
+                    className="rounded border-gray-300"
+                  />
+                  <Label htmlFor="directDepositEnabled">Enable Direct Deposit</Label>
+                </div>
+
+                {newEmployee.directDepositEnabled && (
+                  <div className="grid grid-cols-2 gap-4 space-y-4">
+                    <div>
+                      <Label htmlFor="bankName">Bank Name</Label>
+                      <Input
+                        id="bankName"
+                        value={newEmployee.bankName}
+                        onChange={(e) => setNewEmployee({...newEmployee, bankName: e.target.value})}
+                        placeholder="Bank of America"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="accountType">Account Type</Label>
+                      <Select value={newEmployee.accountType} onValueChange={(value) => setNewEmployee({...newEmployee, accountType: value})}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select account type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="checking">Checking</SelectItem>
+                          <SelectItem value="savings">Savings</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="routingNumber">Routing Number</Label>
+                      <Input
+                        id="routingNumber"
+                        value={newEmployee.routingNumber}
+                        onChange={(e) => setNewEmployee({...newEmployee, routingNumber: e.target.value})}
+                        placeholder="123456789"
+                        maxLength={9}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="accountNumber">Account Number</Label>
+                      <Input
+                        id="accountNumber"
+                        type="password"
+                        value={newEmployee.accountNumber}
+                        onChange={(e) => setNewEmployee({...newEmployee, accountNumber: e.target.value})}
+                        placeholder="••••••••••"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Emergency Contact Section */}
+              <div className="border-t pt-6 mt-6">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">Emergency Contact</h4>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="emergencyContactName">Emergency Contact Name</Label>
+                    <Input
+                      id="emergencyContactName"
+                      value={newEmployee.emergencyContactName}
+                      onChange={(e) => setNewEmployee({...newEmployee, emergencyContactName: e.target.value})}
+                      placeholder="Jane Doe"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="emergencyContactPhone">Emergency Contact Phone</Label>
+                    <Input
+                      id="emergencyContactPhone"
+                      value={newEmployee.emergencyContactPhone}
+                      onChange={(e) => setNewEmployee({...newEmployee, emergencyContactPhone: e.target.value})}
+                      placeholder="(555) 123-4567"
+                    />
+                  </div>
+                </div>
+                
+                <div className="mt-4">
+                  <Label htmlFor="emergencyContactRelation">Relationship</Label>
+                  <Select value={newEmployee.emergencyContactRelation} onValueChange={(value) => setNewEmployee({...newEmployee, emergencyContactRelation: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select relationship" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="spouse">Spouse</SelectItem>
+                      <SelectItem value="parent">Parent</SelectItem>
+                      <SelectItem value="sibling">Sibling</SelectItem>
+                      <SelectItem value="child">Child</SelectItem>
+                      <SelectItem value="friend">Friend</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               
               <div className="flex justify-end space-x-2 pt-4">
                 <Button
@@ -1164,6 +1388,9 @@ export default function HRPortal() {
                       firstName: '',
                       lastName: '',
                       phone: '',
+                      mobilePhone: '',
+                      extension: '',
+                      workEmail: '',
                       role: 'sales_rep',
                       compensationType: 'commission',
                       employmentType: 'w2_employee',
@@ -1172,7 +1399,17 @@ export default function HRPortal() {
                       bonusCommissionRate: 0,
                       commissionTier: 'standard',
                       baseSalary: 50000,
-                      department: 'sales'
+                      department: 'sales',
+                      bankName: '',
+                      routingNumber: '',
+                      accountNumber: '',
+                      accountType: 'checking',
+                      directDepositEnabled: false,
+                      emergencyContactName: '',
+                      emergencyContactPhone: '',
+                      emergencyContactRelation: '',
+                      hireDate: '',
+                      employeeId: ''
                     });
                   }}
                 >

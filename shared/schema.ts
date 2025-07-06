@@ -24,6 +24,20 @@ export const users = pgTable("users", {
   taxStatus: text("tax_status").default("employee"), // employee, contractor
   baseSalary: integer("base_salary"), // annual salary in dollars for salary employees
   department: text("department").default("sales"), // sales, hr, marketing, operations
+  // Direct Deposit Information
+  bankName: text("bank_name"), // Bank name for direct deposit
+  routingNumber: text("routing_number"), // Bank routing number
+  accountNumber: text("account_number"), // Bank account number (encrypted)
+  accountType: text("account_type").default("checking"), // checking, savings
+  directDepositEnabled: boolean("direct_deposit_enabled").default(false),
+  // Emergency Contact
+  emergencyContactName: text("emergency_contact_name"),
+  emergencyContactPhone: text("emergency_contact_phone"),
+  emergencyContactRelation: text("emergency_contact_relation"),
+  // Employment Details
+  hireDate: timestamp("hire_date"),
+  employeeId: text("employee_id"), // Company employee ID
+  // System fields
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
