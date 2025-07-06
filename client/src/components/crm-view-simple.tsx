@@ -762,7 +762,7 @@ export default function CRMView() {
                       }}
                     >
                       <User className="h-3 w-3 mb-2 text-gray-600" />
-                      <span className="leading-tight">Edit</span>
+                      <span className="leading-tight">DETAIL</span>
                     </Button>
 
                     {/* Quick Reply Button */}

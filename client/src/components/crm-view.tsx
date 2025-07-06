@@ -407,8 +407,8 @@ export default function CRMView() {
                         setIsDetailsModalOpen(true);
                       }}
                     >
-                      <Calendar className="h-3 w-3 mb-1 text-blue-600" />
-                      <span>Schedule</span>
+                      <User className="h-3 w-3 mb-1 text-gray-600" />
+                      <span>DETAIL</span>
                     </Button>
 
                     {/* Email Button */}
