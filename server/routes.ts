@@ -4473,37 +4473,74 @@ a=ssrc:1001 msid:stream track`
         userData.extension = Math.floor(Math.random() * 9000) + 1000; // Random 4-digit extension
       }
 
-      // Set default values
+      // Set default values and ensure all required fields
       const now = new Date();
       const newUserData = {
         ...userData,
         isActive: true,
         createdAt: now,
         avatar: userData.avatar || null,
-        mobilePhone: userData.phone || null,
-        workEmail: userData.email,
+        mobilePhone: userData.mobilePhone || userData.phone || null,
+        workEmail: userData.workEmail || userData.email,
         // Ensure proper type conversion for numeric fields
-        baseSalary: userData.baseSalary ? parseFloat(userData.baseSalary) : null,
-        commissionRate: userData.commissionRate ? parseFloat(userData.commissionRate) : null,
-        bonusCommissionRate: userData.bonusCommissionRate ? parseFloat(userData.bonusCommissionRate) : null,
+        baseSalary: userData.baseSalary ? parseInt(userData.baseSalary) : null,
+        commissionRate: userData.commissionRate || "10.0",
+        baseCommissionRate: userData.baseCommissionRate || userData.commissionRate || "10.0",
+        bonusCommissionRate: userData.bonusCommissionRate || "0.0",
+        commissionTier: userData.commissionTier || "standard",
+        compensationType: userData.compensationType || "commission",
         // Ensure employment fields have defaults
         employmentType: userData.employmentType || 'w2_employee',
         taxStatus: userData.taxStatus || 'employee',
+        department: userData.department || 'sales',
+        role: userData.role || 'sales_rep',
+        // Set password if not provided
+        password: userData.password || 'welcome123',
+        // Banking and contact fields with defaults
+        bankName: userData.bankName || null,
+        routingNumber: userData.routingNumber || null,
+        accountNumber: userData.accountNumber || null,
+        accountType: userData.accountType || 'checking',
+        directDepositEnabled: Boolean(userData.directDepositEnabled),
+        emergencyContactName: userData.emergencyContactName || null,
+        emergencyContactPhone: userData.emergencyContactPhone || null,
+        emergencyContactRelation: userData.emergencyContactRelation || null,
+        hireDate: userData.hireDate ? new Date(userData.hireDate) : now,
+        employeeId: userData.employeeId || null,
       };
 
       console.log('Creating new user with data:', JSON.stringify(newUserData, null, 2));
+      
+      // Validate critical fields before database insertion
+      if (!newUserData.firstName || !newUserData.lastName || !newUserData.email) {
+        throw new Error("Missing required fields after processing");
+      }
       
       const newUser = await storage.createUser(newUserData);
       
       console.log('✅ Employee created successfully:', newUser.firstName, newUser.lastName);
       
       res.status(201).json(newUser);
-    } catch (error) {
-      console.error("Create user error:", error);
-      console.error("Error stack:", (error as Error).stack);
+    } catch (error: any) {
+      console.error("❌ Create user error:", error);
+      console.error("❌ Error stack:", error?.stack);
+      console.error("❌ Error message:", error?.message);
+      console.error("❌ Full error object:", JSON.stringify(error, null, 2));
+      
+      // Provide more specific error message
+      let errorMessage = "Failed to create user";
+      if (error?.message?.includes("duplicate key")) {
+        errorMessage = "User with this email or username already exists";
+      } else if (error?.message?.includes("not null")) {
+        errorMessage = "Missing required field: " + error.message;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       res.status(500).json({ 
-        error: "Failed to create user",
-        details: (error as Error).message 
+        error: errorMessage,
+        details: error?.message,
+        timestamp: new Date().toISOString()
       });
     }
   });
