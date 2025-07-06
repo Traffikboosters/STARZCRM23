@@ -26,6 +26,8 @@ interface User {
   avatar?: string;
   extension: string;
   compensationType: 'commission' | 'salary';
+  employmentType?: 'w2_employee' | 'contractor_1099';
+  taxStatus?: 'employee' | 'contractor';
   baseSalary?: number;
   commissionRate?: number;
   bonusCommissionRate?: number;
@@ -66,6 +68,8 @@ export default function HRPortal() {
     phone: '',
     role: 'sales_rep',
     compensationType: 'commission',
+    employmentType: 'w2_employee', // w2_employee or contractor_1099
+    taxStatus: 'employee', // employee or contractor
     baseSalary: 50000,
     commissionRate: 10,
     bonusCommissionRate: 0,
@@ -113,6 +117,8 @@ export default function HRPortal() {
         phone: '',
         role: 'sales_rep',
         compensationType: 'commission',
+        employmentType: 'w2_employee',
+        taxStatus: 'employee',
         baseSalary: 0,
         commissionRate: 10,
         bonusCommissionRate: 0,
@@ -507,10 +513,28 @@ export default function HRPortal() {
                               </div>
                             </div>
 
-                            <p className="text-xs text-gray-500">
-                              Department: {employee.department?.charAt(0).toUpperCase() + employee.department?.slice(1)} • 
-                              Joined: {new Date(employee.createdAt).toLocaleDateString()}
-                            </p>
+                            <div className="text-xs text-gray-500 space-y-1">
+                              <p>
+                                Department: {employee.department?.charAt(0).toUpperCase() + employee.department?.slice(1)} • 
+                                Joined: {new Date(employee.createdAt).toLocaleDateString()}
+                              </p>
+                              <div className="flex items-center gap-3">
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                  employee.employmentType === 'w2_employee' 
+                                    ? 'bg-blue-100 text-blue-800' 
+                                    : 'bg-purple-100 text-purple-800'
+                                }`}>
+                                  {employee.employmentType === 'w2_employee' ? 'W-2 Employee' : '1099 Contractor'}
+                                </span>
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                  employee.taxStatus === 'employee' 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : 'bg-orange-100 text-orange-800'
+                                }`}>
+                                  {employee.taxStatus === 'employee' ? 'Tax Withholding' : 'No Withholding'}
+                                </span>
+                              </div>
+                            </div>
                           </div>
                         </div>
 
@@ -1020,6 +1044,33 @@ export default function HRPortal() {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="employmentType">Employment Type</Label>
+                  <Select value={newEmployee.employmentType} onValueChange={(value) => setNewEmployee({...newEmployee, employmentType: value, taxStatus: value === 'w2_employee' ? 'employee' : 'contractor'})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select employment type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="w2_employee">W-2 Employee</SelectItem>
+                      <SelectItem value="contractor_1099">1099 Contractor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="taxStatus">Tax Status</Label>
+                  <Select value={newEmployee.taxStatus} onValueChange={(value) => setNewEmployee({...newEmployee, taxStatus: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select tax status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="employee">Employee (W-2 Tax Withholding)</SelectItem>
+                      <SelectItem value="contractor">Contractor (1099 No Withholding)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               
               <div>
                 <Label htmlFor="compensationType">Compensation Type</Label>
@@ -1115,6 +1166,8 @@ export default function HRPortal() {
                       phone: '',
                       role: 'sales_rep',
                       compensationType: 'commission',
+                      employmentType: 'w2_employee',
+                      taxStatus: 'employee',
                       commissionRate: 10,
                       bonusCommissionRate: 0,
                       commissionTier: 'standard',

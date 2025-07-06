@@ -20,6 +20,8 @@ export const users = pgTable("users", {
   bonusCommissionRate: text("bonus_commission_rate").default("0.0"), // additional bonus percentage
   commissionTier: text("commission_tier").default("standard"), // standard, bronze, silver, gold, platinum
   compensationType: text("compensation_type").default("commission"), // commission, salary
+  employmentType: text("employment_type").default("w2_employee"), // w2_employee, contractor_1099
+  taxStatus: text("tax_status").default("employee"), // employee, contractor
   baseSalary: integer("base_salary"), // annual salary in dollars for salary employees
   department: text("department").default("sales"), // sales, hr, marketing, operations
   isActive: boolean("is_active").notNull().default(true),
