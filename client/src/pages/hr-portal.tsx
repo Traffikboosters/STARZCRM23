@@ -613,7 +613,19 @@ export default function HRPortal() {
                           <div className="flex gap-2">
                             <Button
                               onClick={() => {
-                                setEditingEmployee(employee);
+                                // Ensure all required properties are present
+                                const editEmployee = {
+                                  ...employee,
+                                  commissionRate: employee.commissionRate || 10,
+                                  bonusCommissionRate: employee.bonusCommissionRate || 0,
+                                  baseSalary: employee.baseSalary || 50000,
+                                  commissionTier: employee.commissionTier || 'standard',
+                                  compensationType: employee.compensationType || 'commission',
+                                  employmentType: employee.employmentType || 'w2_employee',
+                                  taxStatus: employee.taxStatus || 'employee',
+                                  department: employee.department || 'sales'
+                                };
+                                setEditingEmployee(editEmployee);
                                 setIsEditEmployeeModalOpen(true);
                               }}
                               variant="outline"
