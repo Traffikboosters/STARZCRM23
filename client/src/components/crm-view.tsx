@@ -313,8 +313,58 @@ export default function CRMView() {
                       </Badge>
                     )}
                   </div>
-                  <CardTitle className="text-lg">
+                  <CardTitle 
+                    className={`text-lg ${contact.phone ? 'cursor-pointer hover:text-blue-600 transition-colors' : ''}`}
+                    onClick={(e) => {
+                      if (contact.phone) {
+                        e.stopPropagation();
+                        // Use PowerDials integration for calling
+                        const powerDialsWindow = window.open('', 'PowerDialsWeb', 'width=800,height=600,scrollbars=yes,resizable=yes');
+                        
+                        fetch('/api/powerdials/call', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            phoneNumber: contact.phone,
+                            contactName: `${contact.firstName} ${contact.lastName}`,
+                            contactId: contact.id,
+                            userId: 1
+                          })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                          if (data.success && data.dialerUrl && powerDialsWindow) {
+                            powerDialsWindow.location.href = data.dialerUrl;
+                            toast({
+                              title: "PowerDials Ready",
+                              description: `Calling ${contact.firstName} ${contact.lastName} via PowerDials`,
+                            });
+                          } else {
+                            if (powerDialsWindow) powerDialsWindow.close();
+                            // Fallback to device dialer
+                            window.open(`tel:${contact.phone}`, '_self');
+                            toast({
+                              title: "Call Initiated",
+                              description: `Calling ${contact.firstName} ${contact.lastName}`,
+                            });
+                          }
+                        })
+                        .catch(error => {
+                          console.error('PowerDials error:', error);
+                          if (powerDialsWindow) powerDialsWindow.close();
+                          // Fallback to device dialer
+                          window.open(`tel:${contact.phone}`, '_self');
+                          toast({
+                            title: "Call Initiated", 
+                            description: `Calling ${contact.firstName} ${contact.lastName}`,
+                          });
+                        });
+                      }
+                    }}
+                    title={contact.phone ? "Click to call" : ""}
+                  >
                     {contact.firstName} {contact.lastName}
+                    {contact.phone && <Phone className="h-4 w-4 ml-2 inline text-green-600" />}
                   </CardTitle>
                   {contact.company && (
                     <p className="text-sm text-gray-600">{contact.company}</p>
@@ -325,7 +375,54 @@ export default function CRMView() {
                   {/* Contact Information */}
                   <div className="space-y-2">
                     {contact.phone && (
-                      <div className="flex items-center text-sm text-gray-600">
+                      <div 
+                        className="flex items-center text-sm text-gray-600 cursor-pointer hover:text-blue-600 hover:bg-blue-50 p-1 rounded transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Use PowerDials integration
+                          const powerDialsWindow = window.open('', 'PowerDialsWeb', 'width=800,height=600,scrollbars=yes,resizable=yes');
+                          
+                          fetch('/api/powerdials/call', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                              phoneNumber: contact.phone,
+                              contactName: `${contact.firstName} ${contact.lastName}`,
+                              contactId: contact.id,
+                              userId: 1
+                            })
+                          })
+                          .then(res => res.json())
+                          .then(data => {
+                            if (data.success && data.dialerUrl && powerDialsWindow) {
+                              powerDialsWindow.location.href = data.dialerUrl;
+                              toast({
+                                title: "PowerDials Ready",
+                                description: `Calling ${contact.firstName} ${contact.lastName} via PowerDials`,
+                              });
+                            } else {
+                              if (powerDialsWindow) powerDialsWindow.close();
+                              // Fallback to device dialer
+                              window.open(`tel:${contact.phone}`, '_self');
+                              toast({
+                                title: "Call Initiated",
+                                description: `Calling ${contact.firstName} ${contact.lastName}`,
+                              });
+                            }
+                          })
+                          .catch(error => {
+                            console.error('PowerDials error:', error);
+                            if (powerDialsWindow) powerDialsWindow.close();
+                            // Fallback to device dialer
+                            window.open(`tel:${contact.phone}`, '_self');
+                            toast({
+                              title: "Call Initiated",
+                              description: `Calling ${contact.firstName} ${contact.lastName}`,
+                            });
+                          });
+                        }}
+                        title="Click to call"
+                      >
                         <Phone className="h-3 w-3 mr-2" />
                         <span>{formatPhoneNumber(contact.phone)}</span>
                       </div>

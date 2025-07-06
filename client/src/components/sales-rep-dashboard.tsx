@@ -347,7 +347,40 @@ export default function SalesRepDashboard({ currentUser }: SalesRepDashboardProp
                         </Badge>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div className="flex items-center">
+                        <div 
+                          className="flex items-center cursor-pointer hover:text-blue-600 hover:bg-blue-50 p-1 rounded transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Use PowerDials integration
+                            const powerDialsWindow = window.open('', 'PowerDialsWeb', 'width=800,height=600,scrollbars=yes,resizable=yes');
+                            
+                            fetch('/api/powerdials/call', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                phoneNumber: lead.phone,
+                                contactName: lead.name,
+                                contactId: lead.id,
+                                userId: 1
+                              })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                              if (data.success && data.dialerUrl && powerDialsWindow) {
+                                powerDialsWindow.location.href = data.dialerUrl;
+                              } else {
+                                if (powerDialsWindow) powerDialsWindow.close();
+                                window.open(`tel:${lead.phone}`, '_self');
+                              }
+                            })
+                            .catch(error => {
+                              console.error('PowerDials error:', error);
+                              if (powerDialsWindow) powerDialsWindow.close();
+                              window.open(`tel:${lead.phone}`, '_self');
+                            });
+                          }}
+                          title="Click to call"
+                        >
                           <Phone className="h-4 w-4 mr-2 text-gray-500" />
                           {lead.phone}
                         </div>
