@@ -713,13 +713,13 @@ export default function CRMView() {
                           currentAction: 'calling'
                         });
                         toast({
-                          title: "Starz Sales Tips Opening",
-                          description: `Loading Starz sales tips for ${contact.firstName} ${contact.lastName}`,
+                          title: "Starz Conversation Starters Opening",
+                          description: `Loading Starz conversation starters for ${contact.firstName} ${contact.lastName}`,
                         });
                       }}
                     >
                       <ClipboardList className="h-3 w-3 mb-2 text-purple-600" />
-                      <span className="leading-tight">Starz Tips</span>
+                      <span className="leading-tight">Starz</span>
                     </Button>
 
                     {/* Notes Button */}

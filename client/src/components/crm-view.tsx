@@ -434,7 +434,7 @@ export default function CRMView() {
                       <span>Email</span>
                     </Button>
 
-                    {/* AI Tips Button */}
+                    {/* Starz Conversation Starters Button */}
                     <Button
                       variant="outline"
                       size="sm"
@@ -447,7 +447,7 @@ export default function CRMView() {
                       }}
                     >
                       <ClipboardList className="h-3 w-3 mb-1 text-purple-600" />
-                      <span>AI Tips</span>
+                      <span>Starz</span>
                     </Button>
                   </div>
 
@@ -604,7 +604,7 @@ export default function CRMView() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <ClipboardList className="h-5 w-5 text-purple-600" />
-                  <h2 className="text-lg font-semibold">AI Sales Tips</h2>
+                  <h2 className="text-lg font-semibold">Starz Conversation Starters</h2>
                 </div>
                 <div className="flex items-center gap-3">
                   <img 
@@ -613,7 +613,7 @@ export default function CRMView() {
                     className="h-8 w-8"
                   />
                   <div className="text-right">
-                    <div className="text-sm font-semibold text-black">AI Sales Intelligence</div>
+                    <div className="text-sm font-semibold text-black">Starz Sales Intelligence</div>
                     <div className="text-xs text-black">More Traffik! More Sales!</div>
                   </div>
                   <Button
