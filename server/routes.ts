@@ -4441,6 +4441,18 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  // Get all users/employees for HR Portal
+  app.get("/api/users", async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      console.log(`📊 Retrieved ${users.length} employees for HR Portal`);
+      res.json(users);
+    } catch (error) {
+      console.error("❌ Failed to get employees:", error);
+      res.status(500).json({ error: "Failed to get employees" });
+    }
+  });
+
   app.get("/api/employees/without-email", async (req, res) => {
     try {
       const employees = await storage.getEmployeesWithoutEmail();
