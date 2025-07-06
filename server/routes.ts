@@ -4453,6 +4453,19 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  // Delete employee endpoint
+  app.delete("/api/users/:id", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      await storage.deleteUser(userId);
+      console.log(`🗑️ Deleted employee with ID: ${userId}`);
+      res.json({ success: true, message: "Employee deleted successfully" });
+    } catch (error) {
+      console.error("❌ Failed to delete employee:", error);
+      res.status(500).json({ error: "Failed to delete employee" });
+    }
+  });
+
   app.get("/api/employees/without-email", async (req, res) => {
     try {
       const employees = await storage.getEmployeesWithoutEmail();
