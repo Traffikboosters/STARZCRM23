@@ -4451,6 +4451,113 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  // User Creation Endpoint for HR Portal
+  app.post("/api/users", async (req, res) => {
+    try {
+      const userData = req.body;
+      
+      // Validate required fields
+      if (!userData.firstName || !userData.lastName || !userData.email) {
+        return res.status(400).json({ 
+          error: "Missing required fields: firstName, lastName, and email are required" 
+        });
+      }
+
+      // Generate username if not provided
+      if (!userData.username) {
+        userData.username = `${userData.firstName.toLowerCase()}.${userData.lastName.toLowerCase()}`;
+      }
+
+      // Generate extension if not provided
+      if (!userData.extension) {
+        userData.extension = Math.floor(Math.random() * 9000) + 1000; // Random 4-digit extension
+      }
+
+      // Set default values
+      const newUserData = {
+        ...userData,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        avatar: userData.avatar || null,
+        mobilePhone: userData.phone || null,
+        workEmail: userData.email,
+        // Ensure proper type conversion for numeric fields
+        baseSalary: userData.baseSalary ? parseFloat(userData.baseSalary) : null,
+        commissionRate: userData.commissionRate ? parseFloat(userData.commissionRate) : null,
+        bonusCommissionRate: userData.bonusCommissionRate ? parseFloat(userData.bonusCommissionRate) : null,
+      };
+
+      console.log('Creating new user:', newUserData);
+      
+      const newUser = await storage.createUser(newUserData);
+      
+      console.log('✅ Employee created successfully:', newUser.firstName, newUser.lastName);
+      
+      res.status(201).json(newUser);
+    } catch (error) {
+      console.error("Create user error:", error);
+      res.status(500).json({ 
+        error: "Failed to create user",
+        details: (error as Error).message 
+      });
+    }
+  });
+
+  // User Update Endpoint for HR Portal
+  app.put("/api/users/:id", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const userData = req.body;
+      
+      // Ensure proper type conversion for numeric fields
+      if (userData.baseSalary) userData.baseSalary = parseFloat(userData.baseSalary);
+      if (userData.commissionRate) userData.commissionRate = parseFloat(userData.commissionRate);
+      if (userData.bonusCommissionRate) userData.bonusCommissionRate = parseFloat(userData.bonusCommissionRate);
+      
+      userData.updatedAt = new Date().toISOString();
+      
+      console.log('Updating user:', userId, userData);
+      
+      const updatedUser = await storage.updateUser(userId, userData);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      console.log('✅ Employee updated successfully:', updatedUser.firstName, updatedUser.lastName);
+      
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Update user error:", error);
+      res.status(500).json({ 
+        error: "Failed to update user",
+        details: (error as Error).message 
+      });
+    }
+  });
+
+  // User Delete Endpoint for HR Portal
+  app.delete("/api/users/:id", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      
+      console.log('Deleting user:', userId);
+      
+      await storage.deleteUser(userId);
+      
+      console.log('✅ Employee deleted successfully');
+      
+      res.json({ success: true, message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Delete user error:", error);
+      res.status(500).json({ 
+        error: "Failed to delete user",
+        details: (error as Error).message 
+      });
+    }
+  });
+
   // Time Off Requests
   app.post("/api/timeoff/request", async (req, res) => {
     try {
