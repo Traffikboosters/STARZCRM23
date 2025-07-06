@@ -2207,3 +2207,96 @@ export type UserBadge = typeof userBadges.$inferSelect;
 export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
 export type EngagementMetric = typeof engagementMetrics.$inferSelect;
 export type InsertEngagementMetric = z.infer<typeof insertEngagementMetricSchema>;
+
+// Sales History for tracking completed sales and cancellations
+export const salesHistory = pgTable("sales_history", {
+  id: serial("id").primaryKey(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  salesRepId: integer("sales_rep_id").references(() => users.id).notNull(),
+  accountNumber: text("account_number").notNull(), // Work order account number
+  serviceType: text("service_type").notNull(), // SEO, Web Development, PPC, etc.
+  packageName: text("package_name").notNull(), // Specific service package
+  saleAmount: text("sale_amount").notNull(), // Dollar amount of sale
+  commissionAmount: text("commission_amount"), // Commission earned by sales rep
+  commissionRate: text("commission_rate"), // Commission percentage at time of sale
+  saleDate: timestamp("sale_date").notNull(), // Date sale was closed
+  startDate: timestamp("start_date"), // Service start date
+  saleType: text("sale_type").notNull().default("new_sale"), // new_sale, upsell, cross_sell, renewal
+  contractLength: integer("contract_length"), // Contract length in months
+  monthlyValue: text("monthly_value"), // Monthly recurring value for subscriptions
+  paymentTerms: text("payment_terms"), // Payment terms (net_30, upfront, monthly, etc.)
+  paymentStatus: text("payment_status").default("pending"), // pending, paid, partial, overdue
+  workOrderId: text("work_order_id"), // Reference to work order
+  notes: text("notes"), // Additional sale notes
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
+});
+
+// Cancellation History for tracking cancelled services and clients
+export const cancellationHistory = pgTable("cancellation_history", {
+  id: serial("id").primaryKey(),
+  salesHistoryId: integer("sales_history_id").references(() => salesHistory.id).notNull(),
+  contactId: integer("contact_id").references(() => contacts.id).notNull(),
+  salesRepId: integer("sales_rep_id").references(() => users.id), // May be different from original sales rep
+  accountNumber: text("account_number").notNull(),
+  serviceType: text("service_type").notNull(),
+  packageName: text("package_name").notNull(),
+  originalSaleAmount: text("original_sale_amount").notNull(),
+  refundAmount: text("refund_amount").default("0.00"), // Amount refunded to client
+  cancellationReason: text("cancellation_reason").notNull(), // client_request, non_payment, service_issue, business_closure, etc.
+  cancellationCategory: text("cancellation_category").notNull(), // voluntary, involuntary, chargeback
+  serviceDuration: integer("service_duration"), // How long client was active (days)
+  satisfactionRating: integer("satisfaction_rating"), // 1-5 client satisfaction rating
+  cancellationDate: timestamp("cancellation_date").notNull(),
+  lastServiceDate: timestamp("last_service_date"), // Last date service was provided
+  cancellationNotes: text("cancellation_notes"), // Detailed notes about cancellation
+  preventable: boolean("preventable").default(false), // Could this cancellation have been prevented
+  followUpRequired: boolean("follow_up_required").default(false), // Does this require follow-up action
+  reactivationPossible: boolean("reactivation_possible").default(false), // Could client be reactivated
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
+// Sales Performance Metrics aggregated by period
+export const salesMetrics = pgTable("sales_metrics", {
+  id: serial("id").primaryKey(),
+  salesRepId: integer("sales_rep_id").references(() => users.id).notNull(),
+  period: text("period").notNull(), // daily, weekly, monthly, quarterly, yearly
+  periodDate: text("period_date").notNull(), // Date in YYYY-MM-DD format
+  totalSales: integer("total_sales").default(0), // Number of sales
+  totalRevenue: text("total_revenue").default("0.00"), // Total revenue generated
+  totalCommission: text("total_commission").default("0.00"), // Total commission earned
+  totalCancellations: integer("total_cancellations").default(0), // Number of cancellations
+  cancellationRate: text("cancellation_rate").default("0.00"), // Cancellation rate percentage
+  netRevenue: text("net_revenue").default("0.00"), // Revenue minus refunds
+  averageSaleValue: text("average_sale_value").default("0.00"), // Average sale amount
+  conversionRate: text("conversion_rate").default("0.00"), // Lead to sale conversion percentage
+  customerRetentionRate: text("customer_retention_rate").default("0.00"), // Retention percentage
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
+});
+
+// Insert schemas for sales history
+export const insertSalesHistorySchema = createInsertSchema(salesHistory).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertCancellationHistorySchema = createInsertSchema(cancellationHistory).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSalesMetricsSchema = createInsertSchema(salesMetrics).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Types for sales history
+export type SalesHistory = typeof salesHistory.$inferSelect;
+export type InsertSalesHistory = z.infer<typeof insertSalesHistorySchema>;
+export type CancellationHistory = typeof cancellationHistory.$inferSelect;
+export type InsertCancellationHistory = z.infer<typeof insertCancellationHistorySchema>;
+export type SalesMetrics = typeof salesMetrics.$inferSelect;
+export type InsertSalesMetrics = z.infer<typeof insertSalesMetricsSchema>;

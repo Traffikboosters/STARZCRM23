@@ -84,6 +84,7 @@ export default function Sidebar({
     { id: "dial-tracking", label: "Dial Tracking", icon: Timer },
     { id: "pricing", label: "Pricing & Profit", icon: DollarSign },
     { id: "competitive-pricing", label: "Competitive Pricing", icon: Calculator },
+    { id: "sales-history", label: "Sales History", icon: Clock },
     { id: "high-revenue-prospects", label: "High Revenue Prospects", icon: Building2 },
     { id: "payments", label: "Payments", icon: CreditCard },
     { id: "phone", label: "Phone System", icon: Phone },

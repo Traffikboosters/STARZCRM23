@@ -20,6 +20,9 @@ import {
   insertJobApplicationSchema,
   insertInterviewScheduleSchema,
   insertCareerSettingsSchema,
+  insertSalesHistorySchema,
+  insertCancellationHistorySchema,
+  insertSalesMetricsSchema,
   type User,
   type Contact,
   type Event,
@@ -32,7 +35,10 @@ import {
   type JobPosting,
   type JobApplication,
   type InterviewSchedule,
-  type CareerSettings
+  type CareerSettings,
+  type SalesHistory,
+  type CancellationHistory,
+  type SalesMetrics
 } from "../shared/schema";
 import { storage } from "./storage";
 import { mightyCallNativeAPI } from "./mightycall-native";
@@ -6399,6 +6405,133 @@ a=ssrc:1001 msid:stream track`
     } catch (error) {
       console.error("Error fetching calendar services:", error);
       res.status(500).json({ error: "Failed to fetch services" });
+    }
+  });
+
+  // Sales History API endpoints
+  app.get("/api/sales-history", async (req, res) => {
+    try {
+      const salesHistory = await storage.getAllSalesHistory();
+      res.json(salesHistory);
+    } catch (error) {
+      console.error("Error fetching sales history:", error);
+      res.status(500).json({ error: "Failed to fetch sales history" });
+    }
+  });
+
+  app.post("/api/sales-history", async (req, res) => {
+    try {
+      const result = insertSalesHistorySchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: "Invalid sales history data", details: result.error.issues });
+      }
+
+      const sale = await storage.createSalesHistory(result.data);
+      
+      // Broadcast new sale to WebSocket clients
+      if (wss) {
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+              type: 'new_sale',
+              data: sale,
+              timestamp: new Date().toISOString()
+            }));
+          }
+        });
+      }
+
+      res.json(sale);
+    } catch (error) {
+      console.error("Error creating sales history:", error);
+      res.status(500).json({ error: "Failed to create sales history" });
+    }
+  });
+
+  // Cancellation History API endpoints
+  app.get("/api/cancellation-history", async (req, res) => {
+    try {
+      const cancellations = await storage.getAllCancellationHistory();
+      res.json(cancellations);
+    } catch (error) {
+      console.error("Error fetching cancellation history:", error);
+      res.status(500).json({ error: "Failed to fetch cancellation history" });
+    }
+  });
+
+  app.post("/api/cancellation-history", async (req, res) => {
+    try {
+      const result = insertCancellationHistorySchema.safeParse(req.body);
+      if (!result.success) {
+        return res.status(400).json({ error: "Invalid cancellation data", details: result.error.issues });
+      }
+
+      const cancellation = await storage.createCancellationHistory(result.data);
+      
+      // Broadcast new cancellation to WebSocket clients
+      if (wss) {
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+              type: 'new_cancellation',
+              data: cancellation,
+              timestamp: new Date().toISOString()
+            }));
+          }
+        });
+      }
+
+      res.json(cancellation);
+    } catch (error) {
+      console.error("Error creating cancellation history:", error);
+      res.status(500).json({ error: "Failed to create cancellation history" });
+    }
+  });
+
+  // Sales Metrics API endpoints
+  app.get("/api/sales-metrics", async (req, res) => {
+    try {
+      const { salesRepId, period } = req.query;
+      const metrics = await storage.getSalesMetrics(
+        salesRepId ? parseInt(salesRepId as string) : undefined,
+        period as string
+      );
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error fetching sales metrics:", error);
+      res.status(500).json({ error: "Failed to fetch sales metrics" });
+    }
+  });
+
+  // Sales Performance Dashboard data
+  app.get("/api/sales-performance", async (req, res) => {
+    try {
+      const salesHistory = await storage.getAllSalesHistory();
+      const cancellationHistory = await storage.getAllCancellationHistory();
+      
+      // Calculate performance metrics
+      const totalSales = salesHistory.length;
+      const totalCancellations = cancellationHistory.length;
+      const totalRevenue = salesHistory.reduce((sum, sale) => sum + parseFloat(sale.saleAmount), 0);
+      const totalRefunds = cancellationHistory.reduce((sum, cancel) => sum + parseFloat(cancel.refundAmount), 0);
+      const netRevenue = totalRevenue - totalRefunds;
+      const cancellationRate = totalSales > 0 ? (totalCancellations / totalSales) * 100 : 0;
+      const averageSaleValue = totalSales > 0 ? totalRevenue / totalSales : 0;
+
+      res.json({
+        totalSales,
+        totalCancellations,
+        totalRevenue,
+        totalRefunds,
+        netRevenue,
+        cancellationRate,
+        averageSaleValue,
+        salesHistory: salesHistory.slice(0, 10), // Recent 10 sales
+        cancellationHistory: cancellationHistory.slice(0, 10) // Recent 10 cancellations
+      });
+    } catch (error) {
+      console.error("Error fetching sales performance:", error);
+      res.status(500).json({ error: "Failed to fetch sales performance" });
     }
   });
 

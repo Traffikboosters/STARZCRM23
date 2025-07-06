@@ -69,6 +69,7 @@ import HighVolumeLeadExtractor from "@/components/high-volume-lead-extractor";
 import PerformanceMonitor from "@/components/performance-monitor";
 import { MarketingStrategyBuilder } from "@/components/marketing-strategy-builder";
 import TraffikBoostersWebsite from "@/pages/traffik-boosters-website";
+import SalesHistory from "@/components/sales-history";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -217,6 +218,8 @@ export default function Dashboard() {
         return <HighVolumeLeadExtractor />;
       case "website":
         return <TraffikBoostersWebsite />;
+      case "sales-history":
+        return <SalesHistory />;
 
       default:
         return <SmartCalendarIntegration />;

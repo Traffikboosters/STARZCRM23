@@ -14,7 +14,7 @@ import {
   marketingStrategies, jobPostings, jobApplications, interviewSchedules, careerSettings,
   userPoints, pointActivities, achievements, userAchievements, dailyChallenges, userChallenges,
   leaderboards, pointMultipliers, badgeCategories, userBadges, engagementMetrics,
-  paymentTransactions
+  paymentTransactions, salesHistory, cancellationHistory, salesMetrics
 } from "../shared/schema";
 import type { 
   User, Company, Contact, Event, File, Automation, ScrapingJob,
@@ -27,6 +27,7 @@ import type {
   TimeClockEntry, TimeClockSchedule, TimeOffRequest,
   EmailAccount, EmailTemplate, CancellationMetric, RetentionAttempt, CancellationTrend,
   MarketingStrategy, JobPosting, JobApplication, InterviewSchedule, CareerSettings,
+  SalesHistory, CancellationHistory, SalesMetrics,
   InsertUser, InsertCompany, InsertContact, InsertEvent, InsertFile, InsertAutomation, InsertScrapingJob,
   InsertChatMessage, InsertChatConversation, InsertCallLog, InsertCampaign, InsertLeadAllocation,
   InsertDocumentTemplate, InsertSigningRequest, InsertUserInvitation,
@@ -36,7 +37,8 @@ import type {
   InsertMoodEntry, InsertTeamMoodSummary, InsertMoodPerformanceCorrelation,
   InsertTimeClockEntry, InsertTimeClockSchedule, InsertTimeOffRequest,
   InsertEmailAccount, InsertEmailTemplate, InsertCancellationMetric, InsertRetentionAttempt, InsertCancellationTrend,
-  InsertMarketingStrategy, InsertJobPosting, InsertJobApplication, InsertInterviewSchedule, InsertCareerSettings
+  InsertMarketingStrategy, InsertJobPosting, InsertJobApplication, InsertInterviewSchedule, InsertCareerSettings,
+  InsertSalesHistory, InsertCancellationHistory, InsertSalesMetrics
 } from "../shared/schema";
 
 // Complete interface implementation
@@ -200,6 +202,29 @@ export interface IStorage {
   updateCancellationTrend(id: number, updates: Partial<InsertCancellationTrend>): Promise<CancellationTrend | undefined>;
   deleteCancellationTrend(id: number): Promise<boolean>;
   getCancellationTrendsByPeriod(startDate: Date, endDate: Date): Promise<CancellationTrend[]>;
+  
+  // Sales History
+  getAllSalesHistory(): Promise<SalesHistory[]>;
+  getSalesHistory(id: number): Promise<SalesHistory | undefined>;
+  createSalesHistory(sale: InsertSalesHistory): Promise<SalesHistory>;
+  updateSalesHistory(id: number, updates: Partial<InsertSalesHistory>): Promise<SalesHistory | undefined>;
+  deleteSalesHistory(id: number): Promise<boolean>;
+  getSalesHistoryByContact(contactId: number): Promise<SalesHistory[]>;
+  getSalesHistoryByRep(salesRepId: number): Promise<SalesHistory[]>;
+  
+  // Cancellation History
+  getAllCancellationHistory(): Promise<CancellationHistory[]>;
+  getCancellationHistory(id: number): Promise<CancellationHistory | undefined>;
+  createCancellationHistory(cancellation: InsertCancellationHistory): Promise<CancellationHistory>;
+  updateCancellationHistory(id: number, updates: Partial<InsertCancellationHistory>): Promise<CancellationHistory | undefined>;
+  deleteCancellationHistory(id: number): Promise<boolean>;
+  getCancellationHistoryByContact(contactId: number): Promise<CancellationHistory[]>;
+  getCancellationHistoryByRep(salesRepId: number): Promise<CancellationHistory[]>;
+  
+  // Sales Metrics
+  getSalesMetrics(salesRepId?: number, period?: string): Promise<SalesMetrics[]>;
+  createSalesMetrics(metrics: InsertSalesMetrics): Promise<SalesMetrics>;
+  updateSalesMetrics(id: number, updates: Partial<InsertSalesMetrics>): Promise<SalesMetrics | undefined>;
   
   // Marketing Strategies
   getAllMarketingStrategies(): Promise<MarketingStrategy[]>;
@@ -1194,6 +1219,133 @@ export class DatabaseStorage implements IStorage {
       .from(marketingStrategies)
       .where(eq(marketingStrategies.status, status))
       .orderBy(desc(marketingStrategies.createdAt));
+  }
+
+  // Sales History
+  async getAllSalesHistory(): Promise<SalesHistory[]> {
+    return await db.select().from(salesHistory).orderBy(desc(salesHistory.saleDate));
+  }
+
+  async getSalesHistory(id: number): Promise<SalesHistory | undefined> {
+    const [sale] = await db.select().from(salesHistory).where(eq(salesHistory.id, id));
+    return sale || undefined;
+  }
+
+  async createSalesHistory(sale: InsertSalesHistory): Promise<SalesHistory> {
+    const [newSale] = await db.insert(salesHistory).values(sale).returning();
+    return newSale;
+  }
+
+  async updateSalesHistory(id: number, updates: Partial<InsertSalesHistory>): Promise<SalesHistory | undefined> {
+    const [updatedSale] = await db
+      .update(salesHistory)
+      .set(updates)
+      .where(eq(salesHistory.id, id))
+      .returning();
+    return updatedSale || undefined;
+  }
+
+  async deleteSalesHistory(id: number): Promise<boolean> {
+    const result = await db.delete(salesHistory).where(eq(salesHistory.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getSalesHistoryByContact(contactId: number): Promise<SalesHistory[]> {
+    return await db
+      .select()
+      .from(salesHistory)
+      .where(eq(salesHistory.contactId, contactId))
+      .orderBy(desc(salesHistory.saleDate));
+  }
+
+  async getSalesHistoryByRep(salesRepId: number): Promise<SalesHistory[]> {
+    return await db
+      .select()
+      .from(salesHistory)
+      .where(eq(salesHistory.salesRepId, salesRepId))
+      .orderBy(desc(salesHistory.saleDate));
+  }
+
+  // Cancellation History
+  async getAllCancellationHistory(): Promise<CancellationHistory[]> {
+    return await db.select().from(cancellationHistory).orderBy(desc(cancellationHistory.cancellationDate));
+  }
+
+  async getCancellationHistory(id: number): Promise<CancellationHistory | undefined> {
+    const [cancellation] = await db.select().from(cancellationHistory).where(eq(cancellationHistory.id, id));
+    return cancellation || undefined;
+  }
+
+  async createCancellationHistory(cancellation: InsertCancellationHistory): Promise<CancellationHistory> {
+    const [newCancellation] = await db.insert(cancellationHistory).values(cancellation).returning();
+    return newCancellation;
+  }
+
+  async updateCancellationHistory(id: number, updates: Partial<InsertCancellationHistory>): Promise<CancellationHistory | undefined> {
+    const [updatedCancellation] = await db
+      .update(cancellationHistory)
+      .set(updates)
+      .where(eq(cancellationHistory.id, id))
+      .returning();
+    return updatedCancellation || undefined;
+  }
+
+  async deleteCancellationHistory(id: number): Promise<boolean> {
+    const result = await db.delete(cancellationHistory).where(eq(cancellationHistory.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getCancellationHistoryByContact(contactId: number): Promise<CancellationHistory[]> {
+    return await db
+      .select()
+      .from(cancellationHistory)
+      .where(eq(cancellationHistory.contactId, contactId))
+      .orderBy(desc(cancellationHistory.cancellationDate));
+  }
+
+  async getCancellationHistoryByRep(salesRepId: number): Promise<CancellationHistory[]> {
+    return await db
+      .select()
+      .from(cancellationHistory)
+      .where(eq(cancellationHistory.salesRepId, salesRepId))
+      .orderBy(desc(cancellationHistory.cancellationDate));
+  }
+
+  // Sales Metrics
+  async getSalesMetrics(salesRepId?: number, period?: string): Promise<SalesMetrics[]> {
+    const conditions = [];
+    
+    if (salesRepId) {
+      conditions.push(eq(salesMetrics.salesRepId, salesRepId));
+    }
+    
+    if (period) {
+      conditions.push(eq(salesMetrics.period, period));
+    }
+    
+    if (conditions.length > 0) {
+      return await db
+        .select()
+        .from(salesMetrics)
+        .where(and(...conditions))
+        .orderBy(desc(salesMetrics.periodDate));
+    }
+    
+    return await db.select().from(salesMetrics).orderBy(desc(salesMetrics.periodDate));
+  }
+
+  async createSalesMetrics(metrics: InsertSalesMetrics): Promise<SalesMetrics> {
+    const [newMetrics] = await db.insert(salesMetrics).values(metrics).returning();
+    return newMetrics;
+  }
+
+  async updateSalesMetrics(id: number, updates: Partial<InsertSalesMetrics>): Promise<SalesMetrics | undefined> {
+    const [updatedMetrics] = await db
+      .update(salesMetrics)
+      .set(updates)
+      .where(eq(salesMetrics.id, id))
+      .returning();
+    return updatedMetrics || undefined;
   }
 
   // Career Management Implementation
