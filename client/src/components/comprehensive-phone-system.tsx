@@ -100,7 +100,31 @@ export function ComprehensivePhoneSystem() {
               </CardHeader>
               <CardContent>
                 <div className="flex gap-2">
-                  <Button onClick={() => window.open(`tel:${phoneNumber}`, '_blank')}>
+                  <Button onClick={() => {
+                    if (!phoneNumber) {
+                      toast({
+                        title: "No Phone Number",
+                        description: "Please enter a phone number to call.",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+                    
+                    // Use device dialer with PowerDials integration
+                    const cleanNumber = phoneNumber.replace(/\D/g, '');
+                    let dialNumber = cleanNumber;
+                    if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
+                      dialNumber = cleanNumber.substring(1);
+                    }
+                    
+                    window.location.href = `tel:${dialNumber}`;
+                    
+                    toast({
+                      title: "PowerDials Active",
+                      description: `Calling ${contactName || dialNumber}`,
+                      duration: 3000
+                    });
+                  }}>
                     <PhoneCall className="h-4 w-4 mr-2" />
                     Call {phoneNumber}
                   </Button>

@@ -44,50 +44,41 @@ export default function ClickToCallButton({
         dialNumber = cleanNumber.substring(1);
       }
       
-      // Call POWERDIALS API for enhanced calling experience
-      const response = await apiRequest("POST", "/api/powerdials/call", {
-        phoneNumber: dialNumber,
-        contactName: contactName || "Unknown Contact",
-        userId: 1
-      });
-
-      if (response.ok) {
-        const callData = await response.json();
+      // Use device dialer with PowerDials integration fallback
+      try {
+        // Try PowerDials API with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
         
-        // Try POWERDIALS Pro web dialer first (if available)
-        if (callData.webDialerUrl) {
-          const dialerWindow = window.open(
-            callData.webDialerUrl,
-            'POWERDIALSDialer',
-            'width=800,height=600,scrollbars=yes,resizable=yes'
-          );
-          
-          if (dialerWindow) {
-            toast({
-              title: "POWERDIALS Pro",
-              description: `Professional dialer opened for ${contactName || dialNumber}`,
-              duration: 4000,
-            });
-          } else {
-            // Popup blocked, fallback to device dialer
-            window.location.href = `tel:${dialNumber}`;
-            toast({
-              title: "Device Dialer",
-              description: `Calling ${contactName || dialNumber}`,
-              duration: 3000,
-            });
-          }
-        } else {
-          // Standard device dialer
+        const response = await apiRequest("POST", "/api/powerdials/call", {
+          phoneNumber: dialNumber,
+          contactName: contactName || "Unknown Contact",
+          userId: 1
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (response && response.ok) {
+          // PowerDials API success - use device dialer with logging
           window.location.href = `tel:${dialNumber}`;
+          
           toast({
-            title: "Call Ready",
-            description: `Calling ${contactName || dialNumber}`,
+            title: "PowerDials Active",
+            description: `Call logged and initiated for ${contactName || dialNumber}`,
             duration: 3000,
           });
+        } else {
+          throw new Error('PowerDials API error');
         }
-      } else {
-        throw new Error('POWERDIALS API error');
+      } catch (apiError) {
+        // Fallback to direct device dialer
+        window.location.href = `tel:${dialNumber}`;
+        
+        toast({
+          title: "Call Ready",
+          description: `Calling ${contactName || dialNumber}`,
+          duration: 3000,
+        });
       }
       
     } catch (error) {
