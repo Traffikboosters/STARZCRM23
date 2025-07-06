@@ -367,6 +367,30 @@ export default function CRMView() {
                     )}
                   </div>
 
+                  {/* Disposition Display */}
+                  {contact.disposition && (
+                    <div className="flex items-center text-sm">
+                      <Badge 
+                        variant={
+                          contact.disposition === 'interested' ? 'default' :
+                          contact.disposition === 'sold' ? 'default' :
+                          contact.disposition === 'not_interested' ? 'destructive' :
+                          contact.disposition === 'callback' ? 'secondary' :
+                          contact.disposition === 'contacted' ? 'outline' :
+                          'outline'
+                        }
+                        className="text-xs"
+                      >
+                        {contact.disposition.replace('_', ' ').toUpperCase()}
+                      </Badge>
+                      {contact.dispositionDate && (
+                        <span className="text-xs text-gray-500 ml-2">
+                          {format(new Date(contact.dispositionDate), "MMM d")}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
                   {/* Action Buttons Grid */}
                   <div className="grid grid-cols-4 gap-1 mt-3" onClick={(e) => e.stopPropagation()}>
                     {/* Call Button */}
