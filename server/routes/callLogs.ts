@@ -38,6 +38,54 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/analytics', async (req, res) => {
+  const { userId } = req.query;
+  if (!userId) return res.status(400).json({ error: 'Missing userId' });
+
+  try {
+    // Get all call logs for the user
+    const logs = await db.select().from(callLogs)
+      .where(eq(callLogs.userId, parseInt(userId as string)))
+      .orderBy(desc(callLogs.startTime));
+
+    // Group by day for calls per day chart
+    const byDay = logs.reduce((acc, log) => {
+      const date = log.callDate;
+      const existing = acc.find(item => item.date === date);
+      if (existing) {
+        existing.count++;
+      } else {
+        acc.push({ date, count: 1 });
+      }
+      return acc;
+    }, [] as { date: string; count: number }[]);
+
+    // Group by outcome for pie chart
+    const byOutcome = logs.reduce((acc, log) => {
+      const outcome = log.outcome || 'unknown';
+      const existing = acc.find(item => item.outcome === outcome);
+      if (existing) {
+        existing.count++;
+      } else {
+        acc.push({ outcome, count: 1 });
+      }
+      return acc;
+    }, [] as { outcome: string; count: number }[]);
+
+    // Sort by date for consistent display
+    byDay.sort((a, b) => a.date.localeCompare(b.date));
+
+    res.json({
+      byDay,
+      byOutcome,
+      totalCalls: logs.length
+    });
+  } catch (error) {
+    console.error('Error fetching call analytics:', error);
+    res.status(500).json({ error: 'Error fetching call analytics' });
+  }
+});
+
 router.post('/', async (req, res) => {
   const { contact, number, timestamp, outcome, userId, contactId, contactName, phoneNumber, duration, notes } = req.body;
 

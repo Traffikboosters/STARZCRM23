@@ -7,13 +7,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Phone, Clock, User, Filter, RefreshCw } from 'lucide-react';
+import { Phone, Clock, User, Filter, RefreshCw, BarChart3 } from 'lucide-react';
+import CallAnalytics from '../components/CallAnalytics';
 
 export default function CRMPage() {
   const [callLogs, setCallLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedContact, setSelectedContact] = useState(null);
   const [filter, setFilter] = useState({ contact: '', startDate: '', endDate: '' });
+  const [activeTab, setActiveTab] = useState('dialer');
   const { toast } = useToast();
 
   // Get current user
@@ -139,7 +141,41 @@ export default function CRMPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveTab('dialer')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'dialer'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <div className="flex items-center space-x-2">
+              <Phone className="h-4 w-4" />
+              <span>PowerDials & Call History</span>
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'analytics'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <div className="flex items-center space-x-2">
+              <BarChart3 className="h-4 w-4" />
+              <span>Call Analytics</span>
+            </div>
+          </button>
+        </nav>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'dialer' && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Contact Selection & PowerDials */}
         <div className="space-y-4">
           {/* Contact Selection */}
@@ -288,7 +324,15 @@ export default function CRMPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
+        </div>
+      )}
+
+      {/* Analytics Tab */}
+      {activeTab === 'analytics' && currentUser?.id && (
+        <div className="space-y-6">
+          <CallAnalytics userId={currentUser.id} />
+        </div>
+      )}
     </div>
   );
 }
