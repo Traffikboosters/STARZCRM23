@@ -1263,6 +1263,63 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  // PowerDials token endpoint (aliases MightyCall)
+  app.get('/api/powerdials/token', async (req, res) => {
+    try {
+      // Check if OAuth credentials are available
+      if (!process.env.MIGHTYCALL_CLIENT_ID || !process.env.MIGHTYCALL_CLIENT_SECRET) {
+        console.log('🔑 PowerDials OAuth credentials not found, using fallback token method');
+        
+        // Fallback to existing secret key method
+        const fallbackToken = process.env.MIGHTYCALL_SECRET_KEY || '33a20a35-459d-46bf-9645-5e3ddd8b8966';
+        
+        return res.json({
+          success: true,
+          token: fallbackToken,
+          method: 'fallback',
+          timestamp: new Date().toISOString()
+        });
+      }
+      
+      // Use OAuth client credentials flow
+      const axios = require('axios');
+      const response = await axios.post('https://api.mightycall.com/oauth/token', {
+        grant_type: 'client_credentials',
+        client_id: process.env.MIGHTYCALL_CLIENT_ID,
+        client_secret: process.env.MIGHTYCALL_CLIENT_SECRET
+      });
+
+      const token = response.data.access_token;
+      
+      if (!token) {
+        throw new Error('No access token received from OAuth response');
+      }
+
+      console.log('🔑 PowerDials OAuth token obtained successfully');
+      
+      res.json({
+        success: true,
+        token: token,
+        method: 'oauth',
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('❌ PowerDials token generation failed:', error);
+      
+      // Fallback to secret key method on OAuth failure
+      const fallbackToken = process.env.MIGHTYCALL_SECRET_KEY || '33a20a35-459d-46bf-9645-5e3ddd8b8966';
+      
+      res.json({
+        success: true,
+        token: fallbackToken,
+        method: 'fallback_on_error',
+        error: (error as Error).message,
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   // POWERDIALS API integration
   app.post('/api/powerdials/call', async (req, res) => {
     try {

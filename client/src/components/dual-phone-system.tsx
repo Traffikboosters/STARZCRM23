@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { mightyCallClient } from "@/lib/mightycall-client";
 import MightyCallDialer from "./mightycall-dialer";
+import PowerDials from "./powerdials-component";
 
 interface PhoneSystemStatus {
   configured: boolean;
@@ -194,10 +195,11 @@ export default function DualPhoneSystem() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Dashboard</TabsTrigger>
           <TabsTrigger value="sdk-dialer">SDK Dialer</TabsTrigger>
-          <TabsTrigger value="powerdials">PowerDials Control</TabsTrigger>
+          <TabsTrigger value="powerdials">PowerDials</TabsTrigger>
+          <TabsTrigger value="powerdials-control">Control Panel</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
@@ -347,11 +349,15 @@ export default function DualPhoneSystem() {
         </TabsContent>
 
         <TabsContent value="powerdials" className="space-y-4">
+          <PowerDials />
+        </TabsContent>
+
+        <TabsContent value="powerdials-control" className="space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Zap className="h-5 w-5 text-blue-600" />
-                PowerDials Integration
+                PowerDials Integration Control
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
