@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Users, DollarSign, Calendar, TrendingUp, Award, Building2, Phone, Mail, UserPlus, Trash2, Edit, Send, Package, Copy, CheckCircle, User, Shield, Building, CreditCard } from 'lucide-react';
+import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import UserInvitation from '@/components/user-invitation';
 import EmployeeOnboarding from '@/components/employee-onboarding';
 
@@ -377,6 +378,22 @@ export default function HRPortal() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6 overflow-y-auto h-full">
       <div className="space-y-6">
+        {/* Traffik Boosters Header */}
+        <div className="flex items-center justify-center mb-6">
+          <div className="flex items-center gap-4">
+            <img 
+              src={traffikBoostersLogo} 
+              alt="Traffik Boosters" 
+              className="h-20 w-auto object-contain" 
+              style={{ imageRendering: 'crisp-edges' }}
+            />
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-black">HR PORTAL</h1>
+              <p className="text-lg font-semibold text-black">More Traffik! More Sales!</p>
+            </div>
+          </div>
+        </div>
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>

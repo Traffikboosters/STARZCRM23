@@ -15,8 +15,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { PlusCircle, TrendingUp, TrendingDown, Users, Calendar, DollarSign, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-// Using relative path to the generated icon in root
-const trafficBoosters = "/generated-icon.png";
+import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { insertSalesHistorySchema, insertCancellationHistorySchema } from "@shared/schema";
 
 type SalesHistory = {
@@ -185,10 +184,25 @@ export default function SalesHistory() {
 
   return (
     <div className="space-y-6">
+      {/* Traffik Boosters Header */}
+      <div className="flex items-center justify-center mb-6">
+        <div className="flex items-center gap-4">
+          <img 
+            src={traffikBoostersLogo} 
+            alt="Traffik Boosters" 
+            className="h-20 w-auto object-contain" 
+            style={{ imageRendering: 'crisp-edges' }}
+          />
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-black">SALES HISTORY</h1>
+            <p className="text-lg font-semibold text-black">More Traffik! More Sales!</p>
+          </div>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <img src={trafficBoosters} alt="Traffik Boosters" className="h-12 w-12" />
           <div>
             <h1 className="text-3xl font-bold">Sales History</h1>
             <p className="text-muted-foreground">Track sales and cancellations</p>

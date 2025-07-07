@@ -30,6 +30,7 @@ import {
   Search,
   Star
 } from "lucide-react";
+import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 
 interface PackagePricing {
   tier1: { name: string; price: number; description: string; features: string[] };
@@ -585,6 +586,22 @@ export default function ServicePackages() {
 
   return (
     <div className="space-y-6">
+      {/* Traffik Boosters Header */}
+      <div className="flex items-center justify-center mb-6">
+        <div className="flex items-center gap-4">
+          <img 
+            src={traffikBoostersLogo} 
+            alt="Traffik Boosters" 
+            className="h-20 w-auto object-contain" 
+            style={{ imageRendering: 'crisp-edges' }}
+          />
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-black">SERVICE PACKAGES</h1>
+            <p className="text-lg font-semibold text-black">More Traffik! More Sales!</p>
+          </div>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Package className="h-6 w-6" />
