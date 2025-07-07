@@ -270,6 +270,29 @@ export default function Dashboard() {
         );
 
       default:
+        // If activeTab is not empty and not recognized, show error message
+        if (activeTab && activeTab !== "dashboard") {
+          return (
+            <div className="flex items-center justify-center h-64">
+              <div className="text-center">
+                <div className="mb-4">
+                  <svg className="mx-auto h-12 w-12 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.728-.833-2.498 0L4.316 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-medium text-foreground mb-2">Unknown View</h3>
+                <p className="text-muted-foreground mb-4">The requested page "{activeTab}" could not be found.</p>
+                <button 
+                  onClick={() => setActiveTab("dashboard")} 
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+                >
+                  Return to Dashboard
+                </button>
+              </div>
+            </div>
+          );
+        }
+        // Default to Smart Calendar Integration
         return (
           <ErrorBoundary fallback={<div>Something went wrong in the smart calendar.</div>}>
             <SmartCalendarIntegration />
