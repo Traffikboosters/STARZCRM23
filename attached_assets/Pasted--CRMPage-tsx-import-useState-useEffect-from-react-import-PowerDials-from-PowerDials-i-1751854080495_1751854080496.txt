@@ -1,0 +1,110 @@
+// CRMPage.tsx
+import { useState, useEffect } from 'react';
+import PowerDials from './PowerDials';
+import CallAnalytics from './CallAnalytics';
+
+export default function CRMPage({ currentUser, selectedContact }) {
+  const [callLogs, setCallLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState({ contact: '', startDate: '', endDate: '' });
+
+  useEffect(() => {
+    const fetchCallLogs = async () => {
+      try {
+        const params = new URLSearchParams({ userId: currentUser.id });
+        if (filter.contact) params.append('contact', filter.contact);
+        if (filter.startDate) params.append('startDate', filter.startDate);
+        if (filter.endDate) params.append('endDate', filter.endDate);
+
+        const res = await fetch(`/api/call-logs?${params.toString()}`);
+        const data = await res.json();
+        setCallLogs(data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch call logs:", error);
+        setLoading(false);
+      }
+    };
+
+    if (currentUser?.id) fetchCallLogs();
+  }, [currentUser, filter]);
+
+  const handleLogCall = async (log) => {
+    try {
+      const res = await fetch('/api/call-logs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...log, userId: currentUser.id }),
+      });
+
+      if (res.ok) {
+        const updatedLogs = [log, ...callLogs];
+        setCallLogs(updatedLogs);
+      }
+    } catch (err) {
+      console.error("Failed to save call log:", err);
+    }
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilter((prev) => ({ ...prev, [name]: value }));
+  };
+
+  return (
+    <div className="p-4 grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="xl:col-span-1">
+        <PowerDials contact={selectedContact} onCallLog={handleLogCall} />
+        <div className="mt-6">
+          <CallAnalytics userId={currentUser.id} />
+        </div>
+      </div>
+
+      <div className="xl:col-span-2 bg-white rounded-2xl shadow p-4">
+        <h2 className="text-xl font-bold mb-4">Call History</h2>
+
+        <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-2">
+          <input
+            type="text"
+            name="contact"
+            placeholder="Filter by contact"
+            value={filter.contact}
+            onChange={handleFilterChange}
+            className="w-full border px-2 py-1 rounded"
+          />
+          <input
+            type="date"
+            name="startDate"
+            value={filter.startDate}
+            onChange={handleFilterChange}
+            className="w-full border px-2 py-1 rounded"
+          />
+          <input
+            type="date"
+            name="endDate"
+            value={filter.endDate}
+            onChange={handleFilterChange}
+            className="w-full border px-2 py-1 rounded"
+          />
+        </div>
+
+        {loading ? (
+          <p>Loading call logs...</p>
+        ) : callLogs.length === 0 ? (
+          <p>No calls logged yet.</p>
+        ) : (
+          <ul className="space-y-2">
+            {callLogs.map((log, i) => (
+              <li key={i} className="border p-3 rounded-xl">
+                <div className="font-semibold">{log.contact}</div>
+                <div className="text-sm text-gray-500">{log.number}</div>
+                <div className="text-sm">{new Date(log.timestamp).toLocaleString()}</div>
+                <div className="text-sm">Outcome: {log.outcome}</div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
