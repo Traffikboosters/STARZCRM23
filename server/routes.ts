@@ -46,6 +46,7 @@ import { storage } from "./storage";
 import { mightyCallNativeAPI } from "./mightycall-native";
 import { mightyCallCoreFixed } from "./mightycall-core-fixed";
 import { powerDialsIntegration } from "./powerdials-integration";
+import callLogsRouter from "./routes/callLogs.js";
 
 // Initialize POWERDIALS connection immediately
 console.log('🔥 INITIALIZING MIGHTYCALL INTEGRATION...');
@@ -254,6 +255,9 @@ async function sendReportEmail(params: {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Mount call logs router with Drizzle implementation
+  app.use('/api/call-logs', callLogsRouter);
+
   // Initialize Stripe
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
     apiVersion: "2023-10-16",
