@@ -416,23 +416,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = parseInt(req.query.limit as string) || 50; // Default to 50 records
       const offset = (page - 1) * limit;
       
-      // Use the new optimized paginated query instead of slicing in memory
-      const allContacts = await storage.getAllContacts();
-      const total = allContacts.length;
-      
-      // For small pagination, use memory slicing; for large datasets, use database pagination
-      let paginatedContacts;
-      if (limit <= 100 && total > 1000) {
-        // Use database-level pagination for better performance
-        paginatedContacts = await storage.getContactsPaginated(limit, offset);
-      } else {
-        // Use memory pagination for smaller datasets
-        paginatedContacts = allContacts.slice(offset, offset + limit);
-      }
+      // Use database-level pagination for performance
+      const [paginatedContacts, total] = await Promise.all([
+        storage.getContactsPaginated(limit, offset),
+        storage.getContactsCount()
+      ]);
       
       const responseTime = Date.now() - startTime;
-      if (responseTime > 1000) {
-        console.log(`⚠️ Slow query detected: getAllContacts took ${responseTime}ms`);
+      if (responseTime > 500) {
+        console.log(`⚠️ Slow contacts query took ${responseTime}ms`);
       }
       
       // Log performance for monitoring

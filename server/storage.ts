@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { eq, and, or, like, gte, lte, desc } from "drizzle-orm";
+import { eq, and, or, like, gte, lte, desc, sql } from "drizzle-orm";
 import { 
   users, companies, contacts, events, files, automations, scrapingJobs, 
   chatMessages, chatConversations, callLogs, campaigns, leadAllocations,
@@ -70,6 +70,7 @@ export interface IStorage {
   // Contacts
   getAllContacts(): Promise<Contact[]>;
   getContactsPaginated(limit?: number, offset?: number): Promise<Contact[]>;
+  getContactsCount(): Promise<number>;
   getContact(id: number): Promise<Contact | undefined>;
   createContact(contact: InsertContact & { createdBy: number }): Promise<Contact>;
   updateContact(id: number, updates: Partial<InsertContact>): Promise<Contact | undefined>;
@@ -412,20 +413,27 @@ export class DatabaseStorage implements IStorage {
     return company || undefined;
   }
 
-  // Contacts - Optimized for performance
+  // Contacts - Optimized for performance with limited initial load
   async getAllContacts(): Promise<Contact[]> {
-    // Add performance monitoring
+    // Load only recent 100 contacts for performance
     const startTime = Date.now();
     
-    // Optimized query with descending order for recent contacts first
-    const contactResults = await db.select().from(contacts).orderBy(desc(contacts.createdAt));
+    const contactResults = await db.select().from(contacts)
+      .orderBy(desc(contacts.createdAt))
+      .limit(100);
     
     const queryTime = Date.now() - startTime;
-    if (queryTime > 500) {
-      console.log(`⚠️ Slow query detected: getAllContacts took ${queryTime}ms`);
+    if (queryTime > 200) {
+      console.log(`⚠️ Limited query took ${queryTime}ms for 100 records`);
     }
     
     return contactResults;
+  }
+
+  // Get total count separately for pagination
+  async getContactsCount(): Promise<number> {
+    const allContacts = await db.select().from(contacts);
+    return allContacts.length;
   }
 
   // Add paginated version for better performance
