@@ -43,6 +43,9 @@ app.use((req, res, next) => {
   
   const server = await registerRoutes(app);
 
+  // Mount call logs route
+  app.use('/api/call-logs', require('./routes/callLogs'));
+
   // Mount MightyCall routes - handled in registerRoutes
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

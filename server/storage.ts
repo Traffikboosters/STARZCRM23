@@ -228,6 +228,13 @@ export interface IStorage {
   createSalesMetrics(metrics: InsertSalesMetrics): Promise<SalesMetrics>;
   updateSalesMetrics(id: number, updates: Partial<InsertSalesMetrics>): Promise<SalesMetrics | undefined>;
   
+  // Call Logs
+  getCallLogs(): Promise<CallLog[]>;
+  getCallLogsByContact(contactId: number): Promise<CallLog[]>;
+  getCallLogsByUser(userId: number): Promise<CallLog[]>;
+  createCallLog(callLog: InsertCallLog): Promise<CallLog>;
+  deleteCallLog(id: number): Promise<boolean>;
+  
   // Marketing Strategies
   getAllMarketingStrategies(): Promise<MarketingStrategy[]>;
   getMarketingStrategyById(id: number): Promise<MarketingStrategy | undefined>;
@@ -1937,6 +1944,33 @@ export class DatabaseStorage implements IStorage {
 
   async getServicePackagesByCategory(category: string): Promise<ServicePackage[]> {
     return await db.select().from(servicePackages).where(eq(servicePackages.category, category));
+  }
+
+  // Call Logs
+  async getCallLogs(): Promise<CallLog[]> {
+    return await db.select().from(callLogs).orderBy(desc(callLogs.createdAt));
+  }
+
+  async getCallLogsByContact(contactId: number): Promise<CallLog[]> {
+    return await db.select().from(callLogs)
+      .where(eq(callLogs.contactId, contactId))
+      .orderBy(desc(callLogs.createdAt));
+  }
+
+  async getCallLogsByUser(userId: number): Promise<CallLog[]> {
+    return await db.select().from(callLogs)
+      .where(eq(callLogs.userId, userId))
+      .orderBy(desc(callLogs.createdAt));
+  }
+
+  async createCallLog(callLogData: InsertCallLog): Promise<CallLog> {
+    const [callLog] = await db.insert(callLogs).values(callLogData).returning();
+    return callLog;
+  }
+
+  async deleteCallLog(id: number): Promise<boolean> {
+    const result = await db.delete(callLogs).where(eq(callLogs.id, id));
+    return (result.rowCount ?? 0) > 0;
   }
 }
 

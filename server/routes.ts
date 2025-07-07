@@ -6765,6 +6765,79 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  // Call Logs API endpoints
+  app.get("/api/call-logs", async (req, res) => {
+    try {
+      const callLogs = await storage.getCallLogs();
+      res.json(callLogs);
+    } catch (error) {
+      console.error("Error fetching call logs:", error);
+      res.status(500).json({ error: "Failed to fetch call logs" });
+    }
+  });
+
+  app.post("/api/call-logs", async (req, res) => {
+    try {
+      const callLogData = insertCallLogSchema.parse(req.body);
+      const callLog = await storage.createCallLog(callLogData);
+      
+      // Broadcast call log to WebSocket clients
+      const message = {
+        type: 'call_logged',
+        data: {
+          contactName: callLogData.contactName || 'Unknown',
+          phoneNumber: callLogData.phoneNumber,
+          timestamp: new Date().toISOString(),
+          outcome: callLogData.outcome || 'completed'
+        }
+      };
+      
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify(message));
+        }
+      });
+      
+      res.status(201).json(callLog);
+    } catch (error) {
+      console.error("Error creating call log:", error);
+      res.status(500).json({ error: "Failed to create call log" });
+    }
+  });
+
+  app.get("/api/call-logs/contact/:contactId", async (req, res) => {
+    try {
+      const contactId = parseInt(req.params.contactId);
+      const callLogs = await storage.getCallLogsByContact(contactId);
+      res.json(callLogs);
+    } catch (error) {
+      console.error("Error fetching call logs for contact:", error);
+      res.status(500).json({ error: "Failed to fetch call logs for contact" });
+    }
+  });
+
+  app.get("/api/call-logs/user/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const callLogs = await storage.getCallLogsByUser(userId);
+      res.json(callLogs);
+    } catch (error) {
+      console.error("Error fetching call logs for user:", error);
+      res.status(500).json({ error: "Failed to fetch call logs for user" });
+    }
+  });
+
+  app.delete("/api/call-logs/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteCallLog(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting call log:", error);
+      res.status(500).json({ error: "Failed to delete call log" });
+    }
+  });
+
   // MightyCall routes integrated above
 
   console.log('🚀 WebSocket Server initialized with optimized connection handling');
