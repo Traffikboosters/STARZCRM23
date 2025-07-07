@@ -2,12 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import PowerDials from '../components/powerdials-component';
-import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Phone, Clock, User, Filter, RefreshCw, BarChart3 } from 'lucide-react';
 import CallAnalytics from '../components/CallAnalytics';
 
 export default function CRMPage() {
@@ -15,8 +9,6 @@ export default function CRMPage() {
   const [loading, setLoading] = useState(true);
   const [selectedContact, setSelectedContact] = useState(null);
   const [filter, setFilter] = useState({ contact: '', startDate: '', endDate: '' });
-  const [activeTab, setActiveTab] = useState('dialer');
-  const { toast } = useToast();
 
   // Get current user
   const { data: currentUser } = useQuery({
@@ -33,7 +25,6 @@ export default function CRMPage() {
       if (!currentUser?.id) return;
       
       try {
-        setLoading(true);
         const params = new URLSearchParams({ userId: currentUser.id.toString() });
         if (filter.contact) params.append('contact', filter.contact);
         if (filter.startDate) params.append('startDate', filter.startDate);
@@ -46,46 +37,31 @@ export default function CRMPage() {
       } catch (error) {
         console.error("Failed to fetch call logs:", error);
         setLoading(false);
-        toast({
-          title: "Error",
-          description: "Failed to fetch call logs",
-          variant: "destructive"
-        });
       }
     };
 
     fetchCallLogs();
-  }, [currentUser, filter, toast]);
+  }, [currentUser, filter]);
 
   const handleLogCall = async (log) => {
     try {
       const res = await fetch('/api/call-logs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          ...log, 
-          userId: currentUser.id,
-          contact: selectedContact?.firstName + ' ' + selectedContact?.lastName || log.contact,
-          contactId: selectedContact?.id || null
-        }),
+        body: JSON.stringify({ ...log, userId: currentUser.id }),
       });
 
       if (res.ok) {
-        const newCallLog = await res.json();
-        setCallLogs(prev => [newCallLog, ...prev]);
-        toast({
-          title: "Call Logged",
-          description: `Call with ${log.contact || selectedContact?.firstName} logged successfully`,
-        });
+        const updatedLogs = [log, ...callLogs];
+        setCallLogs(updatedLogs);
       }
     } catch (err) {
       console.error("Failed to save call log:", err);
-      toast({
-        title: "Error",
-        description: "Failed to save call log",
-        variant: "destructive"
-      });
     }
+  };
+
+  const handleContactSelect = (contact) => {
+    setSelectedContact(contact);
   };
 
   const handleFilterChange = (e) => {
@@ -93,246 +69,132 @@ export default function CRMPage() {
     setFilter((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleContactSelect = (contact) => {
-    setSelectedContact(contact);
-    toast({
-      title: "Contact Selected",
-      description: `Selected ${contact.firstName} ${contact.lastName} for calling`,
-    });
-  };
-
-  const clearFilters = () => {
-    setFilter({ contact: '', startDate: '', endDate: '' });
-  };
-
-  const formatCallDuration = (duration) => {
-    if (!duration) return 'N/A';
-    const minutes = Math.floor(duration / 60);
-    const seconds = duration % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-
-  const getOutcomeColor = (outcome) => {
-    switch (outcome) {
-      case 'completed':
-      case 'connected':
-        return 'bg-green-100 text-green-800';
-      case 'no_answer':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'busy':
-      case 'failed':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
+  if (!currentUser) {
+    return <div className="p-4">Loading...</div>;
+  }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">CRM PowerDials Integration</h1>
-          <p className="text-gray-600">Complete contact management with integrated calling system</p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Phone className="h-5 w-5 text-primary" />
-          <span className="text-sm font-medium">PowerDials Ready</span>
-        </div>
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
-          <button
-            onClick={() => setActiveTab('dialer')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'dialer'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            <div className="flex items-center space-x-2">
-              <Phone className="h-4 w-4" />
-              <span>PowerDials & Call History</span>
-            </div>
-          </button>
-          <button
-            onClick={() => setActiveTab('analytics')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'analytics'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            <div className="flex items-center space-x-2">
-              <BarChart3 className="h-4 w-4" />
-              <span>Call Analytics</span>
-            </div>
-          </button>
-        </nav>
-      </div>
-
-      {/* Tab Content */}
-      {activeTab === 'dialer' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Contact Selection & PowerDials */}
-        <div className="space-y-4">
-          {/* Contact Selection */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <User className="h-5 w-5" />
-                <span>Select Contact to Call</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {selectedContact ? (
-                <div className="p-4 bg-primary/10 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold">{selectedContact.firstName} {selectedContact.lastName}</h3>
-                      <p className="text-sm text-gray-600">{selectedContact.phone}</p>
-                      <p className="text-xs text-gray-500">{selectedContact.company}</p>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => setSelectedContact(null)}>
-                      Change
-                    </Button>
-                  </div>
+    <div className="p-4 grid grid-cols-1 xl:grid-cols-3 gap-6">
+      {/* Left Column - PowerDials and Analytics */}
+      <div className="xl:col-span-1 space-y-6">
+        {/* Contact Selection */}
+        <div className="bg-white rounded-2xl shadow p-4">
+          <h2 className="text-xl font-bold mb-4">Select Contact</h2>
+          {selectedContact ? (
+            <div className="p-4 bg-blue-50 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold">{selectedContact.firstName} {selectedContact.lastName}</h3>
+                  <p className="text-sm text-gray-600">{selectedContact.phone}</p>
+                  <p className="text-xs text-gray-500">{selectedContact.company}</p>
                 </div>
-              ) : (
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {contactsData?.contacts?.slice(0, 10).map((contact) => (
-                    <div
-                      key={contact.id}
-                      className="p-2 border rounded cursor-pointer hover:bg-gray-50"
-                      onClick={() => handleContactSelect(contact)}
-                    >
-                      <div className="font-medium text-sm">{contact.firstName} {contact.lastName}</div>
-                      <div className="text-xs text-gray-500">{contact.phone} • {contact.company}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* PowerDials Component */}
-          <Card>
-            <CardHeader>
-              <CardTitle>PowerDials Integration</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PowerDials 
-                contact={selectedContact} 
-                onCallLog={handleLogCall} 
-              />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Call History */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Clock className="h-5 w-5" />
-                <span>Call History</span>
-              </div>
-              <Button variant="outline" size="sm" onClick={clearFilters}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Clear Filters
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {/* Filters */}
-            <div className="mb-4 space-y-2">
-              <div className="flex items-center space-x-2 mb-2">
-                <Filter className="h-4 w-4" />
-                <span className="text-sm font-medium">Filters</span>
-              </div>
-              <Input
-                type="text"
-                name="contact"
-                placeholder="Filter by contact name"
-                value={filter.contact}
-                onChange={handleFilterChange}
-              />
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  type="date"
-                  name="startDate"
-                  value={filter.startDate}
-                  onChange={handleFilterChange}
-                />
-                <Input
-                  type="date"
-                  name="endDate"
-                  value={filter.endDate}
-                  onChange={handleFilterChange}
-                />
+                <button 
+                  onClick={() => setSelectedContact(null)}
+                  className="text-sm px-3 py-1 bg-white border rounded hover:bg-gray-50"
+                >
+                  Change
+                </button>
               </div>
             </div>
-
-            {/* Call Logs List */}
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {loading ? (
-                <div className="text-center py-4">
-                  <div className="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2" />
-                  <p className="text-sm text-gray-600">Loading call logs...</p>
+          ) : (
+            <div className="space-y-2 max-h-40 overflow-y-auto">
+              {contactsData?.contacts?.slice(0, 10).map((contact) => (
+                <div
+                  key={contact.id}
+                  className="p-2 border rounded cursor-pointer hover:bg-gray-50"
+                  onClick={() => handleContactSelect(contact)}
+                >
+                  <div className="font-medium text-sm">{contact.firstName} {contact.lastName}</div>
+                  <div className="text-xs text-gray-500">{contact.phone} • {contact.company}</div>
                 </div>
-              ) : callLogs.length === 0 ? (
-                <div className="text-center py-8">
-                  <Phone className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-500">No calls logged yet</p>
-                  <p className="text-sm text-gray-400">Start making calls to see them here</p>
-                </div>
-              ) : (
-                callLogs.map((log, i) => (
-                  <div key={log.id || i} className="border rounded-lg p-3 hover:bg-gray-50">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <h3 className="font-semibold text-sm">
-                            {log.contact || `${log.contactId ? 'Contact ID: ' + log.contactId : 'Unknown'}`}
-                          </h3>
-                          <Badge className={getOutcomeColor(log.outcome || log.dialResult)}>
-                            {log.outcome || log.dialResult || 'Unknown'}
-                          </Badge>
-                        </div>
-                        <div className="text-xs text-gray-600 space-y-1">
-                          <div className="flex items-center space-x-4">
-                            <span>📞 {log.phoneNumber}</span>
-                            <span>⏱️ {formatCallDuration(log.duration)}</span>
-                          </div>
-                          <div>
-                            🕒 {new Date(log.startTime || log.dialTimestamp).toLocaleString()}
-                          </div>
-                          {log.notes && (
-                            <div className="text-gray-500 italic">"{log.notes}"</div>
-                          )}
-                        </div>
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        #{log.id}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
+              ))}
             </div>
-          </CardContent>
-        </Card>
+          )}
         </div>
-      )}
 
-      {/* Analytics Tab */}
-      {activeTab === 'analytics' && currentUser?.id && (
-        <div className="space-y-6">
+        {/* PowerDials Component */}
+        <PowerDials contact={selectedContact} onCallLog={handleLogCall} />
+        
+        {/* Call Analytics */}
+        <div className="mt-6">
           <CallAnalytics userId={currentUser.id} />
         </div>
-      )}
+      </div>
+
+      {/* Right Column - Call History */}
+      <div className="xl:col-span-2 bg-white rounded-2xl shadow p-4">
+        <h2 className="text-xl font-bold mb-4">Call History</h2>
+
+        {/* Filters */}
+        <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-2">
+          <input
+            type="text"
+            name="contact"
+            placeholder="Filter by contact"
+            value={filter.contact}
+            onChange={handleFilterChange}
+            className="w-full border px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="date"
+            name="startDate"
+            value={filter.startDate}
+            onChange={handleFilterChange}
+            className="w-full border px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="date"
+            name="endDate"
+            value={filter.endDate}
+            onChange={handleFilterChange}
+            className="w-full border px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Call Logs */}
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2" />
+            <p className="text-gray-600">Loading call logs...</p>
+          </div>
+        ) : callLogs.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500 text-lg">No calls logged yet.</p>
+            <p className="text-gray-400">Start making calls to see them here</p>
+          </div>
+        ) : (
+          <ul className="space-y-3">
+            {callLogs.map((log, i) => (
+              <li key={log.id || i} className="border border-gray-200 p-4 rounded-xl hover:bg-gray-50 transition-colors">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                  <div>
+                    <div className="font-semibold text-gray-900">
+                      {log.notes?.replace('Call with ', '') || `Contact ID: ${log.contactId}` || 'Unknown Contact'}
+                    </div>
+                    <div className="text-sm text-gray-500">{log.phoneNumber}</div>
+                  </div>
+                  <div className="text-sm">
+                    <div className="text-gray-700">{new Date(log.startTime).toLocaleDateString()}</div>
+                    <div className="text-gray-500">{new Date(log.startTime).toLocaleTimeString()}</div>
+                  </div>
+                  <div className="text-sm">
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                      log.outcome === 'completed' ? 'bg-green-100 text-green-800' :
+                      log.outcome === 'no_answer' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {log.outcome || log.dialResult || 'Unknown'}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {log.duration ? `${Math.floor(log.duration / 60)}:${(log.duration % 60).toString().padStart(2, '0')}` : 'N/A'}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
