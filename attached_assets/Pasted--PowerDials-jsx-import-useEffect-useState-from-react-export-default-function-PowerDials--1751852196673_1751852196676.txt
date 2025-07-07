@@ -1,0 +1,74 @@
+// PowerDials.jsx
+import { useEffect, useState } from 'react';
+
+export default function PowerDials({ contact = null, onCallLog = () => {} }) {
+  const [micAllowed, setMicAllowed] = useState(false);
+  const [dialerReady, setDialerReady] = useState(false);
+  const [callInProgress, setCallInProgress] = useState(false);
+
+  useEffect(() => {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(() => setMicAllowed(true))
+      .catch(() => alert("Microphone access is required to make calls."));
+  }, []);
+
+  useEffect(() => {
+    if (!micAllowed) return;
+
+    const loadSDK = async () => {
+      try {
+        const script = document.createElement("script");
+        script.src = "https://cdn.mightycall.com/sdk.js";
+        script.onload = async () => {
+          const res = await fetch("/api/powerdials/token");
+          const { token } = await res.json();
+
+          window.PowerDials = window.MightyCall;
+          window.PowerDials.init({ apiKey: token });
+          setDialerReady(true);
+
+          window.PowerDials.on("callStart", () => setCallInProgress(true));
+          window.PowerDials.on("callEnd", () => {
+            setCallInProgress(false);
+            const log = {
+              contact: contact ? contact.name : "Manual Entry",
+              number: contact ? contact.phone : "Unknown",
+              timestamp: new Date().toISOString(),
+              outcome: "Completed"
+            };
+            onCallLog(log);
+          });
+        };
+        document.body.appendChild(script);
+      } catch (error) {
+        console.error("PowerDials init failed:", error);
+      }
+    };
+
+    loadSDK();
+  }, [micAllowed]);
+
+  const handleCall = () => {
+    const number = contact?.phone || prompt("Enter phone number to dial:");
+    if (number) {
+      window.PowerDials.call(number);
+    }
+  };
+
+  if (!dialerReady) return <div>Loading PowerDials...</div>;
+
+  return (
+    <div className="p-4 border rounded-2xl shadow">
+      <h2 className="text-xl font-bold mb-2">PowerDials</h2>
+      <p className="mb-2 text-sm text-gray-500">
+        {contact ? `Calling: ${contact.name} (${contact.phone})` : "Manual Dialing Mode"}
+      </p>
+      <button 
+        onClick={handleCall} 
+        className="px-4 py-2 bg-green-600 text-white rounded-xl"
+      >
+        {callInProgress ? "Call In Progress..." : "Start Call"}
+      </button>
+    </div>
+  );
+}
