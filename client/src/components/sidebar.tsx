@@ -67,6 +67,7 @@ export default function Sidebar({
     { id: "smart-search", label: "Starz Smart Search", icon: Search },
     { id: "smart-calendar", label: "Smart Calendar", icon: Brain },
     { id: "crm", label: "CRM", icon: Users },
+    { id: "crm-page", label: "CRM PowerDials Page", icon: Phone },
     { id: "sold-leads", label: "Sold Lead Cards", icon: Trophy },
     { id: "ai-scoring", label: "AI Lead Scoring", icon: Brain },
     { id: "pipeline", label: "Sales Pipeline", icon: TrendingUp },

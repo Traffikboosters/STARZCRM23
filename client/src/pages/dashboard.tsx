@@ -5,6 +5,7 @@ import ErrorBoundary from "@/components/error-boundary";
 
 import SmartCalendarIntegration from "@/components/smart-calendar-integration";
 import CRMView from "@/components/crm-view-simple";
+import CRMPage from "@/pages/crm-page";
 import CampaignManagementView from "@/components/campaign-management-view";
 import ScrapingAnalytics from "@/components/scraping-analytics";
 import FilesView from "@/components/files-view";
@@ -107,6 +108,12 @@ export default function Dashboard() {
         return (
           <ErrorBoundary fallback={<div>Something went wrong in the CRM view.</div>}>
             <CRMView />
+          </ErrorBoundary>
+        );
+      case "crm-page":
+        return (
+          <ErrorBoundary fallback={<div>Something went wrong in the CRM PowerDials page.</div>}>
+            <CRMPage />
           </ErrorBoundary>
         );
       case "sold-leads":

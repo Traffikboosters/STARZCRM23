@@ -7,6 +7,7 @@ import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import AnalyticsPage from "@/pages/analytics";
 import PowerDialsPage from "@/pages/powerdials";
+import CRMPage from "@/pages/crm-page";
 import WorkOrders from "@/pages/work-orders";
 import CareersPage from "@/pages/careers";
 import DialTrackingPage from "@/pages/dial-tracking";
@@ -36,6 +37,7 @@ function Router() {
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/analytics" component={AnalyticsPage} />
       <Route path="/powerdials" component={PowerDialsPage} />
+      <Route path="/crm-page" component={CRMPage} />
       <Route path="/work-orders" component={WorkOrders} />
       <Route path="/careers" component={CareersPage} />
       <Route path="/dial-tracking" component={DialTrackingPage} />
