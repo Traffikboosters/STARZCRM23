@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeDatabase } from "./init-db";
+import callLogsRoutes from './routes/callLogs.js';
 
 const app = express();
 app.use(express.json());
@@ -43,7 +44,8 @@ app.use((req, res, next) => {
   
   const server = await registerRoutes(app);
 
-  // Mount call logs route - handled in registerRoutes with ES modules
+  // Mount call logs route using your exact Drizzle pattern
+  app.use('/api/call-logs', callLogsRoutes);
 
   // Mount MightyCall routes - handled in registerRoutes
 
