@@ -33,6 +33,7 @@ import { authService } from "@/lib/auth";
 import type { Contact } from "@shared/schema";
 import { AISalesTipGenerator } from "./ai-sales-tip-generator";
 import { formatPhoneNumber } from "@/lib/utils";
+import { mightyCallClient } from "@/lib/mightycall-client";
 
 // Import Traffik Boosters logo
 import traffikBoostersLogo from "@assets/TRAFIC BOOSTERS3 copy_1751060321835.png";
@@ -315,50 +316,47 @@ export default function CRMView() {
                   </div>
                   <CardTitle 
                     className={`text-lg ${contact.phone ? 'cursor-pointer hover:text-blue-600 transition-colors' : ''}`}
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       if (contact.phone) {
                         e.stopPropagation();
-                        // Use PowerDials integration for calling
-                        const powerDialsWindow = window.open('', 'PowerDialsWeb', 'width=800,height=600,scrollbars=yes,resizable=yes');
                         
-                        fetch('/api/powerdials/call', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            phoneNumber: contact.phone,
-                            contactName: `${contact.firstName} ${contact.lastName}`,
-                            contactId: contact.id,
-                            userId: 1
-                          })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                          if (data.success && data.dialerUrl && powerDialsWindow) {
-                            powerDialsWindow.location.href = data.dialerUrl;
+                        try {
+                          // Ensure MightyCall client is initialized
+                          if (!mightyCallClient.isInitialized()) {
+                            await mightyCallClient.init({ debug: true });
+                          }
+
+                          // Initiate call through enhanced client
+                          const result = await mightyCallClient.initiateCall(
+                            contact.phone,
+                            `${contact.firstName} ${contact.lastName}`,
+                            contact.id
+                          );
+
+                          if (result.success && result.dialerUrl) {
+                            // Open PowerDials in new window
+                            const powerDialsWindow = window.open(result.dialerUrl, 'PowerDialsWeb', 'width=800,height=600,scrollbars=yes,resizable=yes');
                             toast({
                               title: "PowerDials Ready",
                               description: `Calling ${contact.firstName} ${contact.lastName} via PowerDials`,
                             });
                           } else {
-                            if (powerDialsWindow) powerDialsWindow.close();
                             // Fallback to device dialer
-                            window.open(`tel:${contact.phone}`, '_self');
+                            mightyCallClient.fallbackToDeviceDialer(contact.phone, `${contact.firstName} ${contact.lastName}`);
                             toast({
                               title: "Call Initiated",
                               description: `Calling ${contact.firstName} ${contact.lastName}`,
                             });
                           }
-                        })
-                        .catch(error => {
-                          console.error('PowerDials error:', error);
-                          if (powerDialsWindow) powerDialsWindow.close();
-                          // Fallback to device dialer
-                          window.open(`tel:${contact.phone}`, '_self');
+                        } catch (error) {
+                          console.error('MightyCall enhanced error:', error);
+                          // Ultimate fallback
+                          mightyCallClient.fallbackToDeviceDialer(contact.phone, `${contact.firstName} ${contact.lastName}`);
                           toast({
                             title: "Call Initiated", 
                             description: `Calling ${contact.firstName} ${contact.lastName}`,
                           });
-                        });
+                        }
                       }
                     }}
                     title={contact.phone ? "Click to call" : ""}

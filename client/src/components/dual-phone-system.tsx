@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { mightyCallClient } from "@/lib/mightycall-client";
 
 interface PhoneSystemStatus {
   configured: boolean;
@@ -45,11 +46,11 @@ export default function DualPhoneSystem() {
     return status && typeof status === 'object' && 'configured' in status && status.configured;
   };
 
-  // Initialize dialer with retry logic
+  // Initialize dialer with enhanced MightyCall client
   useEffect(() => {
     const initializeDialer = async () => {
       try {
-        console.log('🔧 Initializing phone dialer system...');
+        console.log('🔧 Initializing enhanced phone dialer system...');
         setConnectionStatus('checking');
         
         // Check microphone permissions
@@ -67,33 +68,34 @@ export default function DualPhoneSystem() {
           }
         }
 
-        // Test PowerDials connection
-        const response = await fetch('/api/powerdials/status');
-        if (response.ok) {
-          const status = await response.json();
-          if (isPowerDialsConfigured(status)) {
-            setConnectionStatus('connected');
-            setDialerInitialized(true);
-            console.log('✅ PowerDials system initialized successfully');
-            setRetryCount(0);
-          } else {
-            throw new Error('PowerDials not configured');
-          }
+        // Initialize enhanced MightyCall client
+        await mightyCallClient.init({ 
+          debug: true,
+          timeout: 15000
+        });
+
+        // Verify client status
+        const status = await mightyCallClient.getStatus();
+        if (isPowerDialsConfigured(status)) {
+          setConnectionStatus('connected');
+          setDialerInitialized(true);
+          console.log('✅ Enhanced MightyCall system initialized successfully');
+          setRetryCount(0);
         } else {
-          throw new Error('Failed to connect to PowerDials API');
+          throw new Error('MightyCall client not properly configured');
         }
       } catch (error) {
-        console.error('❌ Dialer initialization failed:', error);
+        console.error('❌ Enhanced dialer initialization failed:', error);
         setConnectionStatus('error');
         
         if (retryCount < MAX_RETRIES) {
-          console.log(`🔄 Retrying dialer initialization (${retryCount + 1}/${MAX_RETRIES})`);
+          console.log(`🔄 Retrying enhanced dialer initialization (${retryCount + 1}/${MAX_RETRIES})`);
           setRetryCount(prev => prev + 1);
           setTimeout(() => initializeDialer(), 2000 * (retryCount + 1)); // Exponential backoff
         } else {
           toast({
             title: "Phone System Error",
-            description: "Unable to initialize phone system. Please check connection.",
+            description: "Unable to initialize enhanced phone system. Please check connection.",
             variant: "destructive"
           });
         }
