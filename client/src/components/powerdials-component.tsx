@@ -1,7 +1,35 @@
 import { useEffect, useState } from 'react';
 import { Mic, Phone, PhoneCall, Settings, User } from 'lucide-react';
 
-export default function PowerDials() {
+// TypeScript window extension for PowerDials SDK
+declare global {
+  interface Window {
+    PowerDials: any;
+    MightyCall: any;
+  }
+}
+
+interface Contact {
+  name?: string;
+  phone?: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+}
+
+interface CallLog {
+  contact: string;
+  number: string;
+  timestamp: string;
+  outcome: string;
+}
+
+interface PowerDialsProps {
+  contact?: Contact | null;
+  onCallLog?: (log: CallLog) => void;
+}
+
+export default function PowerDials({ contact = null, onCallLog = () => {} }: PowerDialsProps) {
   const [micAllowed, setMicAllowed] = useState(false);
   const [dialerReady, setDialerReady] = useState(false);
   const [callInProgress, setCallInProgress] = useState(false);
@@ -57,6 +85,21 @@ export default function PowerDials() {
             window.PowerDials.on("callEnd", () => {
               console.log('📞 Call ended');
               setCallInProgress(false);
+              
+              // Log the call
+              const contactName = contact?.name || 
+                                 (contact?.firstName && contact?.lastName 
+                                   ? `${contact.firstName} ${contact.lastName}` 
+                                   : "Manual Entry");
+              const contactPhone = contact?.phone || contact?.phoneNumber || "Unknown";
+              
+              const log: CallLog = {
+                contact: contactName,
+                number: contactPhone,
+                timestamp: new Date().toISOString(),
+                outcome: "Completed"
+              };
+              onCallLog(log);
             });
           } catch (tokenError) {
             console.error('❌ PowerDials token error:', tokenError);
@@ -83,10 +126,12 @@ export default function PowerDials() {
   }, [micAllowed]);
 
   const handleCall = () => {
-    const number = prompt("Enter phone number to dial:");
+    const number = contact?.phone || contact?.phoneNumber || prompt("Enter phone number to dial:");
     if (number && window.PowerDials) {
       try {
         console.log('📞 Initiating call to:', number);
+        // Store the last dialed number for redial functionality
+        localStorage.setItem('lastDialedNumber', number);
         window.PowerDials.call(number);
       } catch (error) {
         console.error('❌ Call failed:', error);
@@ -153,12 +198,31 @@ export default function PowerDials() {
         </div>
       </div>
 
+      {/* Contact Information */}
+      {contact && (
+        <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl">
+          <div className="flex items-center">
+            <User className="h-4 w-4 text-blue-500 mr-2" />
+            <div>
+              <p className="text-sm font-medium text-blue-700 dark:text-blue-400">
+                Calling: {contact.name || `${contact.firstName || ''} ${contact.lastName || ''}`.trim()}
+              </p>
+              <p className="text-xs text-blue-600 dark:text-blue-400">
+                {contact.phone || contact.phoneNumber}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* System Status */}
       <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <User className="h-4 w-4 text-gray-500 mr-2" />
-            <span className="text-sm text-gray-600 dark:text-gray-400">System Status:</span>
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              {contact ? 'Contact Mode' : 'Manual Dialing Mode'}
+            </span>
           </div>
           <div className="flex items-center space-x-2">
             <div className={`w-2 h-2 rounded-full ${micAllowed ? 'bg-green-500' : 'bg-red-500'}`}></div>
@@ -190,7 +254,7 @@ export default function PowerDials() {
           ) : (
             <>
               <Phone className="h-5 w-5 mr-2" />
-              Make a Call
+              {contact ? 'Start Call' : 'Make a Call'}
             </>
           )}
         </button>

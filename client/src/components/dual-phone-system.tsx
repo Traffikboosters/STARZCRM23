@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { mightyCallClient } from "@/lib/mightycall-client";
 import MightyCallDialer from "./mightycall-dialer";
 import PowerDials from "./powerdials-component";
+import { CallLogDisplay } from "./call-log-display";
 
 interface PhoneSystemStatus {
   configured: boolean;
@@ -30,12 +31,20 @@ interface CallRequest {
   contactId?: number;
 }
 
+interface CallLog {
+  contact: string;
+  number: string;
+  timestamp: string;
+  outcome: string;
+}
+
 export default function DualPhoneSystem() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("overview");
   const [dialerInitialized, setDialerInitialized] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'disconnected' | 'error'>('checking');
   const [retryCount, setRetryCount] = useState(0);
+  const [callLogs, setCallLogs] = useState<CallLog[]>([]);
   const MAX_RETRIES = 3;
 
   // Query PowerDials status
@@ -46,6 +55,15 @@ export default function DualPhoneSystem() {
   // Type guard for PowerDials status
   const isPowerDialsConfigured = (status: any): boolean => {
     return status && typeof status === 'object' && 'configured' in status && status.configured;
+  };
+
+  // Call logging handler
+  const handleCallLog = (log: CallLog) => {
+    setCallLogs(prev => [log, ...prev]);
+    toast({
+      title: "Call Logged",
+      description: `Call to ${log.contact} completed`,
+    });
   };
 
   // Initialize dialer with enhanced MightyCall client
@@ -349,7 +367,10 @@ export default function DualPhoneSystem() {
         </TabsContent>
 
         <TabsContent value="powerdials" className="space-y-4">
-          <PowerDials />
+          <div className="grid gap-6 lg:grid-cols-2">
+            <PowerDials onCallLog={handleCallLog} />
+            <CallLogDisplay logs={callLogs} />
+          </div>
         </TabsContent>
 
         <TabsContent value="powerdials-control" className="space-y-4">
