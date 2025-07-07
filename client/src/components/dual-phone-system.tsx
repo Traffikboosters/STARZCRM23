@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { mightyCallClient } from "@/lib/mightycall-client";
+import MightyCallDialer from "./mightycall-dialer";
 
 interface PhoneSystemStatus {
   configured: boolean;
@@ -193,8 +194,9 @@ export default function DualPhoneSystem() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Dashboard</TabsTrigger>
+          <TabsTrigger value="sdk-dialer">SDK Dialer</TabsTrigger>
           <TabsTrigger value="powerdials">PowerDials Control</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
@@ -338,7 +340,11 @@ export default function DualPhoneSystem() {
           </div>
         </TabsContent>
 
-
+        <TabsContent value="sdk-dialer" className="space-y-4">
+          <div className="max-w-2xl mx-auto">
+            <MightyCallDialer />
+          </div>
+        </TabsContent>
 
         <TabsContent value="powerdials" className="space-y-4">
           <Card>

@@ -1206,6 +1206,36 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
+  // MightyCall SDK token endpoint
+  app.get('/api/mightycall/token', async (req, res) => {
+    try {
+      // Generate secure token for MightyCall SDK
+      const token = process.env.MIGHTYCALL_SECRET_KEY || '33a20a35-459d-46bf-9645-5e3ddd8b8966';
+      
+      if (!token) {
+        return res.status(500).json({
+          success: false,
+          error: 'MightyCall credentials not configured'
+        });
+      }
+
+      console.log('🔑 MightyCall SDK token requested - Token provided');
+      
+      res.json({
+        success: true,
+        token: token,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('❌ MightyCall token generation failed:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to generate MightyCall token'
+      });
+    }
+  });
+
   // POWERDIALS API integration
   app.post('/api/powerdials/call', async (req, res) => {
     try {

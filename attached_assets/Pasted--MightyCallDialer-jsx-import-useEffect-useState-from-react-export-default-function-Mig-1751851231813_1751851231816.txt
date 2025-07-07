@@ -1,0 +1,66 @@
+// MightyCallDialer.jsx
+import { useEffect, useState } from 'react';
+
+export default function MightyCallDialer() {
+  const [micAllowed, setMicAllowed] = useState(false);
+  const [dialerReady, setDialerReady] = useState(false);
+  const [callInProgress, setCallInProgress] = useState(false);
+
+  useEffect(() => {
+    // 1. Ask for mic permission
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(() => setMicAllowed(true))
+      .catch(() => alert("Microphone access is required to make calls."));
+  }, []);
+
+  useEffect(() => {
+    // 2. Load SDK and initialize when mic is allowed
+    if (!micAllowed) return;
+
+    const loadSDK = async () => {
+      try {
+        const script = document.createElement("script");
+        script.src = "https://cdn.mightycall.com/sdk.js";
+        script.onload = async () => {
+          // 3. Authenticate with backend to get secure token
+          const res = await fetch("/api/mightycall/token");
+          const { token } = await res.json();
+
+          // 4. Init MightyCall dialer
+          window.MightyCall.init({ apiKey: token });
+          setDialerReady(true);
+
+          // 5. Listen to call events (optional)
+          window.MightyCall.on("callStart", () => setCallInProgress(true));
+          window.MightyCall.on("callEnd", () => setCallInProgress(false));
+        };
+        document.body.appendChild(script);
+      } catch (error) {
+        console.error("Dialer init failed:", error);
+      }
+    };
+
+    loadSDK();
+  }, [micAllowed]);
+
+  const handleCall = () => {
+    const number = prompt("Enter phone number to dial:");
+    if (number) {
+      window.MightyCall.call(number);
+    }
+  };
+
+  if (!dialerReady) return <div>Loading dialer...</div>;
+
+  return (
+    <div className="p-4 border rounded-2xl shadow">
+      <h2 className="text-xl font-bold mb-2">MightyCall Dialer</h2>
+      <button 
+        onClick={handleCall} 
+        className="px-4 py-2 bg-green-600 text-white rounded-xl"
+      >
+        {callInProgress ? "Call In Progress..." : "Make a Call"}
+      </button>
+    </div>
+  );
+}
