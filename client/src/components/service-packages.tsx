@@ -41,13 +41,13 @@ interface PackagePricing {
 // Pre-defined Traffik Boosters service packages
 const TRAFFIK_BOOSTERS_PACKAGES: Omit<InsertServicePackage, 'createdBy' | 'updatedBy'>[] = [
   {
-    name: "Lead Generation Package",
-    description: "Comprehensive lead generation system with AI-powered targeting and multi-channel campaigns",
+    name: "Lead Generation",
+    description: "AI-powered lead generation system with multi-channel targeting, automated follow-up sequences, and conversion optimization",
     category: "lead-generation",
     pricing: {
       tier1: {
         name: "Starter",
-        price: 1500,
+        price: 2500,
         description: "Essential lead generation for small businesses",
         features: [
           "Google Ads Campaign Setup",
