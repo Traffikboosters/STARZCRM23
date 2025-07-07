@@ -164,7 +164,18 @@ export default function Dashboard() {
           </div>
         );
       case "users":
-        return currentUser ? <UserManagement currentUser={currentUser as any} /> : <div>Loading...</div>;
+        return currentUser ? (
+          <ErrorBoundary fallback={<div>Something went wrong in user management.</div>}>
+            <UserManagement currentUser={currentUser as any} />
+          </ErrorBoundary>
+        ) : (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Loading user management…</p>
+            </div>
+          </div>
+        );
       case "files":
         return <SecureFileManager />;
       case "chat":
@@ -174,7 +185,11 @@ export default function Dashboard() {
       case "documents":
         return <DocumentSigning />;
       case "hr":
-        return <HRPortal />;
+        return (
+          <ErrorBoundary fallback={<div>Something went wrong in the HR portal.</div>}>
+            <HRPortal />
+          </ErrorBoundary>
+        );
       case "departments":
         return <DepartmentManagement />;
       case "dial-tracking":
@@ -238,7 +253,11 @@ export default function Dashboard() {
       case "website":
         return <TraffikBoostersWebsite />;
       case "sales-history":
-        return <SalesHistory />;
+        return (
+          <ErrorBoundary fallback={<div>Something went wrong in sales history.</div>}>
+            <SalesHistory />
+          </ErrorBoundary>
+        );
       case "service-packages":
         return (
           <ErrorBoundary fallback={<div>Something went wrong in the service packages.</div>}>
