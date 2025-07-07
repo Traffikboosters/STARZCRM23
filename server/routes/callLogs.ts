@@ -1,20 +1,40 @@
 import { Router } from 'express';
 import { db } from '../db.js';
 import { callLogs } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { eq, and, gte, lte, ilike, desc, sql } from 'drizzle-orm';
 
 const router = Router();
 
 router.get('/', async (req, res) => {
-  const { userId } = req.query;
+  const { userId, contact, startDate, endDate } = req.query;
   if (!userId) return res.status(400).json({ error: 'Missing userId' });
 
   try {
-    const logs = await db.select().from(callLogs).where(eq(callLogs.userId, parseInt(userId as string)));
+    // Build base query conditions
+    const conditions = [eq(callLogs.userId, parseInt(userId as string))];
+
+    // Add contact filter - search in notes field for contact name
+    if (contact) {
+      conditions.push(ilike(callLogs.notes, `%${contact}%`));
+    }
+
+    // Add date range filters
+    if (startDate) {
+      conditions.push(gte(callLogs.startTime, new Date(startDate as string)));
+    }
+    if (endDate) {
+      conditions.push(lte(callLogs.startTime, new Date(endDate as string)));
+    }
+
+    // Execute query with all conditions
+    const logs = await db.select().from(callLogs)
+      .where(and(...conditions))
+      .orderBy(desc(callLogs.startTime));
+    
     res.json(logs);
   } catch (err) {
-    console.error('Error fetching call logs:', err);
-    res.status(500).json({ error: 'Error fetching call logs' });
+    console.error('Error fetching filtered call logs:', err);
+    res.status(500).json({ error: 'Error fetching filtered call logs' });
   }
 });
 
