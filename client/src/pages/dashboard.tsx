@@ -96,7 +96,11 @@ export default function Dashboard() {
         return <SmartSearchAI isOpen={true} onClose={() => setActiveTab("dashboard")} onNavigate={(path) => console.log('Navigate to:', path)} />;
 
       case "smart-calendar":
-        return <SmartCalendarIntegration />;
+        return (
+          <ErrorBoundary fallback={<div>Something went wrong in the smart calendar.</div>}>
+            <SmartCalendarIntegration />
+          </ErrorBoundary>
+        );
       case "crm":
         return (
           <ErrorBoundary fallback={<div>Something went wrong in the CRM view.</div>}>
@@ -266,7 +270,11 @@ export default function Dashboard() {
         );
 
       default:
-        return <SmartCalendarIntegration />;
+        return (
+          <ErrorBoundary fallback={<div>Something went wrong in the smart calendar.</div>}>
+            <SmartCalendarIntegration />
+          </ErrorBoundary>
+        );
     }
   };
 
