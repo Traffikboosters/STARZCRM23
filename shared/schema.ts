@@ -889,6 +889,8 @@ export const leadAllocations = pgTable("lead_allocations", {
 
 
 
+
+
 export const invoices = pgTable("invoices", {
   id: serial("id").primaryKey(),
   contactId: integer("contact_id").references(() => contacts.id).notNull(),
@@ -1513,6 +1515,9 @@ export type InsertCampaign = z.infer<typeof insertCampaignSchema>;
 
 export type LeadAllocation = typeof leadAllocations.$inferSelect;
 export type InsertLeadAllocation = z.infer<typeof insertLeadAllocationSchema>;
+
+export type ServicePackage = typeof servicePackages.$inferSelect;
+export type InsertServicePackage = z.infer<typeof insertServicePackageSchema>;
 
 export type Invoice = typeof invoices.$inferSelect;
 export type InsertInvoice = z.infer<typeof insertInvoiceSchema>;

@@ -23,6 +23,7 @@ import type {
   ContactNote, LeadIntake, LeadEnrichment, EnrichmentHistory, ExtractionHistory,
   TechnicalProject, TechnicalTask, TimeEntry, TechnicalProposal, CallRecording, VoiceToneAnalysis,
   CallInsights, KeyCallMoments, CallParticipants, VoiceTrendAnalysis,
+  ServicePackage,
   MoodEntry, TeamMoodSummary, MoodPerformanceCorrelation,
   TimeClockEntry, TimeClockSchedule, TimeOffRequest,
   EmailAccount, EmailTemplate, CancellationMetric, RetentionAttempt, CancellationTrend,
@@ -34,6 +35,7 @@ import type {
   InsertContactNote, InsertLeadIntake, InsertLeadEnrichment, InsertEnrichmentHistory, InsertExtractionHistory,
   InsertTechnicalProject, InsertTechnicalTask, InsertTimeEntry, InsertTechnicalProposal, InsertCallRecording, InsertVoiceToneAnalysis,
   InsertCallInsights, InsertKeyCallMoments, InsertCallParticipants, InsertVoiceTrendAnalysis,
+  InsertServicePackage,
   InsertMoodEntry, InsertTeamMoodSummary, InsertMoodPerformanceCorrelation,
   InsertTimeClockEntry, InsertTimeClockSchedule, InsertTimeOffRequest,
   InsertEmailAccount, InsertEmailTemplate, InsertCancellationMetric, InsertRetentionAttempt, InsertCancellationTrend,
@@ -299,10 +301,12 @@ export interface IStorage {
   createPaymentTransaction(transaction: any): Promise<any>;
   updatePaymentTransaction(id: number, updates: any): Promise<any | undefined>;
   getPaymentAnalytics(): Promise<any>;
-  getServicePackages(): Promise<any[]>;
-  getServicePackage(id: string): Promise<any | undefined>;
-  createServicePackage(servicePackage: any): Promise<any>;
-  updateServicePackage(id: string, updates: any): Promise<any | undefined>;
+  getAllServicePackages(): Promise<ServicePackage[]>;
+  getServicePackage(id: number): Promise<ServicePackage | undefined>;
+  createServicePackage(servicePackage: InsertServicePackage): Promise<ServicePackage>;
+  updateServicePackage(id: number, updates: Partial<InsertServicePackage>): Promise<ServicePackage | undefined>;
+  deleteServicePackage(id: number): Promise<boolean>;
+  getServicePackagesByCategory(category: string): Promise<ServicePackage[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1899,27 +1903,40 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async getServicePackages(): Promise<any[]> {
-    return db.select().from(servicePackages).where(eq(servicePackages.isActive, true));
+  async getAllServicePackages(): Promise<ServicePackage[]> {
+    return await db.select().from(servicePackages);
   }
 
-  async getServicePackage(id: string): Promise<any | undefined> {
+  async getServicePackage(id: number): Promise<ServicePackage | undefined> {
     const [servicePackage] = await db.select().from(servicePackages)
-      .where(eq(servicePackages.id, parseInt(id)));
+      .where(eq(servicePackages.id, id));
     return servicePackage || undefined;
   }
 
-  async createServicePackage(servicePackage: any): Promise<any> {
-    const [created] = await db.insert(servicePackages).values(servicePackage).returning();
-    return created;
+  async createServicePackage(insertServicePackage: InsertServicePackage): Promise<ServicePackage> {
+    const [servicePackage] = await db
+      .insert(servicePackages)
+      .values(insertServicePackage)
+      .returning();
+    return servicePackage;
   }
 
-  async updateServicePackage(id: string, updates: any): Promise<any | undefined> {
-    const [updated] = await db.update(servicePackages)
+  async updateServicePackage(id: number, updates: Partial<InsertServicePackage>): Promise<ServicePackage | undefined> {
+    const [servicePackage] = await db
+      .update(servicePackages)
       .set({ ...updates, updatedAt: new Date() })
-      .where(eq(servicePackages.id, parseInt(id)))
+      .where(eq(servicePackages.id, id))
       .returning();
-    return updated || undefined;
+    return servicePackage || undefined;
+  }
+
+  async deleteServicePackage(id: number): Promise<boolean> {
+    const result = await db.delete(servicePackages).where(eq(servicePackages.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async getServicePackagesByCategory(category: string): Promise<ServicePackage[]> {
+    return await db.select().from(servicePackages).where(eq(servicePackages.category, category));
   }
 }
 

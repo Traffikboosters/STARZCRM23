@@ -23,6 +23,7 @@ import {
   insertSalesHistorySchema,
   insertCancellationHistorySchema,
   insertSalesMetricsSchema,
+  insertServicePackageSchema,
   type User,
   type Contact,
   type Event,
@@ -38,7 +39,8 @@ import {
   type CareerSettings,
   type SalesHistory,
   type CancellationHistory,
-  type SalesMetrics
+  type SalesMetrics,
+  type ServicePackage
 } from "../shared/schema";
 import { storage } from "./storage";
 import { mightyCallNativeAPI } from "./mightycall-native";
@@ -6532,6 +6534,120 @@ a=ssrc:1001 msid:stream track`
     } catch (error) {
       console.error("Error fetching sales performance:", error);
       res.status(500).json({ error: "Failed to fetch sales performance" });
+    }
+  });
+
+  // Service Packages API
+  app.get("/api/service-packages", async (req, res) => {
+    try {
+      const packages = await storage.getAllServicePackages();
+      res.json(packages);
+    } catch (error) {
+      console.error("Error fetching service packages:", error);
+      res.status(500).json({ error: "Failed to fetch service packages" });
+    }
+  });
+
+  app.get("/api/service-packages/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const servicePackage = await storage.getServicePackage(id);
+      
+      if (!servicePackage) {
+        return res.status(404).json({ error: "Service package not found" });
+      }
+      
+      res.json(servicePackage);
+    } catch (error) {
+      console.error("Error fetching service package:", error);
+      res.status(500).json({ error: "Failed to fetch service package" });
+    }
+  });
+
+  app.post("/api/service-packages", async (req, res) => {
+    try {
+      const validatedData = insertServicePackageSchema.parse(req.body);
+      const servicePackage = await storage.createServicePackage(validatedData);
+      
+      // Broadcast update to WebSocket clients
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: "service_package_created",
+            data: servicePackage
+          }));
+        }
+      });
+      
+      res.status(201).json(servicePackage);
+    } catch (error) {
+      console.error("Error creating service package:", error);
+      res.status(500).json({ error: "Failed to create service package" });
+    }
+  });
+
+  app.put("/api/service-packages/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const validatedData = insertServicePackageSchema.partial().parse(req.body);
+      
+      const servicePackage = await storage.updateServicePackage(id, validatedData);
+      
+      if (!servicePackage) {
+        return res.status(404).json({ error: "Service package not found" });
+      }
+      
+      // Broadcast update to WebSocket clients
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: "service_package_updated",
+            data: servicePackage
+          }));
+        }
+      });
+      
+      res.json(servicePackage);
+    } catch (error) {
+      console.error("Error updating service package:", error);
+      res.status(500).json({ error: "Failed to update service package" });
+    }
+  });
+
+  app.delete("/api/service-packages/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteServicePackage(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ error: "Service package not found" });
+      }
+      
+      // Broadcast update to WebSocket clients
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: "service_package_deleted",
+            data: { id }
+          }));
+        }
+      });
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting service package:", error);
+      res.status(500).json({ error: "Failed to delete service package" });
+    }
+  });
+
+  app.get("/api/service-packages/category/:category", async (req, res) => {
+    try {
+      const category = req.params.category;
+      const packages = await storage.getServicePackagesByCategory(category);
+      res.json(packages);
+    } catch (error) {
+      console.error("Error fetching service packages by category:", error);
+      res.status(500).json({ error: "Failed to fetch service packages by category" });
     }
   });
 

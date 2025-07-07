@@ -39,7 +39,8 @@ import {
   UserX,
   Briefcase,
   Gamepad2,
-  Globe
+  Globe,
+  Package
 } from "lucide-react";
 import traffikBoostersLogo from "@assets/newTRAFIC BOOSTERS3 copy_1750608395971.png";
 import { Button } from "@/components/ui/button";
@@ -84,6 +85,7 @@ export default function Sidebar({
     { id: "dial-tracking", label: "Dial Tracking", icon: Timer },
     { id: "pricing", label: "Pricing & Profit", icon: DollarSign },
     { id: "competitive-pricing", label: "Competitive Pricing", icon: Calculator },
+    { id: "service-packages", label: "Service Packages", icon: Package },
     { id: "sales-history", label: "Sales History", icon: Clock },
     { id: "high-revenue-prospects", label: "High Revenue Prospects", icon: Building2 },
     { id: "payments", label: "Payments", icon: CreditCard },

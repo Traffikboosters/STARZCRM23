@@ -70,6 +70,7 @@ import PerformanceMonitor from "@/components/performance-monitor";
 import { MarketingStrategyBuilder } from "@/components/marketing-strategy-builder";
 import TraffikBoostersWebsite from "@/pages/traffik-boosters-website";
 import SalesHistory from "@/components/sales-history";
+import ServicePackages from "@/components/service-packages";
 import type { Contact } from "@shared/schema";
 import { useQuery } from "@tanstack/react-query";
 
@@ -220,6 +221,8 @@ export default function Dashboard() {
         return <TraffikBoostersWebsite />;
       case "sales-history":
         return <SalesHistory />;
+      case "service-packages":
+        return <ServicePackages />;
 
       default:
         return <SmartCalendarIntegration />;
