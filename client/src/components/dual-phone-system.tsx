@@ -30,6 +30,10 @@ interface CallRequest {
 export default function DualPhoneSystem() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("overview");
+  const [dialerInitialized, setDialerInitialized] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'disconnected' | 'error'>('checking');
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 3;
 
   // Query PowerDials status
   const { data: powerDialsStatus, refetch: refetchPowerDials } = useQuery({
@@ -40,6 +44,64 @@ export default function DualPhoneSystem() {
   const isPowerDialsConfigured = (status: any): boolean => {
     return status && typeof status === 'object' && 'configured' in status && status.configured;
   };
+
+  // Initialize dialer with retry logic
+  useEffect(() => {
+    const initializeDialer = async () => {
+      try {
+        console.log('🔧 Initializing phone dialer system...');
+        setConnectionStatus('checking');
+        
+        // Check microphone permissions
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          try {
+            await navigator.mediaDevices.getUserMedia({ audio: true });
+            console.log('🎤 Microphone permission granted');
+          } catch (permissionError) {
+            console.warn('🎤 Microphone permission denied or not available');
+            toast({
+              title: "Microphone Access",
+              description: "Microphone access recommended for optimal call quality",
+              variant: "default"
+            });
+          }
+        }
+
+        // Test PowerDials connection
+        const response = await fetch('/api/powerdials/status');
+        if (response.ok) {
+          const status = await response.json();
+          if (isPowerDialsConfigured(status)) {
+            setConnectionStatus('connected');
+            setDialerInitialized(true);
+            console.log('✅ PowerDials system initialized successfully');
+            setRetryCount(0);
+          } else {
+            throw new Error('PowerDials not configured');
+          }
+        } else {
+          throw new Error('Failed to connect to PowerDials API');
+        }
+      } catch (error) {
+        console.error('❌ Dialer initialization failed:', error);
+        setConnectionStatus('error');
+        
+        if (retryCount < MAX_RETRIES) {
+          console.log(`🔄 Retrying dialer initialization (${retryCount + 1}/${MAX_RETRIES})`);
+          setRetryCount(prev => prev + 1);
+          setTimeout(() => initializeDialer(), 2000 * (retryCount + 1)); // Exponential backoff
+        } else {
+          toast({
+            title: "Phone System Error",
+            description: "Unable to initialize phone system. Please check connection.",
+            variant: "destructive"
+          });
+        }
+      }
+    };
+
+    initializeDialer();
+  }, [retryCount, toast]);
 
   const testPowerDialsConnection = async () => {
     try {
@@ -63,18 +125,36 @@ export default function DualPhoneSystem() {
   const makeTestCall = async (mode: 'web' | 'desktop') => {
     const testNumber = '8778406250'; // Traffik Boosters number
     
+    // Check if dialer is initialized
+    if (!dialerInitialized || connectionStatus !== 'connected') {
+      toast({
+        title: "Phone System Not Ready",
+        description: "Please wait for the phone system to initialize",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     try {
+      console.log(`📞 Initiating ${mode} call to ${testNumber}`);
+      
       const response = await fetch('/api/powerdials/call', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phoneNumber: testNumber,
           contactName: 'PowerDials Test Call',
-          userId: 1
+          userId: 1,
+          mode: mode
         })
       });
       
+      if (!response.ok) {
+        throw new Error(`API call failed with status ${response.status}`);
+      }
+      
       const result = await response.json();
+      console.log('📞 Call API response:', result);
       
       if (result.success) {
         if (mode === 'web' && result.dialerUrl) {
@@ -267,6 +347,27 @@ export default function DualPhoneSystem() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Connection Status Indicator */}
+              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                <div className="flex items-center gap-2">
+                  <div className={`w-3 h-3 rounded-full ${
+                    connectionStatus === 'connected' ? 'bg-green-500' : 
+                    connectionStatus === 'checking' ? 'bg-yellow-500 animate-pulse' :
+                    connectionStatus === 'error' ? 'bg-red-500' : 'bg-gray-500'
+                  }`} />
+                  <span className="text-sm font-medium">
+                    {connectionStatus === 'connected' ? 'Phone System Ready' :
+                     connectionStatus === 'checking' ? 'Initializing...' :
+                     connectionStatus === 'error' ? 'Connection Error' : 'Disconnected'}
+                  </span>
+                </div>
+                {retryCount > 0 && (
+                  <Badge variant="outline" className="text-xs">
+                    Retry {retryCount}/{MAX_RETRIES}
+                  </Badge>
+                )}
+              </div>
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <h4 className="font-semibold mb-2">Configuration Status</h4>
@@ -311,17 +412,37 @@ export default function DualPhoneSystem() {
                 </div>
               )}
               
-              <div className="pt-4 border-t">
-                <Button onClick={testPowerDialsConnection} className="mr-2">
-                  Test Connection
-                </Button>
-                <Button 
-                  onClick={() => makeTestCall('web')} 
-                  variant="outline"
-                  disabled={!isPowerDialsConfigured(powerDialsStatus)}
-                >
-                  Test Web Call
-                </Button>
+              <div className="pt-4 border-t space-y-2">
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={testPowerDialsConnection} 
+                    variant="outline"
+                    disabled={connectionStatus === 'checking'}
+                  >
+                    Test Connection
+                  </Button>
+                  {connectionStatus === 'error' && (
+                    <Button 
+                      onClick={() => {
+                        setRetryCount(0);
+                        setConnectionStatus('checking');
+                      }}
+                      variant="outline"
+                    >
+                      Retry Connection
+                    </Button>
+                  )}
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => makeTestCall('web')}
+                    disabled={!dialerInitialized || connectionStatus !== 'connected' || !isPowerDialsConfigured(powerDialsStatus)}
+                    variant="outline"
+                  >
+                    Test Web Call
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

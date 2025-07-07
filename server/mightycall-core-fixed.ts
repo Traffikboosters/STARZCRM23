@@ -46,6 +46,9 @@ export class MightyCallCoreFixed {
   constructor() {
     console.log('MightyCall Core Fixed - Account:', this.config.accountId);
     
+    // Enhanced monitoring and validation
+    this.logSystemStatus();
+    
     // Validate required configuration
     if (!this.config.secretKey) {
       console.warn('⚠️  MIGHTYCALL_SECRET_KEY environment variable not set - phone functionality may be limited');
@@ -53,14 +56,52 @@ export class MightyCallCoreFixed {
   }
 
   /**
+   * Enhanced system monitoring and logging
+   */
+  private logSystemStatus(): void {
+    console.log('📊 MightyCall System Status:');
+    console.log(`   Account ID: ${this.config.accountId}`);
+    console.log(`   Main Number: ${this.config.mainNumber}`);
+    console.log(`   Domain: ${this.config.domain}`);
+    console.log(`   API Base: ${this.config.apiBaseUrl}`);
+    console.log(`   Secret Key: ${this.config.secretKey ? '✅ Configured' : '❌ Missing'}`);
+    console.log(`   Timestamp: ${new Date().toISOString()}`);
+  }
+
+  /**
+   * Enhanced call logging with error tracking
+   */
+  private async logCallAttempt(callId: string, phoneNumber: string, contactName?: string, userId?: number): Promise<void> {
+    try {
+      console.log(`📝 Logging call attempt: ${callId} to ${phoneNumber}`);
+      // Add database logging here if needed
+    } catch (error) {
+      console.error('❌ Failed to log call attempt:', error);
+      // Don't throw error - logging failure shouldn't prevent call
+    }
+  }
+
+  /**
    * Initiate outbound call with multiple fallback methods
    */
   async initiateOutboundCall(request: OutboundCallRequest): Promise<CallResponse> {
+    const startTime = Date.now();
+    let cleanNumber: string;
+    
     try {
-      const cleanNumber = this.cleanPhoneNumber(request.phoneNumber);
+      // Enhanced input validation and logging
+      if (!request.phoneNumber) {
+        throw new Error('Phone number is required');
+      }
+      
+      cleanNumber = this.cleanPhoneNumber(request.phoneNumber);
       const callId = this.generateCallId();
       
-      console.log(`📞 Outbound Call - Contact: ${request.contactName}, Number: ${cleanNumber}`);
+      console.log(`📞 Initiating outbound call:`);
+      console.log(`   Contact: ${request.contactName || 'Unknown'}`);
+      console.log(`   Number: ${cleanNumber}`);
+      console.log(`   User ID: ${request.userId}`);
+      console.log(`   Call ID: ${callId}`);
 
       // Method 1: MightyCall Pro Web Dialer (Primary)
       const webDialerUrl = this.generateWebDialerUrl(cleanNumber, request.contactName);
@@ -71,8 +112,11 @@ export class MightyCallCoreFixed {
       // Method 3: Direct dial string for MightyCall desktop app
       const dialString = `mc://call/${cleanNumber}?account=${this.config.accountId}&contact=${encodeURIComponent(request.contactName || 'Contact')}&id=${callId}`;
 
-      // Try to create call record via API (if available)
+      // Enhanced call logging with error handling
       await this.logCallAttempt(callId, cleanNumber, request.contactName, request.userId);
+
+      const processingTime = Date.now() - startTime;
+      console.log(`✅ Call setup completed in ${processingTime}ms`);
 
       return {
         success: true,
@@ -80,22 +124,34 @@ export class MightyCallCoreFixed {
         dialString,
         sipUrl,
         webDialerUrl,
-        message: "Multiple call methods available - MightyCall Pro web dialer ready",
+        message: "Call initiated successfully - Multiple methods available",
         timestamp: new Date().toISOString(),
         method: 'web_dialer'
       };
 
     } catch (error) {
-      console.error('MightyCall outbound call failed:', error);
+      const processingTime = Date.now() - startTime;
+      console.error(`❌ MightyCall outbound call failed after ${processingTime}ms:`, error);
       
-      // Fallback: Still provide tel: link option
-      const cleanNumber = this.cleanPhoneNumber(request.phoneNumber);
-      return {
-        success: true,
-        message: `Phone system ready - Dial ${this.formatPhoneNumber(cleanNumber)} manually if web dialer fails`,
-        timestamp: new Date().toISOString(),
-        method: 'tel_link'
-      };
+      // Enhanced fallback handling
+      try {
+        cleanNumber = cleanNumber || this.cleanPhoneNumber(request.phoneNumber || '');
+        
+        return {
+          success: false,
+          message: `Call setup failed: ${error instanceof Error ? error.message : 'Unknown error'}. Fallback: Use tel:${cleanNumber}`,
+          timestamp: new Date().toISOString(),
+          method: 'tel_link'
+        };
+      } catch (fallbackError) {
+        console.error('❌ Complete call setup failure:', fallbackError);
+        return {
+          success: false,
+          message: 'Phone system unavailable. Please try again later.',
+          timestamp: new Date().toISOString(),
+          method: 'tel_link'
+        };
+      }
     }
   }
 
