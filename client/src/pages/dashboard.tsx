@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Header from "@/components/header";
 import Sidebar from "@/components/sidebar";
+import ErrorBoundary from "@/components/error-boundary";
 
 import SmartCalendarIntegration from "@/components/smart-calendar-integration";
 import CRMView from "@/components/crm-view-simple";
@@ -97,7 +98,11 @@ export default function Dashboard() {
       case "smart-calendar":
         return <SmartCalendarIntegration />;
       case "crm":
-        return <CRMView />;
+        return (
+          <ErrorBoundary fallback={<div>Something went wrong in the CRM view.</div>}>
+            <CRMView />
+          </ErrorBoundary>
+        );
       case "sold-leads":
         return <SoldLeadsView />;
       case "campaigns":
@@ -108,15 +113,17 @@ export default function Dashboard() {
         return <SalesPipeline />;
       case "analytics":
         return (
-          <div className="space-y-6">
-            <CRMAnalyticsDashboard />
-            <div className="flex justify-center">
-              <PerformanceMonitor />
+          <ErrorBoundary fallback={<div>Something went wrong in the analytics dashboard.</div>}>
+            <div className="space-y-6">
+              <CRMAnalyticsDashboard />
+              <div className="flex justify-center">
+                <PerformanceMonitor />
+              </div>
+              <div className="flex justify-center">
+                <EmailNotificationTest />
+              </div>
             </div>
-            <div className="flex justify-center">
-              <EmailNotificationTest />
-            </div>
-          </div>
+          </ErrorBoundary>
         );
       case "widget-recommendations":
         return (
@@ -144,7 +151,11 @@ export default function Dashboard() {
       case "work-orders":
         return <WorkOrders />;
       case "phone":
-        return currentUser ? <DualPhoneSystem /> : (
+        return currentUser ? (
+          <ErrorBoundary fallback={<div>Something went wrong in the phone system.</div>}>
+            <DualPhoneSystem />
+          </ErrorBoundary>
+        ) : (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
@@ -229,7 +240,11 @@ export default function Dashboard() {
       case "sales-history":
         return <SalesHistory />;
       case "service-packages":
-        return <ServicePackages />;
+        return (
+          <ErrorBoundary fallback={<div>Something went wrong in the service packages.</div>}>
+            <ServicePackages />
+          </ErrorBoundary>
+        );
 
       default:
         return <SmartCalendarIntegration />;
@@ -250,7 +265,9 @@ export default function Dashboard() {
         
         <main className="flex-1 overflow-y-auto bg-neutral-lightest">
           <div className="container mx-auto py-3 lg:py-6 px-2 lg:px-4">
-            {renderMainContent()}
+            <ErrorBoundary>
+              {renderMainContent()}
+            </ErrorBoundary>
           </div>
         </main>
         
