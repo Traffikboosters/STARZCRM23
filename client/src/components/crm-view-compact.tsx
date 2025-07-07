@@ -125,11 +125,44 @@ export default function CRMViewCompact() {
 
   const handleCallContact = (contact: Contact) => {
     if (contact.phone) {
-      // Open phone dialer
-      window.open(`tel:${contact.phone}`, '_self');
-      toast({
-        title: "Call Ready",
-        description: `Calling ${contact.firstName} ${contact.lastName}`,
+      // Use PowerDials integration with contact object
+      const powerDialsWindow = window.open('', 'PowerDialsWeb', 'width=800,height=600,scrollbars=yes,resizable=yes');
+      
+      fetch('/api/powerdials/call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phoneNumber: contact.phone,
+          contactName: `${contact.firstName} ${contact.lastName}`,
+          contactId: contact.id,
+          userId: currentUser?.id || 1
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.dialerUrl && powerDialsWindow) {
+          powerDialsWindow.location.href = data.dialerUrl;
+          toast({
+            title: "PowerDials Connected",
+            description: `Calling ${contact.firstName} ${contact.lastName} via PowerDials`,
+          });
+        } else {
+          if (powerDialsWindow) powerDialsWindow.close();
+          window.open(`tel:${contact.phone}`, '_self');
+          toast({
+            title: "Call Ready",
+            description: `Calling ${contact.firstName} ${contact.lastName}`,
+          });
+        }
+      })
+      .catch(error => {
+        console.error('PowerDials error:', error);
+        if (powerDialsWindow) powerDialsWindow.close();
+        window.open(`tel:${contact.phone}`, '_self');
+        toast({
+          title: "Call Ready",
+          description: `Calling ${contact.firstName} ${contact.lastName}`,
+        });
       });
     }
   };
