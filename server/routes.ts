@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { z } from "zod";
 import Stripe from "stripe";
+import axios from "axios";
 import { eq, desc, and, gte, lte, sql, asc } from "drizzle-orm";
 import { 
   insertUserSchema, 
@@ -1206,24 +1207,43 @@ a=ssrc:1001 msid:stream track`
     }
   });
 
-  // MightyCall SDK token endpoint
+  // MightyCall SDK OAuth token endpoint
   app.get('/api/mightycall/token', async (req, res) => {
     try {
-      // Generate secure token for MightyCall SDK
-      const token = process.env.MIGHTYCALL_SECRET_KEY || '33a20a35-459d-46bf-9645-5e3ddd8b8966';
-      
-      if (!token) {
-        return res.status(500).json({
-          success: false,
-          error: 'MightyCall credentials not configured'
+      // Check if OAuth credentials are available
+      if (!process.env.MIGHTYCALL_CLIENT_ID || !process.env.MIGHTYCALL_CLIENT_SECRET) {
+        console.log('🔑 MightyCall OAuth credentials not found, using fallback token method');
+        
+        // Fallback to existing secret key method
+        const fallbackToken = process.env.MIGHTYCALL_SECRET_KEY || '33a20a35-459d-46bf-9645-5e3ddd8b8966';
+        
+        return res.json({
+          success: true,
+          token: fallbackToken,
+          method: 'fallback',
+          timestamp: new Date().toISOString()
         });
       }
+      
+      // Use OAuth client credentials flow
+      const response = await axios.post('https://api.mightycall.com/oauth/token', {
+        grant_type: 'client_credentials',
+        client_id: process.env.MIGHTYCALL_CLIENT_ID,
+        client_secret: process.env.MIGHTYCALL_CLIENT_SECRET
+      });
 
-      console.log('🔑 MightyCall SDK token requested - Token provided');
+      const token = response.data.access_token;
+      
+      if (!token) {
+        throw new Error('No access token received from OAuth response');
+      }
+
+      console.log('🔑 MightyCall OAuth token obtained successfully');
       
       res.json({
         success: true,
         token: token,
+        method: 'oauth',
         timestamp: new Date().toISOString()
       });
 

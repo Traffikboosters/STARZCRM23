@@ -91,7 +91,13 @@ export default function MightyCallDialer() {
           throw new Error(`Token fetch failed: ${response.status}`);
         }
         
-        const { token } = await response.json();
+        const tokenData = await response.json();
+        if (!tokenData.success) {
+          throw new Error(tokenData.error || 'Token fetch failed');
+        }
+        
+        const { token, method } = tokenData;
+        console.log(`🔑 MightyCall token obtained via ${method || 'unknown'} method`);
         
         // Initialize MightyCall with secure token
         window.MightyCall.init({ apiKey: token });
