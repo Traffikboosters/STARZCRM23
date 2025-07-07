@@ -49,6 +49,7 @@ import TechnicalPortal from "@/components/technical-portal";
 import { VoiceToneAnalysis } from "@/components/voice-tone-analysis";
 import VoiceToneAnalysisEnhanced from "@/components/voice-tone-analysis-enhanced";
 import PowerDialsDemo from "@/components/powerdials-demo";
+import PowerDialsDemoPage from "@/pages/powerdials-demo-page";
 import MoodTracker from "@/components/mood-tracker";
 import RecentContactsManager from "@/components/recent-contacts-manager";
 import SalesRepDashboard from "@/components/sales-rep-dashboard";
@@ -233,6 +234,8 @@ export default function Dashboard() {
         return <VoiceToneAnalysisEnhanced />;
       case "powerdials-demo":
         return <PowerDialsDemo />;
+      case "powerdials-integration":
+        return <PowerDialsDemoPage />;
       case "mood-tracker":
         return <MoodTracker />;
       case "recent-contacts":

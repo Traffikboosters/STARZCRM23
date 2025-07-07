@@ -91,6 +91,7 @@ export default function Sidebar({
     { id: "payments", label: "Payments", icon: CreditCard },
     { id: "phone", label: "Phone System", icon: Phone },
     { id: "powerdials-demo", label: "PowerDials Demo", icon: Phone },
+    { id: "powerdials-integration", label: "PowerDials Integration", icon: Phone },
     { id: "users", label: "User Management", icon: UserPlus },
     { id: "legal", label: "Legal Documents", icon: FileText },
     { id: "work-orders", label: "Work Orders", icon: FileText },
